@@ -804,7 +804,9 @@ val it : Rectangle = {X=-10,Y=-10,Width=21,Height=21}
 当具体类型实现的接口没有成员时，用不带`with`的语句，如xunit测试类实现接口的代码。
 
 ```F#
-interface IClassFixture<Fixture>
+[<CollectionDefinition("AutofacCollection")>]
+type AutofacCollection() =
+    interface ICollectionFixture<AutofacFixture>
 ```
 
 ### Using Common Object Interface Types from the .NET Libraries
