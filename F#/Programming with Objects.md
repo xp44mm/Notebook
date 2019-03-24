@@ -995,8 +995,8 @@ type CountingOutputSinkByInheritance() =
     let mutable count = 0
     member sink.Count = count
     default sink.WriteChar c =
-count <- count + 1
-System.Console.Write c
+        count <- count + 1
+        System.Console.Write c
 ```
 
 The keywords override and default can be used interchangeably; both indicate that an implementation is being given for an abstract member. By convention, override is used when giving implementations for abstract members in inherited types that already have implementations, and default is used for implementations of abstract members that didn’t previously have implementations. 
@@ -1092,8 +1092,9 @@ With the exception of stack and memory, all objects that own resources should be
 
 ```F#
 namespace System
-    type IDisposable =
-abstract Dispose : unit -> unit
+
+type IDisposable =
+    abstract Dispose : unit -> unit
 ```
 
 A simple approach to managing IDisposable objects is to give each resource a lifetime; that is, some well-defined portion of the program execution for which the object is active. This is even easier when the lifetime of a resource is lexically scoped, such as when a resource is allocated on entry to a function and deallocated on exit. In this case, the resource can be tied to the scope of a particular variable, and you can protect and dispose of a value that implements IDisposable by using a use binding instead of a let binding. For example, in the following code, three values implement IDisposable, all of which are bound using use: 
@@ -1181,18 +1182,18 @@ type LineChooser(fileName1, fileName2) =
     let rnd = new System.Random()
     let mutable disposed = false
     let cleanup() =
-if not disposed then
-disposed <- true;
-file1.Dispose();
-file2.Dispose();
+        if not disposed then
+        disposed <- true;
+        file1.Dispose();
+        file2.Dispose();
     interface System.IDisposable with
-member x.Dispose() = cleanup()
+        member x.Dispose() = cleanup()
     member obj.CloseAll() = cleanup()
     member obj.GetLine() =
-if not file1.EndOfStream &&
-(file2.EndOfStream  || rnd.Next() % 2 = 0) then file1.ReadLine()
-elif not file2.EndOfStream then file2.ReadLine()
-else raise (new EndOfStreamException())
+        if not file1.EndOfStream &&
+        (file2.EndOfStream  || rnd.Next() % 2 = 0) then file1.ReadLine()
+        elif not file2.EndOfStream then file2.ReadLine()
+        else raise (new EndOfStreamException())
 ```
 
 You can now instantiate, use, and dispose of this object as follows:
@@ -1223,28 +1224,31 @@ If you’re writing a component that explicitly wraps some kind of unmanaged res
 
 ```F#
 open System
+
 type TicketGenerator() =
     let mutable free = []
     let mutable max = 0
     member h.Alloc() =
-match free with
-| [] -> max <- max + 1; max
-| h :: t -> free <- t; h
+        match free with
+        | [] -> max <- max + 1; max
+        | h :: t -> free <- t; h
     member h.Dealloc(n:int) =
-printfn "returning ticket %d" n
-free <- n :: free
+        printfn "returning ticket %d" n
+        free <- n :: free
+
 let ticketGenerator = new TicketGenerator()
+
 type Customer() =
     let myTicket = ticketGenerator.Alloc()
     let mutable disposed = false
     let cleanup() =
-if not disposed then
-disposed <- true
-ticketGenerator.Dealloc(myTicket)
+        if not disposed then
+        disposed <- true
+        ticketGenerator.Dealloc(myTicket)
     member x.Ticket = myTicket
     override x.Finalize() = cleanup()
     interface IDisposable with
-member x.Dispose() = cleanup(); GC.SuppressFinalize(x)
+        member x.Dispose() = cleanup(); GC.SuppressFinalize(x)
 ```
 
 Note that you override the Object.Finalize method. This makes sure cleanup occurs if the object isn’t disposed of but is still garbage-collected. If the object is explicitly disposed of, you call GC.SuppressFinalize() to ensure that the object isn’t later finalized. The finalizer shouldn’t call the Dispose() of other managed objects, because they have their own finalizers if needed. The following example session generates some customers, and tickets used by some of the customers are automatically reclaimed as they exit their scopes: 
@@ -1255,7 +1259,6 @@ val bill : Customer
 > bill.Ticket;;
 val it : int = 1
 > (use joe = new Customer() in printfn "joe.Ticket = %d" joe.Ticket);;
-
 joe.Ticket = 2
 returning ticket 2
 > (use jane = new Customer() in printfn "jane.Ticket = %d" jane.Ticket);;
@@ -1272,15 +1275,16 @@ The final topic covered in this chapter is how you can define ad hoc dot-notatio
 ```F#
 module NumberTheoryExtensions =
     let factorize i =
-let lim = int (sqrt (float i))
-let rec check j =
-if j > lim  then None
-elif (i %  j) = 0 then Some (i / j, j)
-else check (j + 1)
-check 2
+        let lim = int (sqrt (float i))
+        let rec check j =
+        if j > lim  then None
+        elif (i %  j) = 0 then Some (i / j, j)
+        else check (j + 1)
+        check 2
+
     type System.Int32 with
-member i.IsPrime = (factorize i).IsNone
-member i.TryFactorize() = factorize i
+        member i.IsPrime = (factorize i).IsNone
+        member i.TryFactorize() = factorize i
 ```
 
 The IsPrime extension property and the TryFactorize extension method are then available for use in conjunction with int32 values whenever the NumberTheoryExtensions module has been opened. For example: 
@@ -1299,32 +1303,34 @@ These type extensions are called F#-style extension members. Since F# 3.1, an ad
 module CSharpStyleExtensions =
     open System.Runtime.CompilerServices
     let factorize i =
-let lim = int (sqrt (float i))
-let rec check j =
-if j > lim  then None
-elif (i %  j) = 0 then Some (i / j, j)
-else check (j + 1)
-check 2
+        let lim = int (sqrt (float i))
+        let rec check j =
+        if j > lim  then None
+        elif (i %  j) = 0 then Some (i / j, j)
+        else check (j + 1)
+        check 2
+
     [<Extension>]
     type Int32Extensions() =
-[<Extension>]
-static member IsPrime2(i:int) = (factorize i).IsNone
-[<Extension>]
-static member TryFactorize2(i:int) = factorize i
+        [<Extension>]
+        static member IsPrime2(i:int) = (factorize i).IsNone
+        [<Extension>]
+        static member TryFactorize2(i:int) = factorize i
+
     [<Extension>]
     type ResizeArrayExtensions() =
-[<Extension>]
-static member Product(values:ResizeArray<int>) =
-let mutable total = 1
-for v in values do
-total <- total * v
-total
-[<Extension>]
-static member inline GenericProduct(values:ResizeArray<'T>) =
-let mutable total = LanguagePrimitives.GenericOne<'T>
-for v in values do
-total <- total * v
-total
+        [<Extension>]
+        static member Product(values:ResizeArray<int>) =
+            let mutable total = 1
+            for v in values do
+            total <- total * v
+            total
+        [<Extension>]
+        static member inline GenericProduct(values:ResizeArray<'T>) =
+            let mutable total = LanguagePrimitives.GenericOne<'T>
+            for v in values do
+            total <- total * v
+            total
 ```
 
 C#-style extension members are declared as an (attributed) static method in an (attributed) class. The method takes an extra “this” argument. C#-style extension members are used as an instance method taking one fewer parameters. At the usage site they must minimally take at least “zero” arguments through a () parameter. For example: 
@@ -1360,9 +1366,9 @@ Modules can also be extended, in a fashion. For example, say you think the List 
 ```F#
 module List =
     let rec pairwise l =
-match l with
-| [] | [_] -> []
-| h1 :: ((h2 :: _) as t) -> (h1, h2) :: pairwise t
+        match l with
+        | [] | [_] -> []
+        | h1 :: ((h2 :: _) as t) -> (h1, h2) :: pairwise t
 ```
 
 ```F#
@@ -1413,10 +1419,10 @@ If you want, you can delimit class types using class/end:
 ```F#
 type Vector2D(dx : float, dy : float) =
     class
-let len = sqrt(dx * dx + dy * dy)
-member v.DX = dx
-member v.DY = dy
-member v.Length = len
+        let len = sqrt(dx * dx + dy * dy)
+        member v.DX = dx
+        member v.DY = dy
+        member v.Length = len
     end
 ```
 
@@ -1436,10 +1442,14 @@ You see this in F# code samples on the Internet and in other books. However, we 
 ```F#
 type IShape =
     interface
-abstract Contains : Point -> bool
-abstract BoundingBox : Rectangle
+        abstract Contains : Point -> bool
+        abstract BoundingBox : Rectangle
     end
+```
+
 Or you can use an attribute:
+
+```F#
 [<Interface>]
 type IShape =
     abstract Contains : Point -> bool
