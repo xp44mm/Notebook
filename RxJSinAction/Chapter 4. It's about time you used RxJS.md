@@ -1,0 +1,837 @@
+# Chapter 4 It's about time you used RxJS
+
+This chapter covers
+
+* Understanding time in RxJS
+* Using time as a new dimension of your programs
+* Building observable streams with time
+* Learning about RxJS operators like `debounce` and `throttle`
+* Analyzing event data with buffering
+
+Time is a tricky business. We spoke earlier about the challenges that exist when the code you write isn't synchronous; it may have unpredictable wait times from one instruction to the next. We defined observables as infinite sequences of events, and now we add the last part of the puzzle to this definition—*over time*. The ancient Greek Heraclitus implied that time is always in motion, and so are observables. 
+
+> **OBSERVABLES** are infinite sequences of events over time.
+
+You can accurately measure the time a synchronous program takes by adding the execution time of its constituent functions, but this doesn't hold for asynchronous programs because instructions aren't linearly executed, as shown in figure 4.1.
+
+Figure 4.1 In synchronous code (top), operations are predictable and typically depend on the input size and speed of the environment. Asynchronous programs (bottom) depend on many other factors, including the speed of the network.
+
+Generally speaking, you should never try to inject wait times into your code in an attempt to time your operations. Asynchronous code is unpredictable, and many factors can alter the period of time an AJAX call takes to respond or a long-running computation to finish. So instead of dealing with time directly yourself and trying to guess when certain operations complete, you should *react* to them.
+
+In previous chapters, we talked about how observables react to future events, but we skirted around the specifics of what the future is. We also mentioned the issue with latency in passing but never addressed it head-on. This chapter will first give you a brief introduction to time as viewed by RxJS and will then explore how to use operators to affect not only the output of a sequence of events but also when this output will occur and how that type of transformation can be useful. Having direct control over time, such as being able to schedule certain actions to occur or to generate data in set timed intervals, is essential to creating responsive user interfaces that interact with user actions. Keep in mind that modern users have high expectations that web UIs behave like native applications, so that any clicks, key presses, or any other types of action are immediately acknowledged.
+
+## 4.1 Why worry about time?
+
+Time is of the essence, and in computing it's essential. Many years ago, the world of user experience (UX) and design adopted the rule of the "Powers of Ten" to create guidelines about what is an acceptable amount of time a user can wait for an application to respond. The study can be summarized as such: 
+
+* At 0.1 seconds, the user feels as though their actions are causing a direct impact on the application. The interactions are real and pleasant. 
+* From 0.1 to 1 second, the user still feels in control of the application enough to stay focused on their activity. For web applications, pages or sections of a page should display within 1 second.
+* From 1 to 10 seconds, the user gets impatient and notices that they're waiting for a slow computer to respond. 
+* After 10 seconds, the flow is completely broken and the user is likely to leave the site. 
+
+Time is the undercurrent that causes your data to flow within a stream. And you can see from this study that it's a crucial aspect of any successful application. JavaScript applications are notorious for being frequently exposed to time, and we don't mean using any date/time libraries. We're referring to the conflicting tasks of having to balance fetching data from remote locations, slow networks, user animations, scheduled events, and others—all making balance incredibly challenging.
+
+Before we get into this topic, it's important to realize that time-based functions rely on external state directly or indirectly. What do we mean by this? From a pure functional programming perspective, functions that deal with time are inherently impure. Time is a dimension that's not necessarily local to a function—it's global to the entire application and forever changing.
+
+> **IMPURE JAVASCRIPT FUNCTIONS** Some frequently used JavaScript functions like `Date.now()` and `Math.random()` are impure because you can never guarantee a consistent return value.
+
+Despite this incompatibility from a pure FP standpoint, RxJS is still the right tool for the job. When you chain operators, as you already know, most of these issues are addressed by virtue of sequenced, synchronous execution that threads through time and minimizes the impact of this side effect. In previous chapters, you saw how to build a pipeline out of array-like operators that use higher-order functions, such as `map()`, `filter()`, and `reduce()`. Time, being a dimension that doesn't exist with arrays, doesn't have a direct analogy to any array methods. But this doesn't mean you can't introduce time into operators and end up with the same fluent design. 
+
+RxJS comes bundled with many of the tools to inspect and manipulate time right out of the box (in chapter 9, you'll learn how to work with virtual time in unit tests, essentially by mocking time). Before we dive into these new operators, let's review JavaScript's own timing mechanisms and how they can easily interact with RxJS.
+
+## 4.2 Understanding asynchronous timing with JavaScript 
+
+The run time of an asynchronous application depends on factors outside its control such as network, filesystem, server speed, and others; all of these become bottlenecks to code that would otherwise execute instantly on a CPU. An asynchronous event has two main challenges: 
+
+* It's ambiguous in that it may or may not happen at any time in the future.
+* It's conditional, meaning that it's dependent on the correct execution of a previous task, such as loading data from a file or database.
+
+The reason RxJS is a game changer is that it allows you to treat asynchronous tasks as if their execution order were synchronous. In simpler terms, it's designed to serialize operations so that one piece of code executes only after another piece of code has completed. This is possible through the orchestration layer of observables so that you can handle time implicitly or explicitly.
+
+### 4.2.1 Implicit timing
+
+Consider the example of a relay race. In a relay race, the participants run as fast as they can around the track. Every time a runner finishes their set distance, they pass the baton to the next runner. The winner of the race is always the team who collectively crosses the finish line first. JavaScript functions that use callbacks work under this same philosophy. This is why all of the client-side AJAX APIs, as well as all of the streaming I/O APIs in Node.js, to name a few, declare callback parameters *batons*. Figure 4.2 shows that time factors into many types of JavaScript problems, whether it's fetching data from the server or a database or handling user input.
+
+Figure 4.2 The dimension of time is implicit in I/O tasks such as fetching data from the server and handling user input. On the left, a sequence of AJAX calls fetches necessary data from the server before processing. On the right, you listen for a key press DOM event and a resultant fetch from the server. As each step completes, data (the baton) is passed from one step to the next.
+
+Both cases would involve the use of nested callbacks to pass the baton along the way and ensure their synchronicity. On the left, two nested HTTP calls depend on each other to fetch the required data from the server. On the right, a DOM event is intercepted, which causes some data to be fetched from the server. By treating both scenarios as streams, observables internally take care of passing the baton for you through the operator's internal subscription mechanism, which you learned about in chapter 3. Your job is to wait and react accordingly. Now let's look at another form of timing in JavaScript, explicit timing.
+
+### 4.2.2 Explicit timing
+
+Unlike implicit timing, explicit timing has the following desirable characteristics:
+
+* *Concrete*—It will happen at a set time.
+* *Explicit*—It will happen at a time you clearly define and control.
+* *Unconditional*—It will always happen, unless an error occurs or the stream is cancelled. 
+
+Think of any time you've had to write an event that occurred a few seconds after the user performed some action, or maybe delayed an animation for a set amount of time.
+
+These are examples of when you've explicitly declared that you wanted something to occur in the future as well as exactly when you wanted it to happen. 
+
+Use cases for these explicitly timed operations tend to revolve around two general categories: user-centric and resource-centric. In the former case, you're concerned with creating something that's perceivable to the human eye. An animation, a dialog, and a validation message are examples of user-centric timings. Although some animations are superfluous, they're also an important part of drawing the user's attention to where they should act next and creating a connection with the UI so that it's always responsive. By carefully timing how elements move and react to the user's interaction, you can subtly guide the user through what could otherwise be a difficult experience.
+
+In the resource-centric case, you can use timing to reduce demands on a given resource. Network I/O operations, rapid user input, and CPU-intensive calculations are scenarios where reducing the number of method calls could significantly boost performance. In these cases, you could constrain either the number of calls or their impact by specifying a timeout. Another way of handling resources is through buffering or caching a certain subset of elements so that they can be accomplished at once. One example is when you need to apply many database operations and it's preferable to do a single bulk operation (at the end of this chapter we'll show how buffering helps you in this respect).
+
+Explicit timing is similar to a train or airline schedule. Tasks such as moving passengers from point A to point B don't happen as soon as there's availability. Trains and planes depart at their scheduled time (for the most part, of course, but that's a separate issue). You know that an airplane doesn't leave simply because you're on it (or you've subscribed to it). It will leave only on or after its departure time. 
+
+Explicitly timing events is a useful property in computing because it means that you can exercise some control over when a piece of code is run rather than rely on the implied timing of executing operations in sequence. The latter is unreliable for any sort of exact timing, because it's bound to the speed and availability of processors, memory, and network latency. In practical terms, this means that the behavior of an application would be very different on a desktop as opposed to a smartphone, so explicitly defined behavior is sometimes necessary. You can use explicit time to invoke timed tasks in sequence, such as hiding and showing messages to the user after a set number of seconds, displaying a notification dialog that guides the user to the next step, implementing a countdown clock indicating an action needs to be completed by a certain time, and others. Figure 4.3 shows a simple visualization of explicit time-dependent tasks.
+
+Figure 4.3 Explicitly timed tasks can execute with a delay or can overlap in time.
+
+Now that you understand both modalities, let's see what JavaScript has to offer. If you've used functions such as `setTimeout()` or `setInterval()`, then you've already been exposed to JavaScript's timing interfaces.
+
+### 4.2.3 The JavaScript timing interfaces
+
+There are two well-known interfaces for accomplishing explicit timing in JavaScript ~~(there are actually several more, but they're not universal so we'll leave them out for now)~~. Both methods use time relatively; that is, all declarations of future tasks will be done by a time offset relative to the current time ("now") within the application. For instance, if you show a countdown clock for an action that is to be completed within 3 seconds, this action would complete in 3 seconds relative to the execution of the timed operator in use (or now + 3 sec), as shown in figure 4.4.
+
+Figure 4.4 Explicitly timing some function after 3 seconds offset time
+
+Generally, there are two types of explicit time in RxJS. *Relative time* is also called *offset time*, and it represents only a delta measurement from now. *Absolute time* always refers to a specific instance in time, which can be either in the past or in the future.
+
+---
+
+##### When is "now"?
+
+"Now" in JavaScript is always the time provided by the system when a particular line of code executes. If you're declaring a time of `new Date()`, you'd expect the date to be the system time in milliseconds since 1970 at the moment the line is evaluated. For some of the examples involving dates and time, we'll be using a library called `moment.js` (installation instructions are available in appendix A). Moment.js provides a simple API for accessing and manipulating dates and time.
+
+---
+
+We'll go over JavaScript's most common timing operations that are part of the Window-Timers utilities and their equivalent operators in RxJS, starting with `setTimeout()`.
+
+#### SETTIMEOUT
+
+The `setTimeout()` function (a method of the global context object) sets up an explicit one-time task to execute at a specific point in the future (in milliseconds) relative to now. Invoking the function will tell the JavaScript runtime that some body of code should be executed milliseconds after `setTimeout()` is called, which is considered time zero milliseconds. This is the programmatic equivalent of setting an egg timer to notify you when your cake is done baking and is great if you don't want something to be executed synchronously with the rest of your program. For instance, you could schedule some CSS to slide the account details panel to the right after a short delay to make the interaction with the page richer: 
+
+```js
+setTimeout(() => 
+  document.querySelector('#panel')
+           .setAttribute('class', 'slide-right'), 1000);
+```
+
+The `setTimeout()` function is similar to the `Promise` in that its callback is invoked exactly once in the future. But it offers none of the same versatility that a `Promise` or RxJS does. For example, there's no mechanism for error handling or fluent composition. Clearly, you can do better! 
+
+With your new understanding of streams, you should also be able to recognize that this is again a simple observable, one that emits once to each subscriber. You can create an observable that wraps over `setTimeout()`, which applies some CSS action downstream into the observer to avoid conflating it with any business logic; see the following listing. 
+
+Listing 4.1 Working with observables and `setTimeout()`
+
+```js
+const source$ = Rx.Observable.create(observer => { //*1
+    const timeoutId = setTimeout(() => {           //*2
+        observer.next();
+        observer.complete();
+    }, 1000);
+    return () => clearTimeout(timeoutId);          //*3
+});
+
+source$.subscribe(() =>                            //*4
+    document.querySelector('#panel').style.backgroundColor = 'red'); //*5
+```
+
+1. Wraps everything inside the observable factory method
+2. Sends the single next and completed flags a second after the subscription occurs
+3. Defines unsubscribe behavior
+4. Subscribes to the observable to start the timer
+5. Performs CSS operations
+
+Listing 4.1 creates an observable that will fire once after a second and then complete, without being tied to any business logic, and it provides the unsubscription mechanism of the timer by passing `clearTimeout(timeoutId)` back as the disposal logic. It turns out, however, that this kind of boilerplate code is unnecessary because the RxJS library already possess implementations for these base cases. The `setTimeout()` method can be substituted with the `timer()` operator, which creates an observable that will emit a single event after a given period of time. The next listing performs the same action as before, using a one-second timer to emit an action that changes the layout of an HTML element.
+
+Listing 4.2 Creating a simple animation with an RxJS timer
+
+```js
+Rx.Observable.timer(1000)                                               //*1
+  .subscribe(()=> 
+       document.querySelector('#panel').style.backgroundColor = 'red'); //*2
+```
+
+1. Timer factory function in milliseconds
+2. Adds a custom CSS class to the selector element after a set time has elapsed
+
+We can illustrate this using a marble diagram, as shown in figure 4.5.
+
+Figure 4.5 Emit an action after one second. This is similar to using a one-second timeout.
+
+Notice that you no longer need to worry about unruly callbacks. Although the result of listing 4.2 is the same as that of listing 4.1, taking advantage of RxJS operators has, in our opinion, drastically improved the readability of this simple program. As an additional plus, the timer is now emitting a generic event that can be used by several consumers if you want it to go through subsequent subscriptions, rather than being forced to cram several callbacks together.
+
+#### SETINTERVAL
+
+The other commonly used method is `setInterval()`. Whereas `setTimeout()` bears similarities to a promise, `setInterval()` more closely resembles event emitters in that it can create multiple events over a span of time, specified in milliseconds. Now, instead of a single operation being performed, this function invokes the operation repeatedly by specifying how far apart in time those calls should be. Using this type of operation, you could easily create a simple counter that would tell the user how long they've been on the same page:
+
+```js
+let tick = 0;       //*1
+setInterval(() => { //*2
+  document.querySelector('#ticker').innerHTML = `${tick}`;
+  tick++;
+}, 1000);           //*3
+```
+
+1. External state keeping track of the ticker
+2. Updates the counter on the screen (clear side effect)
+3. Sets the time period for the interval (in milliseconds) to 1 second
+
+Unfortunately, this sample code uses a global side effect to increment the counter. Instead, consider using a pure observable context to create a container around the effect and push out new counts as events into the observer. Listing 4.3 creates a simple observable in charge of spawning a two-second interval. At every interval, it increments a running counter and pushes the event to any downstream observers. In light of what you learned in chapter 3 and because JavaScript's time intervals can run infinitely, we included the cancellation of the event. The cancellation process also occurs explicitly after 8 seconds have elapsed.
+
+Listing 4.3 Explicit time using JavaScript timing functions and RxJS
+
+```js
+const source$ = Rx.Observable.create(observer => {
+    let num = 0;
+    const id = setInterval(() => {
+        observer.next(`Next ${num++}`);
+    }, 2000);                              //*1
+    return () => {                         //*2
+        clearInterval(id);
+    }
+});
+const subscription = source$.subscribe(
+    next => console.log(next),            //*3
+    error => console.log(error.message),
+    () => console.log('Done!')            //*4
+);
+setTimeout(function () {                  //*5
+    subscription.unsubscribe();
+}, 8000);
+```
+
+1. Every 2 seconds prints the next number count
+2. The returned object contains the cancellation logic for this observable (the disposal handler).
+3. Handles next
+4. Flags when stream is done
+5. After 8 seconds, cancels the interval
+
+This code wraps an observable over a JavaScript explicit `setInterval()` function, which emits a count after 2 seconds. After 8 seconds have elapsed, the stream is cancelled and disposed of, generating a total of 8 / 2 = 4 events. Notice that because it was cancelled, the completed function of the observer is also omitted. Running this code yields the following: 
+
+```js
+"Next 0"
+"Next 1"
+"Next 2"
+"Next 3"
+"Done!"
+```
+
+As you saw in listing 4.3, `setInterval()` can be used within an observable. In its current form, however, it isn't particularly useful. For instance, there's no way to track the number of invocations, short of tracking it yourself with an external variable. An actual observable operator would be more useful because it can forward state downstream while remaining infinitely more extensible. 
+
+Fortunately, you don't have to implement this method either, because it already exists as the `interval()` operator, which gives you a simple compact, generic form. Essentially, you can subscribe to the interval and begin receiving periodic events, and in true RxJS form you gain automatic disposal semantics for free!
+
+Both the interval and the timer emulate the existing behavior that you see from the traditional JavaScript interfaces, but they do so without the associated entanglement. Although `interval` emits the number of milliseconds in the interval, you don't have to use it. Most RxJS implementations use `interval` to monitor and react to an external resource. For instance, you can make periodic AJAX requests to an external API and detect when something has changed. This is useful for stock tickers, weather trackers, and other real-time applications. In the next section, we'll look at how to introduce time-based operators into a stream to implement a stock ticker component.
+
+## 4.3 Back to the future with RxJS
+
+The time-based operators in RxJS come in several different flavors. The factory functions that resemble generic versions of the `setInterval()` and `setTimeout()` methods have function signatures resembling these RxJS operators, respectively:
+
+```js
+Rx.Observable.interval(periodInMillis)
+Rx.Observable.timer(timeoutInMillis)
+```
+
+These static methods (`interval()` and `timer()`) work just like the other factory methods that you saw in previous chapters for creating observables, except that where most of those either wrapped other sources or emitted events immediately upon subscription, the time-based factory methods emit only after a provided amount of time has elapsed. 
+
+> **SCHEDULERS** There's another parameter called a *scheduler* that's passed into either `interval()` or `timer()`, as well as other operators. You can imagine that unit testing code with long timers is virtually impossible. You'll learn about schedulers when we cover unit testing in chapter 9.
+
+We've illustrated these timing operators by themselves, but in real-world problems they're usually combined with observable streams that generate meaningful data. This combination is extremely powerful, because you can use the timers to synchronize the frequency with which you consume data from an observable.
+
+We'll start implementing our stock ticker widget using only functional and reactive primitives. We'll come back to this example and add more features as you explore and get more comfortable with RxJS. At the moment, we'll use a made-up symbol, ABC, to keep things simple, and instead of fetching its stock price using a real web service, we'll emulate it using random numbers. In the next chapter, we'll tie everything together and fetch stock data using actual AJAX calls to a real service endpoint. Here's our simple function that fabricates random numbers: 
+
+```js
+const newRandomNumber = () => Math.floor(Math.random() * 100); //*1
+```
+
+1. Maps the number into the range [0,100]
+
+> **NOTE** This function is impure, but we're using it only as a random producer of events, not as part of our business logic.
+
+At a high level, the process of fetching stock data works as shown in figure 4.6. Our program consists of generating a random value every 2 seconds, which we'll use to emulate continuous stock quote prices of our hypothetical ABC company.
+
+Figure 4.6 The process of fetching the stock data involves using a promise to make a remote HTTP call against a stock service. In this case, we'll use a random-number-generator function to emulate stock price changes, and we'll revisit this in chapter 5.
+
+Stock prices are made up of a numerical portion and a currency string. You can model this with a simple `Money` value object:
+
+```js
+const Money = function (currency, val) {
+    return {
+        value: function () {
+            return val;
+        },
+        currency: function () {
+            return currency;
+        },
+        toString: function () {
+            return `${currency} ${val}`;
+        }
+    };
+};
+```
+
+A *value object* is a design pattern used to represent simple immutable data structures whose equality is based not on the entity itself but on its values. In other words, two value objects are equal only if they have the same content or their corresponding properties contain the same values. These objects are ideal to transfer immutable state from one component to another.
+
+The stock ticker widget is kicked off by a two-second interval, which will set the pace for how often notifications are pushed onto your observable stream. Subscribers receive each value and update the DOM, as shown in the following listing. 
+
+Listing 4.4 Simulating a simple stock ticker widget
+
+```js
+Rx.Observable.interval(2000)//*1
+    .skip(1)//*2
+    .take(5)//*3
+    .map(num => new Money('USD', newRandomNumber()))
+    .subscribe(price => {
+        document.querySelector('#price').textContent = price;
+    });
+```
+
+1. Creates a two-second interval
+2. Skips the first number emitted, zero
+3. Because this is an infinite operator, simulates only five values
+
+As we've mentioned, you can use RxJS's time operators to control the advancement of the stream they're part of. Another variation of `interval()` is an instance operator called `timeInterval()`—which gives you a bit of extra information such as the count as well as the time in between intervals—which you can use with `do()` to print the time elapsed between price refreshes, as shown in the next listing. 
+
+Listing 4.5 Augmenting stock data with the time interval
+
+```js
+Rx.Observable.interval(2000)
+    .timeInterval()//*1
+    .skip(1)
+    .take(5)
+    .do(int => 
+        console.log(`Checking every ${int.interval} milliseconds`))//*2
+    .map(int => new Money('USD', newRandomNumber()))//*3
+    .subscribe(price => {
+        document.querySelector('#price').textContent = price;
+    });
+```
+
+1. Augments the interval value as an object that also includes the precise number of milliseconds between intervals
+2. The `interval` property contains the number of milliseconds elapsed between one interval and the next.
+3. The value property returns the number of intervals emitted by the observable.
+
+This function reveals the fraction of delay present in the call needed to compute the random number; checking the log shows the following:
+
+```js
+"Checking every 2000 milliseconds"
+"Checking every 2002 milliseconds"
+"Checking every 1999 milliseconds"
+"Checking every 2001 milliseconds"
+"Checking every 2000 milliseconds"
+```
+
+The two types of timing options we've discussed so far (explicit and implicit) aren't mutually exclusive. Using one doesn't preclude the use of the other. But using them together does require an understanding of how time propagates to downstream operators. Unlike when you use only implicitly timed operations, where each operation will initiate directly after the previous one, explicit timing can introduce new issues with ordering.
+
+This knowledge is especially important when introducing a new operator called `delay()`. It accepts a time in milliseconds and can be used to time shift the entire observable sequence. This means that if an event arrives at 1 second to `delay()`, it would be emitted to the subscribe method at 3 seconds if the delay was 2 seconds long. You can visualize this with the marble diagram in figure 4.7.
+
+Figure 4.7 A marble diagram of how the `delay` operator affects the output observable
+
+Here's a code sample to illustrate its use. 
+
+Listing 4.6 Showcase the `delay` operator
+
+```js
+Rx.Observable.timer(1000)//*1
+    .delay(2000)//*2
+    .timeInterval()
+    .map(int => Math.floor(int.interval / 1000))//*3
+    .subscribe(seconds => console.log(`${seconds} seconds`));//*4
+```
+
+1. Emits a value after 1 second
+2. Delays the entire sequence by a two-second offset
+3. Computes the time elapsed using the interval value from `timeInterval()`
+4. Converts and rounds the result to seconds
+
+This code reflects what figure 4.7 shows: how the stream is affected by the `delay` operator to create a shifted observable sequence. Running this code will print "3 seconds" rather than the initial time. The effect of this process raises two important points about the nature of a delay:
+
+* Each operator will affect only the propagation of an event, not its creation.
+* Time operators act sequentially.
+
+Let's discuss each of these points individually.
+
+### 4.3.1 Propagation
+
+The first effect applies to all operators but is especially critical with explicitly timed operations because it can have drastic effects on the performance of your application. Because operators have no knowledge about the specific observable to which they're attached, they're unable to affect the production of events (remember that you can think of each operator as a workstation on an assembly line). In order to maximize decoupling and throughput, each operator must work independently. This decoupling can lead to problems, however, if one station drastically outpaces another in terms of production. Suppose an assembly line had one station that painted a part and another that required that part to sit for at least an hour for the paint to dry. If the first station produced one part every minute, 60 parts would be waiting to dry at any given moment. The deficit would be greater the larger the ratio of production to propagation.
+
+This means that an operator like `delay()` will affect the propagation of the events downstream only after they've been generated, not during. Consider a simple observable example that shows a delay firing all at once, for an array with multiple values. Instead of delaying each event in the stream, delay shifts the entire sequence by a specific period, as in this listing.
+
+Listing 4.7 delay shifts the entire observable sequence
+
+```js
+Rx.Observable.from([1, 2, 3, 4, 5])
+.do(x => console.log(`Emitted: ${x}`)) //*1
+.delay(200) //*2
+.subscribe(x => console.log(`Received: ${x}`));
+```
+
+1. Uses the `.do()` operator to introduce an effectful computation; in this case, logs to the console the emitted data.
+2. Delays propagation of the event by 200 ms
+
+You might expect that each `Emitted` event would be followed immediately by a `Received`, followed by a delay of 200 ms before the next `Emitted/Received` pair. This is a common mistake for newcomers to RxJS. In reality, the result is this:
+
+```js
+"Emitted: 1,2,3,4,5"
+// 200 milliseconds later...
+"Received: 1,2,3,4,5"
+```
+
+This result is much different than you might have expected, because the generation of the events is independent of the `delay` operator. This is exactly the same as the factory worker scenario where production and propagation are not matched. Figure 4.8 illustrates what's happening.
+
+Figure 4.8 A 200ms delay injected into the pipeline shifts the entire observable sequence instead of each event.
+
+A corollary to this idea is that in order for a delay to work, it must buffer the events it receives before emitting them at the right time. The `delay()` operator has a fixed constant value called a *bounded upper limit* that's proportional to the number of events received and their frequency. You can calculate this with the following relation: 
+
+```js
+# of events received / time * (x time units)
+```
+
+For the most part, as long as an operator will eventually propagate, a buffer will always remain bounded, and it will not grow beyond a certain size (we'll come back to buffering in a bit). It's worth mentioning this behavior because it's often confusing for newcomers to RxJS who see delay and think that the production of the sequence can be delayed or somehow controlled downstream. Another important aspect of these time-based operators is that they act sequentially.
+
+### 4.3.2 Sequential time
+
+As you've already seen, when operators are chained together, they always operate in sequence, where operators earlier in the chain execute before operators later in the chain. This downstream flow is a core design of RxJS observables. You'd expect this to hold when dealing with time-based operators as well. That is to say, if you were to chain multiple delays, you'd expect that the actual delay downstream would be the sum of each of them. Although `delay()` is sequential, its execution as it appears in the stream declaration with respect to other non-time operators isn't, which can be confusing. The next listing shows how `delay()` stays true to its definition to shift the entire observable sequence, regardless of where it's placed in the sequence. 
+
+Listing 4.8 Sequential delay operators
+
+```js
+Rx.Observable.from([1, 2])
+    .delay(2000)
+    .concat(Rx.Observable.from([3, 4])) //*1
+    .delay(2000)
+    .concat(Rx.Observable.from([5, 6])) //*1
+    .delay(2000)
+    .subscribe(console.log);
+```
+
+1. Chaining multiple `delay` operators together
+
+Based on your intuition of how non-time operators work, you'd expect the element pairs [1, 2], [3, 4], and [5, 6] to be emitted 2 seconds apart, but this is not the case. Each subsequent delay receives an event after the preceding one expires, thus creating a delay of 2000 + 2000 + 2000 = 6000 ms with respect to the entire observable sequence, printing [1,2,3,4,5,6] after all 6 seconds have elapsed, as shown in figure 4.9.
+
+Figure 4.9 Injecting several `delay` operators has the effect of compounding one `delay` operator equal to the aggregate amount of wait time.
+
+You can relate this to a downstream river with control dams along the way that temporarily delay the flow of water. When the water reaches its destination, however, all of the water would be there at once. So don't make the mistake of thinking that embedding multiple delays into a stream will actually exert its effect at each stage in the pipeline.
+
+Now that you've examined some RxJS time operators, let's put them in action and mix them up with other familiar operators. One of the main areas of concern when you build responsive UIs is dealing with user input. For instance, you'd expect that the application you're building would react accordingly whether the user was pressing a button once or rapidly many times. Consider the DOM events fired by a text box on each key press. Should the application handle every single change, or could you just process the result when the entire word is entered? Let's examine this next.
+
+## 4.4 Handling user input
+
+Both the `interval()` and `timer()` static methods are used to create observables and initiate an action after a timed offset. These, together with `delay()`, are probably the most familiar combinations when scheduling a future action that executes once, at a set interval, or after a set time. These operators are ideal for use with an explicit event for which you know the action to perform, and you want to schedule it to be run at some later time. But what happens when sequences of events are generated from a dynamic event emitter, like a user's mouse move or key presses, which can emit potentially many events in a short time? In this case, you're probably not interested in processing each of them but events in between. 
+
+In this section, we'll look at two of the most useful observable mechanisms: debounce and throttle. They perform similar functions, so first you'll learn to apply debouncing to implement a smart search program, starting with an imperative version before moving into a fully reactive version.
+
+### 4.4.1 Debouncing
+
+In signal and circuit design, it's common to debounce a signal so that a manual input signal doesn't appear like multiple signals. This is a common feature with switches and other types of manual user interactions. The same thing happens when software interacts with humans, for which RxJS offers an operator called `debounceTime()`, which emits an event from an observable sequence only after a particular time span (in milliseconds) has passed without it emitting any other item—essentially sending one and not many within a certain time frame. You can think of this operator as belonging to the filtering category of operators, using time as the predicate to decide which events to keep. In simple software terms, debouncing means "execute a function or some action only if a certain period has passed without it being called." In this case, it means that an event is emitted from an observable sequence if a set time span has passed without emitting another value, and it may be represented with the marble diagram in figure 4.10.
+
+Figure 4.10 This generic debounce operation allows the emission of an item only after a certain time span has elapsed before another event is emitted.
+
+Here's a simple example showcasing the debouncing operator, which emits the most recent click after a rapid succession of clicks: 
+
+```js
+Rx.Observable.fromEvent(document, 'click')
+    .debounceTime(1000)
+    .subscribe(c => {
+        console.log(`Clicked at position ${c.clientX} and ${c.clientY}`)
+    });
+```
+
+With this code, the user can generate a burst of click events, but only the last one will be emitted after a second of inactivity.
+
+---
+
+##### Observable factory vs. instance methods
+
+Static methods and instance methods on some websites are referred to as observable methods and observable instance methods, respectively. The static methods are defined directly on the `Rx.Observable` object and are not part of the object's prototype. These are typically used for initiating the declaration of an observable instance, for example, `Rx.Observable.interval(500)`. The observable instance methods are included in the object's prototype and are used as members of the chained pipeline after you've initiated an observable declaration. We've referred to these simply as operators in previous chapters for brevity, for example, `Rx.Observable.prototype.delay()`, `Rx.Observable.prototype.debounceTime()`, and others.
+
+---
+
+Let's put this operator to the test. Consider the example shown in figure 4.11 of a smart search widget that allows you to easily look up articles from Wikipedia by giving you suggestions as you type. 
+
+Figure 4.11 The user interacts with the search box. As the user types on the keyboard, the list of search results filters down. This is typical of modern search engines.
+
+Running this code generates the following output: if the user types r into the text box, it will suggest two possible results: "rxmarbles.com" and "reactivex.io." Additionally typing e into the box will filter the results further to just "reactivex.io." As the user types their keywords, you recognize that making web requests after each letter typed is a bit wasteful, and you'd be better off if you allow the user to type first and wait for a specific amount of time before making the expensive round-trip request. This has the benefit of restricting the number of web requests made to the server while the user is still typing, which is better resource utilization overall. When interacting with a third-party service, such as the Wikipedia API, it's good to do this so that you don't hit your rate limit. Preferably, the program should back off until the user has stopped typing for a brief period (indicating that they're not sure what to type next) before looking for possible suggestions. This is both to prevent the additional network congestion of initiating requests that will never be seen and to avoid the annoying UX of having the type-ahead flicker as the user types. 
+
+Prior to RxJS, you'd need to implement this yourself, probably using `setTimeout()`. The timeout is reset every time the user types a new key. If the user doesn't type for a short duration, the timeout will expire and the function will execute. We'll need to cover a little more ground in order to start streaming from remote services, so in the meantime, we'll use a small dataset and return to this program in the next chapter:
+
+```js
+var testData = [
+    "github.com/Reactive-Extensions/RxJS",
+    "github.com/ReactiveX/RxJS",
+    "xgrommx.github.io/rx-book",
+    "reactivex.io",
+    "egghead.io/technologies/rx",
+    "rxmarbles.com",
+    "https://www.manning.com/books/rxjs-in-action"
+];
+```
+
+To implement this, we'll need HTML elements for the search box and a container to show results. As the user types into the search box, any results will be inserted into this container:
+
+```js
+const searchBox = document.querySelector('#search'); //-> <input>
+const results = document.querySelector('#results');  //-> <ul>
+```
+
+Here's a possible implementation of a smart search box using a typical imperative or procedural solution without debouncing. The goal of this code sample is to illustrate how you'd typically approach this problem without thinking in terms of FP and streams:
+
+```js
+searchBox.addEventListener('keyup', function (event) { //*1
+    let query = event.target.value;
+    let searchResults = [];
+    if (query && query.length > 0) {
+        clearResults(results);
+        for (let result of testData) { //*2
+            if (result.startsWith(query)) {
+                searchResults.push(result);
+            }
+        }
+    }
+    for (let result of searchResults) { //*3
+        appendResults(result, results);
+    }
+});
+function clearResults(container) { //*4
+    while (container.childElementCount > 0) {
+        container.removeChild(container.firstChild);
+    }
+}
+function appendResults(result, container) { //*5
+    let li = document.createElement('li');
+    let text = document.createTextNode(result);
+    li.appendChild(text);
+    container.appendChild(li);
+}
+```
+
+1. Listens for all keyup events on that search box
+2. Loops through all of your test data URLs and find matches
+3. If no matches are found, clears the list of search results; otherwise, appends the items found
+4. Function used to clear search results container
+5. Function used to append a result onto the container
+
+This code is simple. Building a smart search box involves binding the `keyup` event and using the value in the text box to look up possible search results. If there's a match, the results are appended to the DOM; otherwise, the DOM is cleared. For this, you created two functions, `appendResults()` and `clearResults()`, respectively. This flow is shown in figure 4.12.
+
+Figure 4.12 The stages of this simple program from the moment the event fires to finding a correct search result and writing the data on the page. Notice the use of a couple of conditional statements and loops. This is the mark of true imperative design.
+
+This code has no debouncing logic, so essentially it will issue queries against the test array for every letter the user enters into the search box. By adding debouncing logic to this imperative code example, we end up with the following.
+
+Listing 4.9 Manual debouncing logic for smart search widget
+
+```js
+let timeoutId = null; //*1
+searchBox.addEventListener('keyup', function (event) {
+    clearTimeout(timeoutId);//*2
+    timeoutId = setTimeout(function (query) {//*3
+        console.log('querying...');
+        let searchResults = [];
+        if (query && query.length > 0) {
+            clearResults(results);
+            for (let result of testData) {
+                if (result.startsWith(query)) {
+                    searchResults.push(result);
+                }
+            }
+        }
+        for (let result of searchResults) {
+            appendResults(result, results);
+        }
+    }, 1000, event.target.value);//*4
+});
+```
+
+1. Registers the current timeout
+2. As the user presses the key, clears the current timeout to initiate a new one
+3. Starts a new timeout that will fire after 1 second of no interaction
+4. Debounces for 1 second
+
+Whenever the user types a key, that key press event will trigger the event listener. Inside the event listener, you first clear any existing pending timeouts using `clearTimeout()`. Then you reset the timer. The result of all this is that the task won't execute until the input has "cooled off" or there's a delay between inputs. In this case, the delay in inputs dovetails nicely with the perception of helping the user along if they hesitate when typing. 
+
+Although the number of lines of code added here is minimal, several things make this approach less than desirable. For one, you're forced to create an external `timeoutId` variable that's accessible within the callback's closure and exists outside the scope of the event handler. This introduces more of the dreaded global state pollution, which is a clear sign of side effects. Further, there's no real separation of concerns. The operation itself isn't terribly indicative of what it's intended for, and the timeout value together with all the business logic get buried and entangled with the debouncing logic—adding additional logic is very invasive. 
+
+It would be nice if we could clean up this operation. Let's wear our functional hats and start by creating a method similar to `setTimeout()` that will encapsulate the debouncing mechanism, separate it from the rest of the business logic, and lift the method out of the closure. From that we could expect a function signature, as shown in the next listing.
+
+Listing 4.10 Dedicated `debounce()` method using vanilla JavaScript
+
+```js
+function debounce(fn, time) {
+    let timeoutId;       //*1
+    return function () { //*2
+        const args = [fn, time]
+            .concat([...arguments]); //*3
+        clearTimeout(timeoutId); //*4
+        timeoutId = window.setTimeout.apply(window, args);//*5
+    }
+}
+```
+
+1. Stores `timeoutId` externally so it can be shared
+2. Returns a function that wraps the original callback
+3. Captures the arguments object into an actual array
+4. Resets the timer
+5. Proxies the arguments to the `setTimeout()` method
+
+This new `debounce()` can now wrap the request logic, allowing you to elegantly decouple event-handling logic from debouncing logic. Using this method, you can extend the imperative version of the search code, as follows. 
+
+Listing 4.11 Using custom `debounce()` method
+
+```js
+function sendRequest(query) { //*1
+    console.log('querying...');
+    let searchResults = [];
+    if (query && query.length > 0) {
+        clearResults(results);
+        for (let result of testData) {
+            if (result.startsWith(query)) {
+                searchResults.push(result);
+            }
+        }
+    }
+    for (let result of searchResults) {
+        appendResults(result, results);
+    }
+}
+
+let debouncedRequest = debounce(sendRequest, 1000);//*2
+
+searchBox.addEventListener('keyup', function (event) {
+    debouncedRequest(event.target.value);
+}); //*3
+
+```
+
+1. Helper method to send HTTP 
+2. Wraps this helper method with `debounce()`
+3. Invokes the debounced version of the function after handling user input
+
+As you can see, just like in previous chapters, you're able to remove much of the ugly and bug-prone extrinsic state by compartmentalizing behavior into small functions. But doing this introduces another problem, which is that the result of the task completion is no longer readily available. You now need to push all of the event-handling logic into `sendRequest()` because there's no way to forward the result outside the closure. All this serves to show that implementing your own debounce logic can be quite daunting and imposes many limitations on your design. 
+
+Fortunately, with RxJS this becomes extremely simple, and the fact that you push all of the DOM interaction into the observer means your business logic is greatly simplified from the complex flow chart shown earlier to the abstract model shown in figure 4.13, where data always moves forward from producer to consumer in its typical unidirectional manner.
+
+Figure 4.13 RxJS uses the pipeline to process data from the producers in a way that's consumable and acceptable to the consumers to display and do more work on. Reactive state machines are modeled using marble diagrams; more on this later in this section.
+
+Thinking reactively, you can see a debounce operation as simply a filter embedded into the processing pipeline that uses time to remove certain events from the observer. Hence, you can use observables to explicitly inject time into your stream as a first-class entity. For this functional version of the program, you'll create a pure, more-streamlined version of `sendRequest()` and use `debounceTime()` to implement all of the debouncing logic for you. Here's the functional-reactive version.
+
+Listing 4.12 A simple debounce-optimized search program
+
+```js
+const notEmpty = input => !!input && input.trim().length > 0;
+const sendRequest = function (arr, query) {//*1
+    return arr.filter(item => {
+        return query.length > 0 && item.startsWith(query);
+    });
+}
+const search$ = Rx.Observable.fromEvent(searchBox, 'keyup')
+    .debounceTime(1000)      //*2
+    .pluck('target', 'value')
+    .filter(notEmpty)        //*3
+    .do(query => console.log(`Querying for ${query}...`))
+    .map(query =>            //*4
+        sendRequest(testData, query))
+    .subscribe(searchResults => {
+        clearResults(results);
+        for (let result of searchResults) {
+            appendResults(result, results);
+        }
+    });
+```
+
+1. Refactors `sendRequest()` to be more functional and returns the list of matched search results
+2. Injects a debounce offset of 1 second, after capturing the user's input. This will allow the user to type any characters in the time span of a second, before requests are sent over.
+3. Helper function to check whether a string is empty
+4. Maps the search results into the source observable. For now, you're creating a test dataset. In chapter 5, you'll learn how to add AJAX calls into your streams.
+
+The advantage of this approach should be readily apparent. Note that, just like other operators, `debounceTime()` simply slots into the stream. RxJS's time abstraction allows time to be introduced transparently and, in conjunction with all of your other operators, seamlessly. Figure 4.14 shows how debouncing affects the user input passed through the stream.
+
+Figure 4.14 Debouncing the event stream allows the user to rapidly input a set of characters so that they can be processed all at once, instead of querying for data at every key press.
+
+As we mentioned, this kind of behavior is quite common and testifies to RxJS's extensible design. In scenarios where the operation that needs to be performed is expensive or the resources available to the application are limited, such as those on a mobile platform, limiting the amount of extraneous computation is an important task, and debouncing is a way to achieve that. This is a more efficient way of handling user input, and the Wikipedia servers agree with us. Another way to achieve this is with the operator `throttle`, a sister to `debounce`. 
+
+### 4.4.2 Throttling
+
+The `debounceTime()` operator has a close sister called `throttleTime()`. Throttling ignores values from an observable sequence that are followed by another value before a certain time. In simple terms, this means "execute a function at most once every period," as shown in the marble diagram in figure 4.15.
+
+Figure 4.15 Throttling events so that at most one will be emitted in a specified period of time, in this case the first event in the time span window
+
+Let's say you're executing an expensive computation in response to a user scrolling or moving the mouse. It's probably best to wait for the user to finish scrolling instead of executing this function thousands of times. This can also work well with banking sites for controlling important action buttons like withdrawing from an account or with popular shopping sites like Amazon to add extra logic around the "one-click buy" buttons. The next listing shows how to throttle mouse moves.
+
+Listing 4.13 Controlling button action with `throttle`
+
+```js
+Rx.Observable.fromEvent(document, 'mousemove')
+    .throttleTime(2000)   //*1
+    .subscribe(event => {
+        console.log(`Mouse at: ${event.screenX} and ${event.screenY}`);
+    });
+```
+
+1. Plugging a two-second throttle to prevent click bursts
+
+With throttling in place, even if the user moves the mouse rapidly, it will fire only once in a two-second period, instead of emitting hundreds of events in between. You really care only where the mouse cursor lands. The effect of throttle in this program can be seen in figure 4.16.
+
+Figure 4.16 Throttling button clicks allows the application to ignore accidental repeated clicking, thereby preventing the withdraw action from executing multiple times.
+
+Up until now, this chapter has been all about understanding the basics of time in RxJS. We explored several of the operators to demonstrate the power of RxJS to simplify the concepts of time and make coding with it much easier. We demonstrated that RxJS operators allow you to intuitively use time as part of an observable.
+
+Time-based operators like `delay()` and others contain buffering or caching logic under the hood to temporarily defer emitting events without any loss of data; this is how RxJS is able to control or manipulate the time within the events of an observable sequence. This can be a powerful feature to use in your own applications as well, so RxJS exposes buffering operators for you to use directly in order to temporarily store data of a certain amount or for a certain period. This is analogous to building control dams along the way to harvest the streams, not only for a specific period but also of a certain size, so that you can make decisions and potentially transform the stream before it flows through. In the next section, we'll kick it up a notch. The plan is to use buffering as a means to temporarily cache data, together with timed operators to debounce or throttle user input.
+
+## 4.5 Buffering in RxJS
+
+We've mentioned many times that streams are stateless and don't store any data. In chapter 2, we showed how you can create a small repository of data within a custom iterator, called `BufferIterator`, which you used to format and change the nature of the elements being iterated over.
+
+RxJS recognizes that it's useful to temporarily cache some events like mouse moves, clicks, and key presses, instead of processing a deluge of events all at once, and apply some business logic to them before broadcasting them out to subscribers. Depending on the nature of this cached data, you might allow the events to flow through as is or perhaps create a whole new event that subscribers see. The buffering operators provide underlying data structures that transiently store past data so that you can work with it in batches instead of as a whole, as shown in figure 4.17.
+
+Figure 4.17 Buffers plugged into an RxJS pipeline. A buffer of size 3, as in this case, can store up to three events at a time and then emit them all at once as an array of observables.
+
+One important thing to understand is what happens to the data emitted because of buffering. Instead of a single observable output, as you'd normally expect and as you've seen all along, subscribers receive an array of observables. Buffering is useful for tasks where the overhead of processing items is large, and therefore it's better to deal with multiple items at once. A good example of this is when reacting to a user moving the mouse or scrolling a web page. Because mouse movement emits hundreds of events at once, you might want to buffer a certain amount and then emit an observable in response to where the mouse or the page is. 
+
+Table 4.1 provides a list of the observable instance methods that we'll explore in this chapter.
+
+Table 4.1 API documentation for buffer operators
+
+| Name                 | Description                              |
+| -------------------- | ---------------------------------------- |
+| buffer(observable)   | Buffers the incoming observable values until the provided observable emits a value, at which point it emits the buffer on the returned observable and starts a new buffer internally, waiting for the next time an observable emits. |
+| bufferCount(number)  | Buffers a number of values from the source observable and then emits the buffer whole and clears it. At this point, a new buffer is internally initialized. |
+| bufferWhen(selector) | Opens a buffer immediately and then closes the buffer when the observable returned by calling selector emits a value. At that time, it immediately opens a new buffer and repeats the process. |
+| bufferTime(time)     | Buffers events from the source for a specific period. After the time has passed, the data is emitted and a new buffer is initialized internally. |
+
+Generally speaking, this ability to capture a temporary set of data gives you a window of time that you can use to examine and make decisions about the nature or frequency of the data coming in. The buffer operators achieve this by grouping the data of an observable sequence into a collection (an array), and they also provide a second parameter called a selector function, which you can use to transform or format the data beforehand. 
+
+We'll start with the `buffer()` operator. `buffer()` gathers events emitted by source observables into a buffer until a passed-in observable, called the *closing* observable, emits an event. At this point, `buffer()` flushes out the buffered data and starts a new buffer internally. To show this, we'll use `timer(0, 50)`. A period argument of 50 causes the timer to emit subsequent values every 50 ms. We'll buffer the events with a closing timer observable of 500 ms; hence, you should expect 500 / 50 = 10 events to be emitted at once. Figure 4.18 is a marble diagram showing this process.
+
+Figure 4.18 A timer with a 50ms period emits values every 50ms.
+
+You can implement this with the following code:
+
+```js
+Rx.Observable.timer(0, 50)
+    .buffer(Rx.Observable.timer(500))//*1
+    .subscribe(
+        function (val) {
+            console.log(`Data in buffer: [${val}]`);//*2
+        });
+//-> "Data in buffer: [0,1,2,3,4,5,6,7,8,9]"
+```
+
+1. buffer uses a closing observable, which is the criteria for when to stop buffering data, in this case after 500ms of caching events.
+2. buffer returns an array of observable sequences.
+
+The fact that buffers emit an array of observables is analogous to the iterator example we discussed in chapter 2 because the client of the iterator (the `for…of` loop) would receive arrays of data as each element. In that example, creating a `BufferIterator(3)` would yield arrays of triplets at each iteration (or at each call to `next()`). The best way to illustrate this is by using the `bufferCount()` operator.
+
+`bufferCount()` retains a certain amount of data at a time, which you define by passing a size. Once this number is reached, the data is emitted and a new buffer started. You'll use a buffer count to display a warning message for numerical inputs that involve large quantities (say, five digits or more). You'll listen for changes on the amount field so that you can display a warning next to it when the amount value is five digits long: 
+
+```js
+const amountTextBox = document.querySelector('#amount');
+const warningMessage = document.querySelector('#amount-warning');
+
+Rx.Observable.fromEvent(amountTextBox, 'keyup')//*1
+    .bufferCount(5)//*2
+    .map(events => events[0].target.value)//*3
+    .map(val => parseInt(val, 10))//*4
+    .filter(val => !Number.isNaN(val))//*5
+    .subscribe(amount => {
+        warningMessage.setAttribute('style', 'display: inline;');//*6
+    });
+```
+
+1. Listens for key events on the amount text box
+2. Buffers a total of five events at a time
+3. Extracts the value of the input box. Because buffer returns an array of events, it's sufficient to use the first event's target DOM element that received the key input.
+4. Ensures the amount entered is numeric
+5. Filters out any empty numbers
+6. Displays a warning to alert the user they've entered a large quantity
+
+As you can see, a buffer is in some ways similar to a delay. But nothing relates buffers and time more than the `bufferWhen()` and `bufferTime()` operators. We'll begin with `bufferWhen()`. This operator is useful for caching events until another observable emits a value. This operator differs slightly from `buffer()` in that it takes a selector function that creates an observable to signal when the buffer should emit. It doesn't just buffer at the pace of a subordinate observable; it calls this factory function to create the observable that dictates when it should emit, reset, and create a new buffer. For example, suppose you're implementing form fields that can keep track of previously entered values, so that you could revert to a value you had entered before changing it. First, let's look at the marble diagram for this entire interaction in figure 4.19.
+
+Figure 4.19 A stream listening for key presses, debounced in order to capture the event at a little over half a second. Any word entered is passed through a simple validation check. The data fills the buffer and is flushed only when requesting the history. This observable closes off the buffer and prints the history.
+
+The goal of this program is that as values are entered into a form field, you keep them in a buffer so that you can always go back to any of them if you wish to do so. As you can see from listing 4.14, in this book we occasionally sprinkle a functional library called ==Ramda.js== to replace utility functions like input validation, array manipulation, and others you'd otherwise have to write yourself (for details about installing Ramda, please visit appendix A). We also do it to show you how well RxJS interacts with functional libraries you may use (in chapter 10, "RxJS in the wild," expect to see a lot of this interaction). 
+
+Ramda loads its arsenal of functions under a single namespace, `R.` One special function you'll come to learn and love is `R.compose()` for functional composition. Used with RxJS, which is great at managing state, it's the perfect combination of functional and reactive programming. Here's the code to implement this business logic.
+
+Listing 4.14 Creating form field history with `bufferWhen()`
+
+```js
+const field = document.querySelector('.form-field');
+const showHistoryButton = document.querySelector('#show-history');
+const historyPanel = document.querySelector('#history');
+
+const showHistory$ = Rx.Observable.fromEvent(showHistoryButton, 'click');
+Rx.Observable.fromEvent(field, 'keyup')
+    .debounceTime(200)
+    .pluck('target', 'value')
+    .filter(R.compose(R.not, R.isEmpty))//*1
+    .bufferWhen(() => showHistory$)//*2
+    .do(history => history.pop())
+    .subscribe(history => {
+        let contents = '';
+        if (history.length > 0) {//*3
+            for (let item of history) {
+                contents += '<li>' + item + '</li>';
+            }
+            historyPanel.innerHTML = contents;
+        }
+    });
+```
+
+1. Validates the input field by composing Ramda functions to check for non-empty
+2. Signals that the stream should clear the buffer when the history button observable emits a value
+3. Prints the history next to the button
+
+Pay attention to how the composition of `R.isEmpty()` and `R.not()` creates the behavior for "non-empty." Always remember that FP is powerful when you can create and combine functions with minimal logic that together solve complex tasks. We'll use Ramda again in the next code listing so that you can see how it benefits the readability of your code. 
+
+Finally, we'll take a look at `bufferTime()`. This operator holds onto data from an observable sequence for a specific period of time and then emits it as an observable array. You can think of this as equivalent to a `bufferWhen()` operator combined with an `Rx.Observable.timer()`. You'll see this in action in listing 4.15. You're going to run a buffer with a timer in the background to monitor a form with a text box and a button just like in the previous example. In this example, however, you'll use a rolling buffer to look for a specific key sequence, that is, a passcode. As with many of the operators, we suggest that you review the documentation for `bufferTime()` to understand all its possible uses.
+
+Another twist added to this code in preparation for the next chapters is the use of the `combineLatest()` operator to combine the outputs from two independent streams. Take a look (make sure to click the Submit button *at least once* to see the result).
+
+Listing 4.15 Buffering events for a specific period of time
+
+```js
+const password = document.getElementById('password-field');
+const submit = document.getElementById('submit');
+const outputField = document.getElementById('output');
+
+const password$ = Rx.Observable.fromEvent(password, 'keyup')
+    .map(({ keyCode }) => keyCode - 48)//*1
+    .filter(value => 0 <= value && value <= 9);
+const submit$ = Rx.Observable.fromEvent(submit, 'click');//*2
+Rx.Observable.combineLatest(//*3
+    password$
+        .bufferTime(7000)//*4
+        .filter(R.compose(R.not, R.isEmpty)),//*5
+    submit$
+)
+    .take(10)//*6
+    .subscribe(
+        ([maybePassword]) => {//*7
+            if (maybePassword.join('') === '1337') {//*8
+                outputField.innerHTML = 'Correct Password!';
+            } else {
+                outputField.innerHTML = 'Wrong Password!';
+            }
+        },
+        err => { },
+        () => outputField.innerHTML = 'No more tries accepted!'//*9
+    );
+
+```
+
+1. Determines the numeric key that was pressed
+2. Submits the password
+3. Combines the events emitted from both the text field and button simultaneously (you'll learn about this operator later in chapter 6)
+4. Buffers input for 7 seconds and then flush it
+5. Composes a series of Ramda functions to remove empty buffers from the output stream
+6. Accepts only three password tries until locking the system
+7. ES6 destructuring, because you care only about the password field
+8. Determines if the password was correct
+9. Outputs when the stream has stopped accepting entries
+
+When combining buffers and time, you need to understand how your application gets used. Buffers use temporary data structures to cache events that occur in their window of operation. Ten seconds can be a very long time if you're caching hundreds of events per second, like mouse moves or scrolls. So exert caution by not overflowing the amount of memory you have, or your UI will become unresponsive. In the process of illustrating RxJS concepts, we introduced a new operator called `combineLatest()`, which is used to join multiple streams into one. At this point, you've seen the most frequently used operators that act on a single stream. In chapters 5 and 6, we'll begin to dive deeply into RxJS by taking on more real-world problems, and we'll explain more-advanced operators so that you can begin to work with multiple simultaneous streams.
+
+## 4.6 Summary
+
+* RxJS allows you greater control in manipulating and tracking the flow of time in an application.
+* Operators can interact with time to change the output of an observable.
+* Time can be implicit, or it can be explicitly declared when more fine-grained control is needed.
+* Implicit time manifests in the latency waiting for asynchronous HTTP calls to respond. You have no control over how long these functions take.
+* Explicit time is controlled by you and takes advantage of JavaScript's timers.
+* Delaying shifts the observable sequence by a due time (in milliseconds).
+* Debouncing emits an event from an observable sequence only after a particular time span (in milliseconds) has passed without it omitting any other item.
+* Throttling enforces a maximum number of times a function can be called over time.
+* Buffering operations use many of the same semantics as the timing operations.
+* RxJS features size-based as well as time-based buffers.
+
+

@@ -1,0 +1,789 @@
+# Reacting with RxJS
+
+This chapter covers
+
+* Looking at streams as the main unit of work
+* Understanding functional programming’s influence on RxJS
+* Identifying different types of data sources and how to handle them
+* Modeling data sources as RxJS observables
+* Consuming observables with observers
+
+When writing code in an object-oriented way, we're taught to decompose problems into components, interactions, and states. This breakdown occurs iteratively and on many levels, with each part further subdivided into more components, until at last we arrive at a set of cohesive classes that implement a well-defined set of interactions. Hence, in the object-oriented (OO) approach, classes are the main unit of work. Every time a component is created, it will have state associated with it, and the manipulation of that state in a structured fashion is what advances application logic. For example, consider a typical online banking website. Banking systems contain modules that encapsulate not only the business logic associated with withdrawing, depositing, and transferring money but also domain models that store and manage other properties, such as account and user profiles. Manipulating this state (its behavior) causes the data to transform into the desired output. In other words, behavior is driven by the continuous mutation of a system's state. If such a system is designed using object-oriented programming, the units of work are the classes responsible for modeling accounts, users, money, and others.
+
+RxJS programming works a bit differently. In reactive programming in general, the fundamental unit of work is the stream. 
+
+In this chapter, we ask you to think in terms of streams (think reactively) and design code that, instead of holding onto data, allows data to flow through and applies transformations along the way until it reaches your desired state. You'll learn how to handle different types of data sources, whether static or dynamic, as RxJS streams that use a consistent computational model based on the Observable data type. Unlike using other JavaScript libraries, however, using RxJS in your application means much more than implementing new APIs; it means that you must approach your problems not as the sum of the set of states manipulated by methods in classes but as a sequence of data that continuously travels from the producers to the consumers through a set of operators that implement your desired behavior. 
+
+This way of thinking places the notion of time at the forefront; this notion runs as the undercurrent through the components of an RxJS stream and causes data to be never stored but rather transiently flowing. Relating this to a real-world physical water stream, you can think of the data source as the top of the stream and the data consumer as the bottom of the stream. Hence, data is always traveling downstream, in a single direction, like water in a river, and along the way you can have control dams in charge of transforming the nature of this stream. Thinking this way will help you understand how data should move through an application. 
+
+This is not to say that this understanding will come easily—like any new skill, it must be built up over time and through iterative application of the concepts. As you saw in the pseudo streams example in chapter 1, the notion of data in motion versus data kept in variables is a difficult one for most people to wrap their head around. In this book, we'll provide you with the necessary tools to ease this learning curve. To begin building your toolkit, this chapter lays the groundwork to help you better understand streams. Many of the basic principles behind RP derive from functional programming, so let's start there. 
+
+## 2.1 Functional programming as the pillar of reactive programming
+
+The abstractions that support RP are built on top of FP, so FP is the foundation for RP. Much of the hype around RP derives from the development communities and the industry realizing that FP offers a compelling way to design your code. This is why it's important for you to have at least a basic understanding of the FP principles. If you have a solid background in functional programming, you're free to skip this section, but we recommend you read along because it will help you better understand some of the design decisions behind RxJS. 
+
+Just like in chapter 1, we ask you to take another quick glance at the main website for the Reactive Extensions project (http://reactivex.io). In it, you'll find the following definition:
+
+> ReactiveX is a combination of the best ideas from the Observer pattern, the Iterator pattern, and functional programming.
+
+You learned about the main components of the observer pattern in chapter 1 (producer and consumer); now you'll learn the about the other parts that gave rise to the Rx project, which are functional programming and iterators. Here's a diagram (figure 2.1) that better illustrates the relationship between these paradigms. 
+
+Let's begin by exploring the basics of FP. 
+
+Figure 2.1 The RP paradigm builds and extends from FP. Also, it leverages commonly known design patterns such as iterator and observer.
+
+### 2.1.1 Functional programming 
+
+Functional programming is a software paradigm that emphasizes the use of functions to create programs that are declarative, immutable, and side effect-free. Did you trip over the word *immutable*? We agree with you; the notion of a program that doesn't ever change state is a bit mind bending. After all, that's why we put data in variables and modify them to our heart's content. All of the object-oriented or procedural application code you've written so far relies on changing and passing variables back and forth to solve problems. So how can you accomplish the same goals without doing this? Take the example of a clock. When a clock goes from 1:00 p.m. to 2:00 p.m., it's undoubtedly changing, isn't it? But to frame this from a functional point of view, we argue that instead of a single clock instance mutating every second, it's best to return new clock instances every second. Theoretically, both would arrive at the same time, and both would give you a single state at the end. 
+
+RxJS borrows numerous principles from FP, particularly *function chaining*, *lazy evaluation*, and the notion of using an abstract data type to orchestrate data flows. These are some of the design decisions that drive the development of RxJS's stream programming via the `Observable` data type. Before we dive in, we'll explain the main parts of the FP definition we just gave and then show you a quick example involving arrays. 
+
+To reiterate, functional programs have the following characteristics:
+
+* *Declarative*—Functional code has a peculiar style, which takes advantage of JavaScript's higher-order functions to apply specialized business logic. As you'll see later on, function chains (also known as *pipelines*) describe data transformation steps in an idiomatic manner. Most people see SQL syntax as a perfect example of declarative code.
+* *Immutable*—An immutable program (and by this we mean any immutable function, module, or whole program) is one that never changes or modifies data after it's been created or after its variables have been declared. This can be a radical concept to grasp, especially when you're coming from an OO background. Functional programs treat data as immutable, constant values. A good example of a familiar module is the `String` type, because none of the operations change the string on which they operate; rather, they all return new strings. A good practice that you'll see us use throughout the book is to qualify all of our variables with const to create nicely block-scoped immutable variables that can't be reassigned. This doesn't solve all the problems of immutability, but it gives you a little extra support when your data and functions are shared globally.
+* *Side effect-free*—Functions with side effects depend on data residing outside its own local scope. A function's scope is made up of its arguments and any local variables declared within. Interacting with anything outside this (like reading a file, writing to the console, rendering elements on an HTML page, and more) is considered a side effect and should be avoided or, at the very least, isolated. In this book, you'll learn how RxJS deals with these issues by pushing the effectful computations into the subscribers.
+
+In general, mutations and side effects make functions unreliable and unpredictable. That is to say, if a function alters the contents of an object inadvertently, it will compromise other functions that expect this object to keep its original state. The OO solution to this is to encapsulate state and protect it from direct access from other components of the system. In contrast, FP deals with state by eliminating it, so that your functions can confidently rely on it to run. 
+
+For instance, figure 2.2 illustrates the dependency between the two functions `doWork()` and `doMoreWork()` through a shared state variable called data. 
+
+This coupling presents an issue because `doMoreWork` now relies on `doWork` to run first. Two issues may occur: 
+
+* The result of `doMoreWork()` depends entirely on the successful outcome of `doWork()` and on no other parts of the system changing this variable. 
+* Unit tests against this function can't be done in isolation as they should be, so your test results are susceptible to the order in which the test cases are run (in chapter 9, we'll explore testing in much more detail).
+
+Figure 2.2 Function `doWork()` is temporarily coupled to `doMoreWork()` because of the dependency on shared state (side effect). Hence, doWork() must be called before `doMoreWork()` or the program will cease to work.
+
+Shared variables, especially in the global scope, add to the cognitive load of reasoning about your code because these variables demand that you keep track of them as you trace through it. Another way you can think of global data is as a hidden parameter within all your functions. So the more global the state you have to maintain, the harder it is for you to maintain your code. The example in figure 2.2 is an obvious side effect, but they're not always this clear. Consider this trivial function that returns the lowest value in a numerical array:
+
+```javascript
+const lowest = arr => arr.sort().shift();
+```
+
+Although this code may seem harmless to you, it packs a terrible side effect. Can you spot it? This function actually changes the contents of the input array, as shown in the following snippet. So if you used the first element of the array somewhere else, that's completely gone now:
+
+```javascript
+let source = [3,1,9,8,3,7,4,6,5];
+let result = lowest(source); //-> 1
+console.log(source); //-> [3, 3, 4, 5, 6, 7, 8, 9] *1*
+```
+
+1. The original array changed!
+
+Later on, we'll talk about a functional library that provides a rich set of functions for working with arrays immutably, so that things like this don't inadvertently creep up on you. 
+
+Matters get worse if you have concurrent asynchronous processes where data structures are shared and used in different components. Because latency is unpredictable, you'd need to either nest your function calls or use some other robust synchronization mechanism to ensure they execute and mutate this state in the right order; otherwise, you'll experience random and hard-to-troubleshoot bugs.
+
+Fortunately, JavaScript is single threaded, so you don't need to worry about shared state running through different threads. But as JavaScript developers, we deal quite often with concurrent code when either working with web workers or making simultaneous HTTP calls. Consider the trivial yet frequent use case illustrated in figure 2.3, which involves asynchronous code mixed with synchronous code. This presents a tremendous challenge because the latter assumes that the functions executing before it have completed successfully, which might not necessarily be the case if there's some latency.
+
+Figure 2.3 Function doAsyncWork() is an example of a remote call that fetches data from the server. Suppose this call has a latency around one second, depending on network conditions. Immediately after, the next function runs doMoreWork(), expecting that a piece of shared data has already been initialized. Because of this latency, the shared data has not been initialized, and the execution of doMoreWork() is compromised.
+
+In this scenario, `doAsyncWork()` fetches some data from the server, which never completes in a constant amount of time. So `doMoreWork()` fails to run properly because it reads data that hasn't yet been initialized. Callbacks and `Promise`s help you solve this problem, so that you don't have to hardcode your own timeouts in order to anticipate latency. Dealing directly with time is a recipe for disaster because your code will be extremely brittle and hard to maintain and will cause to you to come in to work during a weekend when your application is experiencing slightly more traffic than usual. Working with data immutably, using FP, and the help of an asynchronous library like RxJS can make these timing issues disappear—immutable variables are protected against time. In chapters 4 and 6, we'll cover timing and synchronization with observables, which offer a much superior solution to this problem.
+
+Even though JavaScript isn't a pure functional language, with a bit of discipline and the help of the proper libraries you can use it completely functionally. As you learn to use RxJS, we ask that you also begin to embrace a functional coding style; it's something we believe strongly about and promote in all code samples in this book.
+
+Aside from using `const` to safeguard the variable's reference, JavaScript also has support for a versatile array data structure with methods such as `map`, `reduce`, `filter`, and others. These are known as higher-order or first-class functions, and they're one of the most important functional qualities in the language, allowing you to express JavaScript programs in an idiomatic way. A higher-order function is defined as one that can accept as argument as well as return other functions; they're used extensively with RxJS, as with any functional data type.
+
+The following listing shows a simple program that takes an array of numbers, extracts the even numbers, computes their squares, and sums their total.
+
+Listing 2.1 Processing collections with map, reduce, and filter
+
+```javascript
+const isEven = num => num % 2 === 0
+const square = num => num * num
+const add = (a, b) => a + b
+const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+arr.filter(isEven).map(square).reduce(add)  //-> 220
+```
+
+In this example, because these operations are side effect-free, this program will always produce the same value (220), given the same input array.
+
+##### Where can I find this code? 
+
+All the code for this book can be found in the RxJS in Action GitHub repository at https://github.com/RxJSInAction. There, you'll find two subrepositories. Under rxjsin-action, you'll find a simple application that contains the code for all individual chapter listings for chapters 1 through 9. All samples are presented as runnable snippets of RxJS code that you can interact with. Also, under the banking-in-action repository, you'll find our web application that showcases RxJS embedded into a React/Redux architecture. Some of the APIs that we interact with in the book don't allow cross-origin resource sharing (CORS). The simplest way to get around this is to disable it at the browser level by installing an extension or add-on.
+
+If you imagine for a second having to write this program using a non-functional or imperative approach, you'll probably need to write a loop, a conditional statement, and a few variables to keep track of things. FP, on the other hand, raises the level of abstraction and encourages a style of declarative coding that clearly states the purpose of a program, describing *what* it does and not *how* it does it. Nowhere in this short program is the presence of a loop, `if/else`, or any imperative control flow mechanism.
+
+One of the main themes in FP that you'll use as well in RP is *programming without loops*. In listing 2.1, you took advantage of `map`, `reduce`, and `filter` to hide manual looping constructs—allowing you to implement looping logic through functions' arguments. Moreover, these functions are also immutable, which means that new arrays are created at each step of the way, keeping the original intact. 
+
+Going back to our discussion, side effect-free functions are also known as *pure*, because they're predictable when you're working on collections of objects or streams. You should always strive for purity whenever possible because it makes your programs easy to test and reason about. 
+
+##### Want to learn more about functional programming? 
+
+JavaScript's Array object has a special place in functional programming because it behaves as an extremely powerful data type called a *functor*. In a simple sense, functors are containers that can wrap data and expose a mapping method that allows you to immutably apply transformations on this data, as shown by the `Array.map()` method. As you'll see learn later on, RxJS streams follow this same functor-like design. 
+
+Functional programming is a huge subject to cover. In this book, we'll cover only enough of FP to help you to understand and be proficient with RxJS and RP. If you'd like more information about FP and FP topics, you can read about them in detail in Functional Programming in JavaScript (Manning, 2016) by Luis Atencio.
+
+The code shown in listing 2.1, which works well with arrays, also translates to streams. Along the lines of the pseudo Stream data type that we discussed in chapter 1, look at how similarly arrays and streams work when processing some number sequence:
+
+```javascript
+Stream([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  .filter(isEven)
+  .map(square)
+  .reduce(add)
+  .subscribe(console.log);  //-> 220
+```
+
+You can clearly see how Rx was inspired by FP. All we had to do was wrap the array into a stream and then subscribe to it to listen for the computed values that derive from the sequence of steps declared in the stream's pipeline. This is the same as saying that streams are containers that you can use to lift data (events) into their context, so that you can apply sequences of operations on this data until reaching your desired outcome. Fortunately, you're already familiar with this concept from working with arrays for many years. You can lift a value into an array and map any functions to it. Suppose you declare some simple functions on strings like `toUpper`, `slice`, and `repeat`:
+
+```javascript
+['rxjs'].map(toUpper).map(slice(0, 2)).map(repeat(2)); //-> 'RXRX'
+```
+
+The ancient Greek philosopher Heraclitus once said, "You can never step into the same river twice." He formulated this statement as part of his doctrine on *change* and *motion* being central components of the universe—everything is constantly in motion. This epic realization is what RxJS streams are all about: as data continuously flows and moves through the stream, orchestrated through this is the data type you're learning about called `Stream`. Despite being dynamic, `Stream`s are immutable data types. Once a `Stream` is declared to wrap an array, listen for mouse clicks, or respond to an HTTP call, you can't mutate it or add a new value to it afterward—you must do it at the time of declaration. Hence, you're *specifying the dynamic behavior of an object or value declaratively and immutably*. We'll revisit this topic a bit more in the next chapter.
+
+Moreover, the business logic of this program is pure and takes advantage of side effect-free functions that are mapped onto the stream to transform the produced data into the desired outcome. The advantage of this is that all side effects are isolated and pushed onto the consumers (logging to the console, in this case). This separation of concerns is ideal and keeps your business logic clean and pure. Figure 2.4 shows the role that the producers and consumers play.
+
+Figure 2.4 Events emitted by producers are pushed through a pipeline of side effect-free functions, which implement the business logic of your program. This data flows to all observers in charge of consuming and displaying it.
+
+Another design principle of streams that's borrowed from FP is lazy evaluation. *Lazy evaluation* means that code is never called until actually needed. In other words, functions won't evaluate until their results are used as part of some other expression. In the following example, the idea is that a stream sits idle until a subscriber (a consumer) is attached to it; only then will it emit the values 1-10:
+
+```javascript
+Stream([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  .filter(isEven)
+  .map(square)
+  .reduce(add);//*1
+```
+
+1. Nothing runs here because no subscriber is added.
+
+When a subscriber begins listening, the stream will emit events downstream through the pipeline in a single, unidirectional flow from the producer to the consumer. This is beneficial if your functions have side effects because the pipeline runs in a single direction, helping to ensure an orderly execution of your function calls. This is another reason to avoid side effects at all costs, especially when you begin combining multiple streams, because things can revert into the tangled mess that you're trying to get rid of in the first place. Lazy evaluation is a mandatory requirement for streams because they emit data infinitely to handle mouse movements, key presses, and other asynchronous messages. Otherwise, storing the entire sequence of mouse movements in memory could make your programs crash. 
+
+##### Reactive Manifesto 
+
+One of the key principles of a reactive system is the ability to stay afloat under varying workloads—known as *elasticity*. Obviously, this has many architectural and infrastructural implications that extend beyond the scope of this book, but a corollary to this is that the paradigm you use shouldn't change whether you're dealing with one, one hundred, or thousands of events. RxJS offers a single computing model to handle finite as well as infinite streams. 
+
+The Reactive Manifesto (http://www.reactivemanifesto.org) was published by a working group that aims at identifying patterns for building reactive systems. It has no direct relation to the Rx libraries, but philosophically there are many points in common.
+
+For instance, without lazy evaluation, code that uses infinite streams like this will cause the application to run out of memory and halt: 
+
+```javascript
+//1 
+Stream.range(1, Number.POSITIVE_INFINITY)
+  .take(100)
+  .subscribe(console.log);
+//2
+Stream.fromEvent('mousemove')
+   .map(e => [e.clientX, e.clientY])
+   .subscribe(console.log);
+```
+
+1. Reads infinitely many numbers in memory
+2. Listens to all mouse moves the user is performing
+
+In example 1, lazy evaluation makes the stream smart enough to understand that it will never need to actually run through all the positive numbers infinitely before taking the first 100. And even if the amount of numbers to store is big, streams won't persistently hold onto data; instead, any data emitted is immediately broadcast to all subscribers at the moment it gets generated. In example 2, imagine if you needed to store in memory the coordinates of all mouse movements on the screen; this could potentially take up a huge amount of memory. Instead of holding onto this data, RxJS lets it flow freely and uses the iterator pattern to traverse any type of data source irrespective of how it's created.
+
+### 2.1.2 The iterator pattern
+
+A key design principle behind RxJS streams is to give you a familiar traversal mechanism, just as you have with arrays. Iterators are used to traverse containers of data in a structure-agnostic way or independent of the underlying data structure used to harness these elements, whether it's an array, a tree, a map, or even a stream. In addition, this pattern is effective at *decoupling the business logic applied at each element from the iteration itself*. The goal is to provide a single protocol for accessing each element and moving on to the next, as shown in figure 2.5.
+
+Figure 2.5 Iterators abstract the traversal mechanism, whether a `for` or a `while` loop, so that processing any type of data is done in the exact same way.
+
+We'll explain this pattern briefly now, and later on you'll see how this applies to streams. The JavaScript ES6 (or ES2015) standard defines the iterator protocol, which allows you to define or customize the iteration behavior of any iterable object. The iterable objects you're most familiar with are arrays and strings. ES6 added `Map` and `Set`. With RxJS, we'll treat streams as iterable data types as well.
+
+You can make any object iterable by manipulating its underlying iterator. We'll be using some ES6-specific syntax to show this. Consider an iterator object that traverses an array of numbers and buffers a set amount of contiguous elements. Here, the business logic performed is the buffering itself, which can be useful to group elements together to form numerical sets of any dimension, like the ones illustrated in figure 2.6.
+
+
+
+Figure 2.6 Using an iterator to display sets of numbers of size 2
+
+Now let's see what the code would look like. The next listing shows the internal implementation of this custom iterator, which contains the buffer logic.
+
+Listing 2.2 Custom BufferIterator function
+
+```javascript
+function BufferIterator(arr, bufferSize = 2) { //*1
+    this[Symbol.iterator] = function () { //*2
+        let nextIndex = 0;
+        return {
+            next: () => { //*3
+                if (nextIndex >= arr.length) {
+                    return { done: true };//*4
+                }
+                else {
+                    let buffer = new Array(bufferSize);
+                    for (let i = 0; i < bufferSize; i++) { //*5
+                        buffer[i] = arr[nextIndex++];
+                    }
+                    return { value: buffer, done: false };//*6
+                }
+            }
+        }
+    };
+}
+```
+
+1. Assigns a default buffer size of `2`
+2. Overrides the provided array's iterator mechanism. `Symbol.iterator` represents the array's iterator function.
+3. The `next()` function is part of the Iterator interface and marks the next element in the iteration.
+4. Returns an object with a `done` = true property, which causes the iteration mechanism to stop
+5. Creates a temporary buffer array to group contiguous elements
+6. Returns the buffered items and a status of `done` = false, which indicates to the iteration mechanism to continue
+
+
+Any clients of this API need only interact with the `next()` function, as outlined in the class diagram in figure 2.7. The business logic is hidden from the caller, the `for...of` block, which is the main goal of the iterator pattern.
+
+The `next()` function in listing 2.2 is used to customize the behavior of the iteration through `for...of` or any other looping mechanism. As you'll see later on, RxJS observers also implement a similar interface to signal to the stream to continue emitting elements. 
+
+DID ITERATORS THROW YOU FOR A LOOP? The ES6 iterator/iterable protocols are powerful features of the language. RxJS development predates this protocol, so it doesn't use it at its core, but in many ways the pattern is still applied. We don't use iterators in this book; nevertheless, we recommend you learn about them. You can read more about this protocol here: https://developer.mozilla.org/enUS/docs/Web/JavaScript/Reference/Iteration_protocols#iterator.
+
+Figure 2.7 A class diagram (UML) highlighting the components of the iterator pattern. The `Iterator` interface defines the `next()` function, which is implemented by any concrete iterator (`BufferIterator`). Users of this API need only interact with the interface, which is general and applies to any custom traversal mechanism.
+
+Iterators allow you to easily take advantage of the JavaScript runtime to take care of the iteration on your behalf. Following, we show some examples of this using our simple numerical domain. Buffering is built into RxJS, and it's really useful to gather up a sequence of events and make decisions about the nature of these events or apply additional logic. An example of this is when you need to invoke an expensive operation in response to a sequence of mouse events, like drag and drop. Instead of running expensive code at each mouse position, you buffer a specific number of them and emit a single response, taking all into account. Implementing this yourself would be tricky, because it would involve time management and keeping external state that tracks the frequency and speed with which the user moves the mouse; certainly, you'll want to delegate this to libraries that understand how to manage all this for you. We'll examine buffers in more detail in chapter 4. In RxJS, buffers aren't implemented as in listing 2.2, but it serves to show you an example of how you can buffer data using iterators, which is how you think about these sorts of operations. Here's our `BufferIterator` in action:
+
+```javascript
+const arr = [1, 2, 3, 4, 5, 6];
+for(let i of new BufferIterator(arr, 2)) { //*1
+    console.log(i);
+}
+//-> [1, 2] [3, 4] [5, 6]
+for(let i of new BufferIterator(arr, 3)) { //*2
+    console.log(i);
+}
+//-> [1, 2, 3] [4, 5, 6]
+```
+
+1. Buffers two elements at once
+2. Buffers three elements at once. Notice how the iteration mechanism is completely separate from the buffering logic.
+
+When you subscribe to a stream, you'll be traversing through many other data sources such as mouse clicks and key presses in the exact same way. Theoretically speaking, because our pseudo `Stream` type is an iterable object, you could traverse a set of key press events as well with a conventional loop:
+
+```javascript
+const stream = Stream(R, x, J, S)[Symbol.iterator](); //*1
+for(let keyEvent of stream) { //*2
+    console.log(event.keyCode);
+}
+//-> 82, 120, 74, 83
+```
+
+1. Creating a stream that wraps key presses for those four letters
+2. Traversing a stream is semantically equivalent to subscribing to it (more on this later).
+
+Streams in RxJS also respect the `Iterator` interface, and subscribers of this stream will listen for all the events contained inside it. As you saw previously, iterators are great at decoupling the iteration mechanism and data being iterated over from the business logic. When data defines the control flow of the program, this is known as *data-driven code*. 
+
+## 2.2 Stream's data-driven approach
+
+RxJS encourages a style of development known as data-driven programming. The data-driven approach is a way of writing code such that you can separate the behavior of an application from the data that's passing through it. This is a core design decision of RxJS and the main reason why you can use the same paradigm to process arrays, mouse clicks, or data from AJAX calls.
+
+In the OO approach, you place more emphasis on the supporting structures than the data itself. This explains why pure OO languages like Java have many different implementations to store a sequential collection of elements, each tackling different use cases: `Array`, `ArrayList`, `LinkedList`, `DoublyLinkedList`, `ConcurrentLinkedList`, and others. To put it another way, imagine that you run a local florist that performs deliveries. Your business in this case is importing flowers, cutting them, packaging them, handling orders, and sending those orders out for delivery. These tasks are all part of your business logic; that is, they are the important bits that your customers care about and the parts that bring in revenue. Now imagine that in addition to those tasks, you're also tasked with designing the type of delivery van to use. Creating this structure is itself a full-time job and one that would likely distract from your primary business without meaningfully lending to it.
+
+Data, as in the data that you care about and that which gives rise to search engines, websites, and video games, is the flower component of software design. Creating software should therefore be about how you manipulate data rather than how you create approximations of real-world objects (as you might in OO programming). Bringing data to the forefront and separating it from the behavior of the system is at the heart of data-driven/data-centric design. Similarly, loosely coupling functions from the objects that contain data is a design principle of FP and, by extension, RP.
+
+To be driven by data is to be compelled to act by the presence of it and to let it fuel your logic. Without data to act on, behavior should do nothing. The idea of data giving life to behavior ties back to our earlier definition of what it means to be reactive—reacting to data instead of waiting for it. Streams are nothing more than a passive process that sits idle when nothing is pushed through them and no consumer is attached, as shown in figure 2.8.
+
+Figure 2.8 Initially, streams are lazy programs that wait for a subscriber to become available. Any events received at this point are discarded. Subscribing to the stream puts the wheels in motion, and event data flows through the pipeline and out for consumers to use.
+
+This design pattern seems intuitive to most people because we think of data as requiring some sort of behavior in order to be meaningful. In a physics simulation, the mass of a ball is just a decimal number without context until the behavior of gravity is applied to it. Thus, if we are to imagine that both are intertwined by nature, it seems only natural that they should cohabitate logically within an object. In theory, this would seem to be a fairly obvious approach, and indeed the prevalence and popularity of OO programming stands testament to its power as a programming paradigm. 
+
+But it turns out that the greatest strength of OO design is also perhaps its greatest weakness. The intuition of representing components as objects with intrinsic behavior makes sense to a certain extent, but much like the real world, it can become difficult to reason about as the complexity of the application grows. For instance, if you hadn't used the BufferIterator type before, you would've had to implement the buffering logic with the application logic that uses this data. To keep things simple, you just logged the numbers to the screen, but in real life you'll use iterators for something more meaningful.
+
+The data-centric approach seeks to remedy this issue by separating the concerns of data and behavior, through its producer/consumer model. Data would be lifted out of the behavior logic and instead would pass through it. Behavior could be loosely linked such that the data moved from one part of the application to another, independent of the underlying implementation. Earlier you saw how iterators help with this:
+
+```javascript
+Stream([1, 2, 3, 4, 5, 6]) 
+   .buffer(2)
+   .subscribe(console.log)); //-> [1, 2] [3, 4] [5, 6]
+```
+
+Each step in the pipeline resides within its own scope that's externalized from the rest of the logic. In this case, you can see that just like iterators, the buffering step is done separately from the code acting on the data. By constructing it so, you've both declared the intent of each step and effectively decoupled the data from the underlying implementation, because each component reacts only to the step that preceded it. 
+
+Furthermore, producers come in all shapes and sizes. Event emitters are one of the most common ones; they're used to respond to events like mouse clicks or web requests. Also, there are timer-based sources like setTimeout and setInterval that will execute a task at a specified point in the future. There are subtler ones such as arrays and strings, which you might recognize as collections of data but not necessarily producers of data. 
+
+Traditionally, when dealing with each of these data sources, you've been conditioned to think of them as requiring a different approach. For instance, event emitters require named event handlers, `Promise`s require the continuation-passing "thenable" function, `setTimeout` needs a callback, and arrays need a loop in order to iterate through them. What if we told you that all of these data sources can be consolidated and processed in the exact same way? 
+
+## 2.3 Wrapping data sources with Rx.Observable
+
+All along, we've been using a pseudo data type called Stream as a substitute for the real Rx.Observable type available in RxJS 5. We did this to help you understand the paradigm and what it means to think in streams, rather than focus on the specifics of the library. In this section, we'll begin diving into the RxJS 5 APIs (for information about installing RxJS 5 on the client or on the server, please visit appendix A). Through the Rx.Observable type, you can subscribe to events produced from different types of data sources. 
+
+> ES7 SPECIFICATION One of the key design decisions behind the development of RxJS 5 was to create an Observable type that follows the proposed observable specification slated for the next version of JavaScript ES7. You can find all the details of this API here: https://github.com/zenparsing/es-observable.
+
+You can lift a heterogeneous set of inputs into the context of an observable object. Doing so allows you to unlock the power of RxJS to transform or manipulate them to reach your desired outcome. First, let's identify these different types of data. 
+
+### 2.3.1 Identifying different sources of data
+
+We mentioned earlier that the advantage of separating data and behavior is that you can reason about a holistic model to account for any type of data. Hence, the first step to break the data free is to understand that all of these data sources are the same when viewed through a data-driven (or stream-driven?) lens. First, let's re-categorize the types of data we'll encounter. Rather than dealing with them as strict JavaScript types, let's look at some broader categories of data. 
+
+#### EMITTED DATA
+
+*Emitted data* is data that will be created as a result of some sort of interaction with the system; this can be either from a user interaction such as a mouse click or a system event like a file read. As we alluded to in chapter 1, some of these will have at most one event; that is, you request data and then, at some point in the future, you receive a response. For this, Promises can be a good solution. Others, like a user's clicks and key presses, are part of a continuous process, and this requires you to treat them as event emitters that produce multiple discrete events at future times.
+
+#### STATIC DATA
+
+*Static data* is data that's already in existence and present in the system (in memory); for example, an array or a string. Artificial unit test data also falls into this category. Interacting with it is usually a matter of iterating through it. If you were wrapping a stream around an array, for instance, the stream would never actually store the array; it would extend it with a mechanism that flushes the elements within the array (based on iterators). Arrays are a common and heavily used static data source, but you could also think of associative arrays or maps as unordered static data. Most of the examples so far have dealt with static data such as strings, numbers, and arrays, which we used to illustrate some of the basic concepts. In later parts of the book, we'll focus on emitted data and generated data.
+
+#### GENERATED DATA
+
+*Generated data* is data that you create periodically or eventually, like a clock sounding a chime every quarter hour; it can also be something more procedural like generating the Fibonacci sequence using ES6 generators. In the latter case, because the sequence is infinite, it's not feasible to store it all in memory. Instead, each value should be generated on the fly and yielded to the client as needed. In this category, you can also place the traditional `setTimeout` and `setInterval` functions, which use a timer to trigger events in the future.
+
+Just like the saying, "When you're a hammer, every problem looks like a nail," the `Rx.Observable` data type can be used to normalize and process each of these data sources using a single programming model—it's the hammer. With this approach, you gain the most code reuse and avoid creating specific ad hoc functions to deal with the idiosyncrasies of each event type.
+
+### 2.3.2 Creating RxJS observables
+
+In Rx, an observer subscribes to an observable. As you learned in chapter 1, this is analogous to the observer pattern with the subject acting as the observable; `Rx.Observable` represents the object that pushes notifications for observers to receive. The observers asynchronously react to any events emitted from the observable, which allows your application to remain responsive instead of blocking in the face of a deluge of events. This is ideal to implement asynchronous, responsive code both on the client and on the server. 
+
+`Rx.Observable` has different meanings to different people. To functional programming purists, it falls under a special category called a functor, an *endofunctor* to be exact. (We don't cover functors in this book because they're not essential to understanding Rx, but if you want learn more about them, you'll find them in the functional programming book mentioned earlier.) To most others, it's simply a data type that wraps a given data source, present in memory or eventually in the future, and allows you to chain operations onto it by invoking observable instance methods sequentially. Figure 2.9 shows a simple visualization of this concept.
+
+Figure 2.9 The sequential application of methods or operators that transform an input into the desired outcome, which is what subscribers see
+
+Here's a quick look at how observables implement chaining extremely well:
+
+```javascript
+Rx.Observable.from(<data-source>) //*1
+   .operator1(...)                //*2
+   .operator2(...)
+   .operator3(...)
+   .subscribe(<process-output>); //*3
+```
+
+1. Wraps a data source with a stream
+2. Invokes a sequence of operations chained by the dot operator. In chapter 3, we'll spend a lot more time with observable instance methods.
+3. Processes the results
+
+Whether you choose to accept one definition over the other, it's important to understand that an observable doesn't just represent a value *now* but also the *idea of a value occurring in the future*. In FP, this is the same definition given to pure functions, which are nothing more than to-be-computed values, and part of the reason why we refer to the "methods" invoked on an observable instance as *operators*.
+
+Because observables in RxJS are immutable data types, this pattern works quite well and should not look that foreign to you. Consider a familiar data type, String. Look at this trivial example and notice its similarity to the previous pattern:
+
+```javascript
+String('RxJS')
+   .toUpperCase()
+   .substring(0, 2)
+   .concat(' ')
+   .repeat(3)
+   .trim()
+   .concat('!') //->  "RX RX RX!"
+```
+
+Learning about a shiny new tool is always exciting, and there's a tendency among developers to try to use that tool in every conceivable situation where it might potentially apply. But as is often the case, no tool is meant for every situation, and it's just as important to understand where RxJS won't be used.
+
+You can divide your computing tasks into four groups within two different dimensions. The first dimension is the number of pieces of data to process. The second is the manner in which the data must be processed, that is, synchronously or asynchronously. In enumerating these possibilities, we want to highlight where RxJS would be most beneficial to your applications.
+
+### 2.3.3 When and where to use RxJS
+
+Learning to use a new tool is as important as learning when not to use it. The types of data sources we'll be dealing with in this book can be classified into the four different categories listed in figure 2.10, which we'll explain next. 
+
+|              |   Single-value    |               Multi-value                |
+| -----------: | :---------------: | :--------------------------------------: |
+|  Synchronous | Character, number |             Strings, arrays              |
+| Asynchronous |      Promise      | Event emitters: clicks, key presses, etc. |
+
+Figure 2.10 Different types of data sources with examples in each quadrant
+
+#### SINGLE-VALUE, SYNCHRONOUS
+
+The simplest case is that you have only a single piece of data. In programming, you know there are operations that return a single value for each invocation. This is the category of any function that returns a single object. You can use the `Rx.Observable.of()` function to wrap a single, synchronous value. As soon as the subscriber is attached, the value is emitted (we haven't yet explained the details behind `subscribe`, but we'll cover that in a bit):
+
+```javascript
+Rx.Observable.of(42).subscribe(console.log); //-> 42 
+```
+
+Although there are cases where you'll need to wrap single values, in most cases, if your goal is just to perform simple operations on them (concatenating another string, adding another number, and others), an observable wrapper may be overkill. The only time you'll wrap simple values with observables is when they combine with other streams. 
+
+#### MULTI-VALUE, SYNCHRONOUS
+
+You can also group single items together to form collections of data, mainly for arrays. In order to apply the same operation that you used on the single item on all of the items, you would traditionally iterate over the collection and repeatedly apply the same operation to each item in the collection. With RxJS, it works in exactly the same way:
+
+```javascript
+Rx.Observable.from([1, 2, 3]).subscribe(console.log);
+// -> 1 
+// -> 2
+// -> 3
+
+Rx.Observable.from('RxJS').subscribe(console.log);
+// -> "R"
+// -> "x"
+// -> "J"
+// -> "S"
+```
+
+The RxJS `from()` operator is probably one of the most commonly used. And to make it a bit more idiomatic, RxJS has overloaded the `forEach` observable method as well, with the exact same semantics as `subscribe`: 
+
+```javascript
+const map = new Map();
+
+map.set('key1', 'value1');
+map.set('key2', 'value2');
+
+Rx.Observable.from(map).forEach(console.log);
+//-> ["key1", "value1"] ["key2", "value2"]
+```
+
+Both of these groups operate synchronously, which means each subsequent block of code must wait for the previous block to complete before executing. In the multi-value example, each item will be processed serially (one by one) until the collection is exhausted. This behavior is useful when dealing with items that have been preallocated, like arrays, sets, or maps, or if they can be generated, in place, on demand. Essentially, you can consider synchronous behavior to be actions on demand with results returning immediately (or at the very least before any further processing is done). When this is not the case, data is known as asynchronous. 
+
+#### SINGLE-VALUE, ASYNCHRONOUS
+
+This brings us to the second dimension of computing tasks, where RxJS gives you the most benefits. This dimension addresses whether a task will execute synchronously or asynchronously. In the latter case, code is only guaranteed to run at some time in the future; thus, subsequent code blocks can't rely on any execution of a previous block having already taken place. Like with the first dimension, you also have a single-value case, where the result of a task will result in a single return value. This kind of operation is usually used to load some remote resource via an AJAX call or wait on the result of some non-local calculation wrapped in a `Promise`, without blocking the application. In either case, after the operation is initiated, it will expect a single return value or an error.
+
+As we mentioned previously, in JavaScript this case is often handled using `Promise`s. A `Promise` is similar to the single-value data case in that it resolves or errors only once. RxJS has methods to seamlessly integrate with `Promise`s. Consider this simple example of a `Promise` resolving into a single, asynchronous value:
+
+```javascript
+const fortyTwo = new Promise((resolve, reject) => {
+   setTimeout(() => {
+     resolve(42);
+   }, 5000); 
+});
+Rx.Observable.fromPromise(fortyTwo)
+   .map(increment)
+   .subscribe(console.log); //-> 43
+
+console.log('Program terminated');
+```
+
+**NOTE** The promised value is being computed asynchronously, but `Promise`s differ from `Observable`s in that they're executed *eagerly*, as soon as they're declared. 
+
+Running this program as is produces the following output:
+
+```javascript
+'Program terminated'
+43 //-> after 5 seconds elapse
+```
+
+And because `Promise`s are single-value and immutable, they're never run again. So if you subscribe to one 10 seconds later, it will return the same value 10 times—this is a desirable trait of a `Promise` by design. In chapter 7, you'll learn that you can retry a `Promise` `Observable` and force it to be executed many times by nesting it within another `Observable`, which has support for retries. Using the version of `ajax(url)` that returns a `Promise`, you can write the following:
+
+```javascript
+Rx.Observable.fromPromise(ajax('/data'))
+   .subscribe(data => console.log(data.id));
+```
+
+Another frequently used alternative is to use jQuery's deferred objects, which also implement the `Promise` interface. In particular, you can use functions like `$.get(url)` or `$.getJSON(url)`:
+
+```javascript
+Rx.Observable.fromPromise($.get('/data'))
+   .subscribe(data => console.log(data.id));
+```
+
+#### MULTI-VALUE, ASYNCHRONOUS
+
+For those keeping score, this brings us to our fourth and final group of computing tasks. The tasks in the fourth group are those that will produce multiple values over time, yet do so asynchronously. You create this category especially for the DOM events, which are all asynchronous and can occur infinitely many times. This means that you'll need a mix of semantics from both the iterator and the promise patterns. More specifically, you need a way to process infinitely many items in sequence and capture any errors that occur. These items could be data fetched from remote AJAX calls or data generated from dragging the mouse across the screen. For this you need to invert your control structures to operate asynchronously. 
+
+The typical solution to a problem of this nature would be to use an `EventEmitter`. It provides hooks or callbacks to which closures can be passed; in this way it's very much like the `Promise`. But an event emitter doesn't stop after a single event; instead, it can continue to invoke the registered callbacks for each event that arrives, creating a practically infinite stream of events. The emitter will fulfill both of your criteria for handling multi-value, asynchronous events. But it's not without its share of problems. Though simple to use, event emitters don't scale well for larger systems, because their simplicity leads to a lack of expressiveness. The semantics for unsubscribing and disposing of them can be cumbersome, and there's no native support for error handling. These deficits can make it difficult to compose and synchronize complex tasks where multiple events from different parts of the system can be in flight simultaneously.
+
+Rather, you can use RxJS to wrap event emitters, with all their benefits and versatility. The following code attaches a callback to a click event on a link HTML element:
+
+```javascript
+const link = document.querySelector('#google');            //*1
+const clickStream = Rx.Observable.fromEvent(link, 'click') //*2
+  .map(event => event.currentTarget.getAttribute('href'))  //*3
+  .subscribe(console.log); //-> http://www.google.com
+```
+
+1. Queries the DOM for the link HTML element
+2. Creates an observable around click events on this link
+3. Extracts the link's href attribute
+
+Note that in this example, the `subscribe()` method was used to process `click` events and perform the required business logic, in this case extracting the `href` attribute, as shown in figure 2.11. Later on, when we cover the `Observable` instance methods that form the pipeline, you'll see concrete examples of how to decouple the business logic from the printing of the result.
+
+Figure 2.11 Observable that wraps `click` events and passes them down to the observer for processing
+
+You can also use `Observable`s to wrap any custom event emitters. Going back to our calculator emitter in Node.js, instead of listening for the `add` event, 
+
+```javascript
+addEmitter.on('add', (a, b) => { 
+  console.log(a + b); //-> Prints 5 
+});
+```
+
+you can subscribe to it: 
+
+```javascript
+Rx.Observable.fromEvent(addEmitter, 'add', (a, b) => ({a: a, b: b}))
+   .map(input -> input.a + input.b)
+   .subscribe(console.log); //-> 5
+addEmitter.emit('add', 2, 3);
+```
+
+In this section, we covered only a few of the ways for creating `Observable`s with RxJS. Later on, we'll tackle more-complex problems as well as new `Observable` methods. 
+
+### 2.3.4 To push or not to push
+
+Event emitters have been around as long as the JavaScript language. In that time, they haven't had any significant improvements to their interface in the latest releases of the language. This contrasts with `Promise`s, iterators, and generators, which were part of the JavaScript ES6 specification and are already supported in many browsers at the time of writing. This is one of the reasons why RxJS is so important; it brings many improvements to JavaScript's event system.
+
+Event emitters parse through a sequence of events asynchronously, so they come really close to being an iterator and, hence, a stream. The difference, however, lies in the way data is consumed by its clients—whether it is pulled or pushed. This is extremely important to understand, because most of the literature for RxJS defines observables as objects that represent *push-based* collections. Figure 2.12 highlights the main difference between the pull and push mechanisms, which we'll explain immediately.
+
+Figure 2.12 Notice the positions of the consumer and the direction of the data. In pull-based semantics, the consumer requests data (iterators work this way), whereas in pushed-based semantics, data is sent from the source to the consumer without it requesting it. Observables work this way.
+
+Iterators use a pull-based semantic. This means that the consumer of the iterator is responsible for requesting the next item from the iterator. This data-on-demand model has two major benefits. First, it creates an abstraction over the data structure that's being used. Essentially, any data source that exposes some common method of iteration can be used interchangeably with another. The second benefit of data on demand is for sequences of data that result from some calculation. Such is the case with JavaScript generators. 
+
+For instance, for a Fibonacci number sequence, which is infinite, you need only calculate numbers as they're requested rather than wasting computing time generating parts of a sequence that the caller doesn't care about. This is immensely helpful if the data source is expensive or difficult to calculate. In the next listing, you use a generator to create a lazy Fibonacci calculator. Generators are nothing more than iterators behind the scenes, so each value will be produced only when the consumer calls (or pulls) the `next()` method.
+
+##### Listing 2.3 Fibonacci function using generators
+
+```javascript
+function* fibonacci() {       //*1
+  let first = 1, second = 1;  //*2
+  for(;;) { 
+    let sum = second + first;
+    yield sum;                //*3
+    first = second;
+    second = sum;
+  }
+}
+const iter = fibonacci();    //*4
+console.log(iter.next()); //-> {value: 2, done: false}
+console.log(iter.next()); //-> {value: 3, done: false}
+console.log(iter.next()); //-> {value: 5, done: false}
+```
+
+1. A generator function is denoted by the * (star) notation.
+2. Fibonacci sequence must be initialized with at least two values.
+3. `yield` will return the result of each intermediate step in the loop.
+4. Creates the generator
+
+##### Want to learn more about generators? 
+
+Generators are a language feature added into JavaScript as part of the ES6 specification. From a syntax point of view, generators introduce the `function*` and `yield` keywords. A function with an asterisk declares that a function behaves as a generator, which means it can exit with a return value via `yield` and later reenter. Under the hood, generators don't actually execute immediately but return an `Iterator` object, which is accessed via its `next()` method. Through this `Iterator` object, a generator can pause and resume exactly where it left off, and any context (closure) is kept across reentrances. A generator is a rare but powerful construct for producing infinite data using a given formula or template. If you want to learn more about them, we recommend you read the documentation: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*.
+
+A pull-based paradigm is useful in cases where you know that a value can be returned immediately from a computation. But in scenarios like listening for a mouse click, where the consumer has no way of knowing when the next piece of data will become available, this paradigm breaks down. For this reason, you require a corresponding type on the asynchronous side that is *push-based*—the opposite of the pull-based approach. In a push paradigm, the producer is responsible for creating the next item, whereas the consumer only listens for new events. As an example of this, consider your phone's email client. A pull-based mechanism that checks for new email every second can drain the resources of your mobile device quickly, whereas with push email, or any push notifications for that matter, your email client needs to react to any incoming messages only once.
+
+RxJS observables use push-based notifications, which means they don't request data; rather, data is pushed onto them so that they can react to it. Push notifications bring the reactive paradigm to life. RxJS proposes observables as an improvement over event emitters because they're more versatile and extensible. The observable also serves as a better contemporary to the Iterator type, given that it possesses similar semantics but with a push-based mechanism.
+
+You can see from our discussion so far how iterators and `Promise`s can be potential data sources that can be wrapped as observables, even though we earlier classified them as distinct groups. This ability to adapt not just the types they are replacing but also types from other groups is immensely powerful—observables work equally well across synchronous and asynchronous boundaries. It not only makes interfacing with legacy code incredibly easy, but also it allows consumer code to be written independently of how the producer is implemented. 
+
+> WATCH OUT! This power comes with responsibility as well, for although you're able to convert anything your heart desires into `Observable`s, it doesn't always mean that you should. In particular, processes that are strictly synchronous and iterative or will only ever deal with a single value do not need to be "Rx-ified" just for the sake of being cool. Even though `Observable`s are cheap to create, there's a bit of overhead associated with applying simple operations on data. For instance, just transforming a string from lower to uppercase does not require it to be wrapped with an observable; you should directly use the string methods. Don't be reactive just because you can.
+
+In RxJS, you'll always have a pipeline that takes data from the source to the corresponding consumer. Data will always be created or materialized from a data source. Again, the type of data source isn't relevant to how your abstraction operates; when data reaches the end of its journey and must be consumed, it's immaterial where the data came from. We'll reiterate that the separation and abstraction of these two concepts, data production and data consumption, is important for three reasons:
+
+* It enables you to hide differences of implementation behind a common interface, which lets you focus more on the business logic of your task. This has the benefit of not only optimizing development time but also reducing code complexity by removing extra noise from code.
+* The separation of production and consumption builds a clear separation of concerns and makes the direction of data flow clear.
+* It makes streams testable by allowing you to attach mock versions of the producer and wire the corresponding matching expectations in the observer.
+
+Now that you understand how streams can be constructed, you're missing only the last place where observers come into play—stream consumption.
+
+## 2.4 Consuming data with observers
+
+Every piece of data that's emitted and processed through an observable needs a destination. In other words, what was the purpose of capturing and processing a certain event? Observers are created within the context of a subscription, which means that the result of calling `subscribe()` on an observable source is a `Subscription` object. Because observables operate synchronously or asynchronously, the consumer of an observable must in some way support the inversion of control that also happens with callbacks. This is consistent with its push-based mechanism. That is, because you don't know when a DOM element, for instance, will fire an event or when the result of an AJAX call will return, observables must be able to call into or signal the observer structure that more data is available by using the observer's `next()` method, as illustrated in figure 2.13. This mechanism is directly inspired in the iterator and observer patterns. An iterator doesn't know (or care) about the size of the data structure it's looping over or if it will ever end; it only knows whether there's more data to process.
+
+Figure 2.13 Observables calling into an observer's methods. Observers expose a simple iterator-like API with a `next()` method. Upon subscription, an object of type `Subscription` is returned to the calling code, which it can use for cancellation and disposal, as we'll discuss in a bit.
+
+Through a concise iterator-like API, observables are able to signal to their subscribers whether more events have occurred. This gives you the flexibility to control what data observers receive. 
+
+### 2.4.1 The Observer API
+
+An observer is registered with an observable in much the same way that you registered callbacks on an event emitter. An observable becomes aware of an observer during the subscription process, which you've seen a lot of so far. The subscription process is a way for you to pass an observer reference into an observable, creating a managed, one-way relationship. 
+
+Figure 2.14 Observables call into the `Observer` API to send the next event in the stream, the completed flag when a stream has finished, or any errors that occur during the pipeline's operation. We'll discuss more about error handling in later chapters.
+
+Figure 2.14 shows how observables call an observer's methods to signal more data, completion, and even errors. As you can see, aside from `next()`, two other methods are called on observers: `error()` and `complete()`.
+
+Figure 2.14 shows that once the `subscribe` method is called, an observer is implicitly created with an API that exposes three (optional) methods: `next`, `complete`, and `error` (in RxJS 4 these were called `onNext`, `onCompleted`, and `onError`, respectively). In code, the resulting object has the following structure: 
+
+```javascript
+const observer = {
+    next: function () {
+         // process next value
+    },
+    error: function () {
+         // alert user
+    },
+    complete: function () {
+    }
+}
+```
+
+Up until now, you've used a single function call only to process the results. This function maps to `next()`. Each method serves a specific purpose in the lifetime of the observer, as shown in table 2.1.
+
+Alternatively, you can use this API directly by creating your own observable.
+
+##### Table 2.1 Defining the Observer API
+
+| Name                  | Description                              |
+| --------------------- | ---------------------------------------- |
+| next(val):void        | Receives the next value from an upstream observable. This is the equivalent of `update` in the observer pattern. When a single function is passed into `subscribe()` instead of an observer object, it maps to the observer's `next()`. |
+| complete():void       | Receives a completion notification from the upstream observable. Subsequent calls to `next()`, if any, are ignored. |
+| error(exception):void | Receives an error notification from the upstream observable. This indicates that it encountered an exception and won't be emitting any more messages to the observer (subsequent calls to `next()` are ignored). Generally, error objects are passed in, but you could customize this to pass other types as well. |
+
+### 2.4.2 Creating bare observables
+
+Most of the time, you'll use the RxJS factory operators like from() and of(), as you learned at the beginning of this chapter, to instantiate observables. In practice, these should cover all your needs. But it's important to understand how observables work under the nice RxJS abstraction and how they interact with the observer to emit events. We'll show you a barebones model of an observable that emits events asynchronously and exposes the mechanism to unsubscribe. At the core, an observable is a function that processes a set of inputs and returns a subscription to the caller to manage the disposal of the stream:
+
+```javascript
+const observable = events => {
+    const INTERVAL = 1 * 1000;
+    let schedulerId;
+    return {
+        subscribe: observer => {
+            schedulerId = setInterval(() => {
+                if (events.length === 0) {
+                    observer.complete();
+                    clearInterval(schedulerId);
+                    schedulerId = undefined;
+                }
+                else {
+                    observer.next(events.shift());
+                }
+            }, INTERVAL);
+            return {
+                unsubscribe: () => {
+                    if (schedulerId) {
+                        clearInterval(schedulerId);
+                    }
+                }
+            };
+        }
+    }
+};
+```
+
+You can call this function by passing the observer object: 
+
+```javascript
+let sub = observable([1, 2, 3]).subscribe({
+  next: console.log,
+  complete: () => console.log('Done!')
+});
+/*-> 1
+        (...1 second)
+     2
+        (...1 second)
+     3
+        (...1 second)
+     Done!*/
+```
+
+This is a simplistic model of RxJS, and there's much more that goes into it. But the main takeaway here is that an observable behaves like a function that begins chipping away at the data pushed into it as soon as a subscriber is available; the subscriber has the key to turn the stream off via `sub.unsubscribe()`. Now, let's move on to using RxJS.
+
+Using RxJS, you can register an observer object through `Rx.Observable.create()`. Like the previous code, this function expects an observer object that you can use to signal the next emitted event by invoking its `next()` method. Most of the time, you'll provide the observer object literal directly into the subscription and use the static `create()` method when you want full control of how and when the data is emitted from the observable through the `Observer` API. For instance, you create observables artificially by calling into the observer's methods directly:
+
+```javascript
+const source$ = Rx.Observable.create(observer => {
+   observer.next('4111111111111111');
+   observer.next('5105105105105100');
+   observer.next('4342561111111118');
+   observer.next('6500000000000002');
+   observer.complete();                              //*1
+});                                                  //*2
+const subscription = source$.subscribe(console.log); //*3
+```
+
+1. If an observable is finite, you can signal its completion by calling the observer's `complete()` method.
+2. At this point, the observable stands idle and none of the data is emitted or passed into the observer.
+3. With `subscribe()`, the observer logic is executed; in this case, it's printing to the console.
+
+A marble diagram of this stream would look like figure 2.15. 
+
+Figure 2.15 A marble diagram showing a synchronous set of events ended by a call to `complete()`
+
+This sample code is simple because it just emits a series of account numbers, but you could do much more. You could create your own observables with custom behavior that can be reused anywhere in your application. 
+
+### 2.4.3 Observable modules
+
+Directly calling the observer object allows you to define the data that's pushed to the subscriber. How this data is generated and where it comes are encapsulated into the observable's context—kind of like a module. For instance, suppose you wanted to create a simple progress indicator widget that can be used when a user is performing a long-running operation. This module will emit percentage values 0% to 100% at a certain speed, as shown in the following listing.
+
+Listing 2.4 Custom progress indicator module using RxJS
+
+```javascript
+const progressBar$ = Rx.Observable.create(observer => {
+    const OFFSET = 3000;
+    const SPEED = 50;
+    let val = 0;
+    function progress() {
+        if (++val <= 100) {
+            observer.next(val);          //*1
+            setTimeout(progress, SPEED); //*2
+        }
+        else {
+            observer.complete();         //*3
+        }
+    };
+    setTimeout(progress, OFFSET);        //*4
+});
+
+const label = document.querySelector('#progress-indicator');
+progressBar$
+    .subscribe(
+        val => label.textContent = (Number.isInteger(val) ? val + "%" : val),
+        error => console.log(error.message),
+        () => label.textContent = 'Complete!'
+    );
+```
+
+1. Emits a new progress value every 50 milliseconds
+2. Calls the progress function recursively
+3. Sends the complete signal after reaching 100%
+4. Starts the progress indicator counter after three seconds
+
+The business logic of how the values are generated and emitted belongs in the observable, whereas all the details of rendering, whether you want a simple number indicator or use some third-party progress bar widget, are for the caller to implement within the observer.
+
+> **NOTE** You could also achieve this by using RxJS's time operators. More about this in the next chapter.
+
+Using these methods gives you more opportunities to react to the different states of the program. Stepping back into our discussion about iterators and generators in chapter 2, observers operate similarly to these artifacts. The key difference is that the iterator uses a pull-based mechanism as opposed to an observable's push-based nature—an observable pushes values into an observer. For iterators and generators, the consuming code is controlling the pace of consumption. For instance, a `for` loop controls (or requests) what to pull from an iterator or a generator, not the other way around. This means that each time a new piece of data is needed (by a call to `next()` or `yield`), the consumer of the iterator will call the appropriate method to advance the state of the iterator. Figure 2.16 shows another example using the Fibonacci sequence.
+
+```javascript
+for (let nums of new BufferIterator(arr, 2)) { //*1
+  console.log(nums);
+}
+for(let num of fibonacci()){                   //*2
+  console.log(num);
+}
+```
+
+1. The loop pulls the next element from the iterator by calling `.next()`.
+2. The loop pulls data from the generator function, requesting it to `yield` the next element.
+
+Figure 2.16 The pull mechanism of iterators
+
+As a result, iterators must have a way to inform the consumer that there are no longer any items for consumption. Bank tellers are real-world iterators. Each time a customer comes up, that person must be handled before the next customer can be helped. When the teller becomes available, they yell "Next!" to "pull" the next customer in. If they were to call "Next!" and no one responded, they would know that the line was complete and it might be safe to take their lunch break.
+
+Something to keep in mind, though, is that infinite event emitters, like the DOM, will never fire the `complete()` function (or `error()` for that matter) on any of its events. Therefore, it's entirely up to you to unsubscribe from them or roll your own autodispose mechanism. But for finite event sequences, when an observer is called with either of these methods, it knows that contractually it won't receive any more messages from its owning observable. This again is a tight parallel to an iterator, which by definition should stop returning values when the iteration generates an exception or completes. 
+
+Consider a simple `Promise` object that resolves to the value 42 after 5 seconds (shown in figure 2.17).
+
+Figure 2.17 An observable (wrapped `Promise`) that emits a value after 5 seconds
+
+We mentioned in chapter 1 that `Promise`s can be used to model an immutable, single (future) value. You'll use the `setTimeout()` function to simulate this; now, instead of creating your own observable, you'll use the generic creational methods in RxJS, such as the following:
+
+```js
+const computeFutureValue = new Promise((resolve, reject) => {
+    setTimeout(() => { //*1
+        resolve(42);
+    }, 5000);
+});
+Rx.Observable.fromPromise(computeFutureValue)
+    .subscribe(
+        val => {
+            console.log(val);
+        },
+        err => {
+            console.log(`Error occurred: ${err}`);
+        },
+        () => {
+            console.log('All done!');
+        });
+```
+
+1. Resolves the Promise after 5 seconds have elapsed 
+
+Because `Promise`s emit a single value, this stream will eventually send the completed status after 5 seconds have passed, printing "All done!" at the end. Now, suppose that instead of a resolved `Promise`, something goes wrong in computing this value and the `Promise` is rejected:
+
+```js
+const computeFutureValue = new Promise((resolve, reject) => {
+  setInterval(() => {
+    reject(new Error('Unexpected Exception!'));
+  }, 5000); 
+});
+```
+
+This will cause the observable to invoke the `error()` method on the observer and print the following message after 5 seconds:
+
+```js
+"Error occurred: Unexpected Exception!"
+```
+
+This is quite remarkable because RxJS not only takes care of error handling for you (without messy, imperative `try/catch` statements) but also provides logic that ties in with `Promise` semantics of `resolve/reject`. We'll cover all there is to know about error handling in chapter 7.
+
+An important takeaway from this discussion about observers is that the callbacks passed to it are, for all practical purposes, future code. That is, you don't know when the callbacks will actually be called, so other code shouldn't make assumptions about their execution. This relates to the larger point made earlier about the nature of the code within a stream. Because one of your goals is to move away from the messy business of keeping track of state changes, avoiding the introduction of side effects is one of the ways that you can keep your streams pure and prevent unwanted changes from adversely seeping into the application logic. This works well with RxJS because pure functions can run in any order and at any time (now or in the future) and will always yield the correct results.
+
+With observers, we've finished introducing the three main parts of RxJS: producers (observables), the pipeline (business logic), and consumers (observers). This chapter is just the start of your journey of learning how to think reactively (and functionally). It will take much more time and many more examples to truly understand how you can think reactively, but you were able to get your feet wet on some advanced APIs. Much of what you've seen so far has been abstract in nature with very little coding, but this step is crucial for understanding how this approach differs from ones you've been taught in the past. In the next chapter, we'll look more closely at the operations that you can perform on streams as well as how you can cancel them if needed. By doing so, we're officially taking the training wheels off and introducing you to the core operations for building applications in RxJS. 
+
+## 2.5 Summary
+
+* RxJS and, more generally, the concept of thinking in streams derive many of their foundational principles from functional programming.
+* The declarative style of RxJS allows you to translate almost exactly from your problem statement into working code.
+* Data sources can often operate quite differently, even within the observable contract.
+* Mouse clicks, HTTP requests, or simple arrays are all the same under the eyes of observables.
+* Push-based and pull-based semantics are represented through observables and iterators, respectively. Wrapping data sources is the first step in creating a pipeline/observable.
+* Observables abstract the notion of production and consumption of events such that you can separate production, consumption, and processing into completely self-contained constructs.
+* Observers expose an API with three methods: `next()`, `complete()`, and `error()`. 
+
+
+

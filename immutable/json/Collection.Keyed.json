@@ -1,0 +1,111 @@
+{
+  "Collection.Keyed": {
+    "Construction": { "Collection.Keyed()": 0 },
+    "Conversion to JavaScript types": {
+      "toJS()": 0,
+      "toJSON()": 0,
+      "toArray()": 0,
+      "toObject()": 0
+    },
+    "Conversion to Seq": {
+      "toSeq()": 0,
+      "toKeyedSeq()": 0,
+      "toIndexedSeq()": 0,
+      "toSetSeq()": 0
+    },
+    "Sequence functions": {
+      "flip()": 0,
+      "concat()": 0,
+      "map()": 0,
+      "mapKeys()": 0,
+      "mapEntries()": 0,
+      "flatMap()": 0,
+      "filter()": 0,
+      "[Symbol.iterator]()": 0
+    },
+    "Value equality": {
+      "equals()": 0,
+      "hashCode()": 0
+    },
+    "Reading values": {
+      "get()": 0,
+      "has()": 0,
+      "includes()": 0,
+      "first()": 0,
+      "last()": 0
+    },
+    "Reading deep values": {
+      "getIn()": 0,
+      "hasIn()": 0
+    },
+    "Persistent changes": { "update()": 0 },
+    "Conversion to Collections": {
+      "toMap()": 0,
+      "toOrderedMap()": 0,
+      "toSet()": 0,
+      "toOrderedSet()": 0,
+      "toList()": 0,
+      "toStack()": 0
+    },
+    "Iterators": {
+      "keys()": 0,
+      "values()": 0,
+      "entries()": 0
+    },
+    "Collections (Seq)": {
+      "keySeq()": 0,
+      "valueSeq()": 0,
+      "entrySeq()": 0
+    },
+    "Sequence algorithms": {
+      "filterNot()": 0,
+      "reverse()": 0,
+      "sort()": 0,
+      "sortBy()": 0,
+      "groupBy()": 0
+    },
+    "Side effects": { "forEach()": 0 },
+    "Creating subsets": {
+      "slice()": 0,
+      "rest()": 0,
+      "butLast()": 0,
+      "skip()": 0,
+      "skipLast()": 0,
+      "skipWhile()": 0,
+      "skipUntil()": 0,
+      "take()": 0,
+      "takeLast()": 0,
+      "takeWhile()": 0,
+      "takeUntil()": 0
+    },
+    "Combination": { "flatten()": 0 },
+    "Reducing a value": {
+      "reduce()": 0,
+      "reduceRight()": 0,
+      "every()": 0,
+      "some()": 0,
+      "join()": 0,
+      "isEmpty()": 0,
+      "count()": 0,
+      "countBy()": 0
+    },
+    "Search for value": {
+      "find()": 0,
+      "findLast()": 0,
+      "findEntry()": 0,
+      "findLastEntry()": 0,
+      "findKey()": 0,
+      "findLastKey()": 0,
+      "keyOf()": 0,
+      "lastKeyOf()": 0,
+      "max()": 0,
+      "maxBy()": 0,
+      "min()": 0,
+      "minBy()": 0
+    },
+    "Comparison": {
+      "isSubset()": 0,
+      "isSuperset()": 0
+    }
+  }
+}

@@ -48,9 +48,11 @@
 
 ### 安装Autofac与AutoMapper
 
-	install-package autofac.mvc5
-	install-package autofac.webapi2
-	install-package automapper
+```powershell
+install-package autofac.mvc5
+install-package autofac.webapi2
+install-package automapper
+```
 
 /App\_Start/AutofacConfig.cs:
 
@@ -210,14 +212,13 @@ namespace balance
         }
     }
 }
-
 ```
 代码的后半部分增加了一个参数绑定规则，参数指操作方法的输入参数。为修改操作参数获取数据的位置。当非GET方法有一个参数时，默认为从Body中获取参数。Get方法从Url中获取数据，当非GET方法有多个参数时，这时默认也是从URL中获取数据。
 
 ### 配置视图
 
 修改Views/Shared/\_Layout.cshtml布局文件：
-```html
+```asp.net
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
@@ -244,7 +245,7 @@ namespace balance
 ```
 
 启动文件指定视图所用模板，\Views\\_ViewStart.cshtml：
-```C#
+```asp.net
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -267,9 +268,9 @@ namespace balance
 
 为本项目balance.webApi安装程序包：
 	install-package fsharp.core
-	Install-package Microsoft.Aspnet.webApi
+	install-package Microsoft.Aspnet.webApi
 
-为本项目Balance.Api添加项目引用：程序集&gt;&gt;框架&gt;&gt;System.Web
+为本项目Balance.Api添加项目引用：程序集$\Rightarrow$框架$\Rightarrow$System.Web
 
 最后，从Balance项目添加对本项目Balance.webApi的引用。
 
@@ -283,7 +284,7 @@ namespace balance
 
 项目名称：Balance.Functions
 
-项目类型：Visual F\#&gt;&gt;Windows&gt;&gt;库
+项目类型：Visual F\#$\Rightarrow$Windows$\Rightarrow$库
 
 确定
 
@@ -295,17 +296,17 @@ namespace balance
 
 在Balance.webApi项目中添加对balance.Functions类库的引用。
 
-[[]{#OLE_LINK2 .anchor}]{#OLE_LINK1 .anchor}打开Balance/Web.config，在configuration根目录下添加连接字符串：
+打开Balance/Web.config，在configuration根目录下添加连接字符串：
 
-&lt;/appSettings&gt;
+```xml
+</appSettings>
+<connectionStrings>
+<add name="StorageConnectionString"
+connectionString="DefaultEndpointsProtocol=https;AccountName=abacus;AccountKey=3559gPby4SRwHSBxbcTd4bURTPJuEUmo5Q9OrkoBJpt8bvyI2HtzIiDDwJxFUJELiFP0MKctcy5tUHPAkfXd7A==;EndpointSuffix=core.Chinacloudapi.cn" />
+</connectionStrings>
+```
 
-&lt;connectionStrings&gt;
 
-&lt;add name="StorageConnectionString"
-
-connectionString="DefaultEndpointsProtocol=https;AccountName=abacus;AccountKey=3559gPby4SRwHSBxbcTd4bURTPJuEUmo5Q9OrkoBJpt8bvyI2HtzIiDDwJxFUJELiFP0MKctcy5tUHPAkfXd7A==;EndpointSuffix=core.Chinacloudapi.cn" /&gt;
-
-&lt;/connectionStrings&gt;
 
 本项目balance.Functions添加引用：
 

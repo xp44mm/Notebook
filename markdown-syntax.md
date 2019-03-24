@@ -8,12 +8,12 @@ Markdown 的目标是实现「易读易写」。
 
 可读性，无论如何，都是最重要的。一份使用 Markdown 格式撰写的文件应该可以直接以纯文本发布，并且看起来不会像是由许多标签或是格式指令所构成。Markdown 语法受到一些既有 text-to-HTML 格式的影响，包括 [Setext] [1]、[atx] [2]、[Textile] [3]、[reStructuredText] [4]、[Grutatext] [5] 和 [EtText] [6]，而最大灵感来源其实是纯文本电子邮件的格式。
 
-  [1]: http://docutils.sourceforge.net/mirror/setext.html
-  [2]: http://www.aaronsw.com/2002/atx/
-  [3]: http://textism.com/tools/textile/
-  [4]: http://docutils.sourceforge.net/rst.html
-  [5]: http://www.triptico.com/software/grutatxt.html
-  [6]: http://ettext.taint.org/doc/
+[1]: http://docutils.sourceforge.net/mirror/setext.html
+[2]: http://www.aaronsw.com/2002/atx/
+[3]: http://textism.com/tools/textile/
+[4]: http://docutils.sourceforge.net/rst.html
+[5]: http://www.triptico.com/software/grutatxt.html
+[6]: http://ettext.taint.org/doc/
 
 总之， Markdown 的语法全由一些符号所组成，这些符号经过精挑细选，其作用一目了然。比如：在文字两旁加上星号，看起来就像\*强调\*。Markdown 的列表看起来，嗯，就是列表。Markdown 的区块引用看起来就真的像是引用一段文字，就像你曾在电子邮件中见过的那样。
 
@@ -28,7 +28,7 @@ Markdown 不是想要取代 HTML，甚至也没有要和它相近，它的语法
 要制约的只有一些 HTML 区块元素――比如 `<div>`、`<table>`、`<pre>`、`<p>` 等标签，必须在前后加上空行与其它内容区隔开，还要求它们的开始标签与结尾标签不能用制表符或空格来缩进。Markdown 的生成器有足够智能，不会在 HTML 区块标签外加上不必要的 `<p>` 标签。
 
 例子如下，在 Markdown 文件里加上一段 HTML 表格：
-
+```
     这是一个普通段落。
 
     <table>
@@ -36,9 +36,9 @@ Markdown 不是想要取代 HTML，甚至也没有要和它相近，它的语法
             <td>Foo</td>
         </tr>
     </table>
-
+    
     这是另一个普通段落。
-
+```
 请注意，在 HTML 区块标签间的 Markdown 格式语法将不会被处理。比如，你在 HTML 区块内使用 Markdown 样式的`*强调*`会没有效果。
 
 HTML 的区段（行内）标签如 `<span>`、`<cite>`、`<del>` 可以在 Markdown 的段落、列表或是标题里随意使用。依照个人习惯，甚至可以不用 Markdown 格式，而直接采用 HTML 标签来格式化。举例说明：如果比较喜欢 HTML 的 `<a>` 或 `<img>` 标签，可以直接使用这些标签，而不用 Markdown 提供的链接或是图像标签语法。
@@ -102,62 +102,62 @@ Markdown 将会把它转换为：
 Markdown支持两种标题的语法，类[Setext]和类[atx]形式。
 
 类 Setext 形式是用底线的形式，利用 `=` （最高阶标题）和 `-` （第二阶标题），例如：
-
+```
     This is an H1
     =============
-
+    
     This is an H2
     -------------
-
+```
 任何数量的 `=` 和 `-` 都可以有效果。
 
 类 Atx 形式则是在行首插入 1 到 6 个 `#` ，对应到标题 1 到 6 阶，例如：
-
+```
     # 这是 H1
 
     ## 这是 H2
 
     ###### 这是 H6
-
+```
 你可以选择性地「闭合」类 atx 样式的标题，这纯粹只是美观用的，若是觉得这样看起来比较舒适，你就可以在行尾加上 `#`，而行尾的 `#` 数量也不用和开头一样（行首的井字符数量决定标题的阶数）：
-
+```
     # 这是 H1 #
 
     ## 这是 H2 ##
 
     ### 这是 H3 ######
-
+```
 
 ### 区块引用 Blockquotes
 
 Markdown 标记区块引用是使用类似 email 中用 `>` 的引用方式。如果你还熟悉在 email 信件中的引言部分，你就知道怎么在 Markdown 文件中建立一个区块引用，那会看起来像是你自己先断好行，然后在每行的最前面加上 `>` ：
-
+```
     > This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,
     > consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.
     > Vestibulum enim wisi, viverra nec, fringilla in, laoreet vitae, risus.
     > 
     > Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse
     > id sem consectetuer libero luctus adipiscing.
-
+```
 Markdown 也允许你偷懒只在整个段落的第一行最前面加上 `>` ：
-
+```
     > This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,
     consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.
     Vestibulum enim wisi, viverra nec, fringilla in, laoreet vitae, risus.
-
+    
     > Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse
     id sem consectetuer libero luctus adipiscing.
-
+```
 区块引用可以嵌套（例如：引用内的引用），只要根据层次加上不同数量的 `>` ：
-
+```
     > This is the first level of quoting.
     >
     > > This is nested blockquote.
     >
     > Back to the first level.
-
+```
 引用的区块内也可以使用其他的 Markdown 语法，包括标题、列表、代码区块等：
-
+```
 	> ## 这是一个标题。
 	> 
 	> 1.   这是第一行列表项。
@@ -166,7 +166,7 @@ Markdown 也允许你偷懒只在整个段落的第一行最前面加上 `>` ：
 	> 给出一些例子代码：
 	> 
 	>     return shell_exec("echo $input | $markdown_script");
-
+```
 许多文本编辑器都能轻松地建立 email 型的引用。例如在 BBEdit 中，你可以选取文字后然后从选单中选择*增加引用阶层*。
 
 ### 列表
@@ -174,17 +174,17 @@ Markdown 也允许你偷懒只在整个段落的第一行最前面加上 `>` ：
 Markdown 支持有序列表和无序列表。
 
 无序列表使用星号、加号或是减号作为列表标记：
-
+```
     *   Red
     *   Green
     *   Blue
-
+```
 等同于：
-
+```
     +   Red
     +   Green
     +   Blue
-
+```
 也等同于：
 
     -   Red
@@ -266,34 +266,34 @@ Markdown 支持有序列表和无序列表。
     </ul>
 
 列表项目可以包含多个段落，每个项目下的段落都必须缩进 4 个空格或是 1 个制表符：
-
+```
     1.  This is a list item with two paragraphs. Lorem ipsum dolor
         sit amet, consectetuer adipiscing elit. Aliquam hendrerit
         mi posuere lectus.
-
+    
         Vestibulum enim wisi, viverra nec, fringilla in, laoreet
         vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
         sit amet velit.
-
+    
     2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-
+```
 如果你每行都有缩进，看起来会看好很多，当然，再次地，如果你很懒惰，Markdown 也允许：
-
+```
     *   This is a list item with two paragraphs.
 
         This is the second paragraph in the list item. You're
     only required to indent the first line. Lorem ipsum dolor
     sit amet, consectetuer adipiscing elit.
-
+    
     *   Another item in the same list.
-
+```
 如果要在列表项目内放进引用，那 `>` 就需要缩进：
-
+```
     *   A list item with a blockquote:
 
         > This is a blockquote
         > inside a list item.
-
+```
 如果要放代码区块的话，该区块就需要缩进*两次*，也就是 8 个空格或是 2 个制表符：
 
     *   一列表项包含一个列表区块：
@@ -375,7 +375,7 @@ Markdown 会转换成：
     ---------------------------------------
 
 
-* * *
+***
 
 ## 区段元素
 
@@ -386,19 +386,19 @@ Markdown 支持两种形式的链接语法： *行内式*和*参考式*两种形
 不管是哪一种，链接文字都是用 [方括号] 来标记。
 
 要建立一个*行内式*的链接，只要在方块括号后面紧接着圆括号并插入网址链接即可，如果你还想要加上链接的 title 文字，只要在网址后面，用双引号把 title 文字包起来即可，例如：
-
+```
     This is [an example](http://example.com/ "Title") inline link.
 
     [This link](http://example.net/) has no title attribute.
-
+```
 会产生：
-
+```
     <p>This is <a href="http://example.com/" title="Title">
     an example</a> inline link.</p>
-
+    
     <p><a href="http://example.net/">This link</a> has no
     title attribute.</p>
-
+```
 如果你是要链接到同样主机的资源，你可以使用相对路径：
 
     See my [About](/about/) page for details.   
@@ -466,23 +466,23 @@ Markdown 支持两种形式的链接语法： *行内式*和*参考式*两种形
 链接的定义可以放在文件中的任何一个地方，我比较偏好直接放在链接出现段落的后面，你也可以把它放在文件最后面，就像是注解一样。
 
 下面是一个参考式链接的范例：
-
+```
     I get 10 times more traffic from [Google] [1] than from
     [Yahoo] [2] or [MSN] [3].
-
+    
       [1]: http://google.com/        "Google"
       [2]: http://search.yahoo.com/  "Yahoo Search"
       [3]: http://search.msn.com/    "MSN Search"
-
+```
 如果改成用链接名称的方式写：
-
+```
     I get 10 times more traffic from [Google][] than from
     [Yahoo][] or [MSN][].
-
+    
       [google]: http://google.com/        "Google"
       [yahoo]:  http://search.yahoo.com/  "Yahoo Search"
       [msn]:    http://search.msn.com/    "MSN Search"
-
+```
 上面两种写法都会产生下面的 HTML。
 
     <p>I get 10 times more traffic from <a href="http://google.com/"
@@ -555,13 +555,13 @@ Markdown 使用星号（`*`）和底线（`_`）作为标记强调字词的符�
 代码区段的起始和结束端都可以放入一个空白，起始端后面一个，结束端前面一个，这样你就可以在区段的一开始就插入反引号：
 
 	A single backtick in a code span: `` ` ``
-	
+
 	A backtick-delimited string in a code span: `` `foo` ``
 
 会产生：
 
 	<p>A single backtick in a code span: <code>`</code></p>
-	
+
 	<p>A backtick-delimited string in a code span: <code>`foo`</code></p>
 
 在代码区段内，`&` 和尖括号**都**会被自动地转成 HTML 实体，这使得插入 HTML 原始码变得很容易，Markdown 会把下面这段：
@@ -607,8 +607,10 @@ Markdown 使用一种和链接很相似的语法来标记图片，同样也允�
     [id]: url/to/image  "Optional title attribute"
 
 到目前为止， Markdown 还没有办法指定图片的宽高，如果你需要的话，你可以使用普通的 `<img>` 标签。
+### 上标与下标
+H~2~O
+mc^2^
 
-*********
 
 ## 其它
 
