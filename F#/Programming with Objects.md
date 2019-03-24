@@ -1,4 +1,4 @@
-﻿# Programming with Objects
+# Programming with Objects
 
 Chapters 2 through 5 dealt with the basic constructs of F# functional and imperative programming, and by now we trust you're familiar with the foundational concepts and techniques of practical, small-scale F# programming. This chapter covers language constructs related to object programming.
 
@@ -42,32 +42,34 @@ You can use the properties and methods of this type as follows:
 
 ```cmd
 > let v = { DX = 3.0; DY=4.0 };;
-	val v : Vector2D = {DX = 3.0; DY = 4.0;}
+  val v : Vector2D = {DX = 3.0; DY = 4.0;}
 
 > v.Length;;
-	val it : float = 5.0
+  val it : float = 5.0
 
 > v.Scale(2.0).Length;;
-	val it : float = 10.0
+  val it : float = 10.0
 
 > Vector2D.ConstX(3.0);;
-	val it : Vector2D = {DX = 3.0; DY = 0.0}
+  val it : Vector2D = {DX = 3.0; DY = 0.0}
 ```
 
 As usual, it's useful to look at inferred types to understand a type definition. Here are the inferred types for the `Vector2D` type definition of Listing 6-1:
 
 ```F#
 type Vector2D =
-  {DX: float;
-   DY: float;}
-  member Scale : k:float -> Vector2D
-  member ShiftX : x:float -> Vector2D
-  member ShiftXY : x:float * y:float -> Vector2D
-  member ShiftY : y:float -> Vector2D
-  member Length : float
-  static member ConstX : dx:float -> Vector2D
-  static member ConstY : dy:float -> Vector2D
-  static member Zero : Vector2D
+    {
+        DX: float;
+        DY: float;}
+    member Scale : k:float -> Vector2D
+    member ShiftX : x:float -> Vector2D
+    member ShiftXY : x:float * y:float -> Vector2D
+    member ShiftY : y:float -> Vector2D
+    member Length : float
+
+    static member ConstX : dx:float -> Vector2D
+    static member ConstY : dy:float -> Vector2D
+    static member Zero : Vector2D
 ```
 
 You can see that the `Vector2D` type contains the following: 
@@ -96,13 +98,13 @@ Each time you use this property, you see the side effect:
 
 ```cmd
 > let x = {DX = 3.0; DY = 4.0};;
-val x : Vector2D = {DX = 3.0; DY = 4.0;}
+    val x : Vector2D = {DX = 3.0; DY = 4.0;}
 > x.LengthWithSideEffect;;
-Computing!
-val it : float = 5.0
+    Computing!
+    val it : float = 5.0
 > x.LengthWithSideEffect;;
-Computing!
-val it : float = 5.0
+    Computing!
+    val it : float = 5.0
 ```
 
 The method members for a type look similar to the properties but also take arguments. For example, let's look at the implementation of the ShiftX method member:
@@ -134,9 +136,9 @@ type Tree<'T> =
     | Tip
     /// Compute the number of values in the tree
     member t.Size =
-		match t with
-		| Node(_, l, r) -> 1 + l.Size + r.Size
-		| Tip -> 0
+        match t with
+        | Node(_, l, r) -> 1 + l.Size + r.Size
+        | Tip -> 0
 ```
 
 ---
@@ -306,9 +308,9 @@ type SparseVector(items : seq<int * float>)=
     do items |> Seq.iter (fun (k, v) -> elems.Add(k, v))
     /// This defines an indexer property
     member t.Item
-		with get(idx) =
-			if elems.ContainsKey(idx) then elems.[idx]
-			else 0.0
+        with get(idx) =
+            if elems.ContainsKey(idx) then elems.[idx]
+            else 0.0
 ```
 
 You can define and use the indexer property as follows:
@@ -333,9 +335,9 @@ type Vector2DWithOperators(dx : float,dy : float) =
     member x.DX = dx
     member x.DY = dy
     static member (+) (v1 : Vector2DWithOperators, v2 : Vector2DWithOperators) =
-		Vector2DWithOperators(v1.DX + v2.DX, v1.DY + v2.DY)
+        Vector2DWithOperators(v1.DX + v2.DX, v1.DY + v2.DY)
     static member (-) (v1 : Vector2DWithOperators, v2 : Vector2DWithOperators) =
-		Vector2DWithOperators (v1.DX - v2.DX, v1.DY - v2.DY)
+        Vector2DWithOperators (v1.DX - v2.DX, v1.DY - v2.DY)
 ```
 
 ```F#
@@ -387,8 +389,8 @@ open System.Drawing
 type LabelInfo(?text : string, ?font : Font) =
     let text = defaultArg text ""
     let font = match font with
-				| None -> new Font(FontFamily.GenericSansSerif, 12.0f)
-				| Some v -> v
+                | None -> new Font(FontFamily.GenericSansSerif, 12.0f)
+                | Some v -> v
     member x.Text = text
     member x.Font = font
     /// Define a static method that creates an instance
@@ -461,12 +463,12 @@ type Interval(lo, hi) =
     static member Empty = Interval(0.0, 0.0)
     /// Return the smallest interval that covers both the intervals
     static member Span (r1 : Interval, r2 : Interval) =
-		if r1.IsEmpty then r2 else
-		if r2.IsEmpty then r1 else
-		Interval(min r1.Lo r2.Lo, max r1.Hi r2.Hi)
+        if r1.IsEmpty then r2 else
+        if r2.IsEmpty then r1 else
+        Interval(min r1.Lo r2.Lo, max r1.Hi r2.Hi)
     /// Return the smallest interval that covers all the intervals
     static member Span(ranges : seq<Interval>) =
-		Seq.fold (fun r1 r2 -> Interval.Span(r1, r2)) Interval.Empty ranges
+        Seq.fold (fun r1 r2 -> Interval.Span(r1, r2)) Interval.Empty ranges
 ```
 
 Second, multiple methods can also have the same number of arguments and be overloaded by type. One of the most common examples is providing multiple implementations of overloaded operators on the same type. The following example shows a Point type that supports two subtraction operations, one subtracting a Point from a Point to give a Vector and one subtracting a Vector from a Point to give a Point:
@@ -478,9 +480,9 @@ type Vector =
 type Point =
     { X : float; Y : float }
     static member (-) (p1 : Point, p2 : Point) =
-		{ DX = p1.X - p2.X; DY = p1.Y - p2.Y }
+        { DX = p1.X - p2.X; DY = p1.Y - p2.Y }
     static member (-) (p : Point, v : Vector) =
-		{ X = p.X - v.DX; Y = p.Y - v.DY }
+        { X = p.X - v.DX; Y = p.Y - v.DY }
 ```
 
 Overloads must be unique by signature, and you should take care to make sure your overload set isn’t too ambiguous—the more overloads you use, the more type annotations users of your types will need to add. 
@@ -498,17 +500,17 @@ type MutableVector2D(dx : float, dy : float) =
     member vec.DX with get() = currDX and set v = currDX <- v
     member vec.DY with get() = currDY and set v = currDY <- v
     member vec.Length
-		with get () = sqrt (currDX * currDX + currDY * currDY)
-		and  set len =
-			let theta = vec.Angle
-			currDX <- cos theta * len
-			currDY <- sin theta * len
+        with get () = sqrt (currDX * currDX + currDY * currDY)
+        and  set len =
+            let theta = vec.Angle
+            currDX <- cos theta * len
+            currDY <- sin theta * len
     member vec.Angle
-	with get () = atan2 currDY currDX
-	and  set theta =
-		let len = vec.Length
-		currDX <- cos theta * len
-		currDY <- sin theta * len
+    with get () = atan2 currDY currDX
+    and  set theta =
+        let len = vec.Length
+        currDX <- cos theta * len
+        currDY <- sin theta * len
 ```
 
 The mutable state is held in two mutable local let bindings for currDX and currDY. It also exposes additional settable properties, Length and Angle, which interpret and adjust the underlying currDX/currDY values. Here is the inferred signature for the type: 
@@ -565,7 +567,7 @@ Chapter 7 will cover encapsulation more closely.
 
 ---
 
-#### OBJeCtS aND MUtatION
+#### Objects and mutation
 
 object programming was originally developed as a technique for controlling the complexity of mutable state. however, many of the concerns of object programming are orthogonal to this. For example, programming constructs such as object interface types, inheritance, and higher-level design patterns such as publish/subscribe stem from the oo tradition, whereas techniques such as functions, type abstraction, and aggregate operations such as map and fold stem from the functional programming tradition. many object programming techniques have no fundamental relationship to object mutation and identity; for example, interfaces and inheritance can be used very effectively with immutable objects. much of the expressivity of F# lies in the way it brings the techniques of object programming and functional programming comfortably together.
 
@@ -598,11 +600,13 @@ Here’s how to define a version of the LabelInfo type used earlier that is conf
 
 ```F#
 open System.Drawing
+
 type LabelInfoWithPropertySetting() =
     let mutable text = "" // the default
     let mutable font = new Font(FontFamily.GenericSansSerif, 12.0f)
     member x.Text with get() = text and set v = text <- v
     member x.Font with get() = font and set v = font <- v
+
 let labelInfo = LabelInfoWithPropertySetting(Text="Hello World")
 ```
 
@@ -614,9 +618,9 @@ When declaring properties, especially settable ones, a common pattern occurs whe
 
 ```F#
 type LabelInfoWithPropertySetting() =
-	member val Name = "label"
-	member val Text = "" with get, set
-	member val Font = new Font(FontFamily.GenericSansSerif, 12.0f) with get, set
+    member val Name = "label"
+    member val Text = "" with get, set
+    member val Font = new Font(FontFamily.GenericSansSerif, 12.0f) with get, set
 ```
 
 Note that the initializer for an auto-property is executed once per object, when the object is initialized. Auto-properties can also be static.
@@ -640,40 +644,40 @@ Definitions of object interface types do not specify the implementation of objec
 ```F#
 open System.Drawing
 type IShape =
-	abstract Contains : Point -> bool
-	abstract BoundingBox : Rectangle
+    abstract Contains : Point -> bool
+    abstract BoundingBox : Rectangle
 let circle (center : Point, radius : int) =
-	{ new IShape with
-		member x.Contains(p : Point) =
-		let dx = float32 (p.X - center.X)
-		let dy = float32 (p.Y - center.Y)
-		sqrt(dx * dx + dy * dy) <= float32 radius
-		member x.BoundingBox =
-		Rectangle(
-		center.X - radius, center.Y - radius,
-		2 * radius + 1, 2 * radius + 1)}
+    { new IShape with
+        member x.Contains(p : Point) =
+        let dx = float32 (p.X - center.X)
+        let dy = float32 (p.Y - center.Y)
+        sqrt(dx * dx + dy * dy) <= float32 radius
+        member x.BoundingBox =
+        Rectangle(
+        center.X - radius, center.Y - radius,
+        2 * radius + 1, 2 * radius + 1)}
 let square (center : Point, side : int) =
-	{ new IShape with
-		member x.Contains(p : Point) =
-			let dx = p.X - center.X
-			let dy = p.Y - center.Y
-			abs(dx) < side / 2 && abs(dy) < side / 2
-		member x.BoundingBox =
-			Rectangle(center.X - side, center.Y - side, side * 2, side * 2)}
+    { new IShape with
+        member x.Contains(p : Point) =
+            let dx = p.X - center.X
+            let dy = p.Y - center.Y
+            abs(dx) < side / 2 && abs(dy) < side / 2
+        member x.BoundingBox =
+            Rectangle(center.X - side, center.Y - side, side * 2, side * 2)}
 type MutableCircle() =
     member val Center = Point(x = 0, y = 0) with get, set
     member val Radius = 10 with get, set
     member c.Perimeter = 2.0 * System.Math.PI * float c.Radius
 
     interface IShape with
-		member c.Contains(p : Point) =
-			let dx = float32 (p.X - c.Center.X)
-			let dy = float32 (p.Y - c.Center.Y)
-			sqrt(dx * dx + dy * dy) <= float32 c.Radius
-		member c.BoundingBox =
-			Rectangle(
-			c.Center.X - c.Radius, c.Center.Y - c.Radius,
-			2 * c.Radius + 1, 2 * c.Radius + 1)
+        member c.Contains(p : Point) =
+            let dx = float32 (p.X - c.Center.X)
+            let dy = float32 (p.Y - c.Center.Y)
+            sqrt(dx * dx + dy * dy) <= float32 c.Radius
+        member c.BoundingBox =
+            Rectangle(
+            c.Center.X - c.Radius, c.Center.Y - c.Radius,
+            2 * c.Radius + 1, 2 * c.Radius + 1)
 ```
 
 ### Defining New Object Interface Types
@@ -696,14 +700,14 @@ The following code from Listing 6-5 implements the object interface type IShape 
 ```F#
 let circle(center : Point, radius : int) =
     { new IShape with
-		member x.Contains(p : Point) =
-			let dx = float32 (p.X - center.X)
-			let dy = float32 (p.Y - center.Y)
-			sqrt(dx * dx + dy * dy) <= float32 radius
-		member x.BoundingBox =
-			Rectangle(
-			center.X - radius, center.Y - radius,
-			2 * radius + 1, 2 * radius + 1)}
+        member x.Contains(p : Point) =
+            let dx = float32 (p.X - center.X)
+            let dy = float32 (p.Y - center.Y)
+            sqrt(dx * dx + dy * dy) <= float32 radius
+        member x.BoundingBox =
+            Rectangle(
+            center.X - radius, center.Y - radius,
+            2 * radius + 1, 2 * radius + 1)}
 ```
 
 The type of the function circle is as follows:
@@ -716,7 +720,7 @@ The construct in the braces, `{ new IShape with ... }`, is the object expression
 
 ```F#
 { new Type optional-arguments with
-	member-definitions
+    member-definitions
   optional-extra-interface-definitions }
 ```
 
@@ -760,19 +764,19 @@ It’s common to have concrete types that both implement one or more object inte
 
 ```F#
 type MutableCircle() =
-	let radius = 0
-	member val Center = Point(x = 0, y = 0) with get, set
-	member val Radius = radius with get, set
-	member c.Perimeter = 2.0 * System.Math.PI * float radius
-	interface IShape with
-		member c.Contains(p : Point) =
-			let dx = float32 (p.X - c.Center.X)
-			let dy = float32 (p.Y - c.Center.Y)
-			sqrt(dx * dx + dy * dy) <= float32 c.Radius
-		member c.BoundingBox =
-			Rectangle(
-			c.Center.X - c.Radius, c.Center.Y - c.Radius,
-			2 * c.Radius + 1, 2 * c.Radius + 1)
+    let radius = 0
+    member val Center = Point(x = 0, y = 0) with get, set
+    member val Radius = radius with get, set
+    member c.Perimeter = 2.0 * System.Math.PI * float radius
+    interface IShape with
+        member c.Contains(p : Point) =
+            let dx = float32 (p.X - c.Center.X)
+            let dy = float32 (p.Y - c.Center.Y)
+            sqrt(dx * dx + dy * dy) <= float32 c.Radius
+        member c.BoundingBox =
+            Rectangle(
+            c.Center.X - c.Radius, c.Center.Y - c.Radius,
+            2 * c.Radius + 1, 2 * c.Radius + 1)
 ```
 
 This type implements the IShape interface, which means MutableCircle is a subtype of IShape, but it also provides three properties—Center, Radius, and Perimeter—that are specific to the MutableCircle type, two of which are settable. The type has the following signature:
@@ -881,8 +885,8 @@ type ITextOutputSink =
 /// Returns an object that implements ITextOutputSink by using writeCharFunction
 let simpleOutputSink writeCharFunction =
     { new ITextOutputSink with
-		member x.WriteChar(c) = writeCharFunction c
-		member x.WriteString(s) = s |> String.iter x.WriteChar }
+        member x.WriteChar(c) = writeCharFunction c
+        member x.WriteString(s) = s |> String.iter x.WriteChar }
 ```
 
 This construction function uses function values to build an object of a given shape. Here the inferred type is as follows: 
@@ -920,8 +924,8 @@ One powerful technique implements some or all abstract members in terms of funct
 type CountingOutputSink(writeCharFunction : char -> unit) =
     let mutable count = 0
     interface ITextOutputSink with
-		member x.WriteChar(c) = count <- count + 1; writeCharFunction(c)
-		member x.WriteString(s) = s |> String.iter (x :> ITextOutputSink).WriteChar
+        member x.WriteChar(c) = count <- count + 1; writeCharFunction(c)
+        member x.WriteString(s) = s |> String.iter (x :> ITextOutputSink).WriteChar
     member x.Count = count
 ```
 
@@ -1043,10 +1047,10 @@ This is equivalent to the following:
 let myWriteStringToFile () =
     let outp = File.CreateText("playlist.txt")
     try
-		outp.WriteLine("Enchanted")
-		outp.WriteLine("Put your records on")
+        outp.WriteLine("Enchanted")
+        outp.WriteLine("Put your records on")
     finally
-		(outp :> System.IDisposable).Dispose()
+        (outp :> System.IDisposable).Dispose()
 ```
 
 Both forms ensure that the underlying stream is closed deterministically and the operating system resources are reclaimed when the lexical scope is exited. The longer form uses the :> operator to call Dispose, which was explained further in Chapter 5. This happens regardless of whether the scope is exited because of normal termination or because of an exception. 
