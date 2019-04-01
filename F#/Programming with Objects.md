@@ -635,7 +635,7 @@ The notion of an object interface type can sound a little daunting at first, but
 
 * In Chapter 5, you saw how records of function values can be used for the parameters needed to make an algorithm generic. 
 
-You’ve also already met some other important object interface types, such as System.Collections. Generic.IEnumerable<'T> and System.IDisposable. .NET object interface types always begin with the letter I by convention. 
+You’ve also already met some other important object interface types, such as `System.Collections.Generic.IEnumerable<'T>` and `System.IDisposable`. .NET object interface types always begin with the letter I by convention. 
 
 Definitions of object interface types do not specify the implementation of objects. Listing 6-5 shows an object interface type IShape and a number of implementations of it. This section walks through the definitions in this code piece by piece, because they illustrate the key concepts behind object interface types and how they can be implemented.
 
@@ -643,19 +643,22 @@ Definitions of object interface types do not specify the implementation of objec
 
 ```F#
 open System.Drawing
+
 type IShape =
     abstract Contains : Point -> bool
     abstract BoundingBox : Rectangle
+
 let circle (center : Point, radius : int) =
     { new IShape with
         member x.Contains(p : Point) =
-        let dx = float32 (p.X - center.X)
-        let dy = float32 (p.Y - center.Y)
-        sqrt(dx * dx + dy * dy) <= float32 radius
+            let dx = float32 (p.X - center.X)
+            let dy = float32 (p.Y - center.Y)
+            sqrt(dx * dx + dy * dy) <= float32 radius
         member x.BoundingBox =
-        Rectangle(
-        center.X - radius, center.Y - radius,
-        2 * radius + 1, 2 * radius + 1)}
+            Rectangle(
+            center.X - radius, center.Y - radius,
+            2 * radius + 1, 2 * radius + 1)}
+
 let square (center : Point, side : int) =
     { new IShape with
         member x.Contains(p : Point) =
@@ -664,6 +667,7 @@ let square (center : Point, side : int) =
             abs(dx) < side / 2 && abs(dy) < side / 2
         member x.BoundingBox =
             Rectangle(center.X - side, center.Y - side, side * 2, side * 2)}
+
 type MutableCircle() =
     member val Center = Point(x = 0, y = 0) with get, set
     member val Radius = 10 with get, set
@@ -674,6 +678,7 @@ type MutableCircle() =
             let dx = float32 (p.X - c.Center.X)
             let dy = float32 (p.Y - c.Center.Y)
             sqrt(dx * dx + dy * dy) <= float32 c.Radius
+
         member c.BoundingBox =
             Rectangle(
             c.Center.X - c.Radius, c.Center.Y - c.Radius,
@@ -682,7 +687,7 @@ type MutableCircle() =
 
 ### Defining New Object Interface Types
 
-The key definition in Listing 6-5 is the following (it also uses Rectangle and Point, two types from the System.Drawing namespace): 
+The key definition in Listing 6-5 is the following (it also uses `Rectangle` and `Point`, two types from the `System.Drawing` namespace): 
 
 ```F#
 open System.Drawing
@@ -721,7 +726,7 @@ The construct in the braces, `{ new IShape with ... }`, is the object expression
 ```F#
 { new Type optional-arguments with
     member-definitions
-  optional-extra-interface-definitions }
+    optional-extra-interface-definitions }
 ```
 
 The member definitions take the same form as members for type definitions described earlier in this chapter. The optional arguments are given only when object expressions inherit from a class type, and the optional interface definitions are used when implementing additional interfaces that are part of a hierarchy of object interface types. 
@@ -811,25 +816,26 @@ type AutofacCollection() =
 
 ### Using Common Object Interface Types from the .NET Libraries
 
-Like other constructs discussed in this chapter, object interface types are often encountered when using .NET libraries. Some object interface types such as IEnumerable<'T> (called seq<'T> in F# coding) are also used throughout F# programming. It’s a .NET convention to prefix the name of all object interface types with I. However, using object interface types is very common in F# object programming, and this convention doesn’t have to be followed.
+Like other constructs discussed in this chapter, object interface types are often encountered when using .NET libraries. Some object interface types such as `IEnumerable<'T>` (called `seq<'T>` in F# coding) are also used throughout F# programming. It’s a .NET convention to prefix the name of all object interface types with I. However, using object interface types is very common in F# object programming, and this convention doesn’t have to be followed.
 
-Here’s the essence of the definition of the System.Collections.Generic.IEnumerable<'T> type and the related type IEnumerator using F# notation: 
+Here’s the essence of the definition of the `System.Collections.Generic.IEnumerable<'T>` type and the related type `IEnumerator` using F# notation: 
 
 ```F#
 type IEnumerator<'T> =
     abstract Current : 'T
     abstract MoveNext : unit -> bool
+
 type IEnumerable<'T> =
     abstract GetEnumerator : unit -> IEnumerator<'T>
 ```
 
-The IEnumerable<'T> type is implemented by most concrete collection types. It can also be implemented by a sequence expression or by calling a library function such as Seq.unfold, which in turn uses an object expression as part of its implementation. 
+The `IEnumerable<'T>` type is implemented by most concrete collection types. It can also be implemented by a sequence expression or by calling a library function such as `Seq.unfold`, which in turn uses an object expression as part of its implementation. 
 
 ---
 
 #### Note  
 
-the `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .net language. this section uses the corresponding F# syntax. in reality, IEnumerator<'T> also inherits from the nongeneric interfaces System.Collections.IEnumerator and System.IDisposable, and IEnumerable<'T> also inherits from the nongeneric interface System. Collections.IEnumerable. For clarity, we’ve ignored this. see the F# library documentation for full example implementations of these types.
+the `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .net language. this section uses the corresponding F# syntax. in reality, `IEnumerator<'T>` also inherits from the nongeneric interfaces `System.Collections.IEnumerator` and `System.IDisposable`, and `IEnumerable<'T>` also inherits from the nongeneric interface `System.Collections.IEnumerable`. For clarity, we’ve ignored this. see the F# library documentation for full example implementations of these types.
 
 ---
 
@@ -848,6 +854,7 @@ Object interface types can be arranged in hierarchies using *interface inheritan
 ```F#
 type IEnumerable<'T> =
     abstract GetEnumerator : unit -> IEnumerator<'T>
+
 type ICollection<'T> =
     inherit IEnumerable<'T>
     abstract Count : int
@@ -884,6 +891,7 @@ type ITextOutputSink =
     abstract WriteChar : char -> unit
     /// When implemented, writes one Unicode string to the sink
     abstract WriteString : string -> unit
+
 /// Returns an object that implements ITextOutputSink by using writeCharFunction
 let simpleOutputSink writeCharFunction =
     { new ITextOutputSink with
@@ -897,7 +905,7 @@ This construction function uses function values to build an object of a given sh
 val simpleOutputSink : writeCharFunction:(char -> unit) -> ITextOutputSink
 ```
 
-The following code instantiates the function parameter to output the characters to a particular System. Text.StringBuilder object, an imperative type for accumulating characters in a buffer before converting these to an immutable System.String value: 
+The following code instantiates the function parameter to output the characters to a particular `System.Text.StringBuilder` object, an imperative type for accumulating characters in a buffer before converting these to an immutable `System.String` value: 
 
 ```F#
 let stringBuilderOutputSink (buf : System.Text.StringBuilder ) =
@@ -935,7 +943,7 @@ type CountingOutputSink(writeCharFunction : char -> unit) =
 
 #### Note  
 
-Qualifying object implementations by function parameters can be seen as a simple form of the oo design pattern known as delegation, because parts of the implementation are delegated to the function values. Delegation is a powerful and compositional technique for reusing fragments of implementations and is commonly used in F# as a replacement for oo implementation inheritance. 
+Qualifying object implementations by function parameters can be seen as a simple form of the OO design pattern known as delegation, because parts of the implementation are delegated to the function values. Delegation is a powerful and compositional technique for reusing fragments of implementations and is commonly used in F# as a replacement for OO implementation inheritance. 
 
 ---
 
@@ -956,7 +964,7 @@ This class defines two abstract members, WriteChar and WriteString, but gives a 
 
 ```F#
 { new TextOutputSink() with
-     member x.WriteChar c = System.Console.Write(c)}
+    member x.WriteChar c = System.Console.Write(c)}
 ```
 
 ### Using Partially Implemented Types via Delegation
@@ -968,10 +976,10 @@ This section covers how you can use partially implemented types to build complet
 type HtmlWriter() =
     let mutable count = 0
     let sink =
-{ new TextOutputSink() with
-member x.WriteChar c =
-count <- count + 1;
-System.Console.Write c }
+        { new TextOutputSink() with
+            member x.WriteChar c =
+                count <- count + 1;
+                System.Console.Write c }
     member x.CharCount = count
     member x.OpenTag(tagName) = sink.WriteString(sprintf "<%s>" tagName)
     member x.CloseTag(tagName) = sink.WriteString(sprintf "</%s>" tagName)
@@ -988,9 +996,9 @@ Another technique that uses partially implemented types is called implementation
 
 * Implementation hierarchies are often fragile in response to minor changes in program specification. There is pressure on developers to put too much functionality in base classes, anticipating the needs of all derivations. There’s also pressure to go back and change the base class as new needs arise. This gives rise to the “fragile base class” problem, a major curse of object-oriented programming. 
 
-If implementation inheritance is used, you should in many cases consider making all implementing classes private or hiding all implementing classes behind a signature. For example, the FSharp.Collections.Seq module provides many implementations of the seq<'T> interface but exposes no implementation inheritance.
+If implementation inheritance is used, you should in many cases consider making all implementing classes private or hiding all implementing classes behind a signature. For example, the `FSharp.Collections.Seq` module provides many implementations of the `seq<'T>` interface but exposes no implementation inheritance.
 
-Nevertheless, hierarchies of classes are important in domains such as GUI programming, and the technique is used heavily by .NET libraries written in other .NET languages. For example, System.Windows. Forms.Control, System.Windows.Forms.UserControl and System.Windows.Forms.RichTextBox are part of a hierarchy of visual GUI elements. Should you want to write new controls, you must understand this implementation hierarchy and how to extend it. However, even in this domain, implementation inheritance is often less important than you may think, because these controls can often be configured in powerful and interesting ways by adding function callbacks to events associated with the controls. 
+Nevertheless, hierarchies of classes are important in domains such as GUI programming, and the technique is used heavily by .NET libraries written in other .NET languages. For example, `System.Windows.Forms.Control`, `System.Windows.Forms.UserControl` and `System.Windows.Forms.RichTextBox` are part of a hierarchy of visual GUI elements. Should you want to write new controls, you must understand this implementation hierarchy and how to extend it. However, even in this domain, implementation inheritance is often less important than you may think, because these controls can often be configured in powerful and interesting ways by adding function callbacks to events associated with the controls. 
 
 Here is a simple example of applying the technique to instantiate and extend the partially implemented type TextOutputSink:
 
@@ -1015,10 +1023,11 @@ Implementations are also free to override and modify default implementations suc
      member sink.WriteString s = System.Console.Write s }
 ```
 
-You can also build new partially implemented types by extending existing partially implemented types. The following example takes the TextOutputSink type from the previous section and adds two abstract members called WriteByte and WriteBytes, adds a default implementation for WriteBytes, adds an initial implementation for WriteChar, and overrides the implementation of WriteString to use WriteBytes. The implementations of WriteChar and WriteString use.NET functionality to convert the Unicode characters and strings to bytes under System.Text.UTF8Encoding, documented in the .NET framework class libraries: 
+You can also build new partially implemented types by extending existing partially implemented types. The following example takes the TextOutputSink type from the previous section and adds two abstract members called WriteByte and WriteBytes, adds a default implementation for WriteBytes, adds an initial implementation for WriteChar, and overrides the implementation of WriteString to use WriteBytes. The implementations of WriteChar and WriteString use.NET functionality to convert the Unicode characters and strings to bytes under `System.Text.UTF8Encoding`, documented in the .NET framework class libraries: 
 
 ```F#
 open System.Text
+
 /// A component to write bytes to an output sink
 [<AbstractClass>]
 type ByteOutputSink() =
@@ -1034,7 +1043,7 @@ type ByteOutputSink() =
 
 ## Combining Functional and Objects: Cleaning Up Resources
 
-Many constructs in the System.IO namespace need to be closed after use, partly because they hold on to operating system resources such as file handles. This is an example of how objects are used to encapsulate and manage resource lifetime. In polished code, you use language constructs such as use val = expr to ensure that the resource is closed at the end of the lexical scope where a stream object is active. For example: 
+Many constructs in the `System.IO` namespace need to be closed after use, partly because they hold on to operating system resources such as file handles. This is an example of how objects are used to encapsulate and manage resource lifetime. In polished code, you use language constructs such as `use val = expr` to ensure that the resource is closed at the end of the lexical scope where a stream object is active. For example: 
 
 ```F#
 let myWriteStringToFile() =
@@ -1055,13 +1064,13 @@ let myWriteStringToFile () =
         (outp :> System.IDisposable).Dispose()
 ```
 
-Both forms ensure that the underlying stream is closed deterministically and the operating system resources are reclaimed when the lexical scope is exited. The longer form uses the :> operator to call Dispose, which was explained further in Chapter 5. This happens regardless of whether the scope is exited because of normal termination or because of an exception. 
+Both forms ensure that the underlying stream is closed deterministically and the operating system resources are reclaimed when the lexical scope is exited. The longer form uses the `:>` operator to call `Dispose`, which was explained further in Chapter 5. This happens regardless of whether the scope is exited because of normal termination or because of an exception. 
 
 ---
 
 #### Note  
 
-if you don’t use a use binding, or otherwise explicitly close the stream, the stream is closed when the
+if you don’t use a `use` binding, or otherwise explicitly close the stream, the stream is closed when the
 stream object is finalized by the .net garbage collector. it’s generally bad practice to rely on finalization to clean
 up resources this way, because finalization isn’t guaranteed to happen in a deterministic, timely fashion.
 
@@ -1075,16 +1084,15 @@ All programming involves the use of real resources on the host machine(s) and op
 
 * Heap allocated memory: Used by all reference-typed objects.
 
-* File handles: Such as operating system file handles represented by System.IO.FileStream objects and its subtypes 
+* File handles: Such as operating system file handles represented by `System.IO.FileStream` objects and its subtypes 
 
-* Network connections: Such as operating system I/O completion ports represented by System.Net.WebResponse and its subtypes 
+* Network connections: Such as operating system I/O completion ports represented by `System.Net.WebResponse` and its subtypes 
 
-* Threads: Such as operating system threads represented by System.Threading. Thread objects and also worker threads in the .NET thread pool 
+* Threads: Such as operating system threads represented by `System.Threading`. Thread objects and also worker threads in the .NET thread pool 
 
-* Graphics objects: Such as drawing objects represented by various constructs under the System.Drawing namespace 
+* Graphics objects: Such as drawing objects represented by various constructs under the `System.Drawing` namespace 
 
-* Concurrency objects: Such as operating system synchronization objects represented 
-by System.Threading.WaitHandle objects and its subtypes
+* Concurrency objects: Such as operating system synchronization objects represented by `System.Threading.WaitHandle` objects and its subtypes
 
 All resources are necessarily finite. In .NET programming, some resources such as memory are fully managed, in the sense that you almost never need to consider when to clean up memory. This is done automatically through a process called garbage collection. Chapter 18 will look at garbage collection in more detail. Other resources must be reclaimed and/or recycled. 
 
@@ -1094,7 +1102,7 @@ When prototyping, you can generally assume that resources are unbounded, althoug
 
 * In some cases, even memory should be explicitly and carefully reclaimed. For example, on a modern 64-bit machine, the largest single array you can allocate in a .NET 2.0 program is 2 GB. If your machine has, say, 4 GB of real memory, you may be able to have only a handful of these objects and should strongly consider moving to a regime in which you explicitly recycle these objects and think carefully before allocating them. 
 
-With the exception of stack and memory, all objects that own resources should be subtypes of the .NET type System.IDisposable. This is the primary way you can recognize primitive resources and objects that wrap resources. The System.IDisposable interface has a single method; in F# syntax, it can be defined as: 
+With the exception of stack and memory, all objects that own resources should be subtypes of the .NET type `System.IDisposable`. This is the primary way you can recognize primitive resources and objects that wrap resources. The `System.IDisposable` interface has a single method; in F# syntax, it can be defined as: 
 
 ```F#
 namespace System
@@ -1103,7 +1111,7 @@ type IDisposable =
     abstract Dispose : unit -> unit
 ```
 
-A simple approach to managing IDisposable objects is to give each resource a lifetime; that is, some well-defined portion of the program execution for which the object is active. This is even easier when the lifetime of a resource is lexically scoped, such as when a resource is allocated on entry to a function and deallocated on exit. In this case, the resource can be tied to the scope of a particular variable, and you can protect and dispose of a value that implements IDisposable by using a use binding instead of a let binding. For example, in the following code, three values implement IDisposable, all of which are bound using use: 
+A simple approach to managing `IDisposable` objects is to give each resource a lifetime; that is, some well-defined portion of the program execution for which the object is active. This is even easier when the lifetime of a resource is lexically scoped, such as when a resource is allocated on entry to a function and deallocated on exit. In this case, the resource can be tied to the scope of a particular variable, and you can protect and dispose of a value that implements IDisposable by using a use binding instead of a let binding. For example, in the following code, three values implement IDisposable, all of which are bound using use: 
 
 ```F#
 /// Fetch a web page
@@ -1118,12 +1126,13 @@ let http (url : string) =
 
 This is an improved version of the similar function you defined in Chapter 2, because it deterministically closes the network connections. In all three cases, the objects (a WebResponse, a Stream, and a StreamReader) are automatically closed and disposed of at the end of an execution of the function. 
 
-A number of important types implement IDisposable; Table 6-1 shows some of them. You can use tables such as this to chart the portions of the .NET framework that reveal operating system functionality to .NET applications. 
+A number of important types implement `IDisposable`; Table 6-1 shows some of them. You can use tables such as this to chart the portions of the .NET framework that reveal operating system functionality to .NET applications. 
 
 #### Table 6-1. A Selection of the Types that Implement IDisposable
 
 * System.IO
   BinaryReader, BinaryWriter, FileSystemWatcher, IsolatedFileStorage, Stream, TextReader, TextWriter, ...
+
 * System.Net
   WebResponse, ...
 
@@ -1140,9 +1149,10 @@ A number of important types implement IDisposable; Table 6-1 shows some of them
 
 #### Tip   
 
-IDEs can help you determine when a type has implemented IDisposable. when you rest your mouse pointer over a value, you usually see this noted on the information displayed for a value. 
+IDEs can help you determine when a type has implemented `IDisposable`. when you rest your mouse pointer over a value, you usually see this noted on the information displayed for a value. 
 
 ---
+
 
 ---
 
@@ -1150,9 +1160,9 @@ IDEs can help you determine when a type has implemented IDisposable. when you re
 
 People often ask if the .net Common Language runtime automatically cleans up resources such as file handles the same way it cleans up memory. while when an object gets garbage collected, it may be finalized, if the object is well implemented, this results in it deallocating any unmanaged resources, closing any outstanding file connections, and releasing any operating system resources. although it’s appropriate to rely on finalization when prototyping, never rely on finalization in code where you’re hitting resource limits. 
 
-For example, let’s say you have a loop where you open files using System.IO.File.OpenRead. if you forget to close the file handles, you may quickly allocate thousands of them. if you’re lucky, the garbage collector may finalize these before you run out of os resources, but if not, one of your File.OpenRead calls will fail with an exception, even if the file exists on disk. 
+For example, let’s say you have a loop where you open files using `System.IO.File.OpenRead`. if you forget to close the file handles, you may quickly allocate thousands of them. if you’re lucky, the garbage collector may finalize these before you run out of OS resources, but if not, one of your `File.OpenRead` calls will fail with an exception, even if the file exists on disk. 
 
-Also, be aware of the potential for memory stickiness. this occurs when the .net Common Language runtime is unable to garbage-collect memory even though objects have become unreachable. this happens especially when long-running computations and inactive callbacks hold on to object handles related to the earlier phases of execution of a program. memory stickiness can also lead to objects never being finalized, reinforcing that you shouldn’t rely on finalization to release nonmemory resources. memory profiling tools such as CLRProfiler are indispensable when you’re tracking down memory leaks in production code or long-running applications. 
+Also, be aware of the potential for memory stickiness. this occurs when the .net Common Language runtime is unable to garbage-collect memory even though objects have become unreachable. this happens especially when long-running computations and inactive callbacks hold on to object handles related to the earlier phases of execution of a program. memory stickiness can also lead to objects never being finalized, reinforcing that you shouldn’t rely on finalization to release nonmemory resources. memory profiling tools such as `CLRProfiler` are indispensable when you’re tracking down memory leaks in production code or long-running applications. 
 
 ---
 
@@ -1160,23 +1170,24 @@ Also, be aware of the potential for memory stickiness. this occurs when the .net
 
 Sometimes, the lifetime of a resource isn’t simple in the sense that it doesn’t follow a stack discipline. In these cases, you should almost always adopt one of two techniques: 
 
-* Design objects that can own one or more resources and that are responsible for cleaning them up. Make sure that these objects implement System.IDisposable. 
+* Design objects that can own one or more resources and that are responsible for cleaning them up. Make sure that these objects implement `System.IDisposable`. 
 
 * Use control constructs that help you capture the kind of computation you’re performing. For example, when generating sequences of data (such as from a database connection), you should strongly consider using sequence expressions, as discussed in Chapter 3. These may have internal use bindings, and the resources are disposed of when each sequence iteration finishes. Likewise, when using asynchronous I/O, it may be helpful to write your computation as an asynchronous workflow. Chapter 11 and the following sections will provide examples. 
 
-Consider implementing the IDisposable interface on objects and types in situations such as: 
 
-* When you build an object that uses one or more IDisposable objects internally. 
+Consider implementing the `IDisposable` interface on objects and types in situations such as: 
 
-* When you’re writing a wrapper for an operating system resource or some resource allocated and managed in a native (C or C++) DLL. In this case, implement a finalizer by overriding the Object.Finalize method. 
+* When you build an object that uses one or more `IDisposable` objects internally. 
 
-* When you implement the System.Collections.Generic.IEnumerable<'T> (that is, sequence) interface on a collection. The IEnumerable interface isn’t IDisposable, but it must generate `System.Collection.Generic.IEnumerator<'T>` values, and this interface inherits from `IDisposable`. For nearly all collection types, the disposal action returns without doing anything. 
+* When you’re writing a wrapper for an operating system resource or some resource allocated and managed in a native (C or C++) DLL. In this case, implement a finalizer by overriding the `Object.Finalize` method. 
+
+* When you implement the `System.Collections.Generic.IEnumerable<'T>` (that is, sequence) interface on a collection. The `IEnumerable` interface isn’t `IDisposable`, but it must generate `System.Collection.Generic.IEnumerator<'T>` values, and this interface inherits from `IDisposable`. For nearly all collection types, the disposal action returns without doing anything. 
 
 The following sections give some examples of these. 
 
 ### Cleaning Up Internal Objects
 
-Listing 6-6 shows an example that implements an object that reads lines from a pair of text files, choosing the file at random at each line pull. You must implement the type IDisposable, because the object owns two internal `System.IO.StreamReader` objects, which are `IDisposable`. You also must explicitly check to see whether the object has already been disposed of. 
+Listing 6-6 shows an example that implements an object that reads lines from a pair of text files, choosing the file at random at each line pull. You must implement the type `IDisposable`, because the object owns two internal `System.IO.StreamReader` objects, which are `IDisposable`. You also must explicitly check to see whether the object has already been disposed of. 
 
 #### Listing 6-6. Implementing IDisposable to clean up internal objects
 
@@ -1189,17 +1200,17 @@ type LineChooser(fileName1, fileName2) =
     let mutable disposed = false
     let cleanup() =
         if not disposed then
-        disposed <- true;
-        file1.Dispose();
-        file2.Dispose();
+            disposed <- true;
+            file1.Dispose();
+            file2.Dispose();
     interface System.IDisposable with
         member x.Dispose() = cleanup()
     member obj.CloseAll() = cleanup()
     member obj.GetLine() =
-        if not file1.EndOfStream &&
-        (file2.EndOfStream  || rnd.Next() % 2 = 0) then file1.ReadLine()
+        if not file1.EndOfStream && (file2.EndOfStream || rnd.Next() % 2 = 0) 
+        then file1.ReadLine()
         elif not file2.EndOfStream then file2.ReadLine()
-        else raise (new EndOfStreamException())
+        else raise <| new EndOfStreamException()
 ```
 
 You can now instantiate, use, and dispose of this object as follows:
@@ -1220,11 +1231,11 @@ val it : string = "I'm a little teapot"
 Error: System.ObjectDisposedException: Cannot read from a closed TextReader.
 ```
 
-Disposal should leave an object in an unusable state, as shown in the last line of the previous example. It’s also common for objects to implement a member with a more intuitive name that does precisely the same thing as its implementation of IDisposable.Dispose, which is CloseAll in Listing 6-6. 
+Disposal should leave an object in an unusable state, as shown in the last line of the previous example. It’s also common for objects to implement a member with a more intuitive name that does precisely the same thing as its implementation of `IDisposable.Dispose`, which is CloseAll in Listing 6-6. 
 
 ### Cleaning Up Unmanaged Objects
 
-If you’re writing a component that explicitly wraps some kind of unmanaged resource, then implementing IDisposable is a little trickier. Listing 6-7 shows the pattern that is used for this type of cleanup. Here, you mimic an external resource via a data structure that generates fresh, reclaimable integer tickets. The idea is that each customer is given an integer ticket, but this is kept internal to the customer, and customers return their tickets to the pool when they leave (that is, are disposed of). 
+If you’re writing a component that explicitly wraps some kind of unmanaged resource, then implementing `IDisposable` is a little trickier. Listing 6-7 shows the pattern that is used for this type of cleanup. Here, you mimic an external resource via a data structure that generates fresh, reclaimable integer tickets. The idea is that each customer is given an integer ticket, but this is kept internal to the customer, and customers return their tickets to the pool when they leave (that is, are disposed of). 
 
 #### Listing 6-7. Reclaiming unmanaged tickets with IDisposable
 
@@ -1249,15 +1260,15 @@ type Customer() =
     let mutable disposed = false
     let cleanup() =
         if not disposed then
-        disposed <- true
-        ticketGenerator.Dealloc(myTicket)
+            disposed <- true
+            ticketGenerator.Dealloc(myTicket)
     member x.Ticket = myTicket
     override x.Finalize() = cleanup()
     interface IDisposable with
         member x.Dispose() = cleanup(); GC.SuppressFinalize(x)
 ```
 
-Note that you override the Object.Finalize method. This makes sure cleanup occurs if the object isn’t disposed of but is still garbage-collected. If the object is explicitly disposed of, you call GC.SuppressFinalize() to ensure that the object isn’t later finalized. The finalizer shouldn’t call the Dispose() of other managed objects, because they have their own finalizers if needed. The following example session generates some customers, and tickets used by some of the customers are automatically reclaimed as they exit their scopes: 
+Note that you override the `Object.Finalize` method. This makes sure cleanup occurs if the object isn’t disposed of but is still garbage-collected. If the object is explicitly disposed of, you call `GC.SuppressFinalize()` to ensure that the object isn’t later finalized. The finalizer shouldn’t call the `Dispose()` of other managed objects, because they have their own finalizers if needed. The following example session generates some customers, and tickets used by some of the customers are automatically reclaimed as they exit their scopes: 
 
 ```F#
 > let bill = new Customer();;
@@ -1308,6 +1319,7 @@ These type extensions are called F#-style extension members. Since F# 3.1, an ad
 ```F#
 module CSharpStyleExtensions =
     open System.Runtime.CompilerServices
+
     let factorize i =
         let lim = int (sqrt (float i))
         let rec check j =
@@ -1318,19 +1330,23 @@ module CSharpStyleExtensions =
 
     [<Extension>]
     type Int32Extensions() =
+
         [<Extension>]
         static member IsPrime2(i:int) = (factorize i).IsNone
+
         [<Extension>]
         static member TryFactorize2(i:int) = factorize i
 
     [<Extension>]
     type ResizeArrayExtensions() =
+
         [<Extension>]
         static member Product(values:ResizeArray<int>) =
             let mutable total = 1
             for v in values do
             total <- total * v
             total
+
         [<Extension>]
         static member inline GenericProduct(values:ResizeArray<'T>) =
             let mutable total = LanguagePrimitives.GenericOne<'T>
@@ -1339,7 +1355,7 @@ module CSharpStyleExtensions =
             total
 ```
 
-C#-style extension members are declared as an (attributed) static method in an (attributed) class. The method takes an extra “this” argument. C#-style extension members are used as an instance method taking one fewer parameters. At the usage site they must minimally take at least “zero” arguments through a () parameter. For example: 
+C#-style extension members are declared as an (attributed) static method in an (attributed) class. The method takes an extra “this” argument. C#-style extension members are used as an instance method taking one fewer parameters. At the usage site they must minimally take at least “zero” arguments through a `()` parameter. For example: 
 
 ```F#
 > open CSharpStyleExtensions ;;
@@ -1349,7 +1365,7 @@ val it : bool = true
 val it : (int * int) option = Some (1218743, 5)
 ```
 
-Despite the limitations of C#-style extension members, they have an important advantage that is useful for some F# API designs: for generic types, C#-style extension methods can constrain the generic type parameters to either a particular instantiation or some other generic constraint. For example, in the code just reviewed, the Product method constrains the type of the input ResizeArray to be int. Likewise, GenericProduct constrains the ResizeArray to be a type 'T, which support zero and multiplication (see Chapter 5 for more discussion on generic constraints). Normal F# extensions can’t operate on constrained types like this, which sometimes makes a mix of F# and C# extensions useful when designing “Fluent” APIs. For example, see the F# community library FSharp.Core.Fluent on GitHub, which uses exactly such a mix. 
+Despite the limitations of C#-style extension members, they have an important advantage that is useful for some F# API designs: for generic types, C#-style extension methods can constrain the generic type parameters to either a particular instantiation or some other generic constraint. For example, in the code just reviewed, the Product method constrains the type of the input ResizeArray to be int. Likewise, GenericProduct constrains the ResizeArray to be a type `'T`, which support zero and multiplication (see Chapter 5 for more discussion on generic constraints). Normal F# extensions can’t operate on constrained types like this, which sometimes makes a mix of F# and C# extensions useful when designing “Fluent” APIs. For example, see the F# community library `FSharp.Core.Fluent` on GitHub, which uses exactly such a mix. 
 
 ```F#
 > open System.Collections.Generic;;
@@ -1365,9 +1381,9 @@ val it : int = 3628800
 val it : int64 = 3628800L
 ```
 
-Type extensions can be given in any assembly, but priority is always given to the intrinsic members of a type when resolving dot-notation. 
+Type extensions can be given in any assembly, but priority is always given to the intrinsic members of a type when resolving dot-notation.
 
-Modules can also be extended, in a fashion. For example, say you think the List module is missing an obvious function such as List.pairwise to return a new list of adjacent pairs. You can extend the set of values accessed by the path List by defining a new module List: 
+Modules can also be extended, in a fashion. For example, say you think the List module is missing an obvious function such as `List.pairwise` to return a new list of adjacent pairs. You can extend the set of values accessed by the path List by defining a new module List: 
 
 ```F#
 module List =
@@ -1386,7 +1402,7 @@ val it : (int * int) list = [(1,2); (2,3);  (3,4)]
 
 #### Note   
 
-type extensions are a good technique for equipping simple type definitions with extra functionality. however, don’t fall into the trap of adding too much functionality to an existing type via this route. instead, it’s often simpler to use additional modules and types. For example, the module FSharp.Collections.List contains extra functionality associated with the F# list type. 
+type extensions are a good technique for equipping simple type definitions with extra functionality. however, don’t fall into the trap of adding too much functionality to an existing type via this route. instead, it’s often simpler to use additional modules and types. For example, the module `FSharp.Collections.List` contains extra functionality associated with the F# list type. 
 
 ---
 
@@ -1503,8 +1519,10 @@ This is usually required only when using C code from F#, because some magic perf
 ```F#
 open System.Runtime.InteropServices
 let ctrlSignal = ref false
+
 [<DllImport("kernel32.dll")>]
 extern void SetConsoleCtrlHandler(ControlEventHandler callback, bool add)
+
 let ctrlEventHandler = new ControlEventHandler(fun i ->  ctrlSignal := true; true)
 SetConsoleCtrlHandler(ctrlEventHandler,true)
 ```
@@ -1526,7 +1544,7 @@ This type is compiled as a .NET enum whose underlying bit representation is a si
 
 ### Working with null Values
 
-The keyword null is used in programming languages as a special, distinguished value of a type that represents an uninitialized value or some other kind of special condition. In general, null isn’t used in conjunction with types defined in F# code, although it’s common to simulate null with a value of the option type. For example: 
+The keyword `null` is used in programming languages as a special, distinguished value of a type that represents an uninitialized value or some other kind of special condition. In general, null isn’t used in conjunction with types defined in F# code, although it’s common to simulate null with a value of the `option` type. For example: 
 
 ```F#
 > let parents = [("Adam", None); ("Cain", Some("Adam", "Eve"))];;
@@ -1553,13 +1571,13 @@ let switchOnType (a : obj) =
     | _  -> printf "Some other kind of object\n"
 ```
 
-There are other important sources of null values. For example, the semi-safe function Array.zeroCreate creates an array whose values are initially null or, in the case of value types, an array in which each entry is the zero-bit pattern. This function is included with F# primarily because there is no other technique for initializing and creating the array values used as building blocks of larger, more sophisticated data structures, such as queues and hash tables. Of course, you must use this function with care, and in general you should hide the array behind an encapsulation boundary and be sure the values of the array aren’t referenced before they’re initialized. 
+There are other important sources of null values. For example, the semi-safe function `Array.zeroCreate` creates an array whose values are initially null or, in the case of value types, an array in which each entry is the zero-bit pattern. This function is included with F# primarily because there is no other technique for initializing and creating the array values used as building blocks of larger, more sophisticated data structures, such as queues and hash tables. Of course, you must use this function with care, and in general you should hide the array behind an encapsulation boundary and be sure the values of the array aren’t referenced before they’re initialized. 
 
 ---
 
-####Note  
+#### Note  
 
-although F# generally enables you to code in a null-free style, F# isn’t totally immune to the potential existence of null values: they can come from the .net apis, and it’s also possible to use Array. zeroCreate and other back-door techniques to generate null values for F# types. if necessary, apis can check for this condition by first converting F# values to the obj type by calling box and then testing for null (see the F# informal Language specification for full details). in practice, this isn’t required by the vast majority of F# programs; for most purposes, the existence of null values can be ignored. 
+although F# generally enables you to code in a null-free style, F# isn’t totally immune to the potential existence of null values: they can come from the .NET APIs, and it’s also possible to use `Array.zeroCreate` and other back-door techniques to generate null values for F# types. if necessary, APIs can check for this condition by first converting F# values to the obj type by calling box and then testing for null (see the F# informal Language specification for full details). in practice, this isn’t required by the vast majority of F# programs; for most purposes, the existence of null values can be ignored. 
 
 ---
 
