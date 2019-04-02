@@ -14,17 +14,17 @@ Operator overloading is a term used for adding new meaning to an existing operat
 
 ---
 
-#### Warning
+##### Warning
 
 Be sure to use an operator that makes sense. For example, overloading `+` for a custom type shouldn’t subtract values or remove items from a collection.
 
 ---
 
-When you overload an operator, the operator’s name must be in parentheses. For ex­ ample, `(+)` overloads the plus operator. To overload a unary operator, simply prefix the operator with a tilde `(~)`.
+When you overload an operator, the operator’s name must be in parentheses. For ex ample, `(+)` overloads the plus operator. To overload a unary operator, simply prefix the operator with a tilde (~).
 
 Example 8-1 overloads the `+` and `−` operators to represent operators on a bottle. Note the `~−` operator allows for unary negation.
 
-#### Example 8-1. Operator overloading
+##### Example 8-1. Operator overloading
 
 ``` F#
 [<Measure>]
@@ -79,7 +79,7 @@ val it : Person = Couple (Boy "Dick",Girl "Jane")
 
 ---
 
-#### Warning
+##### Warning
 
 F# allows you to define arbitrary symbolic operators for types; however, only a subset of these can be used natively with C# and VB.NET. Only the following operators are recognized by those languages:
 
@@ -103,13 +103,13 @@ Note that this list does not contain `>` and `<`. To define binary comparison op
 
 ### Indexers
 
-For types that are a collection of values, an indexer is a natural way to extend the met­ aphor by enabling developers to index directly into the object. For example, you can get an arbitrary element of an array by using the `.[ ]` operator.
+For types that are a collection of values, an indexer is a natural way to extend the met aphor by enabling developers to index directly into the object. For example, you can get an arbitrary element of an array by using the `.[ ]` operator.
 
 In F#, you can add an indexer by simply adding a property named Item. This property will be evaluated whenever you call the `.[ ]` method on the class.
 
 Example 8-2 creates a class Year and adds an indexer to allow you to look up the nth day of the year.
 
-#### Example 8-2. Adding an indexer to a class
+##### Example 8-2. Adding an indexer to a class
 
 ``` F#
 open System
@@ -138,7 +138,7 @@ But what if you want to not only read values from an indexer, but write them bac
 
 Example 8-3 defines an indexer for a type that accepts a non-integer parameter. In a different take on the Year class example, the indexer takes a month and date tuple.
 
-#### Example 8-3. Non-integer indexer
+##### Example 8-3. Non-integer indexer
 
 ``` F#
 type Year2(year : int) =
@@ -170,7 +170,7 @@ The read-only indexers you’ve seen so far aren’t ideal for every situation. 
 
 Example 8-4 defines a type `WordBuilder` that allows you to access and update letters of a word at a given index.
 
-#### Example 8-4. Read/write indexer
+##### Example 8-4. Read/write indexer
 
 ``` F#
 open System.Collections.Generic
@@ -203,7 +203,7 @@ Similar to indexers, slices allow you to index into a type that represents a col
 
 To add a one-dimensional slice, add a method named `GetSlice` that takes two option types as parameters. Example 8-5 defines a slice for a type called `TextBlock` where the slice returns a range of words in the body of the text.
 
-#### Example 8-5. Providing a slice to a class
+##### Example 8-5. Providing a slice to a class
 
 ``` F#
 type TextBlock(text : string) =
@@ -239,9 +239,9 @@ val it : string [] = [|"jumped"; "over"; "the"; "lazy"|]
 
 If you need a more refined way to slice your data, you can provide a two-dimension slicer. This allows you to specify two ranges of data. To define a 2-D slice, simply add a method called `GetSlice` again, except that the method should now take four option-type parameters. In order, they are: first-dimension lower bound, first-dimension upper bound, second-dimension lower bound, and second-dimension upper bound.
 
-Example 8-6 defines a class that encapsulates a sequence of data points. The type pro­ vides a 2-D slice that returns only those points within the given range.
+Example 8-6 defines a class that encapsulates a sequence of data points. The type pro vides a 2-D slice that returns only those points within the given range.
 
-#### Example 8-6. Defining a two-dimensional slice
+##### Example 8-6. Defining a two-dimensional slice
 
 ``` F#
 open System
@@ -308,7 +308,7 @@ Fortunately, you can add a generic type constraint, which will enable you to sti
 
 A generic type constraint is simply a form of type annotation. Whenever you would have written a generic type `'a`, you can add type constraints using the `when` keyword. Example 8-7 defines a generic class `GreaterThanList` where the type parameter must also implement the `IComparable` interface. This allows instances of the generic type to be cast to the `IComparable` interface, and ultimately enables items to be checked to be sure they are greater than the first element in the list.
 
-#### Example 8-7. Generic type constraints
+##### Example 8-7. Generic type constraints
 
 ``` F#
 open System
@@ -356,7 +356,7 @@ The value type constraint enforces that the type argument must be a value type. 
 ``` F#
 'a : struct
 ```
-  
+
 *Reference type constraint*
 
 The reference constraint enforces that the type argument must be a reference type. The syntax for the reference constraint is as follows:
@@ -440,7 +440,7 @@ So far, the classes and types we have created have been useful, but they needed 
 
 Consider Example 8-8, which defines a type `CoffeeCup` that lets interested parties know when the cup is empty. This is helpful in case you wanted to automatically get a refill and avoid missing out on a tasty cup of joe. This is done by keeping track of a list of functions to call when the cup is eventually empty.
 
-#### Example 8-8. Creating proactive types
+##### Example 8-8. Creating proactive types
 
 ``` F#
 open System.Collections.Generic
@@ -451,16 +451,20 @@ type ml
 type CoffeeCup(amount : float<ml>) =
     let mutable m_amountLeft = amount
     let mutable m_interestedParties = List<(CoffeeCup -> unit)>()
+    
     member this.Drink(amount) =
         printfn "Drinking %.1f..." (float amount)
         m_amountLeft <- max (m_amountLeft - amount) 0.0<ml>
         if m_amountLeft <= 0.0<ml> then
             this.LetPeopleKnowI'mEmpty()
+            
     member this.Refil(amountAdded) =
         printfn "Coffee Cup refilled with %.1f" (float amountAdded)
         m_amountLeft <- m_amountLeft + amountAdded
+        
     member this.WhenYou'reEmptyCall(func) =
         m_interestedParties.Add(func)
+        
     member private this.LetPeopleKnowI'mEmpty() =
         printfn "Uh ho, I'm empty! Letting people know..."
         for interestedParty in m_interestedParties do
@@ -489,7 +493,7 @@ Coffee Cup refilled with 50.0
 val it : unit = ()
 ```
 
-Abstractly, we can describe the `CoffeeCup` class as a pattern enabling consumers—people who have an instance of the class—to subscribe to an event—when the cup is empty. This turns out to be very useful, and makes up the foundation of most graphical pro­ gramming environments (so-called event-driven programming). For example, win­ dowing systems allow you to provide functions to be called when a button is clicked or when a check box is toggled. However, our custom implementation of keeping a list of function values is clunky at best.
+Abstractly, we can describe the `CoffeeCup` class as a pattern enabling consumers—people who have an instance of the class—to subscribe to an event—when the cup is empty. This turns out to be very useful, and makes up the foundation of most graphical programming environments (so-called event-driven programming). For example, windowing systems allow you to provide functions to be called when a button is clicked or when a check box is toggled. However, our custom implementation of keeping a list of function values is clunky at best.
 
 
 Fortunately, the .NET framework has rich support for this pattern through the use of delegates and events. A delegate is very similar to F#’s function values. An event is simply the mechanism for calling the functions provided by all interested parties.
@@ -500,22 +504,24 @@ Delegates can be thought of as an alternate form of function values. They repres
 
 ### Defining Delegates
 
-To define a delegate, simply use the following syntax. The first type represents the pa­ rameters passed to the delegate and the second type is the return type of the delegate when called:
+To define a delegate, simply use the following syntax. The first type represents the parameters passed to the delegate and the second type is the return type of the delegate when called:
 
 ``` F#
 type ident = delegate of type1 -> type2
 ```
 
-Example 8-9 shows how to create a simple delegate and how similar it is to a regular function value. To instantiate a delegate type, you use the new keyword and pass the body of the delegate in as a parameter. To execute a delegate, you must call its Invoke method.
+Example 8-9 shows how to create a simple delegate and how similar it is to a regular function value. To instantiate a delegate type, you use the new keyword and pass the body of the delegate in as a parameter. To execute a delegate, you must call its `Invoke` method.
 
-#### Example 8-9. Defining and using delegates
+##### Example 8-9. Defining and using delegates
 
 ``` F#
 let functionValue x y =
     printfn "x = %d, y = %d" x y
     x + y
+    
 // Defining a delegate
 type DelegateType = delegate of int * int -> int
+
 // Construct a delegate value
 let delegateValue1 =
     new DelegateType(
@@ -523,6 +529,7 @@ let delegateValue1 =
             printfn "x = %d, y = %d" x y
             x + y
     )
+    
 // Calling function values and delegates
 let functionResult = functionValue 1 2
 let delegateResult = delegateValue1.Invoke(1, 2)
@@ -555,7 +562,7 @@ Although delegates are very similar to function values, there are two key differ
 
 Example 8-10 shows combining delegates so that a single call to `Invoke` will execute multiple delegates at once.
 
-#### Example 8-10. Combining delegates
+##### Example 8-10. Combining delegates
 
 ``` F#
 open System.IO
@@ -598,15 +605,18 @@ Let’s start with a simple example and work backward from that. Unlike C# or VB
 
 Example 8-11 creates a `NoisySet` type that fires events whenever items are added or removed from the set. Rather than keeping track of event subscribers manually, it uses the `Event<'Del, 'Arg>` type, which is discussed shortly.
 
-#### Example 8-11. Events and the Event<_,_> type
+##### Example 8-11. Events and the Event<_,_> type
 
 ``` F#
 type SetAction = Added | Removed
+
 type SetOperationEventArgs<'a>(value : 'a, action : SetAction) =
     inherit System.EventArgs()
     member this.Action = action
     member this.Value = value
+    
 type SetOperationDelegate<'a> = delegate of obj * SetOperationEventArgs<'a> -> unit
+
 // Contains a set of items that fires events whenever
 // items are added.
 type NoisySet<'a when 'a : comparison>() =
@@ -646,8 +656,8 @@ let m_itemAdded =
 We cover the `Event<_,_>` type shortly, but note that whenever you want to raise the event or add subscribers to the event, you must use that type. Raising the event is done by calling the `Trigger` method, which takes the parameters to the delegates to be called:
 
 ``` F#
-    // Fire the 'Add' event
-    m_itemAdded.Trigger(this, new SetOperationEventArgs<_>(x, Added))
+// Fire the 'Add' event
+m_itemAdded.Trigger(this, new SetOperationEventArgs<_>(x, Added))
 ```
 
 #### Subscribing to events
@@ -658,15 +668,15 @@ If you no longer want your event handler to be called, you can call the `RemoveH
 
 ---
 
-#### Warning
+##### Warning
 
-Be sure to remove an event handler when an object no longer needs to subscribe to an event. Otherwise, the event raiser will still have a ref­erence to the object and therefore will prevent the subscriber from being garbage collected. This is a very common way to introduce memory leaks in .NET applications.
+Be sure to remove an event handler when an object no longer needs to subscribe to an event. Otherwise, the event raiser will still have a reference to the object and therefore will prevent the subscriber from being garbage collected. This is a very common way to introduce memory leaks in .NET applications.
 
 ---
 
 Example 8-12 shows the `NoisySet<_>` type in action.
 
-#### Example 8-12. Adding and removing event handlers
+##### Example 8-12. Adding and removing event handlers
 
 ``` F#
 > // Using events
@@ -688,17 +698,17 @@ val it : unit = ()
 val it : unit = ()
 ```
 
-As you can see from Example 8-12, all the work of combining delegates and eventually raising the event was handled by the Event<'Del, 'Arg> class. But what is it exactly? And why does it need two generic parameters? 
+As you can see from Example 8-12, all the work of combining delegates and eventually raising the event was handled by the `Event<'Del, 'Arg>` class. But what is it exactly? And why does it need two generic parameters? 
 
 ### The Event<_,_> Class
 
-The `Event<'Del, 'Arg>` type keeps track of the delegates associated with the event, and makes it easier to fire and publish an event. The type takes two generic parameters. The first is the type of delegate associated with the event, which in the previous example was `SetOperationDelegate`. The second generic parameter is the type of the delegate’s argument, which was `SetOperationEventArgs`. (Note that this ignores the delegate’s actual first parameter, the sender object.) 
+The `Event<'Del, 'Arg>` type keeps track of the delegates associated with the event, and makes it easier to fire and publish an event. The type takes two generic parameters. The first is the type of delegate associated with the event, which in the previous example was `SetOperationDelegate`. The second generic parameter is the type of the delegate’s argument, which was `SetOperationEventArgs`. (Note that this ignores the delegate’s actual first parameter, the `sender` object.) 
 
-If your events don’t follow this pattern where the first parameter is the sender object, then you should use the `DelegateEvent<'del>` type instead. It is used the same way, except that its arguments are passed in as an obj array.
+If your events don’t follow this pattern where the first parameter is the `sender` object, then you should use the `DelegateEvent<'Del>` type instead. It is used the same way, except that its arguments are passed in as an obj array.
 
-Example 8-13 defines a clock type with a single event that gets fired every second, no­tifying subscribers of the current hour, minute, and second. Note that in order to trigger an event with type `DelegateEvent<_>` you must pass in an obj array for all of its parameters. As a reminder, the `box` function converts its parameter to type obj.
+Example 8-13 defines a clock type with a single event that gets fired every second, notifying subscribers of the current hour, minute, and second. Note that in order to trigger an event with type `DelegateEvent<_>` you must pass in an obj array for all of its parameters. As a reminder, the `box` function converts its parameter to type `obj`.
 
-#### Example 8-13. The `DelegateEvent` type
+##### Example 8-13. The DelegateEvent type
 
 ``` F#
 open System
@@ -745,7 +755,7 @@ The `Observable` module defines a series of functions for creating instances of 
 
 Example 8-14 defines a `JukeBox` type that raises an event whenever a new song is played. (The specifics of the mysterious `CLIEvent` attribute are covered later.)
 
-#### Example 8-14. Compositional events
+##### Example 8-14. Compositional events
 
 ``` F#
 [<Measure>]
@@ -779,7 +789,7 @@ Rather than just adding event handlers directly to the `JukeBox` type, we can us
 
 The advantage is that you can take an existing event and transform it into new events, which can be passed around as values.
 
-#### Example 8-15. Using the Event module
+##### Example 8-15. Using the Event module
 
 ``` F#
 > // Use the Observable module to only subscribe to specific events
@@ -823,7 +833,7 @@ val add : ('a -> unit) -> IObservable<'a> -> unit
 
 Example 8-16 pops up a message box whenever the mouse moves into the bottom half of a form.
 
-#### Example 8-16. Subscribing to events with Observable.add
+##### Example 8-16. Subscribing to events with Observable.add
 
 ``` F#
 open System.Windows.Forms
@@ -870,7 +880,7 @@ val map: ('a -> 'b) -> IObservable<'a> -> IObservable<'b>
 
 When using Windows Forms, all mouse click events are given in pixels relative to the top left of the form. So for a given form `f`, the top left corner is at position `(0, 0)` and the bottom right corner is at position `(f.Width, f.Height)`. Example 8-17 uses `Event.map` to create a new `Click` event that remaps the positions to points relative to the center of the form.
 
-#### Example 8-17. Transforming event arguments with Event.map
+##### Example 8-17. Transforming event arguments with Event.map
 
 ``` F#
 > // Create the form
@@ -890,6 +900,7 @@ let centeredClickEvent =
 // Subscribe
 centeredClickEvent
 |> Observable.add (fun (x, y) -> printfn "CenteredClickEvent @ [%d, %d]" x y);;
+
 val form : Form =  System.Windows.Forms.Form, Text: Relative Clicking
 val centeredClickEvent : System.IObservable<int * int>
 > // The output is from clicking the dialog twice, first in the
@@ -910,21 +921,23 @@ There is just one extra step for creating events in F#. To create an event in F#
 
 Example 8-18 revisits our coffee cup example, but rather than keeping an explicit list of functions to notify when the coffee cup is empty, a proper .NET event is used instead.
 
-#### Example 8-18. Creating .NET compatible events
+##### Example 8-18. Creating .NET compatible events
 
 ``` F#
 open System
 
 [<Measure>]
 type ml
+
 type EmptyCoffeeCupDelegate = delegate of obj * EventArgs ->  unit
+
 type EventfulCoffeeCup(amount : float<ml>) =
     let mutable m_amountLeft = amount
     let m_emptyCupEvent = new Event<EmptyCoffeeCupDelegate, EventArgs>()
     member this.Drink(amount) =
         printfn "Drinking %.1f..." (float amount)
         m_amountLeft <- max (m_amountLeft - amount) 0.0<ml>
-        if m_amountLeft <= 0.0<ml> then
+        if m_amountLeft = 0.0<ml> then
             m_emptyCupEvent.Trigger(this, new EventArgs())
     member this.Refil(amountAdded) =
         printfn "Coffee Cup refilled with %.1f" (float amountAdded)
