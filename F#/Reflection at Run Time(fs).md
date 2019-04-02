@@ -329,7 +329,7 @@ As the comments in the source code explain, the universal comparer supports comp
 
 ### Dynamic Registration of Event Handlers
 
-Another programming technique you can implement through reflection is the dynamic registration of an event handler. For example, let's say that the Person class exposes a `GotEmail` event and you have an event handler in the `MainModule` type:
+Another programming technique you can implement through reflection is the dynamic registration of an event handler. For example, let's say that the `Person` class exposes a `GotEmail` event and you have an event handler in the `MainModule` type:
 
 ``` F#
 class Person() =
@@ -367,7 +367,7 @@ Dim args() as Object = {@"Hello Joe", 2}
 Type.InvokeMember(@"SendEmail", BindingFlags.InvokeMethod, null, obj, args)
 ```
 
-A look at the console window proves that the `EventHandler` procedure in the `MainModule` type was invoked when the code in the `Person.SendEmail` method raised the `GotEmail` event. If the event handler is an instance method, the second argument to the `Delegate.CreateDelegate` method must be an instance of the class that defines the method; if the event handler is a static method (as in the previous example), this argument must be a Type object corresponding to the class where the method is defined.
+A look at the console window proves that the `EventHandler` procedure in the `MainModule` type was invoked when the code in the `Person.SendEmail` method raised the `GotEmail` event. If the event handler is an instance method, the second argument to the `Delegate.CreateDelegate` method must be an instance of the class that defines the method; if the event handler is a static method (as in the previous example), this argument must be a `Type` object corresponding to the class where the method is defined.
 
 The previous code doesn't really add much to what you can do by registering an event by means of the `AddHandler` operator. But wait, there's more. To show how this technique can be so powerful, I must make a short digression on delegates.
 
@@ -377,7 +377,7 @@ The previous code doesn't really add much to what you can do by registering an e
 
 Both these features relax the requirement that a delegate object must match exactly the signature of its target method. More specifically, delegate covariance means that you can have a delegate point to a method with a return value that inherits from the return type specified by the delegate. Let's say we have the following delegate:
 
-``` F#
+``` C#
 // A delegate that can point to a method that takes a TextBox and returns an object.
 delegate object GetControlData(TextBox ctrl);
 ```
