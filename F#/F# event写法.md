@@ -3,13 +3,13 @@ F# event写法
 事件C#：
 
 ```c#
-    public interface IChatConnection
-    {
-        event Action<string> Received;
-        event Action Closed;
-        event Action<Exception> Error;
-        void Disconnect();
-    }
+public interface IChatConnection
+{
+    event Action<string> Received;
+    event Action Closed;
+    event Action<Exception> Error;
+    void Disconnect();
+}
 ```
 
 等价的F#代码：
@@ -94,7 +94,7 @@ let _ = clicks.Subscribe(fun eventPattern ->
 
 C#中的委托：
 
-参考：Beginning F# 4.0 CHAPTER 5  OBJECT-ORIENTED PROGRAMMING
+参考：Beginning F# 4.0 chapter 5  object-oriented programming
 
 ```C#
 delegate TResult MethodCall<T, TResult>(T target, params object[] args);
