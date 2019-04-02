@@ -16,10 +16,3 @@ Create a local Git repo for your code. If your code is already in a local Git re
 
 3. 在VS中，打开文件夹，执行其他git操作。
 
-
-
-### 删除未提交的推送
-
-本地历史记录
-
-要删除的项目，上下文菜单，重置，删除更改。

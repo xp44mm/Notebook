@@ -8,7 +8,7 @@ Let's start by seeing how you can instantiate an object given its type name. You
 
 If the type has a parameterless constructor, creating an instance is simple:
 
-``` VB
+```F#
 ' Next statement assumes that the Person class is defined in
 ' an assembly named "MyApp".
 Dim type As Type = Assembly.GetExecutingAssembly().GetType("MyApp.Person")
@@ -19,7 +19,7 @@ Console.WriteLine("A {0} object has been created", o.GetType().Name)
 
 To call a constructor that takes one or more parameters, you must prepare an array of values:
 
-``` VB
+```F#
 ' (We reuse the type variable from previous code…)
 ' Use the constructor that takes two arguments.
 Dim args2() As Object = {"Joe", "Evans"}
@@ -29,7 +29,7 @@ Dim o2 As Object = Activator.CreateInstance(type, args2)
 
 You can use InvokeMember to create an instance of the class and even pass arguments to its constructor, as in the following code:
 
-``` VB
+```F#
 ' Prepare the array of parameters.
 Dim args3() As Object = {"Joe", "Evans"}
 
@@ -40,7 +40,7 @@ Dim o3 As Object = type.InvokeMember("", BindingFlags.CreateInstance, _
 
 Creating an object through its constructor method is a bit more convoluted, but I'll demonstrate the technique here for the sake of completeness:
 
-``` VB
+```F#
 ' Prepare the argument signature as an array of types (two strings).
 Dim argTypes() As Type = {GetType(String), GetType(String)}
 ' Get a reference to the correct constructor.
@@ -55,7 +55,7 @@ Regardless of the technique you used to create an instance of the type, you usua
 
 **Version 2005 of VB or Version 2.0 of .NET** The new MakeArrayType method of the Type class makes it very simple to instantiate arrays using reflection, as you can see in this code:
 
-``` VB
+```F#
 ' Create an array of Double. (You can pass an integer argument to the MakeArrayType
 ' method to specify the rank of the array, for multidimensional arrays.
 Dim arrType As Type = GetType(Double).MakeArrayType()
@@ -67,17 +67,17 @@ Console.WriteLine("{0} {1} elements", arr.Length, arr.GetValue(0).GetType.Name)
 
 When you work with an array created using reflection, you typically assign its elements with the SetValue method and read them back with the GetValue method:
 
-``` VB
+```F#
 ' Assign the first element and read it back.
 arr.SetValue(123.45, 0)
-Console.WriteLine(arr.GetValue(0))             ' => 123.45
+Console.WriteLine(arr.GetValue(0)) ' => 123.45
 ```
 
 ### Accessing Members
 
 In the most general case, after you've created an instance by using reflection, all you have is an Object variable pointing to a type and no direct way to access one of its members. The easiest operation you can perform is reading or writing a field by means of the GetValue and SetValue methods of the FieldInfo object:
 
-``` VB
+```F#
 ' Create a Person object and reflect on it.
 Dim type As Type = Assembly.GetExecutingAssembly().GetType("MyApp.Person")
 
@@ -87,17 +87,17 @@ Dim o As Object = Activator.CreateInstance(type, args)
 ' Get a reference to its FirstName field.
 Dim fi As FieldInfo = type.GetField("FirstName")
 ' Display its current value, and then change it.
-Console.WriteLine(fi.GetValue(o))       ' => Joe
+Console.WriteLine(fi.GetValue(o)) ' => Joe
 fi.SetValue(o, "Robert")
 
 ' Prove that it changed, by casting to a strong-type variable.
 Dim pers As Person = DirectCast(o, Person)
-Console.WriteLine(pers.FirstName)       ' => Robert
+Console.WriteLine(pers.FirstName) ' => Robert
 ```
 
 Like FieldInfo, the PropertyInfo type exposes the GetValue and SetValue methods, but properties can take arguments, and thus these methods take an array of arguments. You must pass Nothing in the second argument if you're calling parameterless properties.
 
-``` VB
+```F#
 ' (Continuing previous example…)
 ' This code assumes that the Person type exposes a 16-bit Age property.
 ' Get a reference to the PropertyInfo object.
@@ -111,7 +111,7 @@ Console.WriteLine(pi.GetValue(pers, Nothing)) ' => 35
 
 If the property takes one or more arguments, you must pass an Object array containing one element for each argument:
 
-``` VB
+```F#
 ' Get a reference to the PropertyInfo object.
 Dim pi2 As PropertyInfo = type.GetProperty("Notes")
 ' Prepare the array of parameters.
@@ -124,7 +124,7 @@ Console.WriteLine(pi2.GetValue(o, args2))
 
 A similar thing happens when you're invoking methods, except that you use the Invoke method instead of GetValue or SetValue:
 
-``` VB
+```F#
 ' Get the MethodInfo for this method.
 Dim mi As MethodInfo = type.GetMethod("SendEmail")
 ' Prepare an array for expected arguments.
@@ -135,7 +135,7 @@ mi.Invoke(o, arguments)
 
 Things are more interesting when optional arguments are involved. In this case, you pass the Type.Missing special value, as in this code:
 
-``` VB
+```F#
 ' …(Initial code as above)…
 ' Don't pass the second argument (optional).
 
@@ -145,7 +145,7 @@ mi.Invoke(o, arguments)' Don't pass the second argument.
 
 Alternatively, you can query the DefaultValue property of corresponding ParameterInfo to learn the default value for that specific argument:
 
-``` VB
+```F#
 ' …(Initial code as above)…
 ' Retrieve the DefaultValue from the ParameterInfo object.
 arguments = New Object() {"This is a message", mi.GetParameters(1).DefaultValue}
@@ -154,7 +154,7 @@ mi.Invoke(o, arguments)
 
 The Invoke method traps all the exceptions thrown in the called method and converts them into TargetInvocationException; you must check the InnerException property of the caught exception to retrieve the real exception:
 
-``` VB
+```F#
 Try
    mi.Invoke(o, arguments)
 Catch ex As TargetInvocationException
@@ -168,7 +168,7 @@ End Try
 
 In some cases, you might find it easier to set properties dynamically and invoke methods by means of the Type object's InvokeMember method. This method takes the name of the member; a flag that says whether it's a field, property, or method; the object for which the member should be invoked; and an array of Objects for the arguments if there are any. Here are a few examples:
 
-``` VB
+```F#
 ' Create an instance of the Person type using InvokeMember.
 Dim type As Type = Assembly.GetExecutingAssembly().GetType("MyApp.Person")
 Dim arguments() As Object = {"John", "Evans"}
@@ -176,7 +176,7 @@ Dim obj As Object = type.InvokeMember("", BindingFlags.CreateInstance,_
    Nothing, Nothing, arguments)
 
 ' Set the FirstName field.
-Dim args() As Object = {"Francesco"}        ' One argument
+Dim args() As Object = {"Francesco"} ' One argument
 type.InvokeMember("FirstName", BindingFlags.SetField, Nothing, obj, args)
 ' Read the FirstName field. (Pass Nothing for the argument array.)
 Dim value As Object = type.InvokeMember("FirstName", BindingFlags.GetField, _
@@ -193,7 +193,7 @@ type.InvokeMember("SendEmail", BindingFlags.InvokeMethod, Nothing, obj, args2)
 
 It is very important that you pass the correct value for the BindingFlags argument. All the examples shown so far access public instance members, but you must explicitly add the NonPublic and/or Static modifiers if the member is private or static:
 
-``` VB
+```F#
 ' Read the m_Age private field.
 value = type.InvokeMember("m_Age", BindingFlags.GetField Or BindingFlags.NonPublic _
    Or BindingFlags.Instance, Nothing, obj, Nothing)
@@ -217,7 +217,7 @@ As you might recall from Chapter 10, "Interfaces," you implement the IComparer i
 
 Before discussing how the UniversalComparer type works, let me show you how you can use it. You create a UniversalComparer instance by passing its constructor a string argument that resembles an ORDER BY clause in SQL.
 
-``` VB
+```F#
 Dim persons() As Person = Nothing
 ' Init the array here.
 …
@@ -228,14 +228,14 @@ Array.Sort(Of Person)(persons, comp)
 
 You can even sort in descending mode separately on each field:
 
-``` VB
+```F#
 Dim comp As New UniversalComparer(Of Person)("LastName DESC, FirstName DESC")
 Array.Sort(Of Person)(persons, comp)
 ```
 
 Not surprisingly, the UniversalComparer class relies heavily on reflection to perform its magic. Here's its complete source code:
 
-``` VB
+```F#
 Public Class UniversalComparer(Of T)
    Implements IComparer, IComparer(Of T)
 
@@ -341,7 +341,7 @@ As the comments in the source code explain, the universal comparer supports comp
 
 Another programming technique you can implement through reflection is the dynamic registration of an event handler. For example, let's say that the Person class exposes a GotEmail event and you have an event handler in the MainModule type:
 
-``` VB
+```F#
 Public Class Person
    Event GotEmail(ByVal sender As Object, ByVal e As EventArgs)
    …
@@ -363,7 +363,7 @@ End Module
 
 Here's the code that registers the procedure for this event, using reflection exclusively:
 
-``` VB
+```F#
 ' obj and type initialized as in previous examples…
 ' Get a reference to the GotEmail event.
 Dim ei As EventInfo = type.GetEvent("GotEmail")
@@ -389,14 +389,14 @@ The previous code doesn't really add much to what you can do by registering an e
 
 Both these features relax the requirement that a delegate object must match exactly the signature of its target method. More specifically, delegate covariance means that you can have a delegate point to a method with a return value that inherits from the return type specified by the delegate. Let's say we have the following delegate:
 
-``` VB
+```F#
 // A delegate that can point to a method that takes a TextBox and returns an object.
 delegate object GetControlData(TextBox ctrl);
 ```
 
 The GetControlData delegate specifies object as the return value; therefore, the covariance property tells that this delegate can point to any method that takes a TextBox control, regardless of the method's return value, because all .NET types inherit from System.Object. The only requirement is that the method actually returns something; therefore, you can't have this delegate point to a C# void method (a Sub method, in Visual Basic parlance). For example, a GetControlData delegate might point to the following method because the String type inherits from System.Object:
 
-``` VB
+```F#
 // A function that takes a TextBox control and returns a String
 string GetText(TextBox ctrl)
 { return ctrl.Text; }
@@ -404,7 +404,7 @@ string GetText(TextBox ctrl)
 
 Delegate contravariance means that a delegate can point to a method with an argument that is a base class of the argument specified in the delegate's signature. For example, a GetControl-Data delegate might point to a method that takes one argument of the Control or Object type because both these types are base classes for the TextBox argument that appears in the delegate:
 
-``` VB
+```F#
 // A function that takes a Control and returns an Object value.
 object GetTag(Control ctrl)
 { return ctrl.Tag; }
@@ -422,7 +422,7 @@ Don't look for delegate covariance and contravariance in Visual Basic documentat
 
 Well, not exactly. Granted, Visual Basic doesn't support these features directly, but you can achieve them nevertheless. Covariance and contravariance are supported at the CLR level, and you can create a delegate that leverages both of them through reflection. Let's say you have the following delegate and the following method in a Windows Forms class:
 
-``` VB
+```F#
 Delegate Function GetControlData(ByVal ctrl As TextBox) As Object
 
 Function GetText(ByVal ctrl As Control) As String
@@ -432,7 +432,7 @@ End Function
 
 You know that you can't create a GetControlData delegate that points to the GetText method directly in Visual Basic because the language supports neither covariance nor contravariance. However, you can create a MethodInfo object that points to the GetText method and then pass this object to the Delegate.CreateDelegate static method:
 
-``` VB
+```F#
 ' The target method
 Dim method As MethodInfo = Me.GetType().GetMethod("GetText")
 ' Build the delegate through reflection.
@@ -446,7 +446,7 @@ This code is only marginally slower than the C# counterpart, but this isn't a se
 
 The most interesting application of this feature is the ability to have an individual method handle all the events coming from one or more objects, provided that the event has the canonical .NET syntax (sender, e), where the second argument can be any type that derives from EventArgs. Consider the following event handler:
 
-``` VB
+```F#
 ' (Inside a Form class)
 Sub MyEventHandler(ByVal sender As Object, ByVal e As EventArgs)
    Console.WriteLine("An event has fired")
@@ -455,7 +455,7 @@ End Sub
 
 The following code can make all the events exposed by an object point to the "universal handler":
 
-``` VB
+```F#
 ' (Inside the same Form class…)
 ' The control we want to trap events from
 Dim ctrl As Object = TextBox1
@@ -479,7 +479,7 @@ This code proves that it is technically possible to use reflection to have all t
 
 What we need is an object that is able to "mediate" between the event source and the object where the event is handled. Writing this object requires some significant code, but the result is well worth the effort. The EventInterceptor class exposes only one event, ObjectEvent, defined by the ObjectEventHandler delegate:
 
-``` VB
+```F#
 Public Delegate Sub ObjectEventHandler(ByVal sender As Object, ByVal e As ObjectEventArgs)
 
 Public Class EventInterceptor
@@ -496,7 +496,7 @@ End Class
 
 The EventInterceptor class uses the nested EventInterceptorHandler type to trap events coming from the object source. More precisely, an EventInterceptorHandler instance is created for each event that the event source can raise. The EventInterceptor class supports multiple event sources; therefore, the number of EventInterceptorHandler instances can be quite high: for example, if you trap the events coming from 20 TextBox controls, the EventInterceptor object will create as many as 1,540 EventInterceptorHandler instances because each TextBox control exposes 77 events. For this reason, the AddEventSource method supports a third argument that enables you to specify which events should be intercepted:
 
-``` VB
+```F#
 Public Sub AddEventSource(ByVal eventSource As Object,_
       ByVal includeChildren As Boolean, ByVal filterPattern As String)
    For Each ei As EventInfo In eventSource.GetType().GetEvents()
@@ -524,12 +524,12 @@ Public Sub AddEventSource(ByVal eventSource As Object,_
       End If
    End Sub
    …
-End Class    ' End of EventInterceptor class
+End Class ' End of EventInterceptor class
 ```
 
 The EventInterceptorHandler nested class does a very simple job: it uses reflection to register its EventHandler method as a listener for the specified event coming from the specified event source. When the event is fired, the EventHandler method calls back the OnObjectEvent method in the parent EventInterceptor object, which in turn fires the ObjectEvent event:
 
-``` VB
+```F#
 Private Class EventInterceptorHandler
    ' The event being intercepted
    Public ReadOnly EventInfo As EventInfo
@@ -558,7 +558,7 @@ End Class
 
 Here's how a Windows Forms application can use the EventInterceptor object to get a notification when any event of any control fires:
 
-``` VB
+```F#
 Dim WithEvents Interceptor As New EventInterceptor
 
 Private Sub Form1_Load(ByVal sender As Object, ByVal e As EventArgs) Handles MyBase.Load
@@ -576,7 +576,7 @@ End Sub
 
 You can limit the number of events that you receive by passing a regular expression pattern to the AddEventSource method:
 
-``` VB
+```F#
 ' Trap only xxxChanged events.
 Interceptor.AddEventSource(Me, True, ".+Changed")
 ' Trap only mouse and keyboard events.
@@ -585,8 +585,8 @@ Interceptor.AddEventSource(Me, True, "(Mouse|Key).+)")
 
 For more information, see the source code of the complete demo program. (See Figure 18-2.)
 
- ![img](C:/Program Files/Typora/images/fig794_01.jpg)
-Figure 18-2: The EventInterceptor demo application
+ !img
+Figure 18-2: The EventInterceptor demo application 
 
 ### Scheduling a Sequence of Actions
 
@@ -594,12 +594,12 @@ Reflection allows you to implement techniques that would be very difficult (and 
 
 Implementing an undo strategy in the most general case isn't a simple task, especially if some of the actions are performed only conditionally when other conditions are met. What you need is a generic solution to this problem, and you'll see how elegantly you can solve this programming task through reflection. To begin with, let's define an Action class, which represents a method—either a static or an instance method:
 
-``` VB
+```F#
 Public Class Action
-   Public ReadOnly Message As String       ' Description of the action
-   Public ReadOnly [Object] As Object      ' Instance on which the method is called
-   Public ReadOnly Method As MethodInfo    ' The method to be invoked
-   Public ReadOnly Arguments() As Object   ' Arguments for the method
+   Public ReadOnly Message As String ' Description of the action
+   Public ReadOnly [Object] As Object ' Instance on which the method is called
+   Public ReadOnly Method As MethodInfo ' The method to be invoked
+   Public ReadOnly Arguments() As Object ' Arguments for the method
 
    ' Second argument can be an object (for instance methods) or a Type (for static methods).
    Public Sub New(ByVal message As String, ByVal obj As Object, _
@@ -635,7 +635,7 @@ End Class
 
 Instead of performing a method directly, you can create an Action instance and then invoke its Execute method:
 
-``` VB
+```F#
 ' Create c:\backup directory.
 Dim act As New Action("Create c:\backup directory", _
    GetType(Directory), "CreateDirectory", "c:\backup")
@@ -644,7 +644,7 @@ act.Execute()
 
 Of course, executing a method in this way doesn't bring any benefit. You see the power of this technique, however, if you define another type that works as a container for Action instances and that can also remember the "undo" action for each method being executed:
 
-``` VB
+```F#
 Public Class ActionSequence
    ' The parallel lists of actions and undo actions
    Private Actions As New List(Of Action)
@@ -715,7 +715,7 @@ End Class
 
 The constructor of the ActionSequence type takes an Action(Of String) object, which is a delegate to a Sub method that takes a string as an argument. This method will be used to display all the messages that are produced during the action sequence: it can point to a method such as the Console.WriteLine method (to display messages in the console window), the WriteLine method of a StreamWriter object (to write messages to a log file), the AppendText method of a TextBox control (to display messages inside a TextBox control), or a method you define in your application:
 
-``` VB
+```F#
 ' Prepare to write diagnostic messages to a log file.
 Dim sw As New StreamWriter("c:\logfile.txt")
 Dim actionSequence As New ActionSequence(AddressOf sw.WriteLine)
@@ -726,7 +726,7 @@ sw.Close()
 
 The following code shows how you can schedule a sequence of actions and undo them if an exception is thrown during the process:
 
-``` VB
+```F#
 ' Schedule the creation of c:\backup directory.
 Dim actionSequence As New ActionSequence(AddressOf Console.WriteLine)
 Dim act As New Action("Create c:\backup directory", GetType(Directory), _
@@ -755,7 +755,7 @@ actionSequence.Execute(False)
 
 After running the previous code snippet, you should find a new c:\backup directory containing the files readme.txt and win.ini. To see how the ActionSequence type behaves in case of error, delete the c:\backup directory and intentionally cause an error in the sequence by attempting to copy a file that doesn't exist:
 
-``` VB
+```F#
 ' (Insert the lines in bold type before the call to the Execute method.)
 …
 ' Copy the c:\missing.txt file to the c:\backup directory.
@@ -771,7 +771,7 @@ actionSequence.Execute(False)
 
 The intentional error causes the ActionSequence object to undo all the actions before the one that caused the exception, and in fact at the end of the process you won't find any c:\backup directory, as confirmed by the text that appears in the console window:
 
-``` VB
+```F#
 Create c:\backup directory
 Create the c:\myapp_readme.txt
 Move the c:\myapp_readme.txt to c:\backup\readme.txt
@@ -796,28 +796,28 @@ Earlier in this chapter, I mentioned the System.Reflection.Emit namespace, which
 
 Nevertheless, at times the ability to create an assembly out of thin air can be quite tantalizing because it opens up a number of programming techniques that are otherwise impossible. For example, consider building a routine that takes a math expression entered by the end user (as a string), evaluates it, and returns the result. In the section titled "Parsing and Evaluating Expressions" in Chapter 14, I showed how you can parse and evaluate an expression at run time, but that approach is several orders of magnitude slower than evaluating a compiled expression is and can't be used in time-critical code, such as for doing function plotting or finding the roots of a higher-degree equation (see Figure 18-3). In this case, your best option is to generate the source code of a Visual Basic program, compile it on the fly, and then instantiate one of its classes.
 
-![img](C:/Program Files/Typora/images/fig799_01.jpg)
-Figure 18-3: The demo application, which uses on-the-fly compilation to evaluate functions and find the roots of any equation that uses the X variable
+!img 
+Figure 18-3: The demo application, which uses on-the-fly compilation to evaluate functions and find the roots of any equation that uses the X variable 
 
 The types that allow us to compile an assembly at run time are in the Microsoft.VisualBasic namespace (or in the Microsoft.CSharp namespace, if you want to generate and compile C# source code) and in the System.CodeDom.Compiler namespace, so you need to add proper Imports statements to your code to run the code samples that follow.
 
 The first thing to do is generate the source code for the program to be compiled dynamically. In the expression evaluator demo application, such source code is obtained by inserting the expression that the end user enters in the txtExpression field in the middle of the Eval method of an Evaluator public class:
 
-``` VB
+```F#
 Dim source As String = String.Format(_
    "Imports Microsoft.VisualBasic{0}" _
    & "Imports System.Math{0}" _
    & "Public Class Evaluator{0}" _
-   & "   Public Function Eval(ByVal x As Double) As Double{0}" _
-   & "      Return {1}{0}" _
-   & "   End Function{0}" _
+   & " Public Function Eval(ByVal x As Double) As Double{0}" _
+   & " Return {1}{0}" _
+   & " End Function{0}" _
    & "End Class{0}", _
    ControlChars.CrLf, txtExpression.Text)
 ```
 
 Next, you create a CompilerParameters object (in the System.CodeDom.Compiler namespace) and set its properties; this object broadly corresponds to the options you'd pass to the VBC command-line compiler:
 
-``` VB
+```F#
 Dim params As New CompilerParameters
 ' Generate a DLL, not an EXE executable.
 ' (Not really necessary because False is the default.)
@@ -845,13 +845,13 @@ params.GenerateExecutable = False
 
 The preceding code snippet shows the typical actions you perform to prepare a Compiler-Parameters object, as well as its most important properties. The statements inside the #If block are especially interesting. You can include debug information in a dynamic assembly and debug it from inside Visual Studio by setting the IncludeDebugInformation property to True. To enable debugging, however, you must generate an actual .dll or .exe file (GenerateInMemory must be False) and must not delete temporary files at the end of the compilation process (the KeepFiles property of the TempFiles collection must be True). If debugging is correctly enabled, you can force a break in the generated assembly by inserting the following statement in the code you generate dynamically:
 
-``` VB
+```F#
 System.Diagnostics.Debugger.Break()
 ```
 
 You are now ready to compile the assembly:
 
-``` VB
+```F#
 ' Create the VB compiler.
 Dim provider As New VBCodeProvider
 Dim compRes As CompilerResults = provider.CompileAssemblyFromSource(params, source)
@@ -872,11 +872,11 @@ End If
 
 If the compilation was successful, you use the CompilerResults.CompiledAssembly property to get a reference to the created assembly. Once you have this Assembly object, you can create an instance of its Evaluator class and invoke its Eval method by using standard reflection techniques:
 
-``` VB
+```F#
 Dim asm As Assembly = compRes.CompiledAssembly
 Dim evaluator As Object = asm.CreateInstance("Evaluator")
 Dim evalMethod As MethodInfo = evaluator.GetType.GetMethod("Eval")
-Dim args() As Object = {CDbl(123)}    ' Pass x = 123
+Dim args() As Object = {CDbl(123)} ' Pass x = 123
 Dim result As Object = evalMethod.Invoke(evaluator, args)
 ```
 
@@ -900,7 +900,7 @@ If you decide to use reflection and you must invoke a method more than once or t
 
 Don't use the BindingFlags.IgnoreCase value with the Get*Xxxx* method (singular form), if you know the exact spelling of the member you're looking for, and specify the BindingFlags .ExactBinding value if possible because it speeds up the search. The latter flag suppresses implicit type conversions; therefore, you must supply the exact type of each argument:
 
-``` VB
+```F#
 ' This code doesn't work—the GetMethod method returns Nothing.
 ' You must either use Integer instead of Short in the argTypes signature
 ' or drop the BindingFlags.ExactBinding bit in the GetMethod call.
@@ -915,7 +915,7 @@ In .NET Framework 2.0, a Type.Get*Xxxx* method (singular form) doesn't cause the
 
 An alternative technique for storing information about a large number of types and members without taxing the memory is based on the RuntimeTypeHandle and RuntimeMethodHandle classes that you can use instead of the Type and MemberInfo classes. Handle-based objects use very little memory, yet they allow you to rebuild a reference to the actual Type or MemberInfo-based object very quickly, as this code demonstrates:
 
-``` VB
+```F#
 ' Store information about a method in the Person type.
 Dim hType As RuntimeTypeHandle = GetType(Person).TypeHandle
 Dim hMethod As RuntimeMethodHandle = GetType(Person).GetMethod("SendEmail").MethodHandle
@@ -934,11 +934,11 @@ A warning about using reflection at run time is in order. As you've seen in prev
 
 More precisely, your code can perform these operations if it is fully trusted or at least has ReflectionPermission. All the applications that run from the local hard disk have this permission, whereas applications running from the Internet don't. In general, if you don't have ReflectionPermission, you can perform only the following reflection-related techniques:
 
-* Enumerate assemblies and modules.
-* Enumerate public types and obtain information about them and their public members.
-* Set public fields and properties and invoke public members.
-* Access and enumerate family (Protected) members of a base class of the calling code.
-* Access and enumerate assembly (Friend) members from inside the assembly in which the calling code runs.
+- Enumerate assemblies and modules.
+- Enumerate public types and obtain information about them and their public members.
+- Set public fields and properties and invoke public members.
+- Access and enumerate family (Protected) members of a base class of the calling code.
+- Access and enumerate assembly (Friend) members from inside the assembly in which the calling code runs.
 
 You see that code can access through reflection only those types and members that it can access directly anyway. For example, a piece of code can't access a private field in another type or invoke a private member in another type, even if that type is inside the same assembly as the calling code. In other words, reflection doesn't give code more power than it already has; it just adds flexibility because of the additional level of indirection that it provides.
 
@@ -946,7 +946,7 @@ This discussion on reflection is important for one reason: never rely on the Pri
 
 The ability to invoke nonpublic members can be important in some scenarios. For example, in the section titled "The ICloneable Interface" in Chapter 10, I show how a type can implement the Clone method by leveraging the MemberwiseClone protected method, but in some cases you'd like to clone an object for which you don't have any source code. Provided that your application runs in full trust mode and has ReflectionPermission, you can clone any object quite easily with reflection. Here's a reusable routine that performs a (shallow) copy of the object passed as an argument:
 
-``` VB
+```F#
 Function CloneObject(Of T)(ByVal obj As T) As T
    If obj Is Nothing Then
       ' Cloning a null object is easy.
@@ -968,7 +968,7 @@ End Function
 
 Assuming that you have a Person type—with the usual FirstName, LastName, and Spouse properties—the following code tests that the CloneObject method works correctly:
 
-``` VB
+```F#
 Dim john As New Person("John", "Evans")
 Dim ann As New Person("Ann", "Beebe")
 john.Spouse = ann
