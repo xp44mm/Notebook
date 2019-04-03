@@ -382,7 +382,7 @@ Both these features relax the requirement that a delegate object must match exac
 delegate object GetControlData(TextBox ctrl);
 ```
 
-The `GetControlData` delegate specifies object as the return value; therefore, the covariance property tells that this delegate can point to any method that takes a `TextBox` control, regardless of the method's return value, because all .NET types inherit from `System.Object`. The only requirement is that the method actually returns something; therefore, you can't have this delegate point to a C# void method (a Sub method, in Visual Basic parlance). For example, a `GetControlData` delegate might point to the following method because the `String` type inherits from `System.Object`:
+The `GetControlData` delegate specifies object as the return value; therefore, the covariance property tells that this delegate can point to any method that takes a `TextBox` control, regardless of the method's return value, because all .NET types inherit from `System.Object`. The only requirement is that the method actually returns something; therefore, you can't have this delegate point to a C# void method ~~(a Sub method, in Visual Basic parlance)~~. For example, a `GetControlData` delegate might point to the following method because the `String` type inherits from `System.Object`:
 
 ``` F#
 // A function that takes a TextBox control and returns a String
@@ -390,7 +390,7 @@ string GetText(TextBox ctrl)
 { return ctrl.Text; }
 ```
 
-Delegate contravariance means that a delegate can point to a method with an argument that is a base class of the argument specified in the delegate's signature. For example, a `GetControl`-Data delegate might point to a method that takes one argument of the Control or Object type because both these types are base classes for the `TextBox` argument that appears in the delegate:
+Delegate contravariance means that a delegate can point to a method with an argument that is a base class of the argument specified in the delegate's signature. For example, a `GetControlData` delegate might point to a method that takes one argument of the `Control` or `Object` type because both these types are base classes for the `TextBox` argument that appears in the delegate:
 
 ``` F#
 // A function that takes a Control and returns an Object value.
@@ -430,7 +430,7 @@ Console.WriteLine(deleg(Me.TextBox1)) // Displays the TextBox1.Text property.
 
 This code is only marginally slower than the C# counterpart, but this isn't a serious issue because you typically create a delegate once and use it repeatedly.
 
-The most interesting application of this feature is the ability to have an individual method handle all the events coming from one or more objects, provided that the event has the canonical .NET syntax (sender, e), where the second argument can be any type that derives from `EventArgs`. Consider the following event handler:
+The most interesting application of this feature is the ability to have an individual method handle all the events coming from one or more objects, provided that the event has the canonical .NET syntax `(sender, e)`, where the second argument can be any type that derives from `EventArgs`. Consider the following event handler:
 
 ``` F#
 // (Inside a Form class)
@@ -478,7 +478,7 @@ class EventInterceptor() =
    …
 ```
 
-The `EventInterceptor` class uses the nested `EventInterceptorHandler` type to trap events coming from the object source. More precisely, an `EventInterceptorHandler` instance is created for each event that the event source can raise. The `EventInterceptor` class supports multiple event sources; therefore, the number of `EventInterceptorHandler` instances can be quite high: for example, if you trap the events coming from 20 `TextBox` controls, the `EventInterceptor` object will create as many as 1,540 `EventInterceptorHandler` instances because each `TextBox` control exposes 77 events. For this reason, the `AddEventSource` method supports a third argument that enables you to specify which events should be intercepted:
+The `EventInterceptor` class uses the nested `EventInterceptorHandler` type to trap events coming from the object source. More precisely, an `EventInterceptorHandler` instance is created for each event that the event source can raise. The `EventInterceptor` class supports multiple event sources; therefore, the number of `EventInterceptorHandler` instances can be quite high: for example, if you trap the events coming from 20 TextBox controls, the `EventInterceptor` object will create as many as 1,540 `EventInterceptorHandler` instances because each TextBox control exposes 77 events. For this reason, the `AddEventSource` method supports a third argument that enables you to specify which events should be intercepted:
 
 ``` F#
 let AddEventSource(eventSource : Object, includeChildren : Boolean, filterPattern : String) =
