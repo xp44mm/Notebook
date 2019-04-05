@@ -20,7 +20,7 @@ Console.WriteLine(@"A {0} object has been created", o.GetType().Name)
 To call a constructor that takes one or more parameters, you must prepare an array of values:
 
 ``` F#
-// (We reuse the myType variable from previous code…)
+// (We reuse the type variable from previous code…)
 // Use the constructor that takes two arguments.
 let args2: Object[] = [|@"Joe", @"Evans"|]
 // Call the constructor that matches the parameter signature.
@@ -89,7 +89,7 @@ let fi: FieldInfo = myType.GetField(@"FirstName")
 Console.WriteLine(fi.GetValue(o))       // => Joe
 fi.SetValue(o, @"Robert")
 
-// Prove that it changed, by casting to a strong-myType variable.
+// Prove that it changed, by casting to a strong-type variable.
 let pers: Person = o :?> Person
 Console.WriteLine(pers.FirstName)       // => Robert
 ```
@@ -98,10 +98,10 @@ Like `FieldInfo`, the `PropertyInfo` type exposes the `GetValue` and `SetValue` 
 
 ``` F#
 // (Continuing previous example…)
-// This code assumes that the Person myType exposes a 16-bit Age property.
+// This code assumes that the Person type exposes a 16-bit Age property.
 // Get a reference to the PropertyInfo object.
 let pi: PropertyInfo = myType.GetProperty(@"Age")
-// Note that the myType of value must match exactly.
+// Note that the type of value must match exactly.
 // (Int32 constants must be converted to Short, in this case.)
 pi.SetValue(pers, 35S, null)
 // Read it back.
@@ -167,7 +167,7 @@ with | :? Exception as ex ->
 In some cases, you might find it easier to set properties dynamically and invoke methods by means of the Type object's `InvokeMember` method. This method takes the name of the member; a flag that says whether it's a field, property, or method; the object for which the member should be invoked; and an array of Objects for the arguments if there are any. Here are a few examples:
 
 ``` F#
-// Create an instance of the Person myType using InvokeMember.
+// Create an instance of the Person type using InvokeMember.
 let myType: Type = Assembly.GetExecutingAssembly().GetType(@"MyApp.Person")
 let arguments: Object[] = [|@"John", @"Evans"|]
 let obj: Object = myType.InvokeMember(@"", BindingFlags.CreateInstance, null, null, arguments)
@@ -230,113 +230,113 @@ Array.Sort<Person>(persons, comp)
 Not surprisingly, the `UniversalComparer` class relies heavily on reflection to perform its magic. Here's its complete source code:
 
 ``` F#
-class UniversalComparer<'T>() =
-   Implements IComparer, IComparer<'T>
+type UniversalComparer<'T>() =
+    Implements IComparer, IComparer<'T>
 
-   Private sortKeys() As SortKey
+    Private sortKeys() As SortKey
 
-   let New(sort : String) =
-      let myType: Type = typeof<'T>
-      // Split the list of properties.
-      let props: String[] = sort.Split(',')
-      // Prepare the array that holds information on sort criteria.
-      ReDim sortKeys(props.Length - 1)
+    member this.New(sort : String) =
+        let myType: Type = typeof<'T>
+        // Split the list of properties.
+        let props: String[] = sort.Split(',')
+        // Prepare the array that holds information on sort criteria.
+        ReDim sortKeys(props.Length - 1)
 
-      // Parse the sort string.
-      for i: Int32 in [0..props.Length - 1] do
-         // Get the Nth member name.
-         let memberName: String = props(i).Trim()
-         if memberName.ToLower().EndsWith(@" desc") then
-            // Discard the DESC qualifier.
-            sortKeys(i).Descending = true
-            memberName = memberName.Remove(memberName.Length - 5).TrimEnd()
-         
-         // Search for a field or a property with this name.
-         sortKeys(i).FieldInfo = myType.GetField(memberName)
-         if sortKeys(i).FieldInfo = null then
-            sortKeys(i).PropertyInfo = myType.GetProperty(memberName)
-         
-      
-   
+        // Parse the sort string.
+        for i: Int32 in [0..props.Length - 1] do
+            // Get the Nth member name.
+            let memberName: String = props(i).Trim()
+            if memberName.ToLower().EndsWith(@" desc") then
+                // Discard the DESC qualifier.
+                sortKeys(i).Descending = true
+                memberName = memberName.Remove(memberName.Length - 5).TrimEnd()
+            
+            // Search for a field or a property with this name.
+            sortKeys(i).FieldInfo = myType.GetField(memberName)
+            if sortKeys(i).FieldInfo = null then
+                sortKeys(i).PropertyInfo = myType.GetProperty(memberName)
+            
+        
+    
 
-   // Implementation of IComparer.Compare
-   let Compare(o1 : Object, o2 : Object) : Int32  Implements IComparer.Compare =
-      Compare(CType(o1, 'T), CType(o2, 'T))
-   
+    // Implementation of IComparer.Compare
+    member this.Compare(o1 : Object, o2 : Object) : Int32  Implements IComparer.Compare =
+        Compare(CType(o1, 'T), CType(o2, 'T))
+    
 
-   // Implementation of IComparer<'T>.Compare
-   let Compare(o1 : 'T, o2 : 'T) : Int32  Implements IComparer<'T>.Compare =
-      // Deal with simplest cases first.
-      if o1 = null then
-         // Two null objects are equal.
-         if o2 = null then Return 0
-         // A null object is less than any non-null object.
-         -1
-      elif o2 = null then
-         // Any non-null object is greater than a null object.
-         1
-      
-
-      // Iterate over all the sort keys.
-      for i: Int32 in [0..sortKeys.Length - 1] do
-         let value1: Object, value2 As Object
-         let sortKey: SortKey = sortKeys(i)
-         // Read either the field or the property.
-         if sortKey.FieldInfo <> null then
-            value1 = sortKey.FieldInfo.GetValue(o1)
-            value2 = sortKey.FieldInfo.GetValue(o2)
-         else
-            value1 = sortKey.PropertyInfo.GetValue(o1, null)
-            value2 = sortKey.PropertyInfo.GetValue(o2, null)
-         
-
-         let res: Int32
-         if value1 = null &&& value2 = null then
+    // Implementation of IComparer<'T>.Compare
+    member this.Compare(o1 : 'T, o2 : 'T) : Int32  Implements IComparer<'T>.Compare =
+        // Deal with simplest cases first.
+        if o1 = null then
             // Two null objects are equal.
-            res = 0
-         elif value1 = null then
-            // A null object is always less than a non-null object.
-            res = -1
-         elif value2 = null then
-            // Any object is greater than a null object.
-            res = 1
-         else
-            // Compare the two values, assuming that they support IComparable.
-            res = value1 :?> IComparable).CompareTo(value2
-         
+            if o2 = null then Return 0
+            // A null object is less than any non-null object.
+            -1
+        elif o2 = null then
+            // Any non-null object is greater than a null object.
+            1
+        
+
+        // Iterate over all the sort keys.
+        for i: Int32 in [0..sortKeys.Length - 1] do
+            let value1: Object, value2 As Object
+            let sortKey: SortKey = sortKeys(i)
+            // Read either the field or the property.
+            if sortKey.FieldInfo <> null then
+                value1 = sortKey.FieldInfo.GetValue(o1)
+                value2 = sortKey.FieldInfo.GetValue(o2)
+            else
+                value1 = sortKey.PropertyInfo.GetValue(o1, null)
+                value2 = sortKey.PropertyInfo.GetValue(o2, null)
+            
+
+            let res: Int32
+            if value1 = null &&& value2 = null then
+                // Two null objects are equal.
+                res = 0
+            elif value1 = null then
+                // A null object is always less than a non-null object.
+                res = -1
+            elif value2 = null then
+                // Any object is greater than a null object.
+                res = 1
+            else
+                // Compare the two values, assuming that they support IComparable.
+                res = value1 :?> IComparable).CompareTo(value2
+            
 
             // If values are different, return this value to caller.
             if res <> 0 then
-               // Negate it if sort direction is descending.
-               if sortKey.Descending then res = -res
-               res
+                // Negate it if sort direction is descending.
+                if sortKey.Descending then res = -res
+                res
             
-         
-         // If we get here, the two objects are equal.
-         0
-      
+        
+        // If we get here, the two objects are equal.
+        0
+    
 
-      // Nested myType to store detail on sort keys
-      Private Structure SortKey
-         Public FieldInfo As FieldInfo
+    // Nested type to store detail on sort keys
+    Private Structure SortKey
+        Public FieldInfo As FieldInfo
 
-      Public PropertyInfo As PropertyInfo
-      // true if sort is descending.
-      Public Descending As Boolean
+        Public PropertyInfo As PropertyInfo
+        // true if sort is descending.
+        Public Descending As Boolean
 ```
 
 As the comments in the source code explain, the universal comparer supports comparisons on both fields and properties. Because this class uses reflection intensively, it isn't as fast as a more specific comparer can be, but in most cases the speed difference isn't noticeable.
 
 ### Dynamic Registration of Event Handlers
 
-Another programming technique you can implement through reflection is the dynamic registration of an event handler. For example, let's say that the `Person` class exposes a `GotEmail` event and you have an event handler in the `MainModule` type:
+Another programming technique you can implement through reflection is the dynamic registration of an event handler. For example, let's say that the Person class exposes a `GotEmail` event and you have an event handler in the `MainModule` type:
 
 ``` F#
-class Person() =
+type Person() =
    Event GotEmail(sender : Object, e : EventArgs)
    …
    // A method that fires the GotEmail event
-   let SendEmail(text : String, Optional priority : Int32 = 1) =
+   member this.SendEmail(text : String, Optional priority : Int32 = 1) =
       …
       let e = new GotEmailEventArgs(text, priority)
       RaiseEvent GotEmail(Me, e)
@@ -344,7 +344,7 @@ class Person() =
 
 
 module MainModule =
-   let GotEmail_Handler(sender : Object, e : GotEmailEventArgs) =
+   member this.GotEmail_Handler(sender : Object, e : GotEmailEventArgs) =
       Console.WriteLine(@"GotEmail event fired")
    
    …
@@ -353,12 +353,12 @@ module MainModule =
 Here's the code that registers the procedure for this event, using reflection exclusively:
 
 ``` F#
-// obj and myType initialized as in previous examples…
+// obj and type initialized as in previous examples…
 // Get a reference to the GotEmail event.
 let ei: EventInfo = myType.GetEvent(@"GotEmail")
 // Get a reference to the delegate that defines the event.
 let handlerType: Type = ei.EventHandlerType
-// Create a delegate of this myType that points to a method in this module.
+// Create a delegate of this type that points to a method in this module.
 let handler: Delegate = Delegate.CreateDelegate( handlerType, typeof<MainModule>, @"GotEmail_Handler")
 // Register this handler dynamically.
 ei.AddEventHandler(obj, handler)
@@ -367,7 +367,7 @@ Dim args() as Object = {@"Hello Joe", 2}
 Type.InvokeMember(@"SendEmail", BindingFlags.InvokeMethod, null, obj, args)
 ```
 
-A look at the console window proves that the `EventHandler` procedure in the `MainModule` type was invoked when the code in the `Person.SendEmail` method raised the `GotEmail` event. If the event handler is an instance method, the second argument to the `Delegate.CreateDelegate` method must be an instance of the class that defines the method; if the event handler is a static method (as in the previous example), this argument must be a `Type` object corresponding to the class where the method is defined.
+A look at the console window proves that the `EventHandler` procedure in the `MainModule` type was invoked when the code in the `Person.SendEmail` method raised the `GotEmail` event. If the event handler is an instance method, the second argument to the `Delegate.CreateDelegate` method must be an instance of the class that defines the method; if the event handler is a static method (as in the previous example), this argument must be a Type object corresponding to the class where the method is defined.
 
 The previous code doesn't really add much to what you can do by registering an event by means of the `AddHandler` operator. But wait, there's more. To show how this technique can be so powerful, I must make a short digression on delegates.
 
@@ -377,12 +377,12 @@ The previous code doesn't really add much to what you can do by registering an e
 
 Both these features relax the requirement that a delegate object must match exactly the signature of its target method. More specifically, delegate covariance means that you can have a delegate point to a method with a return value that inherits from the return type specified by the delegate. Let's say we have the following delegate:
 
-``` C#
+``` F#
 // A delegate that can point to a method that takes a TextBox and returns an object.
 delegate object GetControlData(TextBox ctrl);
 ```
 
-The `GetControlData` delegate specifies object as the return value; therefore, the covariance property tells that this delegate can point to any method that takes a `TextBox` control, regardless of the method's return value, because all .NET types inherit from `System.Object`. The only requirement is that the method actually returns something; therefore, you can't have this delegate point to a C# void method ~~(a Sub method, in Visual Basic parlance)~~. For example, a `GetControlData` delegate might point to the following method because the `String` type inherits from `System.Object`:
+The `GetControlData` delegate specifies object as the return value; therefore, the covariance property tells that this delegate can point to any method that takes a `TextBox` control, regardless of the method's return value, because all .NET types inherit from `System.Object`. The only requirement is that the method actually returns something; therefore, you can't have this delegate point to a C# void method (a Sub method, in Visual Basic parlance). For example, a `GetControlData` delegate might point to the following method because the `String` type inherits from `System.Object`:
 
 ``` F#
 // A function that takes a TextBox control and returns a String
@@ -390,7 +390,7 @@ string GetText(TextBox ctrl)
 { return ctrl.Text; }
 ```
 
-Delegate contravariance means that a delegate can point to a method with an argument that is a base class of the argument specified in the delegate's signature. For example, a `GetControlData` delegate might point to a method that takes one argument of the `Control` or `Object` type because both these types are base classes for the `TextBox` argument that appears in the delegate:
+Delegate contravariance means that a delegate can point to a method with an argument that is a base class of the argument specified in the delegate's signature. For example, a `GetControlData` delegate might point to a method that takes one argument of the Control or Object type because both these types are base classes for the `TextBox` argument that appears in the delegate:
 
 ``` F#
 // A function that takes a Control and returns an Object value.
@@ -413,7 +413,7 @@ Well, not exactly. Granted, Visual Basic doesn't support these features directly
 ``` F#
 Delegate Function GetControlData(ctrl : TextBox) As Object
 
-let GetText(ctrl : Control) : String =
+member this.GetText(ctrl : Control) : String =
    ctrl.Text
 ```
 
@@ -430,11 +430,11 @@ Console.WriteLine(deleg(Me.TextBox1)) // Displays the TextBox1.Text property.
 
 This code is only marginally slower than the C# counterpart, but this isn't a serious issue because you typically create a delegate once and use it repeatedly.
 
-The most interesting application of this feature is the ability to have an individual method handle all the events coming from one or more objects, provided that the event has the canonical .NET syntax `(sender, e)`, where the second argument can be any type that derives from `EventArgs`. Consider the following event handler:
+The most interesting application of this feature is the ability to have an individual method handle all the events coming from one or more objects, provided that the event has the canonical .NET syntax (sender, e), where the second argument can be any type that derives from `EventArgs`. Consider the following event handler:
 
 ``` F#
 // (Inside a Form class)
-let MyEventHandler(sender : Object, e : EventArgs) =
+member this.MyEventHandler(sender : Object, e : EventArgs) =
    Console.WriteLine(@"An event has fired")
 ```
 
@@ -467,7 +467,7 @@ What we need is an object that is able to "mediate" between the event source and
 ``` F#
 Public Delegate Sub ObjectEventHandler(sender : Object, e : ObjectEventArgs)
 
-class EventInterceptor() =
+type EventInterceptor() =
    // The public event
    Public Event ObjectEvent As ObjectEventHandler
 
@@ -478,10 +478,10 @@ class EventInterceptor() =
    …
 ```
 
-The `EventInterceptor` class uses the nested `EventInterceptorHandler` type to trap events coming from the object source. More precisely, an `EventInterceptorHandler` instance is created for each event that the event source can raise. The `EventInterceptor` class supports multiple event sources; therefore, the number of `EventInterceptorHandler` instances can be quite high: for example, if you trap the events coming from 20 TextBox controls, the `EventInterceptor` object will create as many as 1,540 `EventInterceptorHandler` instances because each TextBox control exposes 77 events. For this reason, the `AddEventSource` method supports a third argument that enables you to specify which events should be intercepted:
+The `EventInterceptor` class uses the nested `EventInterceptorHandler` type to trap events coming from the object source. More precisely, an `EventInterceptorHandler` instance is created for each event that the event source can raise. The `EventInterceptor` class supports multiple event sources; therefore, the number of `EventInterceptorHandler` instances can be quite high: for example, if you trap the events coming from 20 `TextBox` controls, the `EventInterceptor` object will create as many as 1,540 `EventInterceptorHandler` instances because each `TextBox` control exposes 77 events. For this reason, the `AddEventSource` method supports a third argument that enables you to specify which events should be intercepted:
 
 ``` F#
-let AddEventSource(eventSource : Object, includeChildren : Boolean, filterPattern : String) =
+member this.AddEventSource(eventSource : Object, includeChildren : Boolean, filterPattern : String) =
    for ei: EventInfo in eventSource.GetType().GetEvents() do
       // Skip this event if its name doesn't match the pattern.
       if not <| String.IsNullOrEmpty(filterPattern) && not <|  Regex.IsMatch(ei.Name, @"^" + filterPattern + @"$") then Continue For
@@ -510,13 +510,13 @@ let AddEventSource(eventSource : Object, includeChildren : Boolean, filterPatter
 The `EventInterceptorHandler` nested class does a very simple job: it uses reflection to register its `EventHandler` method as a listener for the specified event coming from the specified event source. When the event is fired, the `EventHandler` method calls back the `OnObjectEvent` method in the parent `EventInterceptor` object, which in turn fires the `ObjectEvent` event:
 
 ``` F#
-class EventInterceptorHandler() =
+type EventInterceptorHandler() =
    // The event being intercepted
    Public ReadOnly EventInfo As EventInfo
    // The parent EventInterceptor
    Public ReadOnly Parent As EventInterceptor
 
-   let New(eventSource : Object, eventInfo : EventInfo,  parent : EventInterceptor) =
+   member this.New(eventSource : Object, eventInfo : EventInfo,  parent : EventInterceptor) =
       Me.EventInfo = eventInfo
       Me.Parent = parent
       // Create a delegate that points to the EventHandler method.
@@ -526,7 +526,7 @@ class EventInterceptorHandler() =
       eventInfo.AddEventHandler(eventSource, handler)
    
 
-   let EventHandler(sender : Object, e : EventArgs) =
+   member this.EventHandler(sender : Object, e : EventArgs) =
       // Notify the parent EventInterceptor object.
       let objEv = new ObjectEventArgs(sender, EventInfo.Name, e)
       Parent.OnObjectEvent(objEv)
@@ -537,12 +537,12 @@ Here's how a Windows Forms application can use the `EventInterceptor` object to 
 ``` F#
 Dim WithEvents Interceptor As New EventInterceptor
 
-let Form1_Load(sender : Object, e : EventArgs) Handles MyBase.Load =
+member this.Form1_Load(sender : Object, e : EventArgs) Handles MyBase.Load =
 
    Interceptor.AddEventSource(Me, true, @"")
 
 
-let Interceptor_ObjectEvent(sender : Object, e : ObjectEventArgs)  Handles Interceptor.ObjectEvent =
+member this.Interceptor_ObjectEvent(sender : Object, e : ObjectEventArgs)  Handles Interceptor.ObjectEvent =
    let msg: String = String.Format(@"Event {0} from control {1}",  e.EventSource, Control).Name :?> e.EventName
    Debug.WriteLine(msg)
 ```
@@ -568,17 +568,17 @@ Reflection allows you to implement techniques that would be very difficult (and 
 Implementing an undo strategy in the most general case isn't a simple task, especially if some of the actions are performed only conditionally when other conditions are met. What you need is a generic solution to this problem, and you'll see how elegantly you can solve this programming task through reflection. To begin with, let's define an Action class, which represents a method—either a static or an instance method:
 
 ``` F#
-class Action() =
+type Action() =
    Public ReadOnly Message As String       // Description of the action
    Public ReadOnly [Object] As Object      // Instance on which the method is called
    Public ReadOnly Method As MethodInfo    // The method to be invoked
    Public ReadOnly Arguments() As Object   // Arguments for the method
 
    // Second argument can be an object (for instance methods) or a Type (for static methods).
-   let New(message As String, obj : Object,  methodName : String, ByVal ParamArray arguments : Object[]) =
+   member this.New(message : String, obj : Object,  methodName : String, [<ParamArray>] arguments : Object[]) =
       Me.Message = message
       Me.Arguments = arguments
-      // Determine the myType this method belongs to.
+      // Determine the type this method belongs to.
       let myType: Type = TryCast(obj, Type)
       if myType = null then
          Me.Object = obj
@@ -599,7 +599,7 @@ class Action() =
    
 
    // Execute this method.
-   let Execute() =
+   member this.Execute() =
       Me.Method.Invoke(Me.Object, Me.Arguments)
 ```
 
@@ -614,7 +614,7 @@ act.Execute()
 Of course, executing a method in this way doesn't bring any benefit. You see the power of this technique, however, if you define another type that works as a container for Action instances and that can also remember the "undo" action for each method being executed:
 
 ``` F#
-class ActionSequence() =
+type ActionSequence() =
    // The parallel lists of actions and undo actions
    Private Actions As New List<Action>
 
@@ -623,24 +623,24 @@ class ActionSequence() =
    Private DisplayMethod As Action<String>
 
    // The constructor takes a delegate to a method that can output a message.
-   let New(displayMethod : Action<String>) =
+   member this.New(displayMethod : Action<String>) =
       Me.DisplayMethod = displayMethod
    
 
    // Add an action and an undo action to the list.
-   let Add(action : Action, undoAction : Action) =
+   member this.Add(action : Action, undoAction : Action) =
       Actions.Add(action)
       UndoActions.Add(undoAction)
    
 
    // Insert an action and an undo action at a specific index in the list.
-   let Insert(index : Int32, action : Action, undoAction : Action) =
+   member this.Insert(index : Int32, action : Action, undoAction : Action) =
       Actions.Insert(index, action)
       UndoActions.Insert(index, undoAction)
    
 
    // Execute all pending actions, return true if no exception occurred.
-   let Execute(ignoreExceptions : Boolean) : Boolean =
+   member this.Execute(ignoreExceptions : Boolean) : Boolean =
       // This is the list of undo actions to execute in case of error.
       let undoSequence = new ActionSequence(Me.DisplayMethod)
 
@@ -673,7 +673,7 @@ class ActionSequence() =
    
 
    // Report a message through the delegate passed to the constructor.
-   let DisplayMessage(text : String) =
+   member this.DisplayMessage(text : String) =
 
       if Me.DisplayMethod <> null then
          Me.DisplayMethod(text)
@@ -717,7 +717,7 @@ actionSequence.Execute(false)
 After running the previous code snippet, you should find a new c:\backup directory containing the files readme.txt and win.ini. To see how the `ActionSequence` type behaves in case of error, delete the c:\backup directory and intentionally cause an error in the sequence by attempting to copy a file that doesn't exist:
 
 ``` F#
-// (Insert the lines in bold myType before the call to the Execute method.)
+// (Insert the lines in bold type before the call to the Execute method.)
 …
 // Copy the c:\missing.txt file to the c:\backup directory.
 act = New Action(@"Copy c:\missing.txt to c:\backup", typeof<File>,  @"Copy", @"c:\missing.text", @"c:\backup\missing.txt")
@@ -758,7 +758,7 @@ Nevertheless, at times the ability to create an assembly out of thin air can be 
 ![img](C:/Program Files/Typora/images/fig799_01.jpg)
 Figure 18-3: The demo application, which uses on-the-fly compilation to evaluate functions and find the roots of any equation that uses the X variable
 
-The types that allow us to compile an assembly at run time are in the `Microsoft.VisualBasic` namespace (or in the `Microsoft.CSharp` namespace, if you want to generate and compile C# source code) and in the `System.`CodeDom`.Compiler` namespace, so you need to add proper Imports statements to your code to run the code samples that follow.
+The types that allow us to compile an assembly at run time are in the `Microsoft.VisualBasic` namespace (or in the `Microsoft.CSharp` namespace, if you want to generate and compile C# source code) and in the `System.CodeDom.Compiler` namespace, so you need to add proper Imports statements to your code to run the code samples that follow.
 
 The first thing to do is generate the source code for the program to be compiled dynamically. In the expression evaluator demo application, such source code is obtained by inserting the expression that the end user enters in the `txtExpression` field in the middle of the Eval method of an Evaluator public class:
 
@@ -766,12 +766,12 @@ The first thing to do is generate the source code for the program to be compiled
 let source: String = String.Format( @"Imports Microsoft.VisualBasic{0}"  + @"Imports System.Math{0}"  + @"Public Class Evaluator{0}"  + @"   Public Function Eval(x : Double) As Double{0}"  + @"      Return {1}{0}"  + @"   End Function{0}"  + @"End Class{0}",  ControlChars.CrLf, txtExpression.Text)
 ```
 
-Next, you create a `CompilerParameters` object (in the `System.`CodeDom`.Compiler` namespace) and set its properties; this object broadly corresponds to the options you'd pass to the VBC command-line compiler:
+Next, you create a `CompilerParameters` object (in the `System.CodeDom.Compiler` namespace) and set its properties; this object broadly corresponds to the options you'd pass to the VBC command-line compiler:
 
 ``` F#
 let params = new CompilerParameters
 // Generate a DLL, not an EXE executable.
-// (not <| really necessary because false is the default.)
+// (Not really necessary because false is the default.)
 params.GenerateExecutable = false
 
 #If DEBUG Then
@@ -848,7 +848,7 @@ In general, invoking a method by using reflection is many times slower than a di
 
 If you decide to use reflection and you must invoke a method more than once or twice, you should use `Type.GetMethod` to get a reference to a `MethodInfo` object and then use the `MethodInfo.Invoke` method to do the actual call, rather than using the `Type.InvokeMember` method because the former technique requires that you perform the discovery phase only once.
 
-Don't use the `BindingFlags.IgnoreCase` value with the Get*Xxxx* method (singular form), if you know the exact spelling of the member you're looking for, and specify the `BindingFlags` .`ExactBinding` value if possible because it speeds up the search. The latter flag suppresses implicit type conversions; therefore, you must supply the exact type of each argument:
+Don't use the `BindingFlags.IgnoreCase` value with the Get*Xxxx* method (singular form), if you know the exact spelling of the member you're looking for, and specify the `BindingFlags.ExactBinding` value if possible because it speeds up the search. The latter flag suppresses implicit type conversions; therefore, you must supply the exact type of each argument:
 
 ``` F#
 // This code doesn't work—the GetMethod method returns null.
@@ -865,7 +865,7 @@ In .NET Framework 2.0, a `Type.Get`*Xxxx* method (singular form) doesn't cause t
 An alternative technique for storing information about a large number of types and members without taxing the memory is based on the `RuntimeTypeHandle` and `RuntimeMethodHandle` classes that you can use instead of the Type and `MemberInfo` classes. Handle-based objects use very little memory, yet they allow you to rebuild a reference to the actual Type or `MemberInfo`-based object very quickly, as this code demonstrates:
 
 ``` F#
-// Store information about a method in the Person myType.
+// Store information about a method in the Person type.
 let hType: RuntimeTypeHandle = typeof<Person>.TypeHandle
 let hMethod: RuntimeMethodHandle = typeof<Person>.GetMethod(@"SendEmail").MethodHandle
 …
@@ -896,7 +896,7 @@ This discussion on reflection is important for one reason: never rely on the Pri
 The ability to invoke nonpublic members can be important in some scenarios. For example, in the section titled "The `ICloneable` Interface" in Chapter 10, I show how a type can implement the Clone method by leveraging the `MemberwiseClone` protected method, but in some cases you'd like to clone an object for which you don't have any source code. Provided that your application runs in full trust mode and has `ReflectionPermission`, you can clone any object quite easily with reflection. Here's a reusable routine that performs a (shallow) copy of the object passed as an argument:
 
 ``` F#
-let CloneObject<'T>(obj : 'T) : 'T =
+member this.CloneObject<'T>(obj : 'T) : 'T =
    if obj = null then
       // Cloning a null object is easy.
       null

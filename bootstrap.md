@@ -2,15 +2,15 @@
 
 ### Responsive breakpoints for devices
 
-`xs`: E**x**tra **s**mall
+`xs`: Extra small
 
-`sm`: **Sm**all
+`sm`: Small
 
-`md`: **M**e**d**ium
+`md`: Medium
 
-`lg`: **L**ar**g**e
+`lg`: Large
 
-`xl`: E**x**tra **l**arge
+`xl`: Extra large
 
 ## grid
 
@@ -116,7 +116,7 @@ Where *size* is one of:
 </head>
 <body>
    <button class="btn btn-danger">
-      <i class="fa fa-trash">删除烟道段</i>
+      <i class="fa fa-trash">test</i>
    </button>
 </body>
 </html>

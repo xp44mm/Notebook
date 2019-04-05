@@ -237,101 +237,101 @@ Not surprisingly, the UniversalComparer class relies heavily on reflection to pe
 
 ``` VB
 Public Class UniversalComparer(Of T)
-   Implements IComparer, IComparer(Of T)
+    Implements IComparer, IComparer(Of T)
 
-   Private sortKeys() As SortKey
+    Private sortKeys() As SortKey
 
-   Public Sub New(ByVal sort As String)
-      Dim type As Type = GetType(T)
-      ' Split the list of properties.
-      Dim props() As String = sort.Split(","c)
-      ' Prepare the array that holds information on sort criteria.
-      ReDim sortKeys(props.Length - 1)
+    Public Sub New(ByVal sort As String)
+        Dim type As Type = GetType(T)
+        ' Split the list of properties.
+        Dim props() As String = sort.Split(","c)
+        ' Prepare the array that holds information on sort criteria.
+        ReDim sortKeys(props.Length - 1)
 
-      ' Parse the sort string.
-      For i As Integer = 0 To props.Length - 1
-         ' Get the Nth member name.
-         Dim memberName As String = props(i).Trim()
-         If memberName.ToLower().EndsWith(" desc") Then
-            ' Discard the DESC qualifier.
-            sortKeys(i).Descending = True
-            memberName = memberName.Remove(memberName.Length - 5).TrimEnd()
-         End If
-         ' Search for a field or a property with this name.
-         sortKeys(i).FieldInfo = type.GetField(memberName)
-         If sortKeys(i).FieldInfo Is Nothing Then
-            sortKeys(i).PropertyInfo = type.GetProperty(memberName)
-         End If
-      Next
-   End Sub
+        ' Parse the sort string.
+        For i As Integer = 0 To props.Length - 1
+            ' Get the Nth member name.
+            Dim memberName As String = props(i).Trim()
+            If memberName.ToLower().EndsWith(" desc") Then
+                ' Discard the DESC qualifier.
+                sortKeys(i).Descending = True
+                memberName = memberName.Remove(memberName.Length - 5).TrimEnd()
+            End If
+            ' Search for a field or a property with this name.
+            sortKeys(i).FieldInfo = type.GetField(memberName)
+            If sortKeys(i).FieldInfo Is Nothing Then
+                sortKeys(i).PropertyInfo = type.GetProperty(memberName)
+            End If
+        Next
+    End Sub
 
-   ' Implementation of IComparer.Compare
-   Public Function Compare(ByVal o1 As Object, ByVal o2 As Object) As Integer _
-         Implements IComparer.Compare
-      Return Compare(CType(o1, T), CType(o2, T))
-   End Function
+    ' Implementation of IComparer.Compare
+    Public Function Compare(ByVal o1 As Object, ByVal o2 As Object) As Integer _
+            Implements IComparer.Compare
+        Return Compare(CType(o1, T), CType(o2, T))
+    End Function
 
-   ' Implementation of IComparer(Of T).Compare
-   Public Function Compare(ByVal o1 As T, ByVal o2 As T) As Integer _
-         Implements IComparer(Of T).Compare
-      ' Deal with simplest cases first.
-      If o1 Is Nothing Then
-         ' Two null objects are equal.
-         If o2 Is Nothing Then Return 0
-         ' A null object is less than any non-null object.
-         Return -1
-      ElseIf o2 Is Nothing Then
-         ' Any non-null object is greater than a null object.
-         Return 1
-      End If
-
-      ' Iterate over all the sort keys.
-      For i As Integer = 0 To sortKeys.Length - 1
-         Dim value1 As Object, value2 As Object
-         Dim sortKey As SortKey = sortKeys(i)
-         ' Read either the field or the property.
-         If sortKey.FieldInfo IsNot Nothing Then
-            value1 = sortKey.FieldInfo.GetValue(o1)
-            value2 = sortKey.FieldInfo.GetValue(o2)
-         Else
-            value1 = sortKey.PropertyInfo.GetValue(o1, Nothing)
-            value2 = sortKey.PropertyInfo.GetValue(o2, Nothing)
-         End If
-
-         Dim res As Integer
-         If value1 Is Nothing And value2 Is Nothing Then
+    ' Implementation of IComparer(Of T).Compare
+    Public Function Compare(ByVal o1 As T, ByVal o2 As T) As Integer _
+            Implements IComparer(Of T).Compare
+        ' Deal with simplest cases first.
+        If o1 Is Nothing Then
             ' Two null objects are equal.
-            res = 0
-         ElseIf value1 Is Nothing Then
-            ' A null object is always less than a non-null object.
-            res = -1
-         ElseIf value2 Is Nothing Then
-            ' Any object is greater than a null object.
-            res = 1
-         Else
-            ' Compare the two values, assuming that they support IComparable.
-            res = DirectCast(value1, IComparable).CompareTo(value2)
-         End If
+            If o2 Is Nothing Then Return 0
+            ' A null object is less than any non-null object.
+            Return -1
+        ElseIf o2 Is Nothing Then
+            ' Any non-null object is greater than a null object.
+            Return 1
+        End If
+
+        ' Iterate over all the sort keys.
+        For i As Integer = 0 To sortKeys.Length - 1
+            Dim value1 As Object, value2 As Object
+            Dim sortKey As SortKey = sortKeys(i)
+            ' Read either the field or the property.
+            If sortKey.FieldInfo IsNot Nothing Then
+                value1 = sortKey.FieldInfo.GetValue(o1)
+                value2 = sortKey.FieldInfo.GetValue(o2)
+            Else
+                value1 = sortKey.PropertyInfo.GetValue(o1, Nothing)
+                value2 = sortKey.PropertyInfo.GetValue(o2, Nothing)
+            End If
+
+            Dim res As Integer
+            If value1 Is Nothing And value2 Is Nothing Then
+                ' Two null objects are equal.
+                res = 0
+            ElseIf value1 Is Nothing Then
+                ' A null object is always less than a non-null object.
+                res = -1
+            ElseIf value2 Is Nothing Then
+                ' Any object is greater than a null object.
+                res = 1
+            Else
+                ' Compare the two values, assuming that they support IComparable.
+                res = DirectCast(value1, IComparable).CompareTo(value2)
+            End If
 
             ' If values are different, return this value to caller.
             If res <> 0 Then
-               ' Negate it if sort direction is descending.
-               If sortKey.Descending Then res = -res
-               Return res
+                ' Negate it if sort direction is descending.
+                If sortKey.Descending Then res = -res
+                Return res
             End If
-         Next
-         ' If we get here, the two objects are equal.
-         Return 0
-      End Function
+        Next
+        ' If we get here, the two objects are equal.
+        Return 0
+    End Function
 
-      ' Nested type to store detail on sort keys
-      Private Structure SortKey
-         Public FieldInfo As FieldInfo
+    ' Nested type to store detail on sort keys
+    Private Structure SortKey
+        Public FieldInfo As FieldInfo
 
-      Public PropertyInfo As PropertyInfo
-      ' True if sort is descending.
-      Public Descending As Boolean
-   End Structure
+        Public PropertyInfo As PropertyInfo
+        ' True if sort is descending.
+        Public Descending As Boolean
+    End Structure
 End Class
 ```
 
@@ -402,7 +402,7 @@ string GetText(TextBox ctrl)
 { return ctrl.Text; }
 ```
 
-Delegate contravariance means that a delegate can point to a method with an argument that is a base class of the argument specified in the delegate's signature. For example, a GetControl-Data delegate might point to a method that takes one argument of the Control or Object type because both these types are base classes for the TextBox argument that appears in the delegate:
+Delegate contravariance means that a delegate can point to a method with an argument that is a base class of the argument specified in the delegate's signature. For example, a GetControlData delegate might point to a method that takes one argument of the Control or Object type because both these types are base classes for the TextBox argument that appears in the delegate:
 
 ``` VB
 // A function that takes a Control and returns an Object value.
@@ -898,7 +898,7 @@ In general, invoking a method by using reflection is many times slower than a di
 
 If you decide to use reflection and you must invoke a method more than once or twice, you should use Type.GetMethod to get a reference to a MethodInfo object and then use the MethodInfo.Invoke method to do the actual call, rather than using the Type.InvokeMember method because the former technique requires that you perform the discovery phase only once.
 
-Don't use the BindingFlags.IgnoreCase value with the Get*Xxxx* method (singular form), if you know the exact spelling of the member you're looking for, and specify the BindingFlags .ExactBinding value if possible because it speeds up the search. The latter flag suppresses implicit type conversions; therefore, you must supply the exact type of each argument:
+Don't use the BindingFlags.IgnoreCase value with the Get*Xxxx* method (singular form), if you know the exact spelling of the member you're looking for, and specify the BindingFlags.ExactBinding value if possible because it speeds up the search. The latter flag suppresses implicit type conversions; therefore, you must supply the exact type of each argument:
 
 ``` VB
 ' This code doesn't work—the GetMethod method returns Nothing.

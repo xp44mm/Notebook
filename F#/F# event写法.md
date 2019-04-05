@@ -28,9 +28,9 @@ type IChatConnection =
 type ObservableConnection(chatConnection:IChatConnection) =
     inherit ObservableBase<string>()
 
-    override this.SubscribeCore( observer:IObserver<string>) =
+    override this.SubscribeCore(observer:IObserver<string>) =
         let received = new Action<_>(fun message->observer.OnNext(message))
-        let closed = new Action(fun ()->observer.OnCompleted())
+        let closed = new Action(fun () -> observer.OnCompleted())
         let error = new Action<_>(fun ex ->observer.OnError(ex))
 
         chatConnection.Received.AddHandler(received)

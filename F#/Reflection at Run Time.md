@@ -898,7 +898,7 @@ In general, invoking a method by using reflection is many times  slower than a d
 
 If you decide to use reflection and you must invoke a method more  than once or twice, you should use Type.GetMethod to get a reference to a  MethodInfo object and then use the MethodInfo.Invoke method to do the actual  call, rather than using the Type.InvokeMember method because the former  technique requires that you perform the discovery phase only once.
 
-Don't use the BindingFlags.IgnoreCase value with the Get*Xxxx* method (singular form), if you know the exact spelling  of the member you're looking for, and specify the BindingFlags .ExactBinding  value if possible because it speeds up the search. The latter flag suppresses  implicit type conversions; therefore, you must supply the exact type of each  argument:
+Don't use the BindingFlags.IgnoreCase value with the Get*Xxxx* method (singular form), if you know the exact spelling  of the member you're looking for, and specify the BindingFlags.ExactBinding  value if possible because it speeds up the search. The latter flag suppresses  implicit type conversions; therefore, you must supply the exact type of each  argument:
 
 ```
 ' This code doesn't work—the GetMethod method returns Nothing.

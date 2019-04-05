@@ -286,7 +286,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 * `$_`
   Substitutes the entire source string.
 
-* `$\``
+* $`
   Substitutes the portion of the source string up to the match.
 
 * `$'`
