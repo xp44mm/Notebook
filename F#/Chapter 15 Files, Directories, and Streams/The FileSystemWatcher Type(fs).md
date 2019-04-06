@@ -26,7 +26,7 @@ The `Filter` property lets you specify which files you're interested in; for exa
 
 
 
-The `NotifyFilter` property is a bit-coded value that specifies which kind of modifications are announced by means of the component's `Changed` event. This property can be a combination of one or more `NotifyFilters` enumerated values: `Attributes`, `CreationTime`, `DirectoryName`, `FileName`, `LastAccess`, `LastWrite`, `Security`, and `Size`. The initial value of this property is `LastWrite` or `FileName` or `DirectoryName`, so by default you don't get notifications when an attribute is changed.
+The `NotifyFilter` property is a bit-coded value that specifies which kind of modifications are announced by means of the component's `Changed` event. This property can be a combination of one or more `NotifyFilters` enumerated values: Attributes, `CreationTime`, `DirectoryName`, `FileName`, `LastAccess`, `LastWrite`, `Security`, and `Size`. The initial value of this property is `LastWrite` or `FileName` or `DirectoryName`, so by default you don't get notifications when an attribute is changed.
 
 Here's an example of how you can set up a `FileSystemWatcher` component to watch for events in the C:\Windows directory and its subdirectories:
 
@@ -48,7 +48,7 @@ Once you've set up the component correctly, you can get a notification when some
 
 #### Events
 
-The simplest way to get a notification from the `FileSystemWatcher` component is by writing handlers for the component's events. However, events don't fire until you set `EnableRaisingEvents` to `True`. The `Created`, `Deleted`, and `Changed` events receive a `FileSystemEventArgs` object, which exposes two important properties: `Name` (the name of the file that has been created, deleted, or changed) and `FullPath` (its complete path):
+The simplest way to get a notification from the `FileSystemWatcher` component is by writing handlers for the component's events. However, events don't fire until you set `EnableRaisingEvents` to `True`. The `Created`, `Deleted`, and `Changed` events receive a `FileSystemEventArgs` object, which exposes two important properties: Name (the name of the file that has been created, deleted, or changed) and `FullPath` (its complete path):
 
 ``` FSharp
 member this.fsw_Created(sender : Object,  e : FileSystemEventArgs) Handles fsw.Created =
@@ -109,7 +109,7 @@ tmpFsw.WaitForChanged(WatcherChangeTypes.Deleted)
 
 #### Buffer Overflows
 
-You should be aware of potential problems when too many events fire in a short time. The `FileSystemWatcher` component uses an internal buffer to keep track of file system actions so that events can be raised for each one of them even if the application can't serve them fast enough. By default, this internal buffer is 8 KB long and can store about 160 events. Each event takes 16 bytes, plus 2 bytes for each character in the filename. (`Filenames` are stored as Unicode characters.) If you anticipate a lot of file activity, you should increase the size of the buffer by setting the `InternalBufferSize` property to a larger value. The size should be an integer multiple of the operating system's page size (4 KB under Microsoft Windows 2000 and later versions). Alternatively, you can use the `NotifyFilter` property to limit the number of change operations that fire the `Changed` event or set `IncludeSubdirectories` to `False` if you don't need to monitor an entire directory tree. (Use multiple `FileSystemWatcher` components to monitor individual subdirectories if you aren't interested in monitoring all the subdirectories under a given path.)
+You should be aware of potential problems when too many events fire in a short time. The `FileSystemWatcher` component uses an internal buffer to keep track of file system actions so that events can be raised for each one of them even if the application can't serve them fast enough. By default, this internal buffer is 8 KB long and can store about 160 events. Each event takes 16 bytes, plus 2 bytes for each character in the filename. (Filenames are stored as Unicode characters.) If you anticipate a lot of file activity, you should increase the size of the buffer by setting the `InternalBufferSize` property to a larger value. The size should be an integer multiple of the operating system's page size (4 KB under Microsoft Windows 2000 and later versions). Alternatively, you can use the `NotifyFilter` property to limit the number of change operations that fire the `Changed` event or set `IncludeSubdirectories` to `False` if you don't need to monitor an entire directory tree. (Use multiple `FileSystemWatcher` components to monitor individual subdirectories if you aren't interested in monitoring all the subdirectories under a given path.)
 
 You can't use the `Filter` property to prevent the internal buffer from overflowing because this property filters out files only after they've been added to the buffer. When the internal buffer overflows, you get an `Error` event:
 
@@ -135,9 +135,9 @@ Here are a few more tips about the `FileSystemWatcher` component and the problem
 
 * The `FileSystemWatcher` component starts raising events when the `Path` property is nonempty and the `EnableRaisingEvents` property is `True`. You can also prevent the component from raising unwanted events during the initialization phase of a Windows `Forms` class by bracketing your setup statements between a call to the `BeginInit` method and a call to the `EndInit` method. (This is the approach used by the Visual Studio designer.)
 
-* As I mentioned before, this component works only on Windows Me, Windows NT, Windows 2000, Windows XP, and Windows Server 2003. It raises an error when it points to a path on machines running earlier versions of the operating system. Remote machines must have one of these operating systems to work properly, but you can't monitor a remote Windows NT system from another Windows NT machine. You can use UNC-based directory names only on Windows 2000 or later systems. The `FileSystemWatcher` component doesn't work on CD-ROM and DVD drives because their contents can't change.
+* As I mentioned before, this component works only on Windows `Me`, Windows NT, Windows 2000, Windows XP, and Windows Server 2003. It raises an error when it points to a path on machines running earlier versions of the operating system. Remote machines must have one of these operating systems to work properly, but you can't monitor a remote Windows NT system from another Windows NT machine. You can use UNC-based directory names only on Windows 2000 or later systems. The `FileSystemWatcher` component doesn't work on CD-ROM and DVD drives because their contents can't change.
 
-* In some cases, you might get multiple `Created` events, depending on how a file is created and on the application that creates it. For example, when you create a new file using Notepad, you see the following sequence of events: `Created`, `Deleted`, `Created`, and `Changed`. (The first event pair fires because Notepad checks whether the file exists by attempting to create it.)
+* In some cases, you might get multiple `Created` events, depending on how a file is created and on the application that creates it. For example, when you create a new file using Notepad, you see the following sequence of events: Created, `Deleted`, `Created`, and `Changed`. (The first event pair fires because Notepad checks whether the file exists by attempting to create it.)
 
 * A change in a file can generate an extra event in its parent directory as well because the directory maintains information about the files it contains (their size, last write date, and so on).
 

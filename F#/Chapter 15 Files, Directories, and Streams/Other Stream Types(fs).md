@@ -204,7 +204,7 @@ member this.ReadData(ns : NetworkStream) : String =
 
 To test this code, create a directory named c:\docs and store a few text files in it. Compile the server and the client applications as separate `Console` projects and run both of them. Enter the name of a file in the client application and wait for the server to send back the textual content of the file.
 
-Alternatively, you can create a solution that contains both these projects; then, right-click the solution item in the `Solution` `Explorer` window and select the `Properties` command. Select the `Startup` `Project` page in the dialog box that appears, click the `Multiple` `Startup` `Projects` radio button, and set the `Action` value to `Start` for both the server-side and client-side projects. (See `Figure` 15-3.) If you now press `F5` or select the `Start` command from the `Debug` menu, both projects will be launched.
+Alternatively, you can create a solution that contains both these projects; then, right-click the solution item in the `Solution` `Explorer` window and select the `Properties` command. Select the `Startup` `Project` page in the dialog box that appears, click the `Multiple` `Startup` `Projects` radio button, and set the `Action` value to `Start` for both the server-side and client-side projects. (See Figure 15-3.) If you now press `F5` or select the `Start` command from the `Debug` menu, both projects will be launched.
 
 ![`Image` from book](images/fig649%`5F01`%`5F0`%`2Ejpg`)
 Figure 15-3: The solution's `Property` `Pages` dialog box, which lets you decide which project to run when you press the `F5` key
@@ -252,9 +252,9 @@ The great thing about the `BufferedStream` type is that it manages its internal 
 
 ### Compressed Streams
 
-**Version 2005 of VB or Version 2.0 of .NET** Two new types for compressing data have been added in version 2.0 of the .NET Framework: DeflateStream and `GZipStream`, both in the `System.IO.Compression` namespace. Both types enable you to compress and uncompress the bytes that flow through the stream; they expose a very similar interface and are virtually interchangeable; the only substantial difference is the format of their compressed output.
+**Version 2005 of VB or Version 2.0 of .NET** Two new types for compressing data have been added in version 2.0 of the .NET Framework: `DeflateStream` and `GZipStream`, both in the `System.IO.Compression` namespace. Both types enable you to compress and uncompress the bytes that flow through the stream; they expose a very similar interface and are virtually interchangeable; the only substantial difference is the format of their compressed output.
 
-The `DeflateStream` type uses the `Deflate` compression algorithm, a patent-free algorithm that combines the `LZ77` algorithm and `Huffman` coding; the main advantage of this algorithm is that data of any length can be compressed and uncompressed using an intermediate buffer of limited size. The `GZipStream` type uses the same `Deflate` algorithm, but it includes a cyclic redundancy check (CRC) value to detect data corruption.
+The `DeflateStream` type uses the `Deflate` compression algorithm, a patent-free algorithm that combines the `LZ77` algorithm and `Huffman` coding; the main advantage of this algorithm is that data of any length can be compressed and uncompressed using an intermediate buffer of limited size. The `GZipStream` type uses the same `Deflate` algorithm, but it includes a cyclic redundancy check (`CRC`) value to detect data corruption.
 
 The peculiarity of these two types is that they can work only together with another stream-based object. In fact, a `DeflatedStream` or `GZipStream` object "wraps" another stream that actually writes to the actual medium (if you are compressing data) or reads from the medium (if you are uncompressing data). Given the similarities between the two types, I show how to use just the `DeflateStream` type.
 

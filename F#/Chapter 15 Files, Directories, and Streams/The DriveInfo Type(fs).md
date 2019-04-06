@@ -1,6 +1,6 @@
 ## The DriveInfo Type
 
-**Version 2005 of VB or Version 2.0 of .NET** Previous versions of the .NET Framework expose no classes for retrieving information about existing drives, and thus you must use either `PInvoke` calls to the Windows API or Windows Management Instrumentation (WMI) classes. This gap has been filled in version 2.0 with the introduction of the `DriveInfo` type.
+**Version 2005 of VB or Version 2.0 of .NET** Previous versions of the .NET Framework expose no classes for retrieving information about existing drives, and thus you must use either `PInvoke` calls to the Windows API or Windows `Management` `Instrumentation` (`WMI`) classes. This gap has been filled in version 2.0 with the introduction of the `DriveInfo` type.
 
 
 
@@ -23,7 +23,7 @@ for di: DriveInfo in DriveInfo.GetDrives() do
       Console.WriteLine("{0} {1:N}", di.Name, di.TotalSize)
 ```
 
-The `DriveInfo` object exposes the following properties: Name, `VolumeLabel`, `RootDirectory` (the `DirectoryInfo` object that represents the root folder), `DriveType` (an enumerated value that can be Fixed, Removable, `CDRom`, Ram, Network, and Unknown), `DriveFormat` (a string such as NTFS or `FAT32`), `TotalSize` (the capacity of the drive in bytes), Total-`FreeSpace` (the total number of free bytes), and `AvailableFreeSpace` (the number of available free bytes; can be less than `TotalFreeSpace` if quotas are used). All the properties are read-only, which is quite understandable (even though I'd surely like to increase the amount of free space on a drive by simply setting a property!), except for the `VolumeLabel` property:
+The `DriveInfo` object exposes the following properties: Name, `VolumeLabel`, `RootDirectory` (the `DirectoryInfo` object that represents the root folder), `DriveType` (an enumerated value that can be `Fixed`, `Removable`, `CDRom`, `Ram`, `Network`, and `Unknown`), `DriveFormat` (a string such as `NTFS` or `FAT32`), `TotalSize` (the capacity of the drive in bytes), `Total`-`FreeSpace` (the total number of free bytes), and `AvailableFreeSpace` (the number of available free bytes; can be less than `TotalFreeSpace` if quotas are used). All the properties are read-only, which is quite understandable (even though I'd surely like to increase the amount of free space on a drive by simply setting a property!), except for the `VolumeLabel` property:
 
 ``` FSharp
 // Change the volume label of drive D.

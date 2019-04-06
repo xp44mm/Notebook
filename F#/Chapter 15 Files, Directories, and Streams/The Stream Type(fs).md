@@ -35,7 +35,7 @@ Because the generic `Stream` object can read and write only individual bytes or 
 * The `BinaryReader` and `BinaryWriter` types can work with primitive data in binary format, such as a `Single` value or an encoded string.
 * The `StreamReader` and `StreamWriter` types can work with strings of text, such as the text you read from or write to a text file. These types can work in conjunction with an `Encoder` object, which determines how characters are encoded in the stream.
 * The `StringReader` type can read from a string; the `StringWriter` class can write to a `StringBuilder`. (It can't write to a string because .NET strings are immutable.)
-* TextReader and `TextWriter` are abstract types that define how to work with strings of text in Unicode format. TextReader is the base type for the `StreamReader` and `StringReader` types; `TextWriter` is the base type for the `StreamWriter` and `StringWriter` types.
+* `TextReader` and `TextWriter` are abstract types that define how to work with strings of text in Unicode format. `TextReader` is the base type for the `StreamReader` and `StringReader` types; `TextWriter` is the base type for the `StreamWriter` and `StringWriter` types.
 * The `XmlTextReader` and `XmlTextWriter` types work with XML text.
 * The `ResourceReader` and `ResourceWriter` types work with resource files.
 
@@ -255,7 +255,7 @@ parser.Delimiters = New String() {",", ";"}
 parser.TrimWhiteSpace = true
 ```
 
-(Other overloads of the constructor take a `Stream` or a `TextReader` object.) `Next`, you need a loop that processes the file one line at a time until the `EndOfData` property returns `True`; the `ReadFields` method reads the next record (that is, the next line of text) and splits it into fields:
+(Other overloads of the constructor take a `Stream` or a `TextReader` object.) Next, you need a loop that processes the file one line at a time until the `EndOfData` property returns `True`; the `ReadFields` method reads the next record (that is, the next line of text) and splits it into fields:
 
 ``` FSharp
 while not <| parser.EndOfData do
@@ -324,7 +324,7 @@ ID 8     Monitor XY        129.99
 ID 2     Notebook ABC      850.00
 ```
 
-The first three characters in each line specify whether the line is an invoice header (IH) or invoice detail (ID); in the former case, the line contains the invoice number, date, and customer; in the latter case, the line contains the quantity, description, and unit price. The format of the two records is different; in this specific case they have the same number of fields, but this is just a coincidence because the number of fields might differ as well. Here's the Visual Basic code that can interpret this data file:
+The first three characters in each line specify whether the line is an invoice header (`IH`) or invoice detail (`ID`); in the former case, the line contains the invoice number, date, and customer; in the latter case, the line contains the quantity, description, and unit price. The format of the two records is different; in this specific case they have the same number of fields, but this is just a coincidence because the number of fields might differ as well. Here's the Visual Basic code that can interpret this data file:
 
 ``` FSharp
 use parser = new TextFieldParser("data3.txt", Encoding.Default)

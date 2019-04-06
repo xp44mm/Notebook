@@ -59,6 +59,11 @@ The regular expression pattern in the preceding code requires an explanation:
 The `Matches` method has an undocumented feature that becomes very handy when parsing very long strings. When you use the return value of this method in a For Each loop—as I did in the majority of examples shown so far—this method performs a sort of lazy evaluation: instead of processing the entire string, it stops the parsing process as soon as the first `Match` object can be returned to the calling program. When the Next statement is reached and the next iteration of the loop begins, it restarts the parsing process where it had left previously, and so forth. If you exit the loop with an Exit For statement, the remainder of the string is never parsed, which can be very convenient if you are looking for a specific match and don't need to list all of them. You can easily prove this feature with this code:
 
 ```F#
+// Prepare to search for the "A" character.
+let re = new Regex("A")
+// Create a very long string with a match at its beginning and its end.
+let text: String = "A" + String(' ', 1000000) + "A"
+
 let sw = new Stopwatch()
 sw.Start()
 for m: Match in re.Matches(text) do
@@ -74,7 +79,7 @@ Elapsed 0 milliseconds
 Elapsed 80 milliseconds
 ```
 
-Keep in mind that this lazy evaluation feature of the `Matches` method is disabled if you query other members of the returned `MatchCollection` object, for example, the Count property. It's quite obvious that the only way to count the occurrences of the pattern is to process the entire input string.
+Keep in mind that this lazy evaluation feature of the `Matches` method is disabled if you query other members of the returned `MatchCollection` object, for example, the `Count` property. It's quite obvious that the only way to count the occurrences of the pattern is to process the entire input string.
 
 In some special cases you might want to have even more control on the parsing process, for example, to skip portions of the string that aren't of interest for your purposes. In these cases, you can use the `Match` method, which returns only the first `Match` object and lets you iterate over the remaining matches using the `Match.NextMatch` method, as this example demonstrates:
 
@@ -230,12 +235,12 @@ an.Name <- "CustomRegularExpressions"
 Regex.CompileToAssembly(regexInfo, an)
 ```
 
-The preceding code creates an assembly named CustomRegularExpressions.dll in the same directory as the current application's executable. You can add a reference to this assembly from any Visual Studio 2005 project and use the two `RegexWords` and `RegexIntegers` types, or you can load these types using reflection (see Chapter 18). In the former case, you can use a strongly typed variable:
+The preceding code creates an assembly named `CustomRegularExpressions.dll` in the same directory as the current application's executable. You can add a reference to this assembly from any Visual Studio 2005 project and use the two `RegexWords` and `RegexIntegers` types, or you can load these types using reflection (see Chapter 18). In the former case, you can use a strongly typed variable:
 
 ```F#
 let reWords = new CustomRegex.RegexWords()
 for m: Match in reWords.Matches("A string containing five words") do
-   Console.WriteLine(m.Value)
+    Console.WriteLine(m.Value)
 ```
 
 ### The MatchCollection and Match Types
