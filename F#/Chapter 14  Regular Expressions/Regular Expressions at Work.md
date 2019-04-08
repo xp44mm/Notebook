@@ -6,6 +6,8 @@ Most of the examples so far have showed many possible applications of regular ex
 
 For your convenience, I have prepared a list of recurring patterns, which you can often use as is in your code (see Table 14-3). To help you find the pattern that suits your needs, the list includes some patterns that I covered earlier in this chapter as well as patterns that I discuss in following sections. You should enclose the pattern between a pair of `\b` sequences if you want to find individual words, or between the `^` and `$` characters if you want to test whether the entire input string matches the pattern.
 
+##### Table 14-3: Common Regular Expression Patterns
+
 * `\d+`
   Positive integer. 
 
@@ -46,10 +48,10 @@ For your convenience, I have prepared a list of recurring patterns, which you ca
   A quoted string enclosed in either single or double quotation marks.
 
 * `(10|11|12|0?[1–9])(?<sep>[-/])(30|31|2\d|1\d|0?[1–9])\k<sep>(\d{4}|\d{2})`
-  A U.S. date in the mm-dd-yyyy or mm/dd/yyyy format. Month and day numbers can have a leading zero; month number must be in the range 1–12; day number must be in the range 1–31 (but invalid dates such as 2/30/2004 are matched); year number can have two or four digits and isn't validated.
+  A U.S. date in the `mm-dd-yyyy` or `mm/dd/yyyy` format. Month and day numbers can have a leading zero; month number must be in the range 1–12; day number must be in the range 1–31 (but invalid dates such as 2/30/2004 are matched); year number can have two or four digits and isn't validated.
 
 * `(30|31|2\d|1\d|0?[1–9])(?<sep>[-/])(10|11|12|0?[1–9])\<sep>(\d{4}|\d{2})`
-  A European date in the dd-mm-yyyy or dd/mm/yyyy format. (See previous entry for more details.)
+  A European date in the `dd-mm-yyyy` or `dd/mm/yyyy` format. (See previous entry for more details.)
 
 * `(2[0–3]|[01]\d|\d):[0–5]\d`
   A time value in the hh:mm 24-hour format; leading zero for hour value is optional.
@@ -92,8 +94,8 @@ For your convenience, I have prepared a list of recurring patterns, which you ca
 
 You can find more regular expressions in the Visual Studio Regular Expression Editor dialog box (see Figure 14-2) or by browsing the huge regular expression library you can find at http://www.regexlib.com. If you are serious about regular expressions, don't miss The Regulator free utility, which you can download from http://regex.osherove.com/.
 
-!Image from book 
-Figure 14-2: Setting the `ValidationExpression` property of a `RegularExpressionValidator` ASP.NET control by selecting one of the common regular expressions you find in the Regular Expression Editor dialog box 
+~~!Image from book~~ 
+~~Figure 14-2: Setting the ValidationExpression property of a RegularExpressionValidator ASP.NET control by selecting one of the common regular expressions you find in the Regular Expression Editor dialog box~~ 
 
 ### Searching for Words and Quoted Strings
 
@@ -144,7 +146,7 @@ let pattern = @"(?<q>[""']).*?\k<q>|\w+"
 
 Notice that the `.*?` does a lazy matching so that it matches any character between the quotation marks but won't match the closing quotation mark.
 
-Sometimes you might want to extract just *unique* words, such as when you want to make a dictionary of all the words in a text file or a set of text files. A possible solution is to extract all the words and use a Hashtable object to remember the words found so far:
+Sometimes you might want to extract just *unique* words, such as when you want to make a dictionary of all the words in a text file or a set of text files. A possible solution is to extract all the words and use a `Hashtable` object to remember the words found so far:
 
 ```F#
 let text: String = "one two three two zone four three"
@@ -176,7 +178,7 @@ Notice that the `\b` characters in the regular expression prevent partial matche
 let pattern = @"(?<word>\b\w+\b)(?=.+\b\k<word>\b)"
 ```
 
-where the `(?=)` construct means that the word match must be followed by another instance of itself. (Notice that this pattern finds all the duplicates; therefore, it finds two duplicates if there are three occurrences of a given word.) Although the regex-only techniques are very elegant, the look-ahead `(?=)` clause makes them relatively inefficient: for example, on a source text of about 1 million characters, the regex-only technique is approximately 8 times slower than the technique that uses an auxiliary Hashtable to keep track of all the words already parsed.
+where the `(?=)` construct means that the word match must be followed by another instance of itself. (Notice that this pattern finds all the duplicates; therefore, it finds two duplicates if there are three occurrences of a given word.) Although the regex-only techniques are very elegant, the look-ahead `(?=)` clause makes them relatively inefficient: for example, on a source text of about 1 million characters, the regex-only technique is approximately 8 times slower than the technique that uses an auxiliary `Hashtable` to keep track of all the words already parsed.
 
 One last type of word search I want to explain is the *proximity search*, which is when you search two strings that must be found close to each other in the source string, with no more than *N* words between them. For example, given the "one two three two zone four three" source string, a proximity search for the words "one" and "four" with *N* equal to 4 would be successful, whereas it would fail with *N* equal to 3. The pattern for such a proximity search is quite simple:
 
@@ -236,7 +238,7 @@ Checking that an integer has up to the specified number of digits is a trivial p
 
 ```F#
 // Validate an integer in the range of 0 to 9,999; accept leading zeros.
-let pattern = "^\d{1,4}$"
+let pattern = @"^\d{1,4}$"
 ```
 
 The negative `(?!)` look-ahead clause lets you rule out a few cases, for example:
@@ -254,13 +256,13 @@ let pattern = "^(0|(?!0)\d{1,4})$"
 If the upper limit of the accepted range isn't a number in the form 99…999, you can still use regular expressions to do the validation, but the pattern becomes more complex. For example, the following pattern checks that a number is in the range 0 to 255 with no leading zeros:
 
 ```F#
-let pattern = "^(25[0–5]|2[0–4]\d|1\d\d|[1–9]\d|\d)$"
+let pattern = @"^(25[0–5]|2[0–4]\d|1\d\d|[1–9]\d|\d)$"
 ```
 
 The 25[0–5] clause validates numbers in the range 250 to 255; the `2[0–4]\d` clause validates numbers in the range 200 to 249; the `1\d\d` clause validates numbers in the range 100 to 199; the `[1–9]\d` clause takes care of the numbers 10 to 99; finally, the `\d` clause covers the range 0 to 9. A slight modification of this pattern allows you to validate a four-part IP address, such as 192.168.0.11:
 
 ```F#
-let pattern = "^((25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)$"
+let pattern = @"^((25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)$"
 ```
 
 Things quickly become complicated with larger ranges:
@@ -274,14 +276,14 @@ Numbers that can have a leading sign require special treatment:
 
 ```F#
 // Validate an integer in the range -32,768 to 32,767; leading zeros are OK.
-let pattern = "^(-?[12]\d{4}|-?3[0-1]\d{3}|-?32[0-6]\d{2}|-?327[0-5]\d|-?3276[0-7]|-32768|-?\d{1,4})$"
+let pattern = @"^(-?[12]\d{4}|-?3[0-1]\d{3}|-?32[0-6]\d{2}|-?327[0-5]\d|-?3276[0-7]|-32768|-?\d{1,4})$"
 ```
 
 Notice in the previous pattern that the special case –32768 must be dealt with separately; all the remaining clauses have an optional minus sign in front of them. You can use a similar technique to validate a time value:
 
 ```F#
 // Validate a time value in the format hh:mm; the hour number can have a leading zero.
-let pattern = "^(2[0–3]|[01]\d|\d):[0–5]\d$"
+let pattern = @"^(2[0–3]|[01]\d|\d):[0–5]\d$"
 ```
 
 Validating a date value is much more difficult because each month has a different number of days and, above all, because the valid day range for February depends on whether the year is a leap year. Before I illustrate the complete pattern for solving this problem, let's see how we can use a regular expression to check whether a two-digit number is a multiple of 4:
@@ -296,13 +298,14 @@ Under the simplified assumption that the year number has only two digits, and th
 
 ```F#
 // This portion deals with months with 31 days.
-let p1: String = "(0?[13578]|10|12)/(3[01]|[012]\d|\d)/\d{2}"
+let p1: String = @"(0?[13578]|10|12)/(3[01]|[012]\d|\d)/\d{2}"
 // This portion deals with months with 30 days.
-let p2: String = "(0?[469]|11)/(30|[012]\d|\d)/\d{2}"
+let p2: String = @"(0?[469]|11)/(30|[012]\d|\d)/\d{2}"
 // This portion deals with February 29 in leap years.
-let p3: String = "(0?2)/29/([02468][048]|[13579][26])"
+let p3: String = @"(0?2)/29/([02468][048]|[13579][26])"
 // This portion deals with other days in February.
-let p4: String = "(0?2)/(2[0-8]|[01]\d|\d)/\d{2}"
+let p4: String = @"(0?2)/(2[0-8]|[01]\d|\d)/\d{2}"
+
 // Put all the patterns together.
 let pattern = String.Format("^({0}|{1}|{2}|{3})$", p1, p2, p3, p4)
 // Check the date.
@@ -315,15 +318,15 @@ If the year number can have either two or four digits, we must take into account
 
 ```F#
 // This portion deals with months with 31 days.
-let s1 : String = "(0?[13578]|10|12)/(3[01]|[12]\d|0?[1–9])/(\d\d)?\d\d"
+let s1 : String = @"(0?[13578]|10|12)/(3[01]|[12]\d|0?[1–9])/(\d\d)?\d\d"
 // This portion deals with months with 30 days.
-let s2 : String = "(0?[469]|11)/(30|[12]\d|0?[1-9])/(\d\d)?\d\d "
+let s2 : String = @"(0?[469]|11)/(30|[12]\d|0?[1-9])/(\d\d)?\d\d "
 // This portion deals with days 1–28 in February in all years.
-let s3 : String = "(0?2)/(2[0–8]|[01]\d|0?[1–9])/(\d\d)?\d\d"
+let s3 : String = @"(0?2)/(2[0–8]|[01]\d|0?[1–9])/(\d\d)?\d\d"
 // This portion deals with February 29 in years divisible by 400.
-let s4 : String = "(0?2)/29/(1600|2000|2400|2800|00)"
+let s4 : String = @"(0?2)/29/(1600|2000|2400|2800|00)"
 // This portion deals with February 29 in noncentury leap years.
-let s5 : String = "(0?2)/29/(\d\d)?(0[48]|[2468][048]|[13579][26])"
+let s5 : String = @"(0?2)/29/(\d\d)?(0[48]|[2468][048]|[13579][26])"
 // Put all the patterns together.
 let pattern = String.Format("^({0}|{1}|{2}|{3}|{4})$", s1, s2, s3, s4, s5)
 ```
@@ -348,9 +351,10 @@ In cases like these, the balancing group definition construct shown in Table 14-
 
 ```F#
 let tags = [ "table"; "tr"; "td"; "div"; "span" ]
-let re = new Regex(String.concat "|" tags |> sprintf @"<(?<tag>(%s))[\s>]", RegexOptions.IgnoreCase)
+let openTag = new Regex(String.concat "|" tags |> sprintf @"<(?<tag>(%s))[\s>]", RegexOptions.IgnoreCase)
 
-let closes =
+//每个标签对应一个正则表达式，备查
+let relevantTags =
     tags |> List.map(fun tag ->
         let pat = String.Format(@"((?<open><{0})[\s>]|(?<close>)</{0}>)", tag)
         let re = new Regex(pat, RegexOptions.IgnoreCase)
@@ -360,42 +364,43 @@ let closes =
 // Find all nested HTML tags in a file. (e.g., <table>…</table>)
 let findNestedTags (text:string) =
     // We've found an open tag. Let's look for open and close versions of this tag.
-    let rec loop (m1: Match) (m2: Match) (openTags: int) =
-        if m2.Groups.["open"].Success then
-            let m2 = m2.NextMatch()
-            loop m1 m2 (openTags + 1)
-        elif m2.Groups.["close"].Success then
+    let rec loop (m0: Match) (mr: Match) (openTags: int) =
+        if mr.Groups.["open"].Success then
+            let m2 = mr.NextMatch()
+            loop m0 m2 (openTags + 1)
+        elif mr.Groups.["close"].Success then
             if openTags = 1 then
-                text.[m1.Index .. m2.Index + m2.Length - 1]
+                text.[m0.Index .. mr.Index + mr.Length - 1]
             else
-                let m2 = m2.NextMatch()
-                loop m1 m2 (openTags - 1)
+                let m2 = mr.NextMatch()
+                loop m0 m2 (openTags - 1)
         else
-            sprintf "%A" [m1.Result("$`");m1.Result("$0");m1.Result("$'")]
+            sprintf "%A" [m0.Result("$`");m0.Result("$0");m0.Result("$'")]
 
-    re.Matches(text)
-    |> Seq.map(fun m1 ->
-        let tag: String = m1.Groups.["tag"].Value
-        let re2 = closes.[tag]
-        let m2 = re2.Match(text, m1.Index)
-        loop m1 m2 0
+    openTag.Matches(text)
+    |> Seq.map(fun m0 ->
+        let tag: String = m0.Groups.["tag"].Value
+        let rr = relevantTags.[tag]
+        let mr = rr.Match(text, m0.Index)
+        loop m0 mr 0
     )
 
 type Test(output: ITestOutputHelper) =
-
     [<Fact>]
     member this.``Searching for Nested Tags``() =
         let text: String = "<table border=1><tr><td><table></table></td><td></td></tr><td></table>"
-
         for found in findNestedTags text do
             output.WriteLine(sprintf "%A" found)
+
 ```
 
 Once you understand how this code works, you can easily modify it to match other hierarchical entities, for example, parentheses in a math expression or nested type definitions in a .vb source file.
 
 ### Parsing Data Files
 
-Even though XML has emerged as the standard technology in exchange information, many legacy applications still output data in older and simpler formats. Two such formats are fixed-width text files and delimited text files. Microsoft Visual Basic 2005 supports a new `TextFieldParser` object that can simplify this task remarkably (see Chapter 15, "Files, Directories, and Streams"), but you can also solve this problem with regular expressions in a very elegant manner. Let's consider a fixed-width data file such as this one:
+Even though XML has emerged as the standard technology in exchange information, many legacy applications still output data in older and simpler formats. Two such formats are fixed-width text files and delimited text files. Microsoft Visual Basic 2005 supports a new `TextFieldParser` object that can simplify this task remarkably (see Chapter 15, "Files, Directories, and Streams"), but you can also solve this problem with regular expressions in a very elegant manner. 
+
+Let's consider a fixed-width data file such as this one:
 
 ```
 John  Evans   New York
@@ -483,7 +488,7 @@ let pattern =
     |> sprintf @"^\s*%s\s*$"
 ```
 
-The `(?<q1>["']?)` is similar to the pattern used in the previous example, except it has a trailing ? character; therefore, it matches an optional single or double quotation mark character. Later in the same line you find the `(?(q1)\k<q1>)` clause, which tests whether the q1 group is defined and, if so, matches its value. In other words, if the q1 group actually matched the single or double quotation mark character, the expression `(?(q1)\k<q1>)` matches it again; otherwise, the expression is ignored. The same reasoning applies to the other two fields in the record.
+The `(?<q1>["']?)` is similar to the pattern used in the previous example, except it has a trailing `?` character; therefore, it matches an optional single or double quotation mark character. Later in the same line you find the `(?(q1)\k<q1>)` clause, which tests whether the q1 group is defined and, if so, matches its value. In other words, if the q1 group actually matched the single or double quotation mark character, the expression `(?(q1)\k<q1>)` matches it again; otherwise, the expression is ignored. The same reasoning applies to the other two fields in the record.
 
 The `(?(expr)…)` clause has an optional "no" portion (see Table 14-1), so you might even match a portion of a string if a previous group has *not* been matched.
 
@@ -498,7 +503,7 @@ let reEval, reNumber =
     // A number inside a pair of parentheses
     let nump: String = "\s*\((?<nump>" + num + ")\)\s*"
 
-    let numg = sprintf @"(?<%s>%s)" num 
+    let numg name = sprintf @"(?<%s>%s)" name num 
 
     // Math operations
     let add: String = sprintf @"(?<![*/^]\s*)%s\+%s(?!\s*[*/^])" (numg "add1") (numg "add2")
@@ -521,7 +526,7 @@ let reEval, reNumber =
 
 ```
 
-The pattern corresponding to the num constant represents a floating-point number, optionally preceded by a plus or minus sign. Let's now consider the regular expression that defines the addition operation: it consists of two numbers, each one forming a named group (add1 and add2); the two numbers are separated by the + symbol. Additionally, the pattern is preceded by a `(?<![*/^]\s*)` negative look-behind assertion, which ensures that the first operand doesn't follow an operator with a higher priority than addition (that is, the multiplication, division, or raising to power operator). Similarly, the second operand is followed by the `(?!\s*[*/^])` negative look-ahead assertion, which ensures that the addition isn't followed by an operation with higher priority. The patterns for other math operations are similar, so I won't describe them in detail. The body of the `Evaluate` function follows:
+The pattern corresponding to the num constant represents a floating-point number, optionally preceded by a plus or minus sign. Let's now consider the regular expression that defines the addition operation: it consists of two numbers, each one forming a named group (add1 and add2); the two numbers are separated by the `+` symbol. Additionally, the pattern is preceded by a `(?<![*/^]\s*)` negative look-behind assertion, which ensures that the first operand doesn't follow an operator with a higher priority than addition (that is, the multiplication, division, or raising to power operator). Similarly, the second operand is followed by the `(?!\s*[*/^])` negative look-ahead assertion, which ensures that the addition isn't followed by an operation with higher priority. The patterns for other math operations are similar, so I won't describe them in detail. The body of the `Evaluate` function follows:
 
 ```F#
 let Evaluate(expr : String) : Double =
@@ -573,7 +578,7 @@ let PerformOperation(m : Match) : String =
         |> sprintf "%f"
     
     if m.Groups.["nump"].Length > 0 then
-        m.Groups.["nump"].Value.Trim()
+        m.Groups.["nump"].Value.Trim()//括号里的内容
 
     elif m.Groups.["neg"].Length > 0 then
         "+"
@@ -717,7 +722,7 @@ type CodeStats(tp : String, name : String, code : String) =
 Interestingly, I ran this code to count lines in its own source file, so I learned that I could create an effective and useful programming utility with just 63 executable statements, which is quite a good result. (See Figure 14-4.)
 
 !Image from book 
-Figure 14-4: Using the `CodeStats` class to count how many statements its own source code contains 
+Figure 14-4: Using the `CodeStats` class to count how many statements its own source code contains
 
 ### Playing with Regular Expressions (Literally)
 

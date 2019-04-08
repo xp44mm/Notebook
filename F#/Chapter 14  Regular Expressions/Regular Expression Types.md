@@ -249,7 +249,7 @@ The `MatchCollection` class represents a set of matches. It has no constructor b
 
 The `Match` class represents a single match. You can obtain an instance of this class either by iterating on a `MatchCollection` object or directly by means of the `Match` method of the `Regex` class. The `Match` object is immutable and has no public constructor.
 
-The main properties of the `Match` class are `Value`, `Length`, and `Index`, which return the matched string, its length, and the index at which it appears in the source string. The `ToString` method returns the same string as the `Value` property does. I already showed you how to use the `IsSuccess` property of the `Match` class and its `NextMatch` method to iterate over all the matches in a string.
+The main properties of the `Match` class are `Value`, `Length`, and `Index`, which return the matched string, its length, and the index at which it appears in the source string. The `ToString` method returns the same string as the `Value` property does. I already showed you how to use the `Success` property of the `Match` class and its `NextMatch` method to iterate over all the matches in a string.
 
 You must pay special attention when the search pattern matches an empty string, for example, `\d*` (which matches zero or more digits). When you apply such a pattern to a string, you typically get one or more empty matches, as you can see here:
 
@@ -266,8 +266,8 @@ If the pattern contains one or more groups, you can access the corresponding `Gr
 
 ```F#
 let source: String = "a = 123: b=456"
-let re2 = new Regex("(\s*)(?<name>\w+)\s*=\s*(?<value>\d+)")
-for m: Match in re2.Matches(source) do
+let re = new Regex("(\s*)(?<name>\w+)\s*=\s*(?<value>\d+)")
+for m: Match in re.Matches(source) do
    Console.WriteLine("Variable: {0}, Value: {1}", 
       m.Groups.["name"].Value, m.Groups.["value"].Value)
 ```
@@ -279,6 +279,8 @@ Variable: a, Value: 123
 Variable: b, Value: 456
 ```
 
+
+
 The `Result` method takes a replace pattern and returns the string that would result if the match were replaced by that pattern:
 
 ```F#
@@ -286,6 +288,8 @@ The `Result` method takes a replace pattern and returns the string that would re
 for m: Match in re2.Matches(source) do
    Console.WriteLine(m.Result("Variable: ${name}, Value: ${value}"))
 ```
+
+
 
 ### The Group Type
 
@@ -308,6 +312,8 @@ Variable 'a' found at index 0, value is 123
 Variable 'b' found at index 9, value is 456
 ```
 
+
+
 The following example is more complex but also more useful. It shows how you can parse `<A>` tags in an HTML file and display the anchor text (the text that appears underlined on an HTML page) and the URL it points to. As you can see, it's just a matter of a few lines of code:
 
 ```F#
@@ -324,6 +330,8 @@ while m.Success do
 To understand how the preceding code works, you must keep in mind that the `<A>` tag is followed by one or more spaces and then by an HREF attribute, which is followed by an equal sign and then the URL, which can be enclosed in quotation marks. All the text that follows the closing angle bracket up to the ending tag `</A>` is the anchor text. The regular expression uses the `.+?` lazy quantifier so as not to match too many characters and miss the delimiting quotation mark or closing angle bracket.
 
 The regular expression defined in the preceding code defines two unnamed groups—the URL and the anchor text—so displaying details for all the `<A>` tags in the HTML file is just a matter of looping over all the matches. The regular expression syntax is complicated by the fact that quotation mark characters must be doubled when they appear in a Visual Basic string constant.
+
+
 
 A few methods in the `Regex` class can be useful to get information about the groups that the parser finds in the regular expression. The `GetGroupNames` method returns an array with the names of all groups; the `GroupNameFromNumber` returns the name of the group with a given index; and the `GroupNumberFromName` returns the index of a group with a given name. See the MSDN documentation for more information.
 
@@ -360,19 +368,18 @@ The text that follows is the result produced in the console window. (Notice that
 
 ```
 Match 'abc' at index 0
-  Found 1 capture(s) for group 0
-    'abc' at index 0
-  Found 3 capture(s) for group 1
-    'a' at index 0
-    'b' at index 1
-    'c' at index 2
+    Found 1 capture(s) for group 0
+        'abc' at index 0
+    Found 3 capture(s) for group 1
+        'a' at index 0
+        'b' at index 1
+        'c' at index 2
 Match 'def' at index 4
-
-Found 1 capture(s) for group 0
-  'def' at index 4
-Found 3 capture(s) for group 1
-  'd' at index 4
-  'e' at index 5
-  'f' at index 6
+    Found 1 capture(s) for group 0
+        'def' at index 4
+    Found 3 capture(s) for group 1
+        'd' at index 4
+        'e' at index 5
+        'f' at index 6
 ```
 
