@@ -497,33 +497,36 @@ The `(?(expr)…)` clause has an optional "no" portion (see Table 14-1), so you 
 A nice and somewhat surprising application of regular expressions is in expression evaluation. In the section titled "The `Replace` Method" earlier in this chapter, you saw how you can evaluate the result of an addition operation embedded in a string such as "12+34", thanks to the overload of the `Replace` method that takes a callback function. Of course, you don't have to stop at additions, and in fact you can create a complete and quite versatile expression evaluator built on a single regular expression and some support code. Creating such a regular expression isn't a trivial task, though. Let's analyze the Evaluate method a piece at a time:
 
 ```F#
-let reEval, reNumber = 
-    // A floating-point number, with optional leading and trailing spaces
-    let num: String = "\s*[+-]?\d+\.?\d*\b\s*"
-    // A number inside a pair of parentheses
-    let nump: String = "\s*\((?<nump>" + num + ")\)\s*"
+// A floating-point number, with optional leading and trailing spaces
+let num: String = @"\s*[+-]?\d+\.?\d*\b\s*"
+// A number inside a pair of parentheses
+let nump: String = @"\s*\((?<nump>" + num + ")\)\s*"
 
-    let numg name = sprintf @"(?<%s>%s)" name num 
+let numg name = sprintf "(?<%s>%s)" name num
 
-    // Math operations
-    let add: String = sprintf @"(?<![*/^]\s*)%s\+%s(?!\s*[*/^])" (numg "add1") (numg "add2")
-    let subt: String = sprintf @"(?<![*/^]\s*)%s\-%s(?!\s*[*/^])" (numg "sub1") (numg "sub2")
-    let mul: String = sprintf @"(?<!\^\s*)%s\*%s(?!\s*\^)" (numg "mul1") (numg "mul2")
-    let div: String = sprintf @"(?<!\^\s*)%s/%s(?!\s*\^)" (numg "div1") (numg "div2")
-    let modu: String = sprintf @"(?<!\^\s*)%s\s+mod\s+%s(?!\s*\^)" (numg "mod1") (numg "mod2")
-    let pow: String = sprintf @"%s\^%s" (numg "pow1") (numg "pow2")
+// Math operations
+let add: String = sprintf @"(?<![*/^]\s*)%s\+%s(?!\s*[*/^])" (numg "add1") (numg "add2")
+let subt: String = sprintf @"(?<![*/^]\s*)%s\-%s(?!\s*[*/^])" (numg "sub1") (numg "sub2")
+let mul: String = sprintf @"(?<!\^\s*)%s\*%s(?!\s*\^)" (numg "mul1") (numg "mul2")
+let div: String = sprintf @"(?<!\^\s*)%s/%s(?!\s*\^)" (numg "div1") (numg "div2")
+let modu: String = sprintf @"(?<!\^\s*)%s\s+mod\s+%s(?!\s*\^)" (numg "mod1") (numg "mod2")
+let pow: String = sprintf @"%s\^%s" (numg "pow1") (numg "pow2")
 
-    // 1-operand and 2-operand functions
-    let fone: String = sprintf "%s\s*\(%s\)" "(?<fone>(exp|log|log10|abs|sqr|sqrt|sin|cos|tan|asin|acos|atan))" (numg "fone1") 
-    let ftwo: String = sprintf "%s\s*\(%s,%s\)" "(?<ftwo>(min|max))" (numg "ftwo1")  (numg "ftwo2")
+// 1-operand and 2-operand functions
+let fone: String = sprintf @"%s\s*\(%s\)" "(?<fone>(exp|log|log10|abs|sqr|sqrt|sin|cos|tan|asin|acos|atan))" (numg "fone1")
+let ftwo: String = sprintf @"%s\s*\(%s,%s\)" "(?<ftwo>(min|max))" (numg "ftwo1")  (numg "ftwo2")
 
-    // Put everything in a single regex.
-    let pattern: String = 
-        [fone; ftwo; modu; pow; div; mul; subt; add; nump]
-        |> String.concat "|"
-        |> sprintf "(%s)"
-    new Regex(pattern, RegexOptions.IgnoreCase), new Regex("^" + num + "$")
+// Put everything in a single regex.
+let pattern: String =
+    [fone; ftwo; modu; pow; div; mul; subt; add; nump]
+    |> String.concat "|"
+    |> sprintf "(%s)"
 
+/// 匹配表达式
+let reEval = new Regex(pattern, RegexOptions.IgnoreCase)
+
+/// 匹配数字
+let reNumber = new Regex("^" + num + "$")
 ```
 
 The pattern corresponding to the num constant represents a floating-point number, optionally preceded by a plus or minus sign. Let's now consider the regular expression that defines the addition operation: it consists of two numbers, each one forming a named group (add1 and add2); the two numbers are separated by the `+` symbol. Additionally, the pattern is preceded by a `(?<![*/^]\s*)` negative look-behind assertion, which ensures that the first operand doesn't follow an operator with a higher priority than addition (that is, the multiplication, division, or raising to power operator). Similarly, the second operand is followed by the `(?!\s*[*/^])` negative look-ahead assertion, which ensures that the addition isn't followed by an operation with higher priority. The patterns for other math operations are similar, so I won't describe them in detail. The body of the `Evaluate` function follows:
@@ -532,7 +535,7 @@ The pattern corresponding to the num constant represents a floating-point number
 let Evaluate(expr : String) : Double =
     // Add a space after a +/– used for additions and subtractions to ensure
     // they are not mistakenly taken as the leading sign of a number.
-    let mutable expr = Regex.Replace(expr, "(?<=[0-9)]\s*)[+-](?=[0-9(])", "$0 ")
+    let mutable expr = Regex.Replace(expr, @"(?<=[0-9)]\s*)[+-](?=[0-9(])", "$0 ")
 
     // Loop until the expression is reduced to a number.
     while not <| reNumber.IsMatch(expr) do
@@ -545,7 +548,6 @@ let Evaluate(expr : String) : Double =
 
     // Convert to a floating-point number and return.
     Double.Parse(expr)
-
 ```
 
 At the top of the Do loop, the `reNumber` regular expression checks whether the expression contains a number: in this case, the loop is exited and the value of the number is returned to the caller. If this isn't the case, the loop is repeated in the attempt to simplify the expression using the `reEval` regular expression; if the expression doesn't change, it means that the expression can't be simplified further because it is malformed, and the method throws an exception. If the expression has been simplified, the loop is reentered.
@@ -555,46 +557,37 @@ The `PerformOperation` callback method is where the actual math operations are c
 ```F#
 let fones =
     dict [
-            "exp", Math.Exp    
-            "log", Math.Log    
+            "exp", Math.Exp
+            "log", Math.Log
             "log10", Math.Log10
-            "abs", Math.Abs    
-            "sqrt", Math.Sqrt  
-            "sin", Math.Sin    
-            "cos", Math.Cos    
-            "tan", Math.Tan    
-            "asin", Math.Asin  
-            "acos", Math.Acos  
-            "atan", Math.Atan  
+            "abs", Math.Abs
+            "sqrt", Math.Sqrt
+            "sin", Math.Sin
+            "cos", Math.Cos
+            "tan", Math.Tan
+            "asin", Math.Asin
+            "acos", Math.Acos
+            "atan", Math.Atan
     ]
 
 let PerformOperation(m : Match) : String =
-    //let mutable result: Double = 0.0
     let biop name op =
         [1;2]
         |> Seq.map(sprintf "%s%d" name)
         |> Seq.map(fun tag -> Double.Parse(m.Groups.[tag].Value))
         |> Seq.reduce op
         |> sprintf "%f"
-    
+
     if m.Groups.["nump"].Length > 0 then
-        m.Groups.["nump"].Value.Trim()//括号里的内容
-
-    elif m.Groups.["neg"].Length > 0 then
-        "+"
+        m.Groups.["nump"].Value.Trim()
     elif m.Groups.["add1"].Length > 0 then biop "add" (+)
-       
     elif m.Groups.["sub1"].Length > 0 then biop "sub" (-)
-
     elif m.Groups.["mul1"].Length > 0 then biop "mul" ( * )
-
-    elif m.Groups.["mod1"].Length > 0 then biop "mod" (fun a b -> Math.IEEERemainder(a,b))
-
     elif m.Groups.["div1"].Length > 0 then biop "div" (/)
-
+    elif m.Groups.["mod1"].Length > 0 then biop "mod" (fun a b -> Math.IEEERemainder(a,b))
     elif m.Groups.["pow1"].Length > 0 then biop "pow" ( ** )
 
-    elif m.Groups.["fone"].Length > 0 then 
+    elif m.Groups.["fone"].Length > 0 then
         let operand: Double = Double.Parse(m.Groups.["fone1"].Value)
         match m.Groups.["fone"].Value.ToLower() with
         | fname when fones.ContainsKey fname  -> fones.[fname] operand |> sprintf "%f"
@@ -605,9 +598,11 @@ let PerformOperation(m : Match) : String =
         let operand2: Double = Double.Parse(m.Groups.["ftwo2"].Value)
         match m.Groups.["ftwo"].Value.ToLower() with
         | "min"  ->
-            Math.Min(operand1, operand2) |> sprintf "%f"
+            let result = Math.Min(operand1, operand2)
+            result.ToString()
         | "max"  ->
-            Math.Max(operand1, operand2) |> sprintf "%f"
+            let result = Math.Max(operand1, operand2)
+            result.ToString()
         | _ -> failwith "unrealized"
     else failwith "unrealized"
 ```
@@ -652,19 +647,19 @@ The `CodeStats` type is where the actual parse occurs. Each instance of this cla
 
 ```F#
 let reTotalLines = new Regex("^.*$", RegexOptions.Multiline)
-let reBlankLines = new Regex("^\s*$", RegexOptions.Multiline)
-let reCommentLines = new Regex("^\s*('|Rem).*$",  RegexOptions.Multiline ||| RegexOptions.IgnoreCase)
+let reBlankLines = new Regex(@"^\s*$", RegexOptions.Multiline)
+let reCommentLines = new Regex(@"^\s*('|Rem).*$",  RegexOptions.Multiline ||| RegexOptions.IgnoreCase)
 
-let maybe = sprintf "(%s)?\s*"
+let maybe = sprintf @"(%s)?\s*"
 
 let reTypes =
     let pat =
         [
             maybe "Public|Friend|Private|Protected|Protected Friend"
             maybe "Shadows|NotInheritable|MustInherit"
-            "(?<type>(Class|Module|Interface|Enum|Structure))\s+(?<name>\w+)"
-            "[\w\W]+?"
-            "\bEnd \k<type>"
+            @"(?<type>(Class|Module|Interface|Enum|Structure))\s+(?<name>\w+)"
+            @"[\w\W]+?"
+            @"\bEnd \k<type>"
         ] |> String.concat ""
 
     new Regex(pat, RegexOptions.IgnoreCase ||| RegexOptions.Multiline)
@@ -677,43 +672,72 @@ let reMembers =
             maybe "ReadOnly|WriteOnly"
             maybe "Overloads"
             maybe "Shadows|Overridable|Overrides|MustOverride|NotOverridable"
-            "(?<type>(Function|Sub|Property))\s+(?<name>\w+)"
-            "[\w\W]+?"
-            "\bEnd \k<type>"
+            @"(?<type>(Function|Sub|Property))\s+(?<name>\w+)"
+            @"[\w\W]+?"
+            @"\bEnd \k<type>"
         ] |> String.concat ""
 
     new Regex(pat, RegexOptions.IgnoreCase ||| RegexOptions.Multiline)
 
-type CodeStats(tp : String, name : String, code : String) =
+type baseCodeStats(tp:string, name : String, code : String) =
     let totalLines = reTotalLines.Matches(code).Count
     let blankLines = reBlankLines.Matches(code).Count
     let commentLines = reCommentLines.Matches(code).Count
     let executableLines = totalLines - blankLines - commentLines
 
-    member this.Description(indentLevel : int) : String =
-        let indent = new String(' ', indentLevel * 2)
-        let nextIndent = indent + " "
+    let percent lines = float lines / float totalLines
+
+    member this.selfDescription(indentLevel : int) =
+        let indentSpace i = new String(' ', i * 2)
+        let indent = indentSpace indentLevel
+        let nextIndent = indentSpace (indentLevel+1)
         let sb = new StringBuilder()
         sb.AppendFormat(indent + "{0} {1}\n", tp, name)
             .AppendFormat(nextIndent + "Total lines: {0,6}\n", totalLines)
-            .AppendFormat(nextIndent + "Blank lines: {0,6}{1,9:P1}\n", blankLines, blankLines / totalLines)
-            .AppendFormat(nextIndent + "Comment lines: {0,6}{1,9:P1}\n", commentLines, commentLines / totalLines)
-            .AppendFormat(nextIndent + "Executable lines: {0,6}{1,9:P1}\n", executableLines, executableLines / totalLines)
+            .AppendFormat(nextIndent + "Blank lines: {0,6}{1,9:P1}\n", blankLines, percent blankLines)
+            .AppendFormat(nextIndent + "Comment lines: {0,6}{1,9:P1}\n", commentLines, percent commentLines)
+            .AppendFormat(nextIndent + "Executable lines: {0,6}{1,9:P1}\n", executableLines, percent executableLines)
             .AppendLine("")
-        |> ignore
+
+type MemberCodeStats(tp:string, name : String, code : String) =
+    inherit baseCodeStats(tp, name, code)
+
+    member this.Description(indentLevel : int) =
+        let sb = this.selfDescription(indentLevel)
+        sb.ToString()
+
+type TypeCodeStats(tp:string, name : String, code : String) =
+    inherit baseCodeStats(tp, name, code)
+
+    member this.Description(indentLevel : int) =
+        let sb = this.selfDescription(indentLevel)
 
         // Ask child objects to display their description.
         let members =
-            let tp,re =
-                if tp = "FILE" then "TYPE",reTypes
-                elif tp = "TYPE" then "MEMBER",reMembers
-                else "",null
             [
-                for m: Match in re.Matches(code) do
-                    yield CodeStats(tp, m.Groups.["name"].Value, m.Value)
+                for m: Match in reMembers.Matches(code) do
+                    yield MemberCodeStats(m.Groups.["type"].Value,m.Groups.["name"].Value, m.Value)
             ]
 
-        for stats: CodeStats in members do
+        for stats: MemberCodeStats in members do
+            sb.Append(stats.Description(indentLevel + 1)) |> ignore
+
+        sb.ToString()
+
+type CodeStats(tp:string, name : String, code : String) =
+    inherit baseCodeStats(tp, name, code)
+
+    member this.Description(indentLevel : int) =
+        let sb = this.selfDescription(indentLevel)
+
+        // Ask child objects to display their description.
+        let types =
+            [
+                for m: Match in reTypes.Matches(code) do
+                    yield TypeCodeStats(m.Groups.["type"].Value,m.Groups.["name"].Value, m.Value)
+            ]
+
+        for stats: TypeCodeStats in types do
             sb.Append(stats.Description(indentLevel + 1)) |> ignore
 
         sb.ToString()
@@ -721,8 +745,47 @@ type CodeStats(tp : String, name : String, code : String) =
 
 Interestingly, I ran this code to count lines in its own source file, so I learned that I could create an effective and useful programming utility with just 63 executable statements, which is quite a good result. (See Figure 14-4.)
 
-!Image from book 
+```F#
+FILE D:\repos\xp44mm\Programming Microsoft Visual Basic 2005 The Language\14 RegularExpressions\ProjectStats\Module1.vb
+  Total lines:          86
+  Blank lines:          14    16.3%
+  Comment lines:         3     3.5%
+  Executable lines:     69    80.2%
+
+  Module MainModule
+    Total lines:          12
+    Blank lines:           3    25.0%
+    Comment lines:         0     0.0%
+    Executable lines:      9    75.0%
+
+    Sub Main
+      Total lines:           8
+      Blank lines:           1    12.5%
+      Comment lines:         0     0.0%
+      Executable lines:      7    87.5%
+
+  Class CodeStats
+    Total lines:          70
+    Blank lines:           9    12.9%
+    Comment lines:         3     4.3%
+    Executable lines:     58    82.9%
+
+    Sub New
+      Total lines:          19
+      Blank lines:           2    10.5%
+      Comment lines:         0     0.0%
+      Executable lines:     17    89.5%
+
+    Function Description
+      Total lines:          21
+      Blank lines:           1     4.8%
+      Comment lines:         1     4.8%
+      Executable lines:     19    90.5%
+```
+
 Figure 14-4: Using the `CodeStats` class to count how many statements its own source code contains
+
+
 
 ### Playing with Regular Expressions (Literally)
 
@@ -730,46 +793,58 @@ By now, you should be convinced that regular expressions are too powerful to be 
 
 Let's consider the game of poker. I won't build an entire application that plays poker (nor encourage gambling in any way...), but I will focus on a very small programming problem that is related to this game. How would you write a method that evaluates the score corresponding to a hand of five cards? You can solve this problem in a variety of ways, with numerous If and Select Case statements, but the solution offered by regular expressions can hardly be beaten as far as elegance, performance, and conciseness are concerned.
 
+
+
 The following method accepts five strings, each one corresponding to a card in the hand and each one consisting of a character pair: the first character stands for the card value and can be a digit 1–9, or T, J, Q, or K (where T stands for Ten); the second character of the pair is the card's suit and can be C (clubs), D (diamonds), H (hearts), or S (spades). The code in the method sorts the five cards by their value, and then builds two separate strings—one containing the five values and the other containing the five suits—and tests them against suitable regular expressions, starting from the most complex and moving to the simpler ones. (Testing the regular expressions in this order is crucial; otherwise, a plain straight would be mistakenly reported as a straight flush and a pair would appear to be a full house or a four-of-a-kind.)
 
 ```F#
+// Notice that we must account for the fact that the values T,J,Q,K
+// don't appear in this order after being sorted alphabetically.
 let straight = "12345|23456|34567|45678|56789|6789T|789JT|89JQT|9JKQT|1JKQT"
-let flush = "(.)\1\1\1\1"
+
+let flush = @"(.)\1\1\1\1"
+
+let fourOfAKind = @"(.)\1\1\1"
+
+// A full house can be either 3+2 or 2+3 cards with the same values.
+let fullHouse = @"(.)\1\1(.)\2|(.)\3(.)\4\4"
+
+let threeOfAKind = @"(.)\1\1"
+
+let twoPairs = @"(.)\1.?(.)\2"
+
+let OnePair = @"(.)\1"
 
 // Sort the array and create the sequence of values and of suits.
 let unzipCards (cards : String[]) =
-        cards
-        |> Array.sort
-        |> Array.map (fun s->s.[0],s.[1])
-        |> Array.unzip
-        |> fun (a,b) -> String a,String b
+    cards
+    |> Array.sort
+    |> Array.map (fun s->s.[0],s.[1])
+    |> Array.unzip
+    |> fun (a,b) -> String a,String b
 
 let EvalPokerScore(cards : String[]) : String =
-    let values,suits = unzipCards cards
+    let values, suits = unzipCards cards
 
     // Check each sequence in order.
     if Regex.IsMatch(values, straight) && Regex.IsMatch(suits, flush) then
-        // Notice that we must account for the fact that the values T,J,Q,K
-        // don't appear in this order after being sorted alphabetically.
         "StraightFlush"
-    elif Regex.IsMatch(values, "(.)\1\1\1") then
+    elif Regex.IsMatch(values, fourOfAKind) then
         "FourOfAKind"
-    elif Regex.IsMatch(values, "(.)\1\1(.)\2|(.)\3(.)\4\4") then
-        // A full house can be either 3+2 or 2+3 cards with the same values.
+    elif Regex.IsMatch(values, fullHouse) then
         "FullHouse"
     elif Regex.IsMatch(suits, flush) then
         "Flush"
     elif Regex.IsMatch(values,  straight) then
         "Straight"
-    elif Regex.IsMatch(values, "(.)\1\1") then
+    elif Regex.IsMatch(values, threeOfAKind) then
         "ThreeOfAKind"
-    elif Regex.IsMatch(values, "(.)\1(.)\2") then
+    elif Regex.IsMatch(values, twoPairs) then
         "TwoPairs"
-    elif Regex.IsMatch(values, "(.)\1") then
+    elif Regex.IsMatch(values, OnePair) then
         "OnePair"
     else
         "HighCard"
-
 ```
 
 Here are a few examples of how you can call the method and the results it returns:
@@ -784,23 +859,23 @@ Assert.Equal(EvalPokerScore[|"TC"; "KC"; "QD"; "8D"; "9H"|], "HighCard")
 The `EvalPokerScore` method is so concise that you might be surprised to learn that you can simplify it further. The trick is simple and leverages the fact that patterns are just strings and can be stored in a data structure. In this case, you can use a two-dimensional array so that you can test each pattern in a For loop. (Use a pattern that always matches, such as a plain dot, if you aren't interested in matching either the values or the suits.)
 
 ```F#
-// (Replace the sequences of If statements in previous listing with this code.)
-let scores : String[][] =
-    [|
-        [|straight                   ; flush; "StraightFlush"|]
-        [|"(.)\1\1\1"                ; "."  ; "FourOfAKind"  |]
-        [|"(.)\1\1(.)\2|(.)\3(.)\4\4"; "."  ; "FullHouse"    |]
-        [|"."                        ; flush; "Flush"        |]
-        [|straight                   ; "."  ; "Straight"     |]
-        [|"(.)\1\1"                  ; "."  ; "ThreeOfAKind" |]
-        [|"(.)\1.?(.)\2"             ; "."  ; "TwoPairs"     |]
-        [|"(.)\1"                    ; "."  ; "OnePair"      |]
-    |]
+    // (Replace the sequences of If statements in previous listing with this code.)
+    let scores : String[][] =
+        [|
+            [|straight     ; flush; "StraightFlush"|]
+            [|fourOfAKind  ; "."  ; "FourOfAKind"  |]
+            [|fullHouse    ; "."  ; "FullHouse"    |]
+            [|"."          ; flush; "Flush"        |]
+            [|straight     ; "."  ; "Straight"     |]
+            [|threeOfAKind ; "."  ; "ThreeOfAKind" |]
+            [|twoPairs     ; "."  ; "TwoPairs"     |]
+            [|OnePair      ; "."  ; "OnePair"      |]
+        |]
 
-scores
-|> Array.tryFind(fun score ->        
-    Regex.IsMatch(values, score.[0]) && Regex.IsMatch(suits, score.[1]))
-|> function Some score -> score.[2] | _ -> "HighCard"
+    scores
+    |> Array.tryFind(fun score ->
+        Regex.IsMatch(values, score.[0]) && Regex.IsMatch(suits, score.[1]))
+    |> function Some score -> score.[2] | _ -> "HighCard"
 ```
 
 The preceding code highlights the fact that regular expressions have the ability to replace code with just data, in this case a series of If statements with strings stored in an array. In this particular example, this feature isn't especially useful (other than to make the code more concise). In many applications, however, this ability can make a big difference. For example, you can store all the validation patterns in a database or an XML file so that you can actually change the behavior of your application without even recompiling its code.

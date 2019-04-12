@@ -2,6 +2,8 @@
 
 by Alex Davies
 
+
+
 ## CHAPTER 1 Introduction
 
 Let's start with a high-level introduction to the async feature in C# 5.0, and what it means for you.
@@ -48,8 +50,8 @@ In version 5.0 of the C# language, the compiler team at Microsoft has added a po
 
 It comes in the form of two new keywords:
 
-* async
-* await
+* `async`
+* `await`
 
 It also relies on some additions and changes to the .NET Framework 4.5 that power it and make it useful.
 
@@ -69,17 +71,39 @@ The async feature is a way to express what to do after a long-running operation 
 
 An async method is transformed by the compiler to make asynchronous code look very similar to its blocking equivalent. Here is a simple blocking method that downloads a web page.
 
+```C#
+private void DumpWebPage(string uri)
+{
+    WebClient webClient = new WebClient();
+    string page = webClient.DownloadString(uri);
+    Console.WriteLine(page);
+}
+```
+
+F#
+
 ```F#
 open System
 open System.Net
 
-let DumpWebPage(uri:string)=
+let DumpWebPage(uri:string) =
     let webClient = new WebClient()
     let page = webClient.DownloadString(uri)
     Console.WriteLine(page)
 ```
 
-And here is the equivalent method using async.
+And here is the equivalent method using `async`.
+
+```C#
+private async void DumpWebPageAsync(string uri)
+{
+    WebClient webClient = new WebClient();
+    string page = await webClient.DownloadStringTaskAsync(uri);
+    Console.WriteLine(page);
+}
+```
+
+F#
 
 ```F#
 let DumpWebPageAsync(uri:string) =
@@ -100,6 +124,22 @@ The interesting bit is the `await` keyword. When the compiler sees this, it chop
 2. We use a new version of `DownloadString` called `DownloadStringTaskAsync`. It does the same as the original, but is asynchronous. 
 3. That means we can give it the new second method, which it will call when it finishes. We do this using some magic that I'll tell you about later. 
 4. When the download is done, it will call us back with the downloaded `string`—which we can use, in this case, to write to the console.
+
+```C#
+private void DumpWebPageAsync(string uri)
+{
+    WebClient webClient = new WebClient();
+    webClient.DownloadStringTaskAsync(uri) <- magic(SecondHalf);
+}
+
+private void SecondHalf(string awaitedResult)
+{
+    string page = awaitedResult;
+    Console.WriteLine(page);
+}
+```
+
+F#
 
 ```F#
 let DumpWebPageAsync(uri:string)=
@@ -125,6 +165,8 @@ However, it's not designed to let you forget that there are background operation
 * Performance
 
 Without understanding what's really happening, your program will fail in surprising ways, and you won't understand the error messages or the debugger to be able to fix it.
+
+
 
 ## CHAPTER 2 Why Programs Need to Be Asynchronous
 
@@ -251,6 +293,18 @@ Figure 2-1. Favicon browser running
 
 Let's take a look at the code. The important part is the method that downloads the favicon and adds it to a WPF WrapPanel in the window.
 
+```C#
+private void AddAFavicon(string domain)
+{
+    WebClient webClient = new WebClient();
+    byte[] bytes = webClient.DownloadData("http://" + domain + "/favicon.ico");
+    Image imageControl = MakeImageControl(bytes);
+    m_WrapPanel.Children.Add(imageControl);
+}
+```
+
+F#
+
 ```F#
 let AddAFavicon(domain:string) =
     let webClient = new WebClient()
@@ -263,6 +317,8 @@ You'll notice that this implementation is completely synchronous. The thread blo
 
 We'll use this example in the following chapters to walk through converting a synchronous program to an asynchronous one.
 
+
+
 ## CHAPTER 3 Writing Asynchronous Code Manually
 
 In this chapter, we'll talk about writing asynchronous code without the help of C# 5.0 and async. In a way, this is going over techniques you'll never have to use, but it's important to help understand what's really happening behind the scenes. Because of this, I'll go over the examples quickly, only drawing out the points that are helpful in understanding.
@@ -270,6 +326,22 @@ In this chapter, we'll talk about writing asynchronous code without the help of 
 ### Some Asynchronous Patterns Used in .NET
 
 As I mentioned before, Silverlight only provides asynchronous versions of APIs like web access. Here is an example of how you might download a web page and display it:
+
+```C#
+private void DumpWebPage(Uri uri)
+{
+    WebClient webClient = new WebClient();
+    webClient.DownloadStringCompleted += OnDownloadStringCompleted;
+    webClient.DownloadStringAsync(uri);
+}
+private void OnDownloadStringCompleted(object sender,
+    DownloadStringCompletedEventArgs eventArgs)
+{
+    m_TextBlock.Text = eventArgs.Result;
+}
+```
+
+F#
 
 ```F#
 let OnDownloadStringCompleted(sender:obj) (eventArgs:DownloadStringCompletedEventArgs)=
@@ -289,6 +361,23 @@ We sign up to the event immediately before calling the method. The method return
 This pattern is obviously messy to use, not least because you have to split what would otherwise be a nice simple sequence of instructions into two methods. On top of that, the fact that you've signed up to an event adds a complication. If you go on to use the same instance of `WebClient` for another request, you might not expect that the original event will still be attached, and the handler will run again.
 
 Another asynchronous pattern that features in .NET involves the `IAsyncResult` interface. One example is the method on `Dns` that looks up the IP address for a hostname, `BeginGetHostAddresses`. The design requires two methods, one called `BeginMethodName` which starts the operation, and one called `EndMethodName` which you use in the callback to get the result.
+
+```C#
+private void LookupHostName()
+{
+    object unrelatedObject = "hello";
+    Dns.BeginGetHostAddresses("oreilly.com", OnHostNameResolved, unrelatedObject);
+}
+private void OnHostNameResolved(IAsyncResult ar)
+{
+    object unrelatedObject = ar.AsyncState;
+    IPAddress[] addresses = Dns.EndGetHostAddresses(ar);
+    // Do something with addresses
+    ...
+}
+```
+
+F#
 
 ```F#
 let OnHostNameResolved(ar:IAsyncResult)=
@@ -312,11 +401,31 @@ Passing context between the methods is a general problem with asynchronous patte
 
 Arguably the simplest code that has asynchronous behavior, without using async, involves passing a callback as a parameter to the method:
 
+```C#
+void GetHostAddress(string hostName, Action<IPAddress> callback)
+```
+
+F#
+
 ```F#
 GetHostAddress: hostName:string*callback:Action<IPAddress>->unit
 ```
 
 I find this easier to use than the other patterns.
+
+```C#
+private void LookupHostName()
+{
+    GetHostAddress("oreilly.com", OnHostNameResolved);
+}
+private void OnHostNameResolved(IPAddress address)
+{
+    // Do something with address
+    ...
+}
+```
+
+F#
 
 ```F#
 let OnHostNameResolved(address:IPAddress)=
@@ -327,6 +436,20 @@ let LookupHostName() =
 ```
 
 Instead of using two methods, as I mentioned previously, you can use an anonymous method or lambda expression for the callback. This has the important benefit of allowing you to access variables from the first part of the method.
+
+```C#
+private void LookupHostName()
+{
+    int aUsefulVariable = 3;
+    GetHostAddress("oreilly.com", address =>
+        {
+            // Do something with address and aUsefulVariable
+            ...
+        });
+}
+```
+
+F#
 
 ```F#
 let LookupHostName() =
@@ -347,8 +470,24 @@ The Task Parallel Library was introduced in version 4.0 of the .NET Framework. I
 
 The async feature of C# 5.0 uses `Task` extensively, as we'll discuss later. However, even without async, you can use `Task`, and especially `Task<T>` to write asynchronous programs. To do this, you start the operation, which will return a `Task<T>`. Then use the `ContinueWith` method to register your callback.
 
+```C#
+private void LookupHostName()
+{
+    Task<IPAddress[]> ipAddressesPromise = Dns.GetHostAddressesAsync("oreilly.com");
+    ipAddressesPromise.ContinueWith(_ =>
+        {
+            IPAddress[] ipAddresses = ipAddressesPromise.Result;
+            
+            // Do something with address
+            ...
+        });
+}
+```
+
+F#
+
 ```F#
-let LookupHostName() =
+member this.LookupHostName() =
     let ipAddressesPromise = Dns.GetHostAddressesAsync("oreilly.com");
     let continuationAction = 
         new Action<Task<IPAddress[]>>(
@@ -370,6 +509,29 @@ On top of that, `Task` gives us the ability to work with asynchronous operations
 As we've seen, there are many ways to implement asynchronous programs. Some are neater than others. But hopefully you've seen they share one flaw. The procedure that you are intending to write has to be split into two methods: the actual method and the callback. Using an anonymous method or lambda for the callback mitigates some of this problem, but your code is left overly indented and hard to follow.
 
 There's another problem here. We've spoken about methods that make one asynchronous call, but what happens if you need to make more than one? Even worse, what happens if you need to call asynchronous methods in a loop? Your only option is a recursive method, which is much harder to read than a normal loop.
+
+```C#
+private void LookupHostNames(string[] hostNames)
+{
+    LookUpHostNamesHelper(hostNames, 0);
+}
+private static void LookUpHostNamesHelper(string[] hostNames, int i)
+{
+    Task<IPAddress[]> ipAddressesPromise = Dns.GetHostAddressesAsync(hostNames[i]);
+    ipAddressesPromise.ContinueWith(_ =>
+        {
+            IPAddress[] ipAddresses = ipAddressesPromise.Result;
+            // Do something with address
+            ...
+            if (i + 1 < hostNames.Length)
+            {
+                LookUpHostNamesHelper(hostNames, i + 1);
+            }
+        });
+}
+```
+
+F#
 
 ```F#
 let rec LookUpHostNamesHelper(hostNames:string[], i:int) =
@@ -396,9 +558,26 @@ One more problem caused by manual asynchronous programming in any of these style
 
 ### Converting the Example to Use Manual Asynchronous Code
 
-Recall that in "An Example" on page 10, we discussed a WPF UI app that was unresponsive because it downloaded icons from websites while blocking the UI thread. We'll now look at making it asynchronous using the manual techniques in this chapter.
+Recall that in "An Example", we discussed a WPF UI app that was unresponsive because it downloaded icons from websites while blocking the UI thread. We'll now look at making it asynchronous using the manual techniques in this chapter.
 
 The first task is to find an asynchronous version of the API I was using (`WebClient.DownloadData`). As we already saw, `WebClient` uses the Event-based Asynchronous Pattern (EAP), so we can sign up an event handler for the callback, then start the download.
+
+```C#
+private void AddAFavicon(string domain)
+{
+    WebClient webClient = new WebClient();
+    webClient.DownloadDataCompleted += OnWebClientOnDownloadDataCompleted;
+    webClient.DownloadDataAsync(new Uri("http://" + domain + "/favicon.ico"));
+}
+private void OnWebClientOnDownloadDataCompleted(object sender,
+    DownloadDataCompletedEventArgs args)
+{
+    Image imageControl = MakeImageControl(args.Result);
+    m_WrapPanel.Children.Add(imageControl);
+}
+```
+
+F#
 
 ```F#
 let OnWebClientOnDownloadDataCompleted (sender:obj) (args:DownloadDataCompletedEventArgs) =
@@ -416,9 +595,22 @@ Of course, our logic that really belongs together needs to be split into two met
 
 This version of the example is also available online, under the branch `manual`. If you run it, not only does the UI remain responsive, but the icons appear gradually. Because of that, we've introduced a bug. Now, because all the download operations are started together (before any have finished) the icons are ordered by how quickly each downloaded, rather than by the order in which I requested them. If you'd like to check that you understand how to do manual asynchronous coding, I recommend fixing this bug. One solution is available under the branch `orderedManual`, and involves transforming the loop to a recursive method. More efficient solutions are also possible.
 
+
+
 ## CHAPTER 4 Writing Async Methods
 
-Now we know how great asynchronous code is, but how hard it is to write? It's time to look at the C# 5.0 async feature. As we saw previously in "What Async Does" on page 3, a method marked async is allowed to contain the `await` keyword.
+Now we know how great asynchronous code is, but how hard it is to write? It's time to look at the C# 5.0 async feature. As we saw previously in "What Async Does", a method marked async is allowed to contain the `await` keyword.
+
+```C#
+private async void DumpWebPageAsync(string uri)
+{
+    WebClient webClient = new WebClient();
+    string page = await webClient.DownloadStringTaskAsync(uri);
+    Console.WriteLine(page);
+}
+```
+
+F#
 
 ```F#
 let DumpWebPageAsync(uri:string) =
@@ -447,6 +639,18 @@ An async method isn't automatically asynchronous. Async methods just make it eas
 
 ---
 
+```C#
+private async void AddAFavicon(string domain)
+{
+    WebClient webClient = new WebClient();
+    byte[] bytes = await webClient.DownloadDataTaskAsync("http://" + domain + "/favicon.ico");
+    Image imageControl = MakeImageControl(bytes);
+    m_WrapPanel.Children.Add(imageControl);
+}
+```
+
+F#
+
 ```F#
 let AddAFavicon(domain:string)=
     task{
@@ -457,27 +661,47 @@ let AddAFavicon(domain:string)=
     } |> ignore
 ```
 
-Compare this to the other two versions of this code we've looked at. It *looks* much more like the original synchronous version of the code. There's no extra method, just a little extra code in the same structure. However, it *behaves* much more like the asynchronous version that we wrote in "Converting the Example to Use Manual Asynchronous Code" on page 17.
+Compare this to the other two versions of this code we've looked at. It *looks* much more like the original synchronous version of the code. There's no extra method, just a little extra code in the same structure. However, it *behaves* much more like the asynchronous version that we wrote in "Converting the Example to Use Manual Asynchronous Code".
 
 ### Task and await
 
 Let's break down the `await` expression we've written. Here is the signature of the `WebClient.DownloadStringTaskAsync` method:
 
+```C#
+Task<string> DownloadStringTaskAsync(string address)
+```
+
+F#
+
 ```F#
 DownloadStringTaskAsync:address:string -> Task<string>
 ```
 
-The return type is `Task<string>`. As I said in "An Introduction to Task" on page 15, a `Task` represents an ongoing operation, and its subclass `Task<T>` represents an operation that will have a result of *type T* at some point in the future. You can think of `Task<T>` as a promise of a `T` when the long-running operation completes.
+The return type is `Task<string>`. As I said in "An Introduction to Task", a `Task` represents an ongoing operation, and its subclass `Task<T>` represents an operation that will have a result of *type T* at some point in the future. You can think of `Task<T>` as a promise of a `T` when the long-running operation completes.
 
 `Task` and `Task<T>` can both represent asynchronous operations, and both have the ability to call back your code when the operation is done. To use that ability manually, you use their `ContinueWith` methods to pass a delegate containing the code to execute when the long-running operation is done. `await` uses the same ability to execute the rest of your async method in the same way.
 
 If you apply `await` to a `Task<T>`, it becomes an *await expression*, and the whole expression has *type T*. That means you can assign the result of awaiting to a variable and use it in the rest of the method, as we've seen in the examples. However, when you await a non-generic `Task`, it becomes an *await statement*, and can't be assigned to anything, just like a call to a `void` method. This makes sense, as a Task doesn't promise a result value, it only represents the operation itself.
+
+```C#
+await smtpClient.SendMailAsync(mailMessage);
+```
+
+F#
 
 ```F#
 do! smtpClient.SendMailAsync(mailMessage)
 ```
 
 There is nothing stopping us from splitting up the `await` expression, so we can access the `Task` directly, or do something else, before awaiting it.
+
+```C#
+Task<string> myTask = webClient.DownloadStringTaskAsync(uri);
+// Do something here
+string page = await myTask;
+```
+
+F#
 
 ```F#
 task{
@@ -490,6 +714,15 @@ task{
 It is important to fully understand the implications of this. The method `DownloadStringTaskAsync` is executed on the first line. It begins executing synchronously, in the current thread, and once it has started the download, it returns a `Task<string>`, still in the current thread. It's only later when we await that `Task<string>` that the compiler does something special. This is all still true if you write the `await` on the same line as the call to the asynchronous method.
 
 The long-running operation starts as soon as the call to `DownloadStringTaskAsync` is made, which gives us a very simple way to perform multiple asynchronous operations concurrently. We can just start multiple operations, keeping all the Tasks, then await them all afterwards.
+
+```C#
+Task<string> firstTask = webClient1.DownloadStringTaskAsync("http://oreilly.com");
+Task<string> secondTask = webClient2.DownloadStringTaskAsync("http://simple-talk.com");
+string firstPage = await firstTask;
+string secondPage = await secondTask;
+```
+
+F#
 
 ```F#
 task{
@@ -514,7 +747,7 @@ There are three return types that a method marked `async` may have:
 
 * `void`
 * `Task`
-* `Task<T>` for some type T
+* `Task<T>` for some type `T`
 
 No other return type is allowed because async methods in general aren't finished when they return. Typically, an async method will await a long-running operation, which means that the method returns quickly, but will resume in the future. That means no sensible result value is available when the method returns. The result will be available later.
 
@@ -535,6 +768,26 @@ Finally, async methods that return `Task<T>`, for example `Task<string>`, are us
 The `async` keyword appears in the declaration of a method, just like the `public` or `static` keywords do. Despite that, `async` is not part of the signature of the method, in terms of overriding other methods, implementing interfaces, or being called.
 
 The only effect that the `async` keyword has is on the compilation of the method to which it is applied, unlike the other keywords that are applied to a method, which change how it interacts with the outside world. Because of this, the rules around overriding methods and implementing interfaces completely ignore the `async` keyword.
+
+```C#
+class BaseClass
+{
+    public virtual async Task<int> AlexsMethod()
+    {
+        ...
+    }
+}
+class SubClass : BaseClass
+{
+  // This overrides AlexsMethod above
+  public override Task<int> AlexsMethod()
+  {
+  ...
+  }
+}
+```
+
+F#
 
 ```F#
 type BaseClass() =
@@ -561,23 +814,23 @@ Interfaces can't use `async` in a method declaration, simply because there is no
 
 The `return` statement has different behavior in an `async` method. Remember that in a normal non-async method, use of the return statement depends on the return type of the method:
 
-* void methods
+* `void` methods
 
-  return statements must just be `return;` and are optional
+  `return` statements must just be `return;` and are optional
 
 * Methods that return a type T
 
-  return must have an expression of type T (for example `return 5+x;`) and must exist at the end of the method on all code paths
+  `return` must have an expression of type T (for example `return 5+x;`) and must exist at the end of the method on all code paths
 
 In a method marked `async`, the rules apply in different situations:
 
-* void methods and methods that return `Task`
+* `void` methods and methods that return `Task`
 
-  return statements must just be `return;` and are optional
+  `return` statements must just be `return;` and are optional
 
 * Methods that return `Task<T>`
 
-  return must have an expression of type T and must exist at the end of the method on all code paths
+  `return` must have an expression of type T and must exist at the end of the method on all code paths
 
 In async methods, the return type of the method is different from the type of the expression found in the `return` statement. The compiler transformation can be thought to wrap up the value you return in a `Task<T>` before giving it to the caller. Of course, in reality, the `Task<T>` is created immediately, and only filled with your result value later, once any long-running operation is done.
 
@@ -587,8 +840,19 @@ As we've seen, the best way to consume a `Task` returned by an asynchronous API 
 
 Here's an example of a helper method I've written that gets the number of characters on a web page, and returns them asynchronously.
 
+```C#
+private async Task<int> GetPageSizeAsync(string url)
+{
+  WebClient webClient = new WebClient();
+  string page = await webClient.DownloadStringTaskAsync(url);
+  return page.Length;
+}
+```
+
+F#
+
 ```F#
-let GetPageSizeAsync(url:string) =
+member this.GetPageSizeAsync(url:string) =
     task{
         let webClient = new WebClient()
         let! page = webClient.DownloadStringTaskAsync(url)
@@ -598,11 +862,31 @@ let GetPageSizeAsync(url:string) =
 
 To use it, I need to write another async method, which returns its result asynchronously as well:
 
+```C#
+private async Task<string> FindLargestWebPage(string[] urls)
+{
+  string largest = null;
+  int largestSize = 0;
+  foreach (string url in urls)
+  {
+  int size = await GetPageSizeAsync(url);
+  if (size > largestSize)
+  {
+  largestSize = size;
+  largest = url;
+  }
+  }
+  return largest;
+}
+```
+
+F#
+
 ```F#
-let FindLargestWebPage(urls:string[]) =
-    let mutable largest = null;
-    let mutable largestSize = 0;
+member this.FindLargestWebPage(urls:string[]) =
     task {
+        let mutable largest = null
+        let mutable largestSize = 0
         for url in urls do
             let! size = GetPageSizeAsync(url)
             if size > largestSize then
@@ -618,11 +902,23 @@ In this way, we end up writing chains of async methods, each awaiting the next. 
 
 Ordinary named methods can be async, and the two forms of anonymous methods can equally be async. The syntax is very much like normal methods. Here is how to make an asynchronous anonymous delegate:
 
+```C#
+Func<Task<int>> getNumberAsync = async delegate { return 3; };
+```
+
+F#
+
 ```F#
 let getNumberAsync = Func<Task<int>>(fun () -> task { return 3 })
 ```
 
 And here is an async lambda:
+
+```C#
+Func<Task<string>> getWordAsync = async () => "hello";
+```
+
+F#
 
 ```F#
 let getWordAsync = Func<Task<string>>(fun () -> task {return "hello"})
@@ -630,11 +926,14 @@ let getWordAsync = Func<Task<string>>(fun () -> task {return "hello"})
 
 All the same rules apply in these as in ordinary async methods. You can use them to keep code concise, and to capture closures, in exactly the same way you would in non-async code.
 
+
+
 ## CHAPTER 5 What await Actually Does
 
 There are two ways to think about the async feature of C# 5.0, and in particular what happens at an `await` keyword:
 
 * As a language feature, which has a defined behavior that you can learn
+
 * As a compile-time transformation, that is *syntactic sugar* for a more complex piece of C# that doesn't use `async`
 
 Both are completely true; they are two sides of the same coin. In this chapter, we will concentrate on the first way of looking at async. In Chapter 14, we'll look at it from the other point of view, which is more complex but provides some details that will make debugging and performance considerations more clear.
@@ -644,6 +943,7 @@ Both are completely true; they are two sides of the same coin. In this chapter, 
 When the execution of your program reaches an `await` keyword, we want two things to happen:
 
 * The current thread executing your code should be released to make your code asynchronous. That means from a normal, synchronous, point of view, your method should return.
+
 * When the `Task` that you awaited is complete, your method should continue from where it used to be, as if it hadn't returned earlier.
 
 To achieve this behavior, your method must pause when it reaches an `await`, and then resume at a later point. 
@@ -665,8 +965,11 @@ Just to make it clear exactly how much work C# is doing for you when you use `aw
 First, the values of all the local variables of your method are remembered. This includes the values of:
 
 * The parameters of your method
+
 * Any variables you've defined which are in scope
+
 * Any other variables, for example loop counters
+
 * The `this` variable, if your method is non-static. In that way, the member variables of your class are available when the method resumes.
 
 All of these are stored in an object on the .NET garbage collected heap. So, when you use `await`, an object is allocated, which uses some resources, but won't cause a performance problem in most circumstances.
@@ -674,6 +977,12 @@ All of these are stored in an object on the .NET garbage collected heap. So, whe
 C# also remembers where in the method the `await` was reached. This can be stored using a number to represent which of the `await` keywords in the method we are at currently.
 
 There's no restriction on how `await` expressions can be used. For example, they can be used as part of a larger expression, perhaps involving more than one await:
+
+```C#
+int myNum = await AlexsMethodAsync(await myTask, await StuffAsync());
+```
+
+F#
 
 ```F#
 task {
@@ -725,6 +1034,19 @@ While is perfectly allowed to use `await` in a `try` block, it is not valid C# t
 
 Remember that instead of using `await` in a `catch` block, it is always possible to use it after the `catch` block, by using either a `return` statement or a `bool` variable to remember whether the original operation threw an exception. For example, if you wanted to write this invalid C#:
 
+```C#
+try
+{
+    page = await webClient.DownloadStringTaskAsync("http://oreilly.com");
+}
+catch (WebException)
+{
+    page = await webClient.DownloadStringTaskAsync("http://oreillymirror.com");
+}
+```
+
+F#
+
 ```F#
 task{
     try
@@ -735,6 +1057,24 @@ task{
 ```
 
 You could instead write this:
+
+```C#
+bool failed = false;
+try
+{
+    page = await webClient.DownloadStringTaskAsync("http://oreilly.com");
+}
+catch (WebException)
+{
+    failed = true;
+}
+if (failed)
+{
+    page = await webClient.DownloadStringTaskAsync("http://oreillymirror.com");
+}
+```
+
+F#
 
 ```F#
 task{
@@ -754,6 +1094,20 @@ task{
 A `lock` is a way for the programmer to prevent other threads accessing the same objects as the current thread at the same time. Because asynchronous code generally releases the thread it started on, and may be called back an indeterminate amount of time later on a thread which may be different to the original, it makes no sense to hold a lock across an `await`.
 
 In some situations, it's important to protect your object from concurrent access, but it isn't important that no other thread accesses the object during an `await`. In those situations, you have the option of writing the slightly verbose code that explicitly locks twice:
+
+```C#
+lock (sync)
+{
+    // Prepare for async operation
+}
+int myNum = await AlexsMethodAsync();
+lock (sync)
+{
+    // Use result of async operation
+}
+```
+
+F#
 
 ```F#
 let locked sync =
@@ -778,6 +1132,14 @@ If you're unlucky, you may need to hold some kind of lock over the execution of 
 
 C# has syntax to make it easier to write declarative queries for filtering, transforming, ordering, and grouping data. Those queries can then be executed on .NET collections, or translated for execution on databases or other data sources.
 
+```C#
+IEnumerable<int> transformed = from x in alexsInts
+                               where x != 9
+                               select x + 2;
+```
+
+F#
+
 ```F#
 open FSharp.Linq
 
@@ -792,6 +1154,15 @@ let transformed =
 It is not valid C# to use `await` in most places in a Query Expression. This is because those places are transformed by the compiler to lambda expressions, and as such, the lambda expression would need to be marked `async`. The syntax to mark these implicit lambda expressions `async` simply doesn't exist, and would probably be really confusing if it did.
 
 You can always write the equivalent expression using the extension methods that LINQ uses internally. Then the lambda expressions become explicit, and you can mark them as `async` to use `await`.
+
+```C#
+IEnumerable<Task<int>> tasks = alexsInts
+    .Where(x => x != 9)
+    .Select(async x => await DoSomthingAsync(x) + await DoSomthingElseAsync(x));
+IEnumerable<int> transformed = await Task.WhenAll(tasks);
+```
+
+F#
 
 ```F#
 open System.Linq
@@ -850,6 +1221,9 @@ Because of the last possibility, something interesting happens when you await a 
 
 You might wonder why you would use `async` in the first place if the first or second possibilities happened. If those methods were guaranteed to always return synchronously, you'd be right, and it would be more efficient to write synchronous code than to write async methods with no `await`. However, there are situations where methods would sometimes return synchronously. For example, a method that cached its results in memory could return synchronously when the result is available from the cache, but asynchronously when it needs to make a network request. You may also want to make methods return `Task` or `Task<T>` to future-proof a codebase, when you know there's a good chance you'd like to make those methods asynchronous at some point down the line.
 
+
+
+
 ## CHAPTER 6 The Task-Based Asynchronous Pattern
 
 The Task-based Asynchronous Pattern (TAP) is a set of recommendations from Microsoft for writing asynchronous APIs in .NET using `Task`. The document by Stephen Toub from the parallel programming team at Microsoft has good examples and is worth a read.
@@ -867,6 +1241,12 @@ I'll assume we already know how to design a good method signature for synchronou
 
 Here is a well designed synchronous method, which is part of the `Dns` class:
 
+```C#
+public static IPHostEntry GetHostEntry(string hostNameOrAddress)
+```
+
+F#
+
 ```F#
 GetHostEntry:hostNameOrAddress:string->IPHostEntry
 ```
@@ -880,11 +1260,17 @@ The TAP gives the same level of guidelines on designing an asynchronous method, 
 
 And here is a well-designed TAP method:
 
+```C#
+public static Task<IPHostEntry> GetHostEntryAsync(string hostNameOrAddress)
+```
+
+F#
+
 ```F#
 GetHostEntryAsync:hostNameOrAddress:string->Task<IPHostEntry>
 ```
 
-This may all seem completely obvious, but as we saw in "Some Asynchronous Patterns Used in .NET" on page 13, this is the third formal asynchronous pattern that has been used in the .NET framework, and I'm sure others have used countless informal ways to write asynchronous code.
+This may all seem completely obvious, but as we saw in "Some Asynchronous Patterns Used in .NET", this is the third formal asynchronous pattern that has been used in the .NET framework, and I'm sure others have used countless informal ways to write asynchronous code.
 
 The key idea of the TAP is for the asynchronous method to return a `Task`, which encapsulates the promise of a long-running operation completing in the future. Without that idea, previous asynchronous patterns needed to either add extra parameters to the method, or add extra methods or events to the interface to support the callback mechanism. `Task` can contain whatever infrastructure is needed to support the callback, without polluting your code with the details.
 
@@ -896,11 +1282,23 @@ Sometimes, a long-running operation doesn't make any network requests or access 
 
 `Task` provides an easy way to do this, and you can use `await` with it like any other `Task` to update the UI when the computation is complete:
 
+```C#
+Task t = Task.Run(() => MyLongComputation(a, b));
+```
+
+F#
+
 ```F#
 let task = Task.Run(fun () -> MyLongComputation(a, b))
 ```
 
 `Task.Run` uses a thread from the `ThreadPool` to execute the delegate you give it. In this case, I've used a lambda to make it easy to pass my local variables to the computation. The resulting Task is started immediately, and we can await it just like any other `Task`:
+
+```C#
+await Task.Run(() => MyLongComputation(a, b));
+```
+
+F#
 
 ```F#
 task{
@@ -911,6 +1309,15 @@ task{
 This is a very simple way do work on a background thread.
 
 For example, if you need more control over which thread does the computation or how it is queued, `Task` has a static property called `Factory` of type `TaskFactory`. This has a method `StartNew` with various overloads for controlling the execution of your computation:
+
+```C#
+Task t = Task.Factory.StartNew(() => MyLongComputation(a, b),
+                               cancellationToken,
+                               TaskCreationOptions.LongRunning,
+                               taskScheduler);
+```
+
+F#
 
 ```F#
 let task = 
@@ -931,11 +1338,35 @@ The tool to use here is `TaskCompletionSource<T>`. It is a way to create a `Task
 
 Let's look at an example. Suppose you'd like to encapsulate a prompt displayed to the user with this method:
 
+```C#
+Task<bool> GetUserPermission()
+```
+
+F#
+
 ```F#
 GetUserPermission:unit->Task<bool>
 ```
 
 The prompt is a custom dialog you've written that asks the user for consent of some kind. Because the permission could be needed at many points in your application, it's important to make it one easy method to call. This is a perfect place to use an asynchronous method, because you want to release the UI thread to actually display the dialog. But, it isn't even close to the traditional asynchronous method that calls through to a network request or other long-running operation. Here, we're awaiting the user. Let's look at the body of the method.
+
+```C#
+private Task<bool> GetUserPermission()
+{
+    // Make a TaskCompletionSource so we can return a puppet Task
+    TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+    // Create the dialog ready
+    PermissionDialog dialog = new PermissionDialog();
+    // When the user is finished with the dialog, complete the Task using SetResult
+    dialog.Closed += delegate { tcs.SetResult(dialog.PermissionGranted); };
+    // Show the dialog
+    dialog.Show();
+    // Return the puppet Task, which isn't completed yet
+    return tcs.Task;
+}
+```
+
+F#
 
 ```F#
 let GetUserPermission() =
@@ -955,6 +1386,13 @@ Notice that the method isn't marked `async`; we're creating a `Task` manually, s
 
 Because we've followed the TAP, our caller can just await the user's permission. The call is very neat.
 
+```C#
+if (await GetUserPermission())
+{ ....
+```
+
+F#
+
 ```F#
 task{
     let! allow = GetUserPermission()
@@ -970,6 +1408,15 @@ The .NET team have created TAP versions of all the important asynchronous APIs i
 
 Let's examine the DNS lookup example that I used earlier. In .NET 4.0, the asynchronous version of the DNS lookup method used the `IAsyncResult` asynchronous pattern. That means it consisted of a Begin method and an End method:
 
+```C#
+IAsyncResult BeginGetHostEntry(string hostNameOrAddress,
+                               AsyncCallback requestCallback,
+                               object stateObject)
+IPHostEntry EndGetHostEntry(IAsyncResult asyncResult)
+```
+
+F#
+
 ```F#
 BeginGetHostEntry:
 hostNameOrAddress:string*requestCallback:AsyncCallback*stateObject:obj->IAsyncResult
@@ -979,6 +1426,28 @@ asyncResult:IAsyncResult->IPHostEntry
 ```
 
 Typically, you would consume this API using a lambda as the callback and call the End method from inside the lambda. That's exactly what we'll do here, but instead of actually doing anything in the callback, we'll just use a `TaskCompletionSource<T>` to complete a `Task`.
+
+```C#
+public static Task<IPHostEntry> GetHostEntryAsync(string hostNameOrAddress)
+{
+    TaskCompletionSource<IPHostEntry> tcs = new TaskCompletionSource<IPHostEntry>();
+    Dns.BeginGetHostEntry(hostNameOrAddress, asyncResult =>
+        {
+            try
+            {
+                IPHostEntry result = Dns.EndGetHostEntry(asyncResult);
+                tcs.SetResult(result);
+            }
+            catch (Exception e)
+            {
+                tcs.SetException(e);
+            }
+        }, null);
+    return tcs.Task;
+}
+```
+
+F#
 
 ```F#
 let GetHostEntryAsync(hostNameOrAddress:string) =
@@ -1003,6 +1472,15 @@ This code is made more complex by the possibility of an exception. If the DNS re
 
 In fact, there were enough asynchronous APIs following this pattern that the .NET framework team made a utility method to turn them into a TAP version, which is available to us as well:
 
+```C#
+Task t =  Task<IPHostEntry>.Factory.FromAsync<string>(Dns.BeginGetHostEntry,
+                                                      Dns.EndGetHostEntry,
+                                                      hostNameOrAddress,
+                                                      null);
+```
+
+F#
+
 ```F#
 let t =  
     let bg = Func<_,_,_,_>(fun (a:string) b c -> Dns.BeginGetHostEntry(a,b,c))
@@ -1022,9 +1500,16 @@ The TAP specifies that all Tasks must be hot before they are returned from a met
 
 We already know that when you call a TAP asynchronous method, the method runs on the current thread, as with any other method. The difference is that a TAP method will probably not have actually finished working before it returns. It will return a Task quickly, and that Task will complete when the actual work is done.
 
-Having said that, some code in the method will run synchronously, in the current thread. In the case of an async method, that will be at least the code up to, and including the operand of, the first `await`, as we saw in "Async Methods Are Synchronous Until Needed" on page 31.
+Having said that, some code in the method will run synchronously, in the current thread. In the case of an async method, that will be at least the code up to, and including the operand of, the first `await`, as we saw in "Async Methods Are Synchronous Until Needed".
 
 The TAP recommends that the synchronous work done by a TAP method should be the minimum amount possible. You can check that the arguments are valid and scan a cache to avoid the long-running operation, but you shouldn't do a slow computation. Hybrid methods, which do some computation, followed by a network access or something similar are good, but you should use `Task.Run` to move the computation to a background thread. Imagine the routine that uploads an image to a website, but needs to resize it first to save bandwidth:
+
+```C#
+Image resized = await Task.Run(() => ResizeImage(originalImage));
+await UploadImage(resized);
+```
+
+F#
 
 ```F#
 task{
@@ -1034,6 +1519,8 @@ task{
 ```
 
 While this is important in a UI application, it has no practical benefits in a web application. Nevertheless, when we see a method that appears to follow the TAP, we expect it to return quickly. Anyone that takes your code and moves it to a UI application will be in for a surprise if you did a slow picture resize synchronously.
+
+
 
 ## CHAPTER 7 Utilities for Async Code
 
@@ -1049,6 +1536,12 @@ While a lot of these utilities already exist, it's useful to see how easy it is 
 
 The most simple long-running operation that you might want to perform is possibly to do absolutely nothing for a length of time. This is the equivalent of `Thread.Sleep` in the synchronous world. In fact, you could implement it using `Thread.Sleep` in conjunction with `Task.Run`:
 
+```C#
+await Task.Run(() => Thread.Sleep(100));
+```
+
+F#
+
 ```F#
 task{
     do! Task.Run(fun () -> Thread.Sleep(100))
@@ -1056,6 +1549,18 @@ task{
 ```
 
 But this simple approach is wasteful. A thread is being used solely to block for the time period, which is a waste. There is already a way to have .NET call your code back after a period of time without using any threads, the `System.Threading.Timer` class. A more efficient approach would be to set up a `Timer`, then use a `TaskCompletionSource` to create a `Task` that we can cause to complete when the `Timer` fires:
+
+```C#
+private static Task Delay(int millis)
+{
+    TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+    Timer timer = new Timer(_ => tcs.SetResult(null), null, millis, Timeout.Infinite);
+    tcs.Task.ContinueWith(delegate { timer.Dispose(); });
+    return tcs.Task;
+}
+```
+
+F#
 
 ```F#
 let Delay(millis:int)=
@@ -1075,9 +1580,15 @@ Of course, this is such a useful little tool that it's provided in the framework
 
 ### Waiting for a Collection of Tasks
 
-As we saw back in "Task and await" on page 20, it's very easy to run multiple asynchronous operations in parallel by calling them in turn, then awaiting them in turn. What we'll find out in Chapter 9 is that it's important that we await each and every Task that we start, otherwise exceptions can get lost.
+As we saw back in "Task and await", it's very easy to run multiple asynchronous operations in parallel by calling them in turn, then awaiting them in turn. What we'll find out in Chapter 9 is that it's important that we await each and every Task that we start, otherwise exceptions can get lost.
 
 The solution to this problem is to use `Task.WhenAll`, which is a utility that can take many Tasks and produce one aggregated `Task` that will complete once all the inputs complete. Here is the simplest version of `WhenAll`, it has overloads for generic `Task<T>`s as well:
+
+```C#
+Task WhenAll(IEnumerable<Task> tasks)
+```
+
+F#
 
 ```F#
 WhenAll: tasks:IEnumerable<Task>->Task
@@ -1090,9 +1601,23 @@ The generic version of `WhenAll` gives you an array containing the results of th
 Let's revisit the favicon browser as an example. Remember that we now have a version that calls an async void method to begin downloading each icon in turn. That method then adds the icon to the window when the download is done. This approach is very efficient, as all the downloads happen in parallel, but there are two problems:
 
 * The icons appear in the window in whichever order they finish downloading.
+
 * Because each icon is downloaded in its own async void method, any exceptions that escape it are rethrown in the UI thread, and dealing with them neatly would be hard.
 
 So let's refactor so that the method that loops through all the icons is itself async. That means we can take control of the asynchronous operations as a group. We'll start at the point after that refactor with this version that does each icon in turn:
+
+```C#
+private async void GetButton_OnClick(object sender, RoutedEventArgs e)
+{
+    foreach (string domain in s_Domains)
+    {
+        Image image = await GetFavicon(domain);
+        AddAFavicon(image);
+    }
+}
+```
+
+F#
 
 ```F#
 let GetButton_OnClick(sender:obj) (e:RoutedEventArgs)=
@@ -1105,6 +1630,16 @@ let GetButton_OnClick(sender:obj) (e:RoutedEventArgs)=
 
 Now we'll fix this so it does all the downloads in parallel, but still displays the icons in order. We first start all the downloads by calling `GetFavicon` and storing the Tasks in a List.
 
+```C#
+List<Task<Image>> tasks = new List<Task<Image>>();
+foreach (string domain in s_Domains)
+{
+    tasks.Add(GetFavicon(domain));
+}
+```
+
+F#
+
 ```F#
 let tasks = new ResizeArray<Task<Image>>()
 for domain in s_Domains do
@@ -1112,6 +1647,14 @@ for domain in s_Domains do
 ```
 
 Or, even better, if you like LINQ:
+
+```C#
+IEnumerable<Task<Image>> tasks = s_Domains.Select(GetFavicon);
+// The IEnumerable from Select is lazy, so evaluate it to start the tasks
+tasks = tasks.ToList();
+```
+
+F#
 
 ```F#
 let tasks = s_Domains.Select(fun domain -> GetFavicon domain)
@@ -1122,11 +1665,27 @@ let tasks = tasks.ToList()
 
 Once we have the group of tasks, we give them to `Task.WhenAll` and it gives us a `Task` that will complete when all of the downloads are done, with all the results.
 
+```C#
+Task<Image[]> allTask = Task.WhenAll(tasks);
+```
+
+F#
+
 ```F#
 let allTask = Task.WhenAll(tasks)
 ```
 
 Then, all we have left to do is await the `allTask`, and use its results:
+
+```C#
+Image[] images = await allTask;
+foreach (Image eachImage in images)
+{
+    AddAFavicon(eachImage);
+}
+```
+
+F#
 
 ```F#
 task{
@@ -1144,6 +1703,12 @@ The other common tool you might need for working with multiple `Task`s is to wai
 
 The tool for this job is `Task.WhenAny`. Here is a generic version. Again, there are lots of overloads, but this one is interesting.
 
+```C#
+Task<Task<T>> WhenAny(IEnumerable<Task<T>> tasks)
+```
+
+F#
+
 ```F#
 WhenAny:tasks:IEnumerable<Task<T>>->Task<Task<T>>
 ```
@@ -1151,6 +1716,22 @@ WhenAny:tasks:IEnumerable<Task<T>>->Task<Task<T>>
 The signature of `WhenAny` is a little harder to understand than `WhenAll`, and this is for good reason. When exceptions are possible, `WhenAny` is a tool that needs to be used carefully. If you want to find out about all exceptions that happen in your program, you need to make sure that every single `Task` you make is awaited, or exceptions can get lost. Using `WhenAny` and simply forgetting about the other Tasks is equivalent to catching all exceptions and ignoring them, which is bad practice and tends to show up later as subtle bugs and invalid states.
 
 The return type of `WhenAny` is `Task<Task<T>>`. That means after you've awaited it, you get a `Task<T>`. This `Task<T>` is whichever of the original ones completed first, and thus is always already completed when you get it. The reason that you are given the `Task` rather than just the T result is so you know which of the original Tasks finished first, so you can cancel and await all the others.
+
+```C#
+Task<Task<Image>> anyTask = Task.WhenAny(tasks);
+Task<Image> winner = await anyTask;
+Image image = await winner; // This always completes synchronously
+AddAFavicon(image);
+foreach (Task<Image> eachTask in tasks)
+{
+    if (eachTask != winner)
+    {
+        await eachTask;
+    }
+}
+```
+
+F#
 
 ```F#
 let anyTask = Task.WhenAny(tasks)
@@ -1172,6 +1753,23 @@ We call `WhenAll` and `WhenAny` asynchronous combinators. While they return Task
 
 Let's write a combinator as an example. Perhaps we'd like to add a timeout to any `Task`. Although we could write that from scratch fairly easily, it serves as a good example to make use of both `Delay` and `WhenAny`. In general, combinators are often easiest to implement using async, as in this case, but sometimes you won't need to.
 
+```C#
+private static async Task<T> WithTimeout<T>(Task<T> task, int time)
+{
+    Task delayTask = Task.Delay(time);
+    Task firstToFinish = await Task.WhenAny(task, delayTask);
+    if (firstToFinish == delayTask)
+    {
+        // The delay finished first - deal with any exception
+        task.ContinueWith(HandleException);
+        throw new TimeoutException();
+    }
+    return await task; // If we reach here, the original task already finished
+}
+```
+
+F#
+
 ```F#
 let WithTimeout<'T>(t:Task<'T>,time:int)=
     task {
@@ -1189,8 +1787,20 @@ My technique is to create a `Task` using `Delay` that will complete after the ti
 
 Notice that I've been careful about exceptions in the case that the timeout expires. I've attached a continuation to the original Task using `ContinueWith`, which handles an exception if there is one. I know that the delay can never throw an exception, so I don't need to deal with it. The implementation of the `HandleException` method looks something like this:
 
+```C#
+private static void HandleException<T>(Task<T> task)
+{
+    if (task.Exception != null)
+    {
+        logging.LogException(task.Exception);
+    }
+}
+```
+
+F#
+
 ```F#
-let HandleException<'T>(task:Task<'T>)=
+static member HandleException<'T>(task:Task<'T>)=
     if task.Exception <> null then
         logging.LogException(task.Exception)
 ```
@@ -1201,11 +1811,25 @@ Obviously, exactly what to do here depends on your strategy for handling excepti
 
 Rather than being tied in to the `Task` type, cancellation in the TAP is enabled by the `CancellationToken` type. By convention, any TAP method which supports being canceled should have an overload that takes a `CancellationToken` after the normal parameters. An example in the framework is the `DbCommand` type, and its asynchronous methods that query a database. The simplest overload of `ExecuteNonQueryAsync` has no parameters.
 
+```C#
+Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+```
+
+F#
+
 ```F#
 ExecuteNonQueryAsync:CancellationToken->Task<int>
 ```
 
 We'll start by looking at how to cancel an asynchronous method we've called. To do that, we need `CancellationTokenSource`, which is a utility for creating `CancellationToken`s and also controlling them, in a similar way to how a `TaskCompletionSource` creates and controls a `Task`. The following code is incomplete, but shows the kind of technique you need:
+
+```C#
+CancellationTokenSource cts = new CancellationTokenSource();
+cancelButton.Click += delegate { cts.Cancel(); };
+int result = await dbCommand.ExecuteNonQueryAsync(cts.Token);
+```
+
+F#
 
 ```F#
 let nonQuery (dbCommand: DbCommand) (cancelButton:Button) =
@@ -1219,11 +1843,20 @@ let nonQuery (dbCommand: DbCommand) (cancelButton:Button) =
 
 When you call Cancel on the `CancellationTokenSource`, the `CancellationToken` moves to a canceled state. It's possible to register a delegate to be called when that happens, but in practice, a much simpler polling approach to detecting whether your caller wants to cancel you is more effective. If you're writing a loop in an asynchronous method, and a `CancellationToken` is available, you should just call `ThrowIfCancellationRequested` in each iteration of the loop.
 
+```C#
+foreach (var x in thingsToProcess)
+{
+    cancellationToken.ThrowIfCancellationRequested();
+    // Process x ...
+}
+```
+
+F#
+
 ```F#
-let xxx (thingsToProcess) (cancellationToken:CancellationToken) =
-    for x in thingsToProcess do
-        cancellationToken.ThrowIfCancellationRequested()
-        // Process x ...
+for x in thingsToProcess do
+    cancellationToken.ThrowIfCancellationRequested()
+    // Process x ...
 ```
 
 When you call `ThrowIfCancellationRequested` on a `CancellationToken` which is canceled, it will throw an `OperationCanceledException`. The Task Parallel Library knows that this type of exception represents cancellation rather than a failure, and will treat it differently. For example, Task has a property called `IsCanceled` that automatically becomes true when an `OperationCanceledException` is thrown while executing an async method.
@@ -1236,6 +1869,14 @@ Aside from keeping the UI responsive, and giving the user the opportunity to can
 
 The `IProgress<T>` parameter is, by convention, placed right at the end of the parameters to the method, after any `CancellationToken`. Here is how you would add progress reporting to `DownloadDataTaskAsync`.
 
+```C#
+Task<byte[]> DownloadDataTaskAsync(Uri address,
+                                   CancellationToken cancellationToken,
+                                   IProgress<DownloadProgressChangedEventArgs> progress)
+```
+
+F#
+
 ```F#
 DownloadDataTaskAsync:
 	address:Uri*
@@ -1245,20 +1886,33 @@ DownloadDataTaskAsync:
 
 To use a method like this, you need to create an implementation of `IProgress<T>`. Luckily, one is provided that does exactly what is needed in most situations, `Progress<T>`. You construct one of these, either passing a lambda into its constructor, or signing up to an event, to get notifications of new progress figures, which you can use to update your UI.
 
+```C#
+new Progress<int>(percentage => progressBar.Value = percentage);
+```
+
+F#
+
 ```F#
-let p (progressBar:ProgressBar) = 
-    new Progress<int>(fun percentage -> progressBar.Value <- float percentage)
+new Progress<int>(fun percentage -> progressBar.Value <- float percentage)
 ```
 
 The clever feature of `Progress<T>` is that it will capture the `SynchronizationContext` on construction, and use it to call your progress update code in the right thread. This is much the same as the behavior of the Task itself continuing after an `await`, so you don't need to worry about the fact that your `IProgress<T>` could be called from any thread.
 
 If you'd like to report progress when writing a TAP method, you just need to call the `Report` method on the `IProgress<T>`.
 
+```C#
+progress.Report(percent);
+```
+
+F#
+
 ```F#
 progress.Report(percent)
 ```
 
 The difficult part is to choose the type parameter T. This is the type of the object that you pass to Report, which is the same object that the caller's lambda is given. An `int` is a good choice for simple percentages, as I've used here, but sometimes you need more details. Be careful though, because that object will usually be consumed on a different thread to the one that made it. Use an immutable type to avoid problems.
+
+
 
 ## CHAPTER 8 Which Thread Runs My Code?
 
@@ -1318,7 +1972,7 @@ We know that your code before the first `await` is run by the calling thread, bu
 
 In fact, most of the time, it is also run by the calling thread, despite the fact that the calling thread has probably done other things in between. That makes things very simple for the programmer.
 
-C# uses `SynchronizationContext` to accomplish this. As we saw previously in "Context" on page 27, when you await a Task, the current `SynchronizationContext` is stored as part of pausing the method. Then, when it's time for the method to be resumed, the `await` keyword's infrastructure uses `Post` to resume the method on the captured `SynchronizationContext`.
+C# uses `SynchronizationContext` to accomplish this. As we saw previously in "Context", when you await a Task, the current `SynchronizationContext` is stored as part of pausing the method. Then, when it's time for the method to be resumed, the `await` keyword's infrastructure uses `Post` to resume the method on the captured `SynchronizationContext`.
 
 Now, the caveats. The method can resume on a different thread to where it started if:
 
@@ -1333,12 +1987,21 @@ Luckily, for UI applications, where being resumed on the same thread is most imp
 
 Let's look at a version of the favicon example, working out exactly which thread runs which code. I have written two async methods:
 
+```C#
+async void GetButton_OnClick(...)
+async Task<Image> GetFaviconAsync(...)
+```
+
+F#
+
 ```F#
-GetButton_OnClick:o:obj*e:EventArgs -> unit
+GetButton_OnClick:obj*EventArgs -> unit
 GetFaviconAsync:string -> Task<Image>
 ```
 
 The event handler `GetButton_OnClick` calls `GetFaviconAsync`, which in turn calls `WebClient.DownloadDataTaskAsync`. Here's a diagram of the sequence of events as the methods are executed (Figure 8-1).
+
+F#
 
 ```F#
 let _url =""
@@ -1370,7 +2033,7 @@ let GetButton_OnClick(o:obj)(e:EventArgs) =
     }
 ```
 
-![](D:\Application Data\Notebook\lifecycle.png)
+![](lifecycle.png)
 
 Figure 8-1. lifecycle.png
 
@@ -1394,11 +2057,11 @@ Figure 8-1. lifecycle.png
 
 10. The UI thread leaves `GetButton_OnClick`, and is freed to work on other user actions.
 
-  ---
+---
 
   At this point, we are waiting for the icon to download. This could take a few seconds. Notice the UI thread is free to process other user actions, and the IO completion port thread isn't involved yet. The total number of threads blocked during the operation is zero.
 
-  ---
+---
 
 11. The download finishes, so the IO completion port queues the logic in `DownloadDataTaskAsync` to handle that.
 
@@ -1431,6 +2094,12 @@ Each implementation of `SynchronizationContext` performs `Post` in a different w
 
 When the `SynchronizationContext` is different, however, an expensive `Post` is needed. In performance-critical code, or in library code where you don't care which thread you use, you might choose not to pay that performance penalty. That's done by calling `ConfigureAwait` on the Task before awaiting it. If you do that, it won't Post back to the original `SynchronizationContext` when resuming.
 
+```C#
+byte[] bytes = await client.DownloadDataTaskAsync(url).ConfigureAwait(false);
+```
+
+F#
+
 ```F#
 let! bytes  = client.DownloadDataTaskAsync(url).ConfigureAwait(false)
 ```
@@ -1443,11 +2112,23 @@ You are probably already working on an existing application, and while new code 
 
 Consuming synchronous code from asynchronous code is easy. If given a blocking API, you can just run it on the thread pool and await it, using `Task.Run`. You use a thread, but that's unavoidable.
 
+```C#
+var result = await Task.Run(() => MyOldMethod());
+```
+
+F#
+
 ```F#
 let! result = Task.Run(fun () -> MyOldMethod())
 ```
 
 Consuming asynchronous code from synchronous code, or implementing a synchronous API, also looks easy, but can have hidden problems. Task has a property called `Result`, which blocks waiting for the Task to complete. You can use it in similar places to `await`, but without your method needing to be marked `async` or return a `Task`. Again, a thread is wasted. This time the calling thread is used for blocking.
+
+```C#
+var result = AlexsMethodAsync().Result;
+```
+
+F#
 
 ```F#
 let result = AlexsMethodAsync().Result
@@ -1457,9 +2138,17 @@ A word of warning, though: this technique fails whenever it is used from a `Sync
 
 With care, you can get around the deadlock problem by moving to the thread pool before starting the async code, so that the `SynchronizationContext` captured is the thread pool rather than the UI thread. This is very ugly, though; it would probably be better to spend the time making the calling code async.
 
+```C#
+var result = Task.Run(() => AlexsMethodAsync()).Result;
+```
+
+F#
+
 ```F#
 let result = Task.Run(fun () -> AlexsMethodAsync()).Result;
 ```
+
+
 
 ## CHAPTER 9 Exceptions in Async Code
 
@@ -1474,6 +2163,28 @@ You can still see the raw call stack in a debugger.
 ### Exceptions in Async Task-Returning Methods
 
 Most async methods you write will return `Task` or `Task<T>`. Chains of these methods, each awaiting the next, are the asynchronous version of the call stack we're familiar with in synchronous code. C# strives to make the behavior of exceptions in these methods feel very similar to working with synchronous methods. In particular, `try..catch` blocks placed around an awaited async method will catch exceptions thrown inside that async method.
+
+```C#
+async Task Catcher()
+{
+    try
+    {
+        await Thrower();
+    }
+    catch (AlexsException)
+    {
+        // Execution will reach here
+    }
+}
+
+async Task Thrower()
+{
+    await Task.Delay(100);
+    throw new AlexsException();
+}
+```
+
+F#
 
 ```F#
 let Thrower() =
@@ -1503,26 +2214,41 @@ To do this, C# catches any exceptions that happen in your async method. When an 
 An exception which has been rethrown by an `await` is the same object as the original one thrown by the throw statement. It continues to gather a stack trace as it propagates up the call stack, which adds to its existing stack trace. This may surprise you if you've ever tried to rethrow an exception manually, for example in manual asynchronous code, as it represents a new feature in .NET's `Exception` type.
 
 Here is an example stack trace from a chain of two async methods. My own code is highlighted:
-
-> System.NullReferenceException: Object reference not set to an instance of an object.
->    at `FaviconBrowser.MainWindow.<GetFavicon>d__c.MoveNext()` in 
-> MainWindow.xaml.cs:line 74
-> --- End of stack trace from previous location where exception was thrown ---
->    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
->    at 
-> System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
->    at System.Runtime.CompilerServices.TaskAwaiter\`1.GetResult()
->    at `FaviconBrowser.MainWindow.<GetButton_OnClick>d__0.MoveNext()` in 
-> MainWindow.xaml.cs:line 41
-> --- End of stack trace from previous location where exception was thrown ---
->    at `System.Runtime.CompilerServices.AsyncMethodBuilderCore.<ThrowAsync>b__0`(Object state)
->    at ... Framework methods
-
+```
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at FaviconBrowser.MainWindow.<GetFavicon>d__c.MoveNext() in 
+MainWindow.xaml.cs:line 74
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at 
+System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter\1.GetResult()
+   at FaviconBrowser.MainWindow.<GetButton_OnClick>d__0.MoveNext() in 
+MainWindow.xaml.cs:line 41
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.<ThrowAsync>b__0(Object state)
+   at ... Framework methods
+```
 The mention of `MoveNext` has to do with the compiler transformation that we'll look at in Chapter 14. There are a few framework methods between each of mine, but I can still get an impression of the series of my own calls that caused the exception.
 
 ### Unobserved Exceptions
 
 One important difference between async and synchronous code is where an exception from a called method is thrown. In async methods, it is thrown at the `await`, rather than the actual call to the method. That is apparent if you split up the call and the `await`.
+
+```C#
+// This never throws AlexsException
+Task task = Thrower();
+try
+{
+    await task;
+}
+catch (AlexsException)
+{
+    // Execution will reach here
+}
+```
+
+F#
 
 ```F#
 // This never throws AlexsException
@@ -1560,13 +2286,22 @@ In most cases, both of these will end the process unless an unhandled exception 
 
 In rare cases, you genuinely don't care whether a method succeeds, and awaiting it would be complex. In that case, my advice is to still return `Task`, but to pass that Task to a method designed to handle exceptions in it. This extension method works well for me:
 
+```C#
+public static void ForgetSafely(this Task task)
+{
+    task.ContinueWith(HandleException);
+}
+```
+
+F#
+
 ```F#
-let ForgetSafely(task:Task) =
+static member ForgetSafely(task:Task) =
     task.ContinueWith(HandleException)
     |> ignore
 ```
 
-`HandleException` is a method that writes any exception to a logging system, like the one in "Creating Your Own Combinators" on page 42.
+`HandleException` is a method that writes any exception to a logging system, like the one in "Creating Your Own Combinators".
 
 ### AggregateException and WhenAll
 
@@ -1584,31 +2319,60 @@ This all happens regardless of whether the exception happens before the first `a
 
 At the other end, when the exception is rethrown by an `await`, we need a compromise. `await` should throw the same type of exception that was originally thrown in the async method, rather than the `AggregateException`. So it has no choice but to throw the first inner exception. But after catching it, you can use the Task directly to get the `AggregateException`, and so the complete list of exceptions.
 
-```F#
-let xxx (tasks:Task<Image>[])=
-    let allTask = Task.WhenAll(tasks);
-    task{
-        try
-            let! images = allTask
-            ()
-        with _ ->
-            for ex in allTask.Exception.InnerExceptions do
-                // Do something with exception
-                printf "%s" ex.Message
-    
+```C#
+Task<Image[]> allTask = Task.WhenAll(tasks);
+try
+{
+    await allTask;
+}
+catch
+{
+    foreach (Exception ex in allTask.Exception.InnerExceptions)
+    {
+        // Do something with exception
     }
+}
+```
+
+F#
+
+```F#
+let allTask = Task.WhenAll(tasks);
+task{
+    try
+        let! images = allTask
+        ()
+    with _ ->
+        for ex in allTask.Exception.InnerExceptions do
+            // Do something with exception
+            printf "%s" ex.Message
+    
+}
 ```
 
 ### Throwing Exceptions Synchronously
 
 The TAP recommendation allows methods to throw exceptions synchronously, but only if the exception signifies a mistake in the call to the method, rather than an error encountered while trying to run. We've seen that all async methods catch any exception and place them into the `Task`, regardless of whether the exception happens before the first `await`. So if you'd like to throw an exception synchronously, you need to use a trick: using a synchronous method that checks for the mistake before calling the async method.
 
+```C#
+private Task<Image> GetFaviconAsync(string domain)
+{
+    if (domain == null) throw new ArgumentNullException("domain");
+    return GetFaviconAsyncInternal(domain);
+}
+private async Task<Image> GetFaviconAsyncInternal(string domain)
+{
+    ...
+```
+
+F#
+
 ```F#
-let GetFaviconAsyncInternal(domain:string) =
+member this.GetFaviconAsyncInternal(domain:string) =
     task{return Image()}
 
-let GetFaviconAsync(domain:string)=
-    if domain == null then raise <| ArgumentNullException("domain")
+membr this.GetFaviconAsync(domain:string)=
+    if domain = null then raise <| ArgumentNullException("domain")
     GetFaviconAsyncInternal(domain)
 ```
 
@@ -1619,6 +2383,26 @@ Doing this gives you slightly easier stack traces to interpret. Is it worth the 
 Finally, you are allowed to use `try..finally` in an async method, and it works much like how you'd expect. Before execution leaves the method containing the finally block, the block is guaranteed to run. That's irrespective of whether it leaves by normal execution, which flows through the finally block, or whether an exception happens in the try block.
 
 But that guarantee holds a hidden caveat. With async methods, there's no guarantee that execution will ever leave the method. You can easily write a method that reaches an `await`, pauses, then is forgotten and garbage collected.
+
+```C#
+async void AlexsMethod()
+{
+    try
+    {
+        await DelayForever();
+    }
+    finally
+    {
+        // Never happens
+    }
+}
+Task DelayForever()
+{
+    return new TaskCompletionSource<object>().Task;
+}
+```
+
+F#
 
 ```F#
 let DelayForever() = TaskCompletionSource<obj>().Task
@@ -1637,6 +2421,8 @@ I've used `TaskCompletionSource` to create a puppet Task, then simply forgotten 
 
 So the guarantee provided by `finally` is much weaker in async methods.
 
+
+
 ## CHAPTER 10 Parallelism Using Async
 
 Async provides a great opportunity to start making more use of the parallelism of modern machines. The language feature makes previously difficult approaches to structuring programs easier.
@@ -1647,7 +2433,21 @@ For starters, we've already seen we can write simple code that starts multiple l
 
 The simplest way to introduce parallelism is to schedule work in different threads. `Task.Run` makes this easy, and because it returns a Task, we can treat it like any other long-running operation. But using multiple threads introduces risks of unsafe access to shared objects in memory.
 
-The traditional solution of the `lock` keyword is more complicated when using async, as we discussed in "lock Blocks" on page 29. The `await` keyword can't be used in a `lock` block, so there's no way to prevent execution of conflicting code while you're awaiting something. In fact, it's best to avoid reserving any resources across an `await` keyword. The whole point of async is that resources are released while awaiting, and as programmers, we need to be aware that anything can happen at that time.
+The traditional solution of the `lock` keyword is more complicated when using async, as we discussed in "lock Blocks". The `await` keyword can't be used in a `lock` block, so there's no way to prevent execution of conflicting code while you're awaiting something. In fact, it's best to avoid reserving any resources across an `await` keyword. The whole point of async is that resources are released while awaiting, and as programmers, we need to be aware that anything can happen at that time.
+
+```C#
+lock (sync)
+{
+    // Prepare for async operation
+}
+int myNum = await AlexsMethodAsync();
+lock (sync)
+{
+    // Use result of async operation
+}
+```
+
+F#
 
 ```F#
 task{
@@ -1666,6 +2466,20 @@ task{
 A useful example is the UI thread. There is only one UI thread, so in a way it acts as a lock. As long as you know that your code runs on the UI thread, only one line of your code is ever executing at once. But even then, anything can happen while awaiting. If you started a network operation because the user pressed a button, they are at liberty to press another button while your code is awaiting. That's exactly the point of async in UI applications: the UI is responsive, and will do whatever the user asks, even if it's dangerous.
 
 But at least with async, we can choose the points in the program where other things can take place. We have to learn to put awaits at safe places, and expect the state of the world to have changed after resuming. Sometimes that means making a second, seemingly pointless, check about whether to proceed.
+
+```C#
+if (DataInvalid())
+{
+    Data d = await GetNewData();
+    // Anything could have happened in the await
+    if (DataInvalid())
+    {
+        SetNewData(d);
+    }
+}
+```
+
+F#
 
 ```F#
 task{
@@ -1700,10 +2514,20 @@ Of course, you can use an actors style of programming manually, but there are li
 
 Let's look at an example. Perhaps I am implementing a cryptography service that needs a series of pseudo-random numbers to use while encrypting a stream of data. There are two kinds of compute-intensive work here, so I'd like to be able to do them in parallel:
 
-* Generating the random numbers 
+* Generating the random numbers
+
 * Using them to encrypt the stream
 
 We'll just look at implementing the random number generator actor. `NAct` needs an interface which we'll implement, and then `NAct` will create a proxy for.
+
+```C#
+public interface IRndGenerator : IActor
+{
+    Task<int> GetNextNumber();
+}
+```
+
+F#
 
 ```F#
 open System.Threading.Tasks
@@ -1722,6 +2546,20 @@ The interface must implement `IActor`, which is just an empty marker interface. 
 
 Then, we can implement the generator class itself.
 
+```C#
+class RndGenerator : IRndGenerator
+{
+    public async Task<int> GetNextNumber()
+    {
+        // Generate a secure random number - slow
+        ...
+        return num;
+    }
+}
+```
+
+F#
+
 ```F#
 open FSharp.Control.Tasks.V2
 type RndGenerator() =
@@ -1732,6 +2570,21 @@ type RndGenerator() =
 ```
 
 The only surprise here is that there's nothing surprising. It's just a normal class. To use it, we must construct one, and give it to `NAct` to wrap up, creating an actor.
+
+```C#
+IRndGenerator rndActor = ActorWrapper.WrapActor(new RndGenerator());
+Task<int> nextTask = rndActor.GetNextNumber();
+foreach (var chunk in stream)
+{
+    int rndNum = await nextTask;
+    // Get started on the next number
+    nextTask = rndActor.GetNextNumber();
+    // Use rndNum to encode chunk - slow
+    ...
+}
+```
+
+F#
 
 ```F#
 task{
@@ -1790,6 +2643,8 @@ There are many other built-in blocks, and with them you can implement any convey
 
 TPL dataflow is improved by async because the delegates passed to `ActionBlock<T>`s and `TransformBlock<TIn, TOut>`s can be async, and can return `Task` or `Task<T>` respectively. When those delegates involve long-running remote operations, this is very important, as those long running operations can be run in parallel without wasting threads. Also, when interacting with dataflow blocks from the outside, it's useful to do so in an asynchronous way, so there are TAP methods like the `SendAsync` extension method on `ITargetBlock<T>` to make that easy.
 
+
+
 ## CHAPTER 11 Unit Testing Async Code
 
 I'd like to look briefly at how to unit test async code. The simplest approach doesn't work well, but it can be easy to write good tests that call async methods, depending on support from your unit test framework.
@@ -1799,6 +2654,17 @@ I'd like to look briefly at how to unit test async code. The simplest approach d
 Async methods return quickly, usually returning a Task that completes at some point in the future. To consume them, we'd normally use `await`, so let's experiment with that approach in a unit test.
 
 ```C#
+[Fact]
+public async void AlexsTest()
+{
+    int x = await AlexsMethod();
+    Assert.Equal(3, x);
+}
+```
+
+F#
+
+```F#
 [<Fact>]
 member this.AlexsTest()=
     task{
@@ -1818,6 +2684,17 @@ The real danger here is that all your tests will appear to pass, irrespective of
 One way to avoid this problem is to avoid making your test methods async. Instead, we have to wait synchronously for the result of any async calls they make.
 
 ```C#
+[Fact]
+public void AlexsTest()
+{
+    int x = AlexsMethod().Result;
+    Assert.Equal(3, x);
+}
+```
+
+F#
+
+```F#
 [<Fact>]
 member this.AlexsTest()=
     let x = AlexsMethod().Result
@@ -1826,7 +2703,7 @@ member this.AlexsTest()=
 
 The `Result` property waits for the Task to complete before proceeding, blocking the thread. This works fine, and the test can now fail if it needs to. If an exception is thrown during `AlexsMethod`, it will be rethrown by `Result`, although unlike when rethrown by an `await`, it will still be wrapped by an `AggregateException`.
 
-By now, it should feel ugly to use the blocking Result of a Task. It is a dangerous thing to do, as we saw in "Interacting with Synchronous Code" on page 52 when in a single-threaded `SynchronizationContext`. Luckily, no popular desktop test frameworks use a single-threaded `SynchronizationContext` by default. Still, this solution wastes a thread and doesn't perform optimally because of it.
+By now, it should feel ugly to use the blocking Result of a Task. It is a dangerous thing to do, as we saw in "Interacting with Synchronous Code" when in a single-threaded `SynchronizationContext`. Luckily, no popular desktop test frameworks use a single-threaded `SynchronizationContext` by default. Still, this solution wastes a thread and doesn't perform optimally because of it.
 
 ### Using Unit Test Framework Support
 
@@ -1837,6 +2714,17 @@ Some unit test frameworks support async explicitly. They allow you to create tes
 At the time of writing, `xUnit.net` and `MSTest` support this style. I expect the other popular frameworks will add it in time, or make it possible with a small extension.
 
 ---
+
+```C#
+[Fact]
+public async Task AlexsTest()
+{
+    int x = await AlexsMethod();
+    Assert.Equal(3, x);
+}
+```
+
+F#
 
 ```F#
 [<Fact>]
@@ -1849,9 +2737,13 @@ member this.AlexsTest()=
 
 This is arguably the neatest way to write unit tests for async code, pushing the responsibility for threads into the testing framework.
 
+
+
 ## 参考文献
 
 https://github.com/rspeele/TaskBuilder.fs
+
+F#
 
 ```F#
 open System
@@ -1908,6 +2800,8 @@ However, I have also included a version of the `task { ... }` builder under `FSh
 This can improve performance if you're writing library code or server-side code and don't need to interact with thread-unsafe things like Windows forms controls. 
 
 To implement a loop that may iterate many times (or indefinitely), use a `while` loop instead of tail recursion.
+
+F#
 
 ```F#
 let runPendingJobs() =

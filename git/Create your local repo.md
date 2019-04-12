@@ -309,6 +309,7 @@ doc/*.txt # 会忽略 doc/notes.txt 但不包括 doc/server/arch.txt
 ```
 git rm -r --cached .
 git add .
+
 git commit -m 'update .gitignore'
 ```
 
