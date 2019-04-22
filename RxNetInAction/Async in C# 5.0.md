@@ -500,7 +500,7 @@ member this.LookupHostName() =
     ipAddressesPromise.ContinueWith(continuationAction)
 ```
 
-The advantage of `Task` is that there is only one method required on `Dns`, making the API cleaner. All the logic related to the asynchronous behavior of the call can be inside the `Task` class, so that it need not be duplicated in every asynchronous method. This logic can do important things, like dealing with exceptions and `SynchronizationContexts`. These, as we'll discuss in Chapter 8, are useful for running the callback on a particular thread (for example, the UI thread).
+The advantage of `Task` is that there is only one method required on `Dns`, making the API cleaner. All the logic related to the asynchronous behavior of the call can be inside the `Task` class, so that it need not be duplicated in every asynchronous method. This logic can do important things, like dealing with exceptions and `SynchronizationContext`s. These, as we'll discuss in Chapter 8, are useful for running the callback on a particular thread (for example, the UI thread).
 
 On top of that, `Task` gives us the ability to work with asynchronous operations in an abstract way. We can use this composability to write utilities which work with `Task`s to provide some behavior which is useful in a lot of situations. We'll see more about these utilities in Chapter 7.
 
@@ -569,8 +569,8 @@ private void AddAFavicon(string domain)
     webClient.DownloadDataCompleted += OnWebClientOnDownloadDataCompleted;
     webClient.DownloadDataAsync(new Uri("http://" + domain + "/favicon.ico"));
 }
-private void OnWebClientOnDownloadDataCompleted(object sender,
-    DownloadDataCompletedEventArgs args)
+
+private void OnWebClientOnDownloadDataCompleted(object sender, DownloadDataCompletedEventArgs args)
 {
     Image imageControl = MakeImageControl(args.Result);
     m_WrapPanel.Children.Add(imageControl);
@@ -599,7 +599,7 @@ This version of the example is also available online, under the branch `manual`.
 
 ## CHAPTER 4 Writing Async Methods
 
-Now we know how great asynchronous code is, but how hard it is to write? It's time to look at the C# 5.0 async feature. As we saw previously in "What Async Does", a method marked async is allowed to contain the `await` keyword.
+Now we know how great asynchronous code is, but how hard it is to write? It's time to look at the C# 5.0 async feature. As we saw previously in "What Async Does", a method marked `async` is allowed to contain the `await` keyword.
 
 ```C#
 private async void DumpWebPageAsync(string uri)
@@ -625,7 +625,7 @@ The `await` expression in this example transforms the method, so it pauses durin
 
 ### Converting the Favicon Example to Async
 
-We'll now modify the favicon browser example from earlier to make use of async. If you can, open the original version of the example (the `default` branch) and try to convert it by adding `async` and `await` keywords before reading any further.
+We'll now modify the favicon browser example from earlier to make use of `async`. If you can, open the original version of the example (the default branch) and try to convert it by adding `async` and `await` keywords before reading any further.
 
 The important method is `AddAFavicon`, which downloads the icon, then adds it to the UI. We want to make this method asynchronous, so that the UI thread is free to respond to user actions during the download. The first step is to add the `async` keyword to the method. It appears in the method signature in the same way that the `static` keyword does.
 
@@ -681,7 +681,7 @@ The return type is `Task<string>`. As I said in "An Introduction to Task", a `Ta
 
 `Task` and `Task<T>` can both represent asynchronous operations, and both have the ability to call back your code when the operation is done. To use that ability manually, you use their `ContinueWith` methods to pass a delegate containing the code to execute when the long-running operation is done. `await` uses the same ability to execute the rest of your async method in the same way.
 
-If you apply `await` to a `Task<T>`, it becomes an *await expression*, and the whole expression has *type T*. That means you can assign the result of awaiting to a variable and use it in the rest of the method, as we've seen in the examples. However, when you await a non-generic `Task`, it becomes an *await statement*, and can't be assigned to anything, just like a call to a `void` method. This makes sense, as a Task doesn't promise a result value, it only represents the operation itself.
+If you apply `await` to a `Task<T>`, it becomes an *await expression*, and the whole expression has *type T*. That means you can assign the result of awaiting to a variable and use it in the rest of the method, as we've seen in the examples. However, when you await a non-generic `Task`, it becomes an *await statement*, and can't be assigned to anything, just like a call to a `void` method. This makes sense, as a `Task` doesn't promise a result value, it only represents the operation itself.
 
 ```C#
 await smtpClient.SendMailAsync(mailMessage);
@@ -757,9 +757,9 @@ I'll make the distinction between the return type of a method—for example, `Ta
 
 ---
 
-It's obvious that `void` is a reasonable choice of return type in an asynchronous situation. A async `void` method is a "fire and forget" asynchronous operation. The caller can never wait for any result, and can't know when the operation completes or whether it was successful. You should use `void` when you know that no caller will ever need to know when the operation is finished or whether it succeeded. In practice, this means that `void` is used very rarely. The most common use of async `void` methods is in the boundary between async code and other code, for example a UI event handler must return `void`.
+It's obvious that `void` is a reasonable choice of return type in an asynchronous situation. A `async void` method is a "fire and forget" asynchronous operation. The caller can never wait for any result, and can't know when the operation completes or whether it was successful. You should use `void` when you know that no caller will ever need to know when the operation is finished or whether it succeeded. In practice, this means that `void` is used very rarely. The most common use of `async void` methods is in the boundary between async code and other code, for example a UI event handler must return `void`.
 
-Async methods that return `Task` allow the caller to wait for the operation to finish, and propagate any exception that happened during the asynchronous operation. When no result value is needed, an async `Task` method is better than an async `void` method because it allows the caller to also use `await` to wait for it, making ordering and exception handling easier.
+Async methods that return `Task` allow the caller to wait for the operation to finish, and propagate any exception that happened during the asynchronous operation. When no result value is needed, an `async Task` method is better than an `async void` method because it allows the caller to also use `await` to wait for it, making ordering and exception handling easier.
 
 Finally, async methods that return `Task<T>`, for example `Task<string>`, are used when the asynchronous operation has a result value.
 
@@ -812,7 +812,7 @@ Interfaces can't use `async` in a method declaration, simply because there is no
 
 ### The return Statement in Async Methods
 
-The `return` statement has different behavior in an `async` method. Remember that in a normal non-async method, use of the return statement depends on the return type of the method:
+The return statement has different behavior in an async method. Remember that in a normal non-async method, use of the return statement depends on the return type of the method:
 
 * `void` methods
 
@@ -869,12 +869,12 @@ private async Task<string> FindLargestWebPage(string[] urls)
   int largestSize = 0;
   foreach (string url in urls)
   {
-  int size = await GetPageSizeAsync(url);
-  if (size > largestSize)
-  {
-  largestSize = size;
-  largest = url;
-  }
+      int size = await GetPageSizeAsync(url);
+      if (size > largestSize)
+      {
+          largestSize = size;
+          largest = url;
+      }
   }
   return largest;
 }
@@ -994,25 +994,25 @@ task {
 
 This adds extra requirements to remember the state of the rest of the expression while awaiting something. In this example, the result of `await myTask` needs to be remembered while we run `await StuffAsync()`. .NET intermediate language (IL) stores this kind of sub-expression on a stack, so that stack is what the `await` keyword needs to store.
 
-On top of this, when the program reaches the first `await` in a method, the method returns. Unless it is an async void method, a `Task` is returned at that point, so the caller can wait for us to complete somehow. C# must also store a way to manipulate that returned `Task`, so that when our method is done, the `Task` can become completed, and execution can move back up the asynchronous chain of methods. The exact mechanism for this is the subject of Chapter 14.
+On top of this, when the program reaches the first `await` in a method, the method returns. Unless it is an `async void` method, a `Task` is returned at that point, so the caller can wait for us to complete somehow. C# must also store a way to manipulate that returned `Task`, so that when our method is done, the `Task` can become completed, and execution can move back up the asynchronous chain of methods. The exact mechanism for this is the subject of Chapter 14.
 
 ### Context
 
-As part of its effort to make the process of awaiting as transparent as possible, C# captures various kinds of context at an `await`, which are then restored when the method is resumed.
+As part of its effort to make the process of awaiting as transparent as possible, C# captures various kinds of context at an await, which are then restored when the method is resumed.
 
 The most important of these is *synchronization context*, which can be used to resume the method on a particular type of thread, amongst other things. This is particularly important for UI applications, which can only manipulate their UI on the correct thread. Synchronization contexts are a complex topic, and Chapter 8 contains more details.
 
 Other kinds of context are also captured from the calling thread. These are all controlled via a class of the same name, so I'll list some important types of context by their classes here:
 
-* ExecutionContext 
+* `ExecutionContext` 
 
   This is the parent context, all the other contexts are a part of it. It is the system that .NET features like `Task` use to capture and propagate context, but has no behavior of its own.
 
-* SecurityContext 
+* `SecurityContext` 
 
-  This is where we find any security information that would normally be confined to the current thread. If your code needs to run as a particular user, you may be `impersonating` that user, or ASP.NET may be doing impersonation for you. In that case, the impersonation is stored in the `SecurityContext`
+  This is where we find any security information that would normally be confined to the current thread. If your code needs to run as a particular user, you may be impersonating that user, or ASP.NET may be doing impersonation for you. In that case, the impersonation is stored in the `SecurityContext`
 
-* CallContext 
+* `CallContext` 
 
   This allows the programmer to store custom data that should be available for the lifetime of a logical thread. Although considered bad practice in a lot of situations, it can avoid excessive numbers of method parameters as various context is passed around the program. `LogicalCallContext` is a related system that works across AppDomains.
 
@@ -1068,6 +1068,7 @@ catch (WebException)
 {
     failed = true;
 }
+
 if (failed)
 {
     page = await webClient.DownloadStringTaskAsync("http://oreillymirror.com");

@@ -178,10 +178,10 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
   A nonword character; same as `[^a-zA-Z_0-9]` but also excludes accented letters and other alphabetical symbols.
 
 * `\s`
-  A white-space character, which is a space, a tab, a form-feed, a newline, a carriage return, or a vertical-feed character; same as `[\f\n\r\t\v]`.
+  A white-space character, which is a space, a tab, a form-feed, a newline, a carriage return, or a vertical-feed character; same as `[ \f\n\r\t\v]`.
 
 * `\S`
-  A character other than a white-space character; same as `[^\f\n\r\t\v]`.
+  A character other than a white-space character; same as `[^ \f\n\r\t\v]`.
 
 * `\d`
   A decimal digit; same as `[0-9]`.
@@ -305,7 +305,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 * `$_`
   Substitutes the entire source string.
 
-* ``$` ``
+* `` $` ``
   Substitutes the portion of the source string up to the match.
 
 * `$'`

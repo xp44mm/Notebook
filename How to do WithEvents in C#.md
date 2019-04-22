@@ -44,7 +44,6 @@ I'm not quite sure how to build the following in C#:
 
 ```VB
 Private WithEvents IE_Inst As New SHDocVw.InternetExplorer
-
 ```
 
 Maps to things such as:
