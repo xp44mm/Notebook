@@ -21,17 +21,41 @@ Assert.True(matched)
 
 The regular expression `\b(\p{IsGreek}+(\s)?)+\p{Pd}\s(\p{IsBasicLatin}+(\s)?)+` is defined as shown in the following table.
 
-| Pattern                     | Description                                                  |
-| :-------------------------- | :----------------------------------------------------------- |
-| `\b`                        | Start at a word boundary.                                    |
-| `\p{IsGreek}+`              | Match one or more Greek characters.                          |
-| `(\s)?`                     | Match zero or one white-space character.                     |
-| `(\p{IsGreek}+(\s)?)+`      | Match the pattern of one or more Greek characters followed by zero or one white-space characters one or more times. |
-| `\p{Pd}`                    | Match a Punctuation, Dash character.                         |
-| `\s`                        | Match a white-space character.                               |
-| `\p{IsBasicLatin}+`         | Match one or more basic Latin characters.                    |
-| `(\s)?`                     | Match zero or one white-space character.                     |
-| `(\p{IsBasicLatin}+(\s)?)+` | Match the pattern of one or more basic Latin characters followed by zero or one white-space characters one or more times. |
+* `\b`
+  Start at a word boundary.                                    
+
+
+* `\p{IsGreek}+`
+  Match one or more Greek characters.                          
+
+
+* `(\s)?`
+  Match zero or one white-space character.                     
+
+
+* `(\p{IsGreek}+(\s)?)+`
+  Match the pattern of one or more Greek characters followed by zero or one white-space characters one or more times. 
+
+
+* `\p{Pd}`
+  Match a Punctuation, Dash character.                         
+
+
+* `\s`
+  Match a white-space character.                               
+
+
+* `\p{IsBasicLatin}+`
+  Match one or more basic Latin characters.                    
+
+
+* `(\s)?`
+  Match zero or one white-space character.                     
+
+
+* `(\p{IsBasicLatin}+(\s)?)+`
+  Match the pattern of one or more basic Latin characters followed by zero or one white-space characters one or more times. 
+
 
 ## Negative Unicode Category or Unicode Block: \P{}
 

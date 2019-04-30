@@ -1,7 +1,3 @@
-.NET enum types are simple integer-like value types associated with a particular name. They're typically used for specifying flags to `APIs`; for example, ``FileMode`` in the ``System.IO`` namespace is an enum type with values such as ``FileMode.Open`` and ``FileMode.Create``. .NET enum types are easy to use from F# and can be combined using bitwise AND, OR, and XOR operations using the `&&&`, `|||`, and `^^^` operators. Most commonly, the `|||` operator is used to combine multiple flags. On occasion, you may have to mask an attribute value using `&&&` and compare the result to enum 0. You will see how to define .NET-compatible enum types in F# at the end of Chapter 6.
-
-
-
 ## Enums
 
 I briefly covered enumerated values in Chapter 2. Now I complete the description of Enum blocks by mentioning all the methods you can apply to them.
@@ -172,9 +168,11 @@ Console.WriteLine(int vde)        // => 3
 
 
 
+.NET enum types are simple integer-like value types associated with a particular name. They're typically used for specifying flags to `APIs`; for example, ``FileMode`` in the ``System.IO`` namespace is an enum type with values such as ``FileMode.Open`` and ``FileMode.Create``. .NET enum types are easy to use from F# and can be combined using bitwise AND, OR, and XOR operations using the `&&&`, `|||`, and `^^^` operators. Most commonly, the `|||` operator is used to combine multiple flags. On occasion, you may have to mask an attribute value using `&&&` and compare the result to enum 0. You will see how to define .NET-compatible enum types in F# at the end of Chapter 6.
+
 #### Bitwise Operators
 
-Visual Basic supports four bitwise operators: Not, `And`, `Or`, and `Xor`. These operators can be used only on signed and unsigned integers and combine the individual bits in their operands. These operators can be used to test or change one or more bits in a number:
+Visual Basic supports four bitwise operators: `~~~`, `&&&`, `|||`, and `^^^`. These operators can be used only on signed and unsigned integers and combine the individual bits in their operands. These operators can be used to test or change one or more bits in a number:
 
 ```FSharp
 // Test the rightmost (least significant) bit.
