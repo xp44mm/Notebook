@@ -1,8 +1,0 @@
-digraph html { 
-A -> B[dir = both]; 
-B -> C[dir = none]; 
-C -> D[dir = back]; 
-D -> A[dir = forward]; 
-}
-
-
