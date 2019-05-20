@@ -159,7 +159,7 @@ $$
 \textbf{id}+-*/()
 $$
 
-The nonterminal symbols are $expression​$, $term​$ and $factor​$, and $expression​$ is the start symbol. $\Box​$
+The nonterminal symbols are $expression$, $term$ and $factor$, and $expression$ is the start symbol. $\Box$
 $$
 \begin{array}{rrl}
 expression & \to & expression + term &\\
@@ -277,19 +277,19 @@ E \underset{lm}\implies  - E \underset{lm}\implies  - (E) \underset{lm}\implies 
 $$
 Note that (4.9) is a rightmost derivation.
 
-Using our notational conventions, every leftmost step can be written as $\omega A\gamma \underset{lm}\implies  \omega\delta\gamma​$, where $\omega​$  consists of terminals only, $A \to \delta​$ is the production applied, and $\gamma​$ is a string of grammar symbols. To emphasize that $\alpha​$ derives $\beta​$ by a leftmost derivation, we write $\alpha \underset{lm}{\overset * \implies}  \beta​$. If $S \underset{lm}{\overset * \implies} \alpha​$, then we say that $\alpha​$ is a *left-sentential form* of the grammar at hand.
+Using our notational conventions, every leftmost step can be written as $\omega A\gamma \underset{lm}\implies  \omega\delta\gamma$, where $\omega$  consists of terminals only, $A \to \delta$ is the production applied, and $\gamma$ is a string of grammar symbols. To emphasize that $\alpha$ derives $\beta$ by a leftmost derivation, we write $\alpha \underset{lm}{\overset * \implies}  \beta$. If $S \underset{lm}{\overset * \implies} \alpha$, then we say that $\alpha$ is a *left-sentential form* of the grammar at hand.
 
 Analogous definitions hold for rightmost derivations. Rightmost derivations are sometimes called *canonical* derivations.
 
 ### 4.2.4 Parse Trees and Derivations
 
-A parse tree is a graphical representation of a derivation that alters out the order in which productions are applied to replace nonterminals. Each interior node of a parse tree represents the application of a production. The interior node is labeled with the nonterminal $A​$ in the head of the production; the children of the node are labeled, from left to right, by the symbols in the body of the production by which this A was replaced during the derivation.
+A parse tree is a graphical representation of a derivation that alters out the order in which productions are applied to replace nonterminals. Each interior node of a parse tree represents the application of a production. The interior node is labeled with the nonterminal $A$ in the head of the production; the children of the node are labeled, from left to right, by the symbols in the body of the production by which this A was replaced during the derivation.
 
-For example, the parse tree for $- (\textbf{id} + \textbf{id})​$ in Fig. 4.3, results from the derivation (4.8) as well as derivation (4.9).
+For example, the parse tree for $- (\textbf{id} + \textbf{id})$ in Fig. 4.3, results from the derivation (4.8) as well as derivation (4.9).
 
 The leaves of a parse tree are labeled by nonterminals or terminals and, read from left to right, constitute a sentential form, called the *yield* or *frontier* of the tree.
 
-To see the relationship between derivations and parse trees, consider any derivation $\alpha_1 \implies  \alpha_2 \implies  \dots  \implies  \alpha_n​$, where $\alpha_1​$ is a single nonterminal $A​$. For each sentential form $\alpha_i​$ in the derivation, we can construct a parse tree whose yield is $\alpha_i​$. The process is an induction on $i​$.
+To see the relationship between derivations and parse trees, consider any derivation $\alpha_1 \implies  \alpha_2 \implies  \dots  \implies  \alpha_n$, where $\alpha_1$ is a single nonterminal $A$. For each sentential form $\alpha_i$ in the derivation, we can construct a parse tree whose yield is $\alpha_i$. The process is an induction on $i$.
 
 **BASIS:** The tree for $\alpha_1 = A$ is a single node labeled $A$.
 
@@ -302,7 +302,7 @@ To model this step of the derivation, find the $j$th non-$\epsilon$ leaf from th
 
 **Example 4.10:** The sequence of parse trees constructed from the derivation (4.8) is shown in Fig. 4.4. In the first step of the derivation, $E \implies  - E$. To model this step, add two children, labeled $-$ and $E$, to the root $E$ of the initial tree. The result is the second tree.
 
-In the second step of the derivation $- E \implies  - ( E )​$. Consequently, add three children, labeled $(​$, $E​$, and $)​$, to the leaf labeled $E​$ of the second tree, to obtain the third tree with yield $- (E)​$. Continuing in this fashion we obtain the complete parse tree as the sixth tree. $\Box​$
+In the second step of the derivation $- E \implies  - ( E )$. Consequently, add three children, labeled $($, $E$, and $)$, to the leaf labeled $E$ of the second tree, to obtain the third tree with yield $- (E)$. Continuing in this fashion we obtain the complete parse tree as the sixth tree. $\Box$
 
 ![](images/Figure4.4.png)
 
@@ -330,7 +330,7 @@ $$
 
 The corresponding parse trees appear in Fig. 4.5.
 
-Note that the parse tree of Fig. 4.5(a) reflects the commonly assumed precedence of $+​$ and $ * ​$, while the tree of Fig. 4.5(b) does not. That is, it is customary to treat operator $ * ​$ as having higher precedence than $+​$, corresponding to the fact that we would normally evaluate an expression like $a + b * c​$ as $a + (b * c)​$, rather than as $(a + b) * c​$. $\Box​$
+Note that the parse tree of Fig. 4.5(a) reflects the commonly assumed precedence of $+$ and $ * $, while the tree of Fig. 4.5(b) does not. That is, it is customary to treat operator $ * $ as having higher precedence than $+$, corresponding to the fact that we would normally evaluate an expression like $a + b * c$ as $a + (b * c)$, rather than as $(a + b) * c$. $\Box$
 
   ![](images/Figure4.5.png)
 
@@ -342,23 +342,23 @@ For most parsers, it is desirable that the grammar be made unambiguous, for if i
 
 Although compiler designers rarely do so for a complete programming-language grammar, it is useful to be able to reason that a given set of productions generates a particular language. Troublesome constructs can be studied by writing a concise, abstract grammar and studying the language that it generates. We shall construct such a grammar for conditional statements below.
 
-A proof that a grammar G generates a language $L​$ has two parts: show that every string generated by $G​$ is in $L​$, and conversely that every string in $L​$ can indeed be generated by $G​$.
+A proof that a grammar G generates a language $L$ has two parts: show that every string generated by $G$ is in $L$, and conversely that every string in $L$ can indeed be generated by $G$.
 
 **Example 4.12:** Consider the following grammar:
 $$
 S \to ( S ) S |\epsilon \tag{4.13}
 $$
-It may not be initially apparent, but this simple grammar generates all strings of balanced parentheses, and only such strings. To see why, we shall show first that every sentence derivable from $S​$ is balanced, and then that every balanced string is derivable from $S​$. To show that every sentence derivable from $S​$ is balanced, we use an inductive proof on the number of steps $n​$ in a derivation.
+It may not be initially apparent, but this simple grammar generates all strings of balanced parentheses, and only such strings. To see why, we shall show first that every sentence derivable from $S$ is balanced, and then that every balanced string is derivable from $S$. To show that every sentence derivable from $S$ is balanced, we use an inductive proof on the number of steps $n$ in a derivation.
 
 **BASIS:** The basis is $n = 1$. The only string of terminals derivable from $S$ in one step is the empty string, which surely is balanced.
 
-**INDUCTION:** Now assume that all derivations of fewer than $n$ steps produce balanced sentences, and consider a leftmost derivation of exactly $n​$ steps. Such a derivation must be of the form
+**INDUCTION:** Now assume that all derivations of fewer than $n$ steps produce balanced sentences, and consider a leftmost derivation of exactly $n$ steps. Such a derivation must be of the form
 $$
 S \underset{lm}\implies (S)S \underset{lm}{\overset*\implies} (x)S \underset{lm}{\overset*\implies} (x)y
 $$
-The derivations of $x​$ and $y​$ from $S​$ take fewer than $n​$ steps, so by the inductive hypothesis $x​$ and $y​$ are balanced. Therefore, the string $(x)y​$ must be balanced. That is, it has an equal number of left and right parentheses, and every prefix has at least as many left parentheses as right.
+The derivations of $x$ and $y$ from $S$ take fewer than $n$ steps, so by the inductive hypothesis $x$ and $y$ are balanced. Therefore, the string $(x)y$ must be balanced. That is, it has an equal number of left and right parentheses, and every prefix has at least as many left parentheses as right.
 
-Having thus shown that any string derivable from $S​$ is balanced, we must next show that every balanced string is derivable from $S​$. To do so, use induction on the length of a string.
+Having thus shown that any string derivable from $S$ is balanced, we must next show that every balanced string is derivable from $S$. To do so, use induction on the length of a string.
 
 **BASIS:** If the string is of length 0, it must be $\epsilon$, which is balanced.
 
@@ -484,7 +484,7 @@ A &\to& \beta A’\\
 A’&\to& \alpha A’\ |\ \epsilon
 \end{array}
 $$
-without changing the strings derivable from $A​$. This rule by itself suffices for many grammars.
+without changing the strings derivable from $A$. This rule by itself suffices for many grammars.
 
 **Example 4.17:** The non-left-recursive expression grammar (4.2), repeated here,
 $$
@@ -502,7 +502,7 @@ Immediate left recursion can be eliminated by the following technique, which wor
 $$
 A \to A \alpha_1\ |\ A \alpha_2\ |\ \dots\ |\ A \alpha_m\ |\ \beta_1\ |\ \beta_2\ |\ \dots\  |\ \beta_n
 $$
-where no $\beta_i$ begins with an $A​$. Then, replace the A-productions by
+where no $\beta_i$ begins with an $A$. Then, replace the A-productions by
 
 $$
 \begin{array}{ll}
@@ -512,6 +512,7 @@ A’&\to&  \alpha_1 A’\ |\ \alpha_2 A’\ |\ \dots\ |\ \alpha_m A’\ |\ \epsi
 $$
 
 The nonterminal $A$ generates the same strings as before but is no longer left recursive. This procedure eliminates all left recursion from the $A$ and $A’$ productions (provided no $\alpha_i$ is $\epsilon$), but it does not eliminate left recursion involving derivations of two or more steps. For example, consider the grammar
+
 $$
 \begin{array}{ll}
 S \to A\ a\ |\ b \\       \tag{4.18}
@@ -519,25 +520,25 @@ A \to A\ c\ |\ S\ d\ |\ \epsilon
 \end{array}
 $$
 
-The nonterminal $S$ is left recursive because $S \implies  Aa \implies  Sda$, but it is not immediately left recursive.
+The nonterminal $S$ is left recursive because $S \implies  A\ a \implies  S\ d\ a $, but it is not immediately left recursive.
 
-Algorithm 4.19, below, systematically eliminates left recursion from a grammar. It is guaranteed to work if the grammar has no cycles (derivations of the form $A \overset+\implies A​$) or $\epsilon​$-productions (productions of the form $A \to \epsilon​$). Cycles can be eliminated systematically from a grammar, as can $\epsilon​$-productions (see Exercises 4.4.6 and 4.4.7).
+Algorithm 4.19, below, systematically eliminates left recursion from a grammar. It is guaranteed to work if the grammar has no cycles (derivations of the form $A \overset+\implies A$) or $\epsilon$-productions (productions of the form $A \to \epsilon$). Cycles can be eliminated systematically from a grammar, as can $\epsilon$-productions (see Exercises 4.4.6 and 4.4.7).
 
 **Algorithm 4.19:** Eliminating left recursion.
 
-**INPUT:** Grammar $G$ with no cycles or $\epsilon​$-productions.
+**INPUT:** Grammar $G$ with no cycles or $\epsilon$-productions.
 
 **OUTPUT:** An equivalent grammar with no left recursion.
 
 **METHOD:** Apply the algorithm in Fig. 4.11 to $G$. Note that the resulting non-left-recursive grammar may have $\epsilon$-productions.  $\Box$
 
-  1)   arrange the nonterminals in some order $A_1, A_2, \dots ,A_n​$.
+  1)   arrange the nonterminals in some order $A_1, A_2, \dots ,A_n$.
 
   2)   for ( each i from 1 to n ) {
 
   3)   for ( each j from 1 to i-1 ) {
 
-  4)   replace each production of the form $A_i \to A_j\gamma​$  by the productions $A_i \to \delta_1\gamma |\delta_2\gamma | \dots  |\delta_k\gamma​$ , where $A_j \to \delta_1 |\delta_2 | \dots  |\delta_k​$ are all current $A_j​$-productions
+  4)   replace each production of the form $A_i \to A_j\gamma$  by the productions $A_i \to \delta_1\gamma |\delta_2\gamma | \dots  |\delta_k\gamma$ , where $A_j \to \delta_1 |\delta_2 | \dots  |\delta_k$ are all current $A_j$-productions
 
   5)   }
 
@@ -546,27 +547,31 @@ Algorithm 4.19, below, systematically eliminates left recursion from a grammar. 
   7)   }
 Figure 4.11: Algorithm to eliminate left recursion from a grammar
 
-The procedure in Fig. 4.11 works as follows. In the first iteration for $i = 1​$, the outer for-loop of lines (2) through (7) eliminates any immediate left recursion among $A_1​$-productions. Any remaining $A_1​$ productions of the form $A_1 \to A_l\alpha​$ must therefore have $l > 1​$. After the $i-1​$st iteration of the outer for-loop, all nonterminals $A_k​$, where $k < i​$, are “cleaned”; that is, any production $A_k \to A_l\alpha​$, must have $l > k​$. As a result, on the $i​$th iteration, the inner loop of lines (3) through (5) progressively raises the lower limit in any production $A_i \to A_m\alpha​$, until we have $m \ge i​$. Then, eliminating immediate left recursion for the $A_i​$ productions at line (6) forces $m​$ to be greater than $i​$.
+The procedure in Fig. 4.11 works as follows. In the first iteration for $i = 1$, the outer for-loop of lines (2) through (7) eliminates any immediate left recursion among $A_1$-productions. Any remaining $A_1$ productions of the form $A_1 \to A_l\alpha$ must therefore have $l > 1$. After the $i-1$st iteration of the outer for-loop, all nonterminals $A_k$, where $k < i$, are “cleaned”; that is, any production $A_k \to A_l\alpha$, must have $l > k$. As a result, on the $i$th iteration, the inner loop of lines (3) through (5) progressively raises the lower limit in any production $A_i \to A_m\alpha$, until we have $m \ge i$. Then, eliminating immediate left recursion for the $A_i$ productions at line (6) forces $m$ to be greater than $i$.
 
 **Example 4.20:** Let us apply Algorithm 4.19 to the grammar (4.18). Technically, the algorithm is not guaranteed to work, because of the $\epsilon$-production, but in this case, the production $A \to \epsilon$ turns out to be harmless.
 
 We order the nonterminals $S$, $A$. There is no immediate left recursion among the $S$-productions, so nothing happens during the outer loop for $i = 1$. For $i = 2$, we substitute for $S$ in $A \to S d$ to obtain the following $A$-productions.
+
 $$
-A \to A c | A a d | b d | \epsilon
+A \to A\ c\ |\ A\ a\ d\ |\ b\ d\ |\ \epsilon
 $$
-Eliminating the immediate left recursion among these $A​$-productions yields the following grammar.
+
+Eliminating the immediate left recursion among these $A$-productions yields the following grammar.
+
 $$
 \begin{array}{ll}
-S  & \to & A a | b           \\          
-A  & \to & b d A’ | A’       \\ 
-A’ & \to & c A’ | a d A’ | \epsilon \\
+S  & \to & A\ a\ |\ b           \\          
+A  & \to & b\ d\ A’\ |\ A’\       \\ 
+A’ & \to & c\ A’\ |\ a\ d\ A’\ |\ \epsilon \\
 \end{array}
 $$
+
 $\Box$
 
 ### 4.3.4 Left Factoring
 
-Left factoring is a grammar transformation that is useful for producing a grammar suitable for predictive, or top-down, parsing. When the choice between two alternative $A​$-productions is not clear, we may be able to rewrite the productions to defer the decision until enough of the input has been seen that we can make the right choice.
+Left factoring is a grammar transformation that is useful for producing a grammar suitable for predictive, or top-down, parsing. When the choice between two alternative $A$-productions is not clear, we may be able to rewrite the productions to defer the decision until enough of the input has been seen that we can make the right choice.
 
 For example, if we have the two productions
 
@@ -577,28 +582,28 @@ stmt &\to &\textbf{if }expr\ \textbf{then}\ stmt\ \textbf{else}\ stmt \\
 \end{array}
 $$
 
-on seeing the input `if`, we cannot immediately tell which production to choose to expand $stmt​$. In general, if $A \to \alpha\beta_1 |\alpha\beta_2​$ are two $A​$-productions, and the input begins with a nonempty string derived from $\alpha​$, we do not know whether to expand $A​$ to $\alpha\beta_1​$ or $\alpha\beta_2​$. However, we may defer the decision by expanding $A​$ to $A’​$. Then, after seeing the input derived from $\alpha​$, we expand $A’​$ to $\beta_1​$ or to $\beta_2​$. That is, left-factored, the original productions become
+on seeing the input **if**, we cannot immediately tell which production to choose to expand $stmt$. In general, if $A \to \alpha\beta_1\ |\ \alpha\beta_2$ are two $A$-productions, and the input begins with a nonempty string derived from $\alpha$, we do not know whether to expand $A$ to $\alpha\beta_1$ or $\alpha\beta_2$. However, we may defer the decision by expanding $A$ to $A’$. Then, after seeing the input derived from $\alpha$, we expand $A’$ to $\beta_1$ or to $\beta_2$. That is, left-factored, the original productions become
 $$
 \begin{array}{ll}
 A  &\to &\alpha A’ \\
-A’ &\to &\beta_1 | \beta_2
+A’ &\to &\beta_1\ |\ \beta_2
 \end{array}
 $$
 
 **Algorithm 4.21:** Left factoring a grammar.
 
-**INPUT:** Grammar G.
+**INPUT:** Grammar $G$.
 
 **OUTPUT:** An equivalent left-factored grammar.
 
-**METHOD:** For each nonterminal $A​$, find the longest prefix $\alpha​$ common to two or more of its alternatives. If $\alpha \not= \epsilon​$ i.e., there is a nontrivial common prefix — replace all of the $A​$-productions $A \to \alpha\beta_1 |\alpha\beta_2 | \dots  |\alpha\beta_n | \gamma​$, where represents all alternatives that do not begin with $\alpha​$, by
+**METHOD:** For each nonterminal $A$, find the longest prefix $\alpha$ common to two or more of its alternatives. If $\alpha \not= \epsilon$ i.e., there is a nontrivial common prefix — replace all of the $A$-productions $A \to \alpha\beta_1 |\alpha\beta_2 | \dots  |\alpha\beta_n | \gamma$, where represents all alternatives that do not begin with $\alpha$, by
 $$
 \begin{array}{ll}
 A &\to &\alpha A’ | \gamma \\
 A’ &\to &\beta_1 |\beta_2 | \dots  |\beta_n
 \end{array}
 $$
-Here $A'​$ is a new nonterminal. Repeatedly apply this transformation until no two alternatives for a nonterminal have a common prefix. $\Box​$
+Here $A'$ is a new nonterminal. Repeatedly apply this transformation until no two alternatives for a nonterminal have a common prefix. $\Box$
 
 **Example 4.22:** The following grammar abstracts the **dangling-else** problem:
 $$
@@ -624,15 +629,15 @@ Thus, we may expand $S$ to $iEtSS’$ on input $i$, and wait until $iEtS$ has be
 
 A few syntactic constructs found in typical programming languages cannot be specified using grammars alone. Here, we consider two of these constructs, using simple abstract languages to illustrate the difficulties.
 
-**Example 4.25:** The language in this example abstracts the problem of checking that identifiers are declared before they are used in a program. The language consists of strings of the form $w c w​$, where the first $w​$ represents the declaration of an identifier $w​$, $c​$ represents an intervening program fragment, and the second $w​$ represents the use of the identifier.
+**Example 4.25:** The language in this example abstracts the problem of checking that identifiers are declared before they are used in a program. The language consists of strings of the form $w c w$, where the first $w$ represents the declaration of an identifier $w$, $c$ represents an intervening program fragment, and the second $w$ represents the use of the identifier.
 
-The abstract language is $L_1 = \{w c w  | w \text{  is in }(a|b) * \}​$. $L_1​$ consists of all words composed of a repeated string of $a​$’s and $b​$’s separated by $c​$, such as $aabcaab​$. While it is beyond the scope of this book to prove it, the non-context-freedom of $L_1​$ directly implies the non-context-freedom of programming languages like C and Java, which require declaration of identifiers before their use and which allow identifiers of arbitrary length.
+The abstract language is $L_1 = \{w c w  | w \text{  is in }(a|b) * \}$. $L_1$ consists of all words composed of a repeated string of $a$’s and $b$’s separated by $c$, such as $aabcaab$. While it is beyond the scope of this book to prove it, the non-context-freedom of $L_1$ directly implies the non-context-freedom of programming languages like C and Java, which require declaration of identifiers before their use and which allow identifiers of arbitrary length.
 
-For this reason, a grammar for C or Java does not distinguish among identifiers that are different character strings. Instead, all identifiers are represented by a token such as **id** in the grammar. In a compiler for such a language, the semantic-analysis phase checks that identifiers are declared before they are used. $\Box​$
+For this reason, a grammar for C or Java does not distinguish among identifiers that are different character strings. Instead, all identifiers are represented by a token such as **id** in the grammar. In a compiler for such a language, the semantic-analysis phase checks that identifiers are declared before they are used. $\Box$
 
-**Example 4.26:** The non-context-free language in this example abstracts the problem of checking that the number of formal parameters in the declaration of a function agrees with the number of actual parameters in a use of the function. The language consists of strings of the form $a^nb^mc^nd^m​$. (Recall $a^n​$ means a written n times.) Here $a^n​$ and $b^m​$ could represent the formal-parameter lists of two functions declared to have $n​$ and $m​$ arguments, respectively, while $c^n​$ and $d^m​$ represent the actual-parameter lists in calls to these two functions.
+**Example 4.26:** The non-context-free language in this example abstracts the problem of checking that the number of formal parameters in the declaration of a function agrees with the number of actual parameters in a use of the function. The language consists of strings of the form $a^nb^mc^nd^m$. (Recall $a^n$ means a written n times.) Here $a^n$ and $b^m$ could represent the formal-parameter lists of two functions declared to have $n$ and $m$ arguments, respectively, while $c^n$ and $d^m$ represent the actual-parameter lists in calls to these two functions.
 
-The abstract language is $L_2 = \{ a^n b^m c^n d^m | n \ge 1 \text{ and } m \ge 1\}$. That is, $L_2$ consists of strings in the language generated by the regular expression `a*b*c*d*` ​ such that the number of $a$’s and $c$’s are equal and the number of $b$’s and $d​$’s are equal. This language is not context free.
+The abstract language is $L_2 = \{ a^n b^m c^n d^m | n \ge 1 \text{ and } m \ge 1\}$. That is, $L_2$ consists of strings in the language generated by the regular expression `a*b*c*d*` ​ such that the number of $a$’s and $c$’s are equal and the number of $b$’s and $d$’s are equal. This language is not context free.
 
 Again, the typical syntax of function declarations and uses does not concern itself with counting the number of parameters. For example, a function call in C-like language might be specified by
 $$
@@ -648,7 +653,7 @@ with suitable productions for $expr$. Checking that the number of parameters in 
 
 Top-down parsing can be viewed as the problem of constructing a parse tree for the input string, starting from the root and creating the nodes of the parse tree in preorder (depth-first, as discussed in Section 2.3.4). Equivalently, top-down parsing can be viewed as finding a leftmost derivation for an input string.
 
-**Example 4.27:** The sequence of parse trees in Fig. 4.12 for the input $\textbf{id}+ \textbf{id}*\textbf{id}​$ is a top-down parse according to grammar (4.2), repeated here:
+**Example 4.27:** The sequence of parse trees in Fig. 4.12 for the input $\textbf{id}+ \textbf{id}*\textbf{id}$ is a top-down parse according to grammar (4.2), repeated here:
 $$
 \begin{array}{lll}
 E  &\to&  T E’           \\ \tag{4.28}
@@ -661,7 +666,7 @@ $$
 
 This sequence of trees corresponds to a leftmost derivation of the input. $\Box$
 
-At each step of a top-down parse, the key problem is that of determining the production to be applied for a nonterminal, say $A$. Once an $A​$-production is chosen, the rest of the parsing process consists of “matching” the terminal symbols in the production body with the input string.
+At each step of a top-down parse, the key problem is that of determining the production to be applied for a nonterminal, say $A$. Once an $A$-production is chosen, the rest of the parsing process consists of “matching” the terminal symbols in the production body with the input string.
 
 The section begins with a general form of top-down parsing, called recursive-descent parsing, which may require **backtracking** to find the correct A-production to be applied. Section 2.4.2 introduced predictive parsing, a special case of recursive-descent parsing, where no backtracking is required. Predictive parsing chooses the correct A-production by looking ahead at the input a fixed number of symbols, typically we may look only at one (that is, the next input symbol).
 
@@ -669,7 +674,7 @@ The section begins with a general form of top-down parsing, called recursive-des
 
 Figure 4.12: Top-down parse for $\textbf{id}+ \textbf{id}*\textbf{id}$
 
-For example, consider the top-down parse in Fig. 4.12, which constructs a tree with two nodes labeled $E’​$. At the first $E’​$ node (in preorder), the production $E’ \to +T E’​$ is chosen; at the second $E’​$ node, the production $E’ \to \epsilon​$ is chosen. A predictive parser can choose between $E’​$-productions by looking at the next input symbol.
+For example, consider the top-down parse in Fig. 4.12, which constructs a tree with two nodes labeled $E’$. At the first $E’$ node (in preorder), the production $E’ \to +T E’$ is chosen; at the second $E’$ node, the production $E’ \to \epsilon$ is chosen. A predictive parser can choose between $E’$-productions by looking at the next input symbol.
 
 The class of grammars for which we can construct predictive parsers looking $k$ symbols ahead in the input is sometimes called the *LL(k)*​ class. We discuss the *LL(1)*​ class in Section 4.4.3, but introduce certain computations, called FIRST and FOLLOW, in a preliminary Section 4.4.2. From the FIRST and FOLLOW sets for a grammar, we shall construct “predictive parsing tables,” which make explicit the choice of production during top-down parsing. These sets are also useful during bottom-up parsing, as we shall see.
 
@@ -680,7 +685,7 @@ In Section 4.4.4 we give a non-recursive parsing algorithm that maintains a stac
 A recursive-descent parsing program consists of a set of procedures, one for each nonterminal. Execution begins with the procedure for the start symbol, which halts and announces success if its procedure body scans the entire input string. Pseudo-code for a typical nonterminal appears in Fig. 4.13. Note that this pseudo-code is nondeterministic, since it begins by choosing the A-production to apply in a manner that is not specified.
 
 void A() {
-1. Choose an $A​$-production, $A \to X_1 X_2 \dots  X_k​$;
+1. Choose an $A$-production, $A \to X_1 X_2 \dots  X_k$;
 2. for ( i = 1 to k ) {
 3. if ($ X_i$ is a nonterminal )
 4. call procedure $ X_i$();
@@ -710,58 +715,58 @@ To construct a parse tree top-down for the input string $w  = cad$, begin with a
 
 Figure 4.14: Steps in a top-down parse
 
-Now, we expand $A​$ using the first alternative $A \to a b​$ to obtain the tree of Fig. 4.14(b). We have a match for the second input symbol, $a​$, so we advance the input pointer to $d​$, the third input symbol, and compare $d​$ against the next leaf, labeled $b​$. Since $b​$ does not match $d​$, we report failure and go back to $A​$ to see whether there is another alternative for $A​$ that has not been tried, but that might produce a match.
+Now, we expand $A$ using the first alternative $A \to a b$ to obtain the tree of Fig. 4.14(b). We have a match for the second input symbol, $a$, so we advance the input pointer to $d$, the third input symbol, and compare $d$ against the next leaf, labeled $b$. Since $b$ does not match $d$, we report failure and go back to $A$ to see whether there is another alternative for $A$ that has not been tried, but that might produce a match.
 
-In going back to $A$, we must reset the input pointer to position 2, the position it had when we first came to $A$, which means that the procedure for $A​$ must store the input pointer in a local variable.
+In going back to $A$, we must reset the input pointer to position 2, the position it had when we first came to $A$, which means that the procedure for $A$ must store the input pointer in a local variable.
 
 The second alternative for $A$ produces the tree of Fig. 4.14(c). The leaf a matches the second symbol of $w$ and the leaf $d$ matches the third symbol. Since we have produced a parse tree for $w$, we halt and announce successful completion of parsing. $\Box$
 
-A left-recursive grammar can cause a recursive-descent parser, even one with backtracking, to go into an infinite loop. That is, when we try to expand a nonterminal $A​$, we may eventually find ourselves again trying to expand $A​$ without having consumed any input.
+A left-recursive grammar can cause a recursive-descent parser, even one with backtracking, to go into an infinite loop. That is, when we try to expand a nonterminal $A$, we may eventually find ourselves again trying to expand $A$ without having consumed any input.
 
 ### 4.4.2 FIRST and FOLLOW
 
-The construction of both top-down and bottom-up parsers is aided by two functions, FIRST and FOLLOW, associated with a grammar $G​$. During top-down parsing, FIRST and FOLLOW allow us to choose which production to apply, based on the next input symbol. During panic-mode error recovery, sets of tokens produced by FOLLOW can be used as synchronizing tokens.
+The construction of both top-down and bottom-up parsers is aided by two functions, FIRST and FOLLOW, associated with a grammar $G$. During top-down parsing, FIRST and FOLLOW allow us to choose which production to apply, based on the next input symbol. During panic-mode error recovery, sets of tokens produced by FOLLOW can be used as synchronizing tokens.
 
-Define *FIRST($\alpha​$)*, where $\alpha​$ is any string of grammar symbols, to be the set of terminals that begin strings derived from $\alpha​$. If $\alpha\overset*\implies\epsilon​$, then $\epsilon​$ is also in FIRST($\alpha​$). For example, in Fig. 4.15, $A \overset * \implies c \gamma​$, so $c​$ is in FIRST($A​$).
+Define *FIRST($\alpha$)*, where $\alpha$ is any string of grammar symbols, to be the set of terminals that begin strings derived from $\alpha$. If $\alpha\overset*\implies\epsilon$, then $\epsilon$ is also in FIRST($\alpha$). For example, in Fig. 4.15, $A \overset * \implies c \gamma$, so $c$ is in FIRST($A$).
 
 ![](images/figure4.15.png)
 
 Figure 4.15: Terminal $c$ is in FIRST($A$) and $a$ is in FOLLOW($A$)
 
-For a preview of how FIRST can be used during predictive parsing, consider two $A​$-productions $A \to \alpha|\beta​$, where FIRST($\alpha​$) and FIRST($\beta​$) are disjoint sets. We can then choose between these $A​$-productions by looking at the next input symbol $a​$, since $a​$ can be in at most one of FIRST($\alpha​$) and FIRST($\beta​$), not both. For instance, if $a​$ is in FIRST($\beta​$) choose the production $A \to \beta​$. This idea will be explored when LL(1) grammars are defined in Section 4.4.3.
+For a preview of how FIRST can be used during predictive parsing, consider two $A$-productions $A \to \alpha|\beta$, where FIRST($\alpha$) and FIRST($\beta$) are disjoint sets. We can then choose between these $A$-productions by looking at the next input symbol $a$, since $a$ can be in at most one of FIRST($\alpha$) and FIRST($\beta$), not both. For instance, if $a$ is in FIRST($\beta$) choose the production $A \to \beta$. This idea will be explored when LL(1) grammars are defined in Section 4.4.3.
 
-Define *FOLLOW(A)*, for nonterminal ​$A​$, to be the set of terminals ​$a​$ that can appear immediately to the right of ​$A​$ in some sentential form; that is, the set of terminals ​$a​$ such that there exists a derivation of the form ​$S \overset*\implies \alpha A a \beta​$, for some ​$\alpha​$ and ​$\beta​$, as in Fig. 4.15. Note that there may have been symbols between ​$A​$ and ​$a​$, at some time during the derivation, but if so, they derived ​$\epsilon​$ and disappeared. In addition, if ​$A​$ can be the rightmost symbol in some sentential form, then \$ is in FOLLOW(​$A​$); recall that \$ is a special "endmarker" symbol that is assumed not to be a symbol of any grammar.
+Define *FOLLOW(A)*, for nonterminal $A$, to be the set of terminals $a$ that can appear immediately to the right of $A$ in some sentential form; that is, the set of terminals $a$ such that there exists a derivation of the form $S \overset*\implies \alpha A a \beta$, for some $\alpha$ and $\beta$, as in Fig. 4.15. Note that there may have been symbols between $A$ and $a$, at some time during the derivation, but if so, they derived $\epsilon$ and disappeared. In addition, if $A$ can be the rightmost symbol in some sentential form, then \$ is in FOLLOW($A$); recall that \$ is a special "endmarker" symbol that is assumed not to be a symbol of any grammar.
 
-To compute FIRST($X​$) for all grammar symbols $X​$, apply the following rules until no more terminals or can be added to any FIRST set.
+To compute FIRST($X$) for all grammar symbols $X$, apply the following rules until no more terminals or can be added to any FIRST set.
 
 1. If $X$ is a terminal, then $FIRST(X) = \{X\}$.
 2. If $X$ is a nonterminal and $X \to Y_1 Y_2 \dots  Y_k$ is a production for some $k\ge 1$, then place $a$ in FIRST($X$) if for some $i$, $a$ is in FIRST($Y_i$), and is in all of FIRST($Y_1$), $\dots$, FIRST($Y _ {i-1}$); that is, $Y_1 \dots  Y _ {i-1} \overset*\implies \epsilon$. If $\epsilon$ is in FIRST($Y_j$) for all $j = 1, 2, \dots  k$, then add $\epsilon$ to FIRST($X$). For example, everything in FIRST($Y_1$) is surely in FIRST($X$). If $Y_1$ does not derive $\epsilon$, then we add nothing more to FIRST($X$), but if $Y_1 \overset*\implies \epsilon$, then we add FIRST($Y_2$), and so on.
 
 3. If $X \to \epsilon$ is a production, then add $\epsilon$ to $FIRST(X)$.
 
-Now, we can compute FIRST for any string $X_1 X_2 \dots  X_n​$ as follows. Add to FIRST($X_1 X_2 \dots  X_n​$) all non-$\epsilon​$ symbols of FIRST($X_1​$). Also add the non-$\epsilon​$ symbols of FIRST($X_2​$), if $\epsilon​$ is in FIRST($X_1​$); the non-$\epsilon​$ symbols of FIRST($X_3​$), if $\epsilon​$ is in FIRST($X_1​$) and FIRST($X_2​$); and so on. Finally, add $\epsilon​$ to FIRST($X_1 X_2 \dots  X_n​$) if, for all $i​$, $\epsilon​$ is in FIRST($X_i​$).
+Now, we can compute FIRST for any string $X_1 X_2 \dots  X_n$ as follows. Add to FIRST($X_1 X_2 \dots  X_n$) all non-$\epsilon$ symbols of FIRST($X_1$). Also add the non-$\epsilon$ symbols of FIRST($X_2$), if $\epsilon$ is in FIRST($X_1$); the non-$\epsilon$ symbols of FIRST($X_3$), if $\epsilon$ is in FIRST($X_1$) and FIRST($X_2$); and so on. Finally, add $\epsilon$ to FIRST($X_1 X_2 \dots  X_n$) if, for all $i$, $\epsilon$ is in FIRST($X_i$).
 
-To compute FOLLOW($A​$) for all nonterminals $A​$, apply the following rules until nothing can be added to any FOLLOW set.
+To compute FOLLOW($A$) for all nonterminals $A$, apply the following rules until nothing can be added to any FOLLOW set.
 
-1.  Place \$ in FOLLOW(​$S$), where ​$S$ is the start symbol, and ​$ is the input right endmarker.
+1.  Place \$ in FOLLOW($S$), where $S$ is the start symbol, and $ is the input right endmarker.
 
-2.  If there is a production $A \to \alpha B \beta​$, then everything in FIRST($\beta​$) except $\epsilon​$ is in FOLLOW($B​$).
+2.  If there is a production $A \to \alpha B \beta$, then everything in FIRST($\beta$) except $\epsilon$ is in FOLLOW($B$).
 
-3.  If there is a production $A \to \alpha B​$, or a production $A \to \alpha B \beta​$, where FIRST($\beta​$) contains $\epsilon​$, then everything in FOLLOW($A​$) is in FOLLOW($B​$).
+3.  If there is a production $A \to \alpha B$, or a production $A \to \alpha B \beta$, where FIRST($\beta$) contains $\epsilon$, then everything in FOLLOW($A$) is in FOLLOW($B$).
 
 **Example 4.30:** Consider again the non-left-recursive grammar (4.28). Then:
 
-1.  FIRST($F​$) = FIRST($T​$) = FIRST($E​$) = {$(​$, $\textbf{id}​$}. To see why, note that the two productions for $F​$ have bodies that start with these two terminal symbols, **id** and the left parenthesis. $T​$ has only one production, and its body starts with $F​$. Since $F​$ does not derive $\epsilon​$, FIRST($T​$) must be the same as FIRST($F​$). The same argument covers FIRST($E​$).
+1.  FIRST($F$) = FIRST($T$) = FIRST($E$) = {$($, $\textbf{id}$}. To see why, note that the two productions for $F$ have bodies that start with these two terminal symbols, **id** and the left parenthesis. $T$ has only one production, and its body starts with $F$. Since $F$ does not derive $\epsilon$, FIRST($T$) must be the same as FIRST($F$). The same argument covers FIRST($E$).
 
-2.  FIRST($E’​$) = {$+​$, $\epsilon​$}. The reason is that one of the two productions for $E’​$ has a body that begins with terminal $+​$, and the other's body is $\epsilon​$. Whenever a nonterminal derives $\epsilon​$, we place in FIRST for that nonterminal.
+2.  FIRST($E’$) = {$+$, $\epsilon$}. The reason is that one of the two productions for $E’$ has a body that begins with terminal $+$, and the other's body is $\epsilon$. Whenever a nonterminal derives $\epsilon$, we place in FIRST for that nonterminal.
 
-3.  FIRST($T’​$) = {$ * ​$, $\epsilon​$}. The reasoning is analogous to that for FIRST($E’​$).
+3.  FIRST($T’$) = {$ * $, $\epsilon$}. The reasoning is analogous to that for FIRST($E’$).
 
-4.  FOLLOW($E​$) = FOLLOW($E’​$) = {$)​$, \$}. Since $E​$ is the start symbol, FOLLOW($E​$) must contain \$. The production body $(E)​$ explains why the right parenthesis is in FOLLOW($E​$). For $E’​$, note that this nonterminal appears only at the ends of bodies of $E​$-productions. Thus, FOLLOW($E’​$) must be the same as FOLLOW($E​$).
+4.  FOLLOW($E$) = FOLLOW($E’$) = {$)$, \$}. Since $E$ is the start symbol, FOLLOW($E$) must contain \$. The production body $(E)$ explains why the right parenthesis is in FOLLOW($E$). For $E’$, note that this nonterminal appears only at the ends of bodies of $E$-productions. Thus, FOLLOW($E’$) must be the same as FOLLOW($E$).
 
 5.  FOLLOW($T$) = FOLLOW($T’$) = {$+$, $)$, \$}. Notice that $T$ appears in bodies only followed by $E’$. Thus, everything except $\epsilon$ that is in FIRST($E’$) must be in FOLLOW($T$); that explains the symbol $+$. However, since FIRST($E’$) contains $\epsilon$ (i.e., $E’ \overset*\implies \epsilon$), and $E’$ is the entire string following $T$ in the bodies of the $E$-productions, everything in FOLLOW($E$) must also be in FOLLOW($T$). That explains the symbols \$ and the right parenthesis. As for $T’$, since it appears only at the ends of the $T$-productions, it must be that FOLLOW($T’$) = FOLLOW($T$).
 
-6.  FOLLOW($F​$) = {$+​$,$ * ​$, $)​$, \$}. The reasoning is analogous to that for $T​$ in point (5).
+6.  FOLLOW($F$) = {$+$,$ * $, $)$, \$}. The reasoning is analogous to that for $T$ in point (5).
 
 $\Box$
 
@@ -779,7 +784,7 @@ Transition diagrams for predictive parsers differ from those for lexical analyze
 
 With an $LL(1)$ grammar, the ambiguity of whether or not to take an $\epsilon$-edge can be resolved by making $\epsilon$-transitions the default choice.
 
-Transition diagrams can be simplified, provided the sequence of grammar symbols along paths is preserved. We may also substitute the diagram for a nonterminal A in place of an edge labeled $A​$. The diagrams in Fig. 4.16(a) and (b) are equivalent: if we trace paths from $E​$ to an accepting state and substitute for $E’​$, then, in both sets of diagrams, the grammar symbols along the paths make up strings of the form $T + T + \dots  + T​$. The diagram in (b) can be obtained from (a) by transformations akin to those in Section 2.5.4, where we used tail-recursion removal and substitution of procedure bodies to optimize the procedure for a nonterminal.
+Transition diagrams can be simplified, provided the sequence of grammar symbols along paths is preserved. We may also substitute the diagram for a nonterminal A in place of an edge labeled $A$. The diagrams in Fig. 4.16(a) and (b) are equivalent: if we trace paths from $E$ to an accepting state and substitute for $E’$, then, in both sets of diagrams, the grammar symbols along the paths make up strings of the form $T + T + \dots  + T$. The diagram in (b) can be obtained from (a) by transformations akin to those in Section 2.5.4, where we used tail-recursion removal and substitution of procedure bodies to optimize the procedure for a nonterminal.
 
 ![](images/figure4.16.png)  
 
@@ -888,7 +893,7 @@ The behavior of the parser can be described in terms of its *configurations*, wh
 
 **INPUT:** A string $\omega$ and a parsing table $M$ for grammar $G$.
 
-**OUTPUT:** If $\omega​$ is in $L(G)​$, a leftmost derivation of $\omega​$; otherwise, an error indication.
+**OUTPUT:** If $\omega$ is in $L(G)$, a leftmost derivation of $\omega$; otherwise, an error indication.
 
 ![](images/figure4.19.png)
 
@@ -1061,7 +1066,7 @@ $$
 
 Figure 4.26: Handles during a parse of $id1 * id2$
 
-Formally, if $S \underset{rm}{\overset * \implies} \alpha A\omega  \underset{rm}\implies  \alpha\beta\omega​$, as in Fig. 4.27, then production $A \to \beta​$  in the position following $\alpha​$ is a handle of $\alpha\beta\omega​$. Alternatively, a handle of a right-sentential form $\gamma​$ is a production $A \to \beta​$ and a position of $\gamma​$ where the string $\beta​$  may be found, such that replacing $\beta​$ at that position by $A​$ produces the previous right-sentential form in a rightmost derivation of $\gamma​$.
+Formally, if $S \underset{rm}{\overset * \implies} \alpha A\omega  \underset{rm}\implies  \alpha\beta\omega$, as in Fig. 4.27, then production $A \to \beta$  in the position following $\alpha$ is a handle of $\alpha\beta\omega$. Alternatively, a handle of a right-sentential form $\gamma$ is a production $A \to \beta$ and a position of $\gamma$ where the string $\beta$  may be found, such that replacing $\beta$ at that position by $A$ produces the previous right-sentential form in a rightmost derivation of $\gamma$.
 
 ![](images/figure4.27.png)
 
@@ -1226,7 +1231,7 @@ $$
 $$
 Figure 4.30: Productions involving procedure calls and array references
 
-A statement beginning with $p (i, j)​$ would appear as the token stream $id (id, id)​$ to the parser. After shifting the first three tokens onto the stack, a shift-reduce parser would be in configuration
+A statement beginning with $p (i, j)$ would appear as the token stream $id (id, id)$ to the parser. After shifting the first three tokens onto the stack, a shift-reduce parser would be in configuration
 
 $$
 \begin{array}{lr}
@@ -1833,7 +1838,7 @@ We begin by computing the closure of {\[$S' \to \cdot S$, \$\]}. To close, we ma
 
 That is, $A = S', \alpha = \eta, B = S, \beta = \eta$, and $a = \$$. Function CLOSURE tells us to add \[$B \to \cdot \gamma$, $b$\] for each production $B \to \gamma$ and terminal $b$ in FIRST($\beta a$). In terms of the present grammar, $B \to \gamma$ must be $S \to C C$, and since $\beta$ is $E$ and $a$ is $\$$, $b$ may only be \$. Thus we add \[$S \to \cdot C C$, \$\].
 
-We continue to compute the closure by adding all items \[$C \to \cdot \gamma​$ , $b​$\] for $b​$ in FIRST($C\$​$). That is, matching \[$S \to \cdot C C​$, \$\] against \[$A \to \alpha \cdot B \beta​$, $a​$\], we have $A = S, \alpha = \gamma, B = C, \beta = C​$, and $a = \$​$. Since $C​$ does not derive the empty string, FIRST($C\$​$) = FIRST($C​$). Since FIRST($C​$) contains terminals $c​$ and $d​$, we add items \[$C \to \cdot c C​$, $c​$\], \[$C \to \cdot c C​$, $d​$\] , \[$C \to \cdot d​$, $c​$\] and \[$C \to \cdot d​$, $d​$\] . None of the new items has a nonterminal immediately to the right of the dot, so we have completed our first set of LR(1) items. The initial set of items is
+We continue to compute the closure by adding all items \[$C \to \cdot \gamma$ , $b$\] for $b$ in FIRST($C\$$). That is, matching \[$S \to \cdot C C$, \$\] against \[$A \to \alpha \cdot B \beta$, $a$\], we have $A = S, \alpha = \gamma, B = C, \beta = C$, and $a = \$$. Since $C$ does not derive the empty string, FIRST($C\$$) = FIRST($C$). Since FIRST($C$) contains terminals $c$ and $d$, we add items \[$C \to \cdot c C$, $c$\], \[$C \to \cdot c C$, $d$\] , \[$C \to \cdot d$, $c$\] and \[$C \to \cdot d$, $d$\] . None of the new items has a nonterminal immediately to the right of the dot, so we have completed our first set of LR(1) items. The initial set of items is
 $$
 \begin{array}{llll}
 I_0: &S \to \cdot S, \$\\
