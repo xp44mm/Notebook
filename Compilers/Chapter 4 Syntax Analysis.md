@@ -39,6 +39,7 @@ In this chapter, we assume that the output of the parser is some representation 
 Some of the grammars that will be examined in this chapter are presented here for ease of reference. Constructs that begin with keywords like **while** or **int**, are relatively easy to parse, because the keyword guides the choice of the grammar production that must be applied to match the input. We therefore concentrate on expressions, which present more of challenge, because of the associativity and precedence of operators.
 
 Associativity and precedence are captured in the following grammar, which is similar to ones used in Chapter 2 for describing expressions, terms, and factors. $E$ represents expressions consisting of terms separated by $+$ signs, $T$ represents terms consisting of factors separated by $ * $ signs, and $F$ represents factors that can be either parenthesized expressions or identifiers:
+
 $$
 \begin{array}{ll}
 E & \to & E + T | T\\
@@ -46,9 +47,11 @@ T & \to & T * F | F\\ \tag{4.1}
 F & \to & ( E ) | \textbf{id}
 \end{array}
 $$
+
 Expression grammar (4.1) belongs to the class of LR grammars that are suitable for bottom-up parsing. This grammar can be adapted to handle additional operators and additional levels of precedence. However, it cannot be used for top-down parsing because it is left recursive.
 
 The following non-left-recursive variant of the expression grammar (4.1) will be used for top-down parsing:
+
 $$
 \begin{array}{ll}
 E & \to & T E’\\ \tag{4.2}
@@ -125,6 +128,7 @@ Ideally, we would like a compiler to make as few changes as possible in processi
 
 Do note that a closest correct program may not be what the programmer had in mind. Nevertheless, the notion of least-cost correction provides a yardstick for evaluating error-recovery techniques, and has been used for finding optimal replacement strings for phrase-level recovery.
 
+
 ## 4.2 Context-Free Grammars
 
 Grammars were introduced in Section 2.2 to systematically describe the syntax of programming language constructs like expressions and statements. Using a syntactic variable stmt to denote statements and variable expr to denote expressions, the production
@@ -160,6 +164,7 @@ $$
 $$
 
 The nonterminal symbols are $expression$, $term$ and $factor$, and $expression$ is the start symbol. $\Box$
+
 $$
 \begin{array}{rrl}
 expression & \to & expression + term &\\
@@ -181,15 +186,15 @@ To avoid always having to state that “these are the terminals,” “these are
 
 1. These symbols are terminals:
 
-    (a) Lowercase letters early in the alphabet, such as $a, b, c$.
+   (a) Lowercase letters early in the alphabet, such as $a, b, c$.
 
-    (b) Operator symbols such as $+$, $ * $, and so on.
+   (b) Operator symbols such as $+$, $ * $, and so on.
 
-    (c) Punctuation symbols such as parentheses, comma, and so on.
+   (c) Punctuation symbols such as parentheses, comma, and so on.
 
-    (d) The digits $0, 1, \dots , 9$.
+   (d) The digits $0, 1, \dots , 9$.
 
-    (e) Boldface strings such as **id** or **if**, each of which represents a single terminal symbol.
+   (e) Boldface strings such as **id** or **if**, each of which represents a single terminal symbol.
 
 2. These symbols are nonterminals:
 
@@ -212,6 +217,7 @@ To avoid always having to state that “these are the terminals,” “these are
 7. Unless stated otherwise, the head of the first production is the start symbol.
 
 **Example 4.6:** Using these conventions, the grammar of Example 4.5 can be rewritten concisely as
+
 $$
 \begin{array}{ll}
 E & \to & E + T | E - T | T \\
@@ -219,6 +225,7 @@ T & \to & T * F | T / F | F \\
 F & \to & ( E ) | \textbf{id}
 \end{array}
 $$
+
 The notational conventions tell us that $E$, $T$, and $F$ are nonterminals, with $E$ the start symbol. The remaining symbols are terminals. $\Box$
 
 ### 4.2.3 Derivations
@@ -232,10 +239,13 @@ E \to E + E | E * E | - E | ( E ) |\textbf{id} \tag{4.7}
 $$
 
 The production $E \to - E$ signifies that if $E$ denotes an expression, then $- E$ must also denote an expression. The replacement of a single $E$ by $- E$ will be described by writing
+
 $$
 E \implies - E
 $$
+
 which is read, “$E$ derives $- E$.” The production $E \to ( E )$ can be applied to replace any instance of $E$ in any string of grammar symbols by $( E )$, e.g., $E * E \implies  (E ) * E$ or $E * E \implies  E * ( E )$. We can take a single $E$ and repeatedly apply productions in any order to get a sequence of replacements. For example,
+
 $$
 E \implies - E \implies - ( E ) \implies - (\textbf{id})
 $$
@@ -245,11 +255,12 @@ We call such a sequence of replacements a *derivation* of $- (\textbf{id})$ from
 For a general definition of derivation, consider a nonterminal $A$ in the middle of a sequence of grammar symbols, as in $\alpha A\beta$, where $\alpha$ and $\beta$ are arbitrary strings of grammar symbols. Suppose $A \to \gamma$ is a production. Then, we write $\alpha A\beta\implies \alpha \gamma\beta$. The symbol $\implies$  means, “derives in one step.” When a sequence of derivation steps $\alpha_1 \implies  \alpha_2 \implies  \dots  \implies  \alpha_n$ rewrites $\alpha_1$ to $\alpha_n$, we say $\alpha_1$ derives $\alpha_n$. Often, we wish to say, “derives in zero or more steps.” For this purpose, we can use the symbol $\overset*\implies$. Thus,
 
 1. $\alpha \overset*\implies  \alpha$, for any string $\alpha$, and
+
 2. If $\alpha \overset*\implies  \beta$ and $\beta \implies \gamma$, then $\alpha \overset*\implies \gamma$.
 
 Likewise, $\overset+\implies$  means, “derives in one or more steps.”
 
-If $S \overset*\implies  \alpha$, where $S$ is the start symbol of a grammar $G$, we say that is a *sentential form* of $G$. Note that a sentential form may contain both terminals and nonterminals, and may be empty. A *sentence* of $G$ is a sentential form with no nonterminals. The *language* generated by a grammar is its set of sentences. Thus, a string of terminals $w$  is in $L(G)$, the language generated by $G$, if and only if $w$  is a sentence of $G$ (or $S \overset*\implies w$). A language that can be generated by a grammar is said to be a *context-free language*. If two grammars generate the same language, the grammars are said to be *equivalent*.
+If $S \overset*\implies \alpha$, where $S$ is the start symbol of a grammar $G$, we say that is a *sentential form* of $G$. Note that a sentential form may contain both terminals and nonterminals, and may be empty. A *sentence* of $G$ is a sentential form with no nonterminals. The *language* generated by a grammar is its set of sentences. Thus, a string of terminals $w$  is in $L(G)$, the language generated by $G$, if and only if $w$  is a sentence of $G$ (or $S \overset*\implies w$). A language that can be generated by a grammar is said to be a *context-free language*. If two grammars generate the same language, the grammars are said to be *equivalent*.
 
 The string $- (\textbf{id} + \textbf{id})$ is a sentence of grammar (4.7) because there is a derivation
 
@@ -260,21 +271,25 @@ $$
 The strings $E, - E, - (E), \dots  , - (\textbf{id} + \textbf{id})$ are all sentential forms of this grammar. We write $E \overset*\implies  - (\textbf{id} + \textbf{id})$ to indicate that $- (\textbf{id} + \textbf{id})$ can be derived from $E$.
 
 At each step in a derivation, there are two choices to be made. We need to choose which nonterminal to replace, and having made this choice, we must pick a production with that nonterminal as head. For example, the following alternative derivation of $- (\textbf{id} + \textbf{id})$ differs from derivation (4.8) in the last two steps:
+
 $$
 E \implies - E \implies - (E) \implies - (E + E) \implies - (E + \textbf{id}) \implies - (\textbf{id} + \textbf{id}) \tag{4.9}
 $$
+
 Each nonterminal is replaced by the same body in the two derivations, but the order of replacements is different.
 
 To understand how parsers work, we shall consider derivations in which the nonterminal to be replaced at each step is chosen as follows:
 
-1.  In leftmost derivations, the leftmost nonterminal in each sentential is always chosen. If $\alpha\implies \beta$ is a step in which the leftmost nonterminal in $\alpha$ is replaced, we write $\alpha \underset{lm}\implies \beta$.
+1. In leftmost derivations, the leftmost nonterminal in each sentential is always chosen. If $\alpha\implies \beta$ is a step in which the leftmost nonterminal in $\alpha$ is replaced, we write $\alpha \underset{lm}\implies \beta$.
 
-2.  In rightmost derivations, the rightmost nonterminal is always chosen; we write $\alpha \underset{rm}\implies  \beta$ in this case.
+2. In rightmost derivations, the rightmost nonterminal is always chosen; we write $\alpha \underset{rm}\implies  \beta$ in this case.
 
 Derivation (4.8) is leftmost, so it can be rewritten as
+
 $$
 E \underset{lm}\implies  - E \underset{lm}\implies  - (E) \underset{lm}\implies  - (E + E) \underset{lm}\implies  - (\textbf{id} + E) \underset{lm}\implies  - (\textbf{id} + \textbf{id})
 $$
+
 Note that (4.9) is a rightmost derivation.
 
 Using our notational conventions, every leftmost step can be written as $w A\gamma \underset{lm}\implies  w\delta\gamma$, where $w$  consists of terminals only, $A \to \delta$ is the production applied, and $\gamma$ is a string of grammar symbols. To emphasize that $\alpha$ derives $\beta$ by a leftmost derivation, we write $\alpha \underset{lm}{\overset * \implies}  \beta$. If $S \underset{lm}{\overset * \implies} \alpha$, then we say that $\alpha$ is a *left-sentential form* of the grammar at hand.
@@ -334,7 +349,7 @@ Note that the parse tree of Fig. 4.5(a) reflects the commonly assumed precedence
 
   ![](images/Figure4.5.png)
 
-Figure 4.5: Two parse trees for $\textbf{id} + \textbf{id}*\textbf{id}$
+Figure 4.5: Two parse trees for $\textbf{id} + \textbf{id} * \textbf{id}$
 
 For most parsers, it is desirable that the grammar be made unambiguous, for if it is not, we cannot uniquely determine which parse tree to select for a sentence. In other cases, it is convenient to use carefully chosen ambiguous grammars, together with disambiguating rules that “throw away” undesirable parse trees, leaving only one tree for each sentence.
 
@@ -345,9 +360,11 @@ Although compiler designers rarely do so for a complete programming-language gra
 A proof that a grammar G generates a language $L$ has two parts: show that every string generated by $G$ is in $L$, and conversely that every string in $L$ can indeed be generated by $G$.
 
 **Example 4.12:** Consider the following grammar:
+
 $$
 S \to ( S ) S |\epsilon \tag{4.13}
 $$
+
 It may not be initially apparent, but this simple grammar generates all strings of balanced parentheses, and only such strings. To see why, we shall show first that every sentence derivable from $S$ is balanced, and then that every balanced string is derivable from $S$. To show that every sentence derivable from $S$ is balanced, we use an inductive proof on the number of steps $n$ in a derivation.
 
 **BASIS:** The basis is $n = 1$. The only string of terminals derivable from $S$ in one step is the empty string, which surely is balanced.
@@ -400,6 +417,7 @@ On the other hand, the language $L = \{a^n b^n | n\ge 1\}$ with an equal number 
 Figure 4.6: DFA $D$ accepting both $a^i b^i$ and $a^j b^i$.
 
 Colloquially, we say that “finite automaton cannot count,” meaning that a finite automaton cannot accept a language like $\{a^n b^n | n\ge 1\}$ that would require it to keep count of the number of $a$’s before it sees the $b$’s. Likewise, “a grammar can count two items but not three,” as we shall see when we consider non-context-free language constructs in Section 4.3.5.
+
 
 ## 4.3 Writing a Grammar
 
@@ -649,11 +667,13 @@ expr\_list   &\to& expr\_list , expr \\
 $$
 with suitable productions for $expr$. Checking that the number of parameters in a call is correct is usually done during the semantic-analysis phase. $\Box$
 
+
 ## 4.4 Top-Down Parsing
 
 Top-down parsing can be viewed as the problem of constructing a parse tree for the input string, starting from the root and creating the nodes of the parse tree in preorder (depth-first, as discussed in Section 2.3.4). Equivalently, top-down parsing can be viewed as finding a leftmost derivation for an input string.
 
-**Example 4.27:** The sequence of parse trees in Fig. 4.12 for the input $\textbf{id}+ \textbf{id}*\textbf{id}$ is a top-down parse according to grammar (4.2), repeated here:
+**Example 4.27:** The sequence of parse trees in Fig. 4.12 for the input $\textbf{id} + \textbf{id}*\textbf{id}$ is a top-down parse according to grammar (4.2), repeated here:
+
 $$
 \begin{array}{lll}
 E  &\to&  T E’           \\ \tag{4.28}
@@ -672,7 +692,7 @@ The section begins with a general form of top-down parsing, called recursive-des
 
 ![](images/figure4.12.png)
 
-Figure 4.12: Top-down parse for $\textbf{id}+ \textbf{id}*\textbf{id}$
+Figure 4.12: Top-down parse for $\textbf{id} + \textbf{id} * \textbf{id}$
 
 For example, consider the top-down parse in Fig. 4.12, which constructs a tree with two nodes labeled $E’$. At the first $E’$ node (in preorder), the production $E’ \to +T E’$ is chosen; at the second $E’$ node, the production $E’ \to \epsilon$ is chosen. A predictive parser can choose between $E’$-productions by looking at the next input symbol.
 
@@ -702,6 +722,7 @@ General recursive-descent may require backtracking; that is, it may require repe
 To allow backtracking, the code of Fig. 4.13 needs to be modified. First, we cannot choose a unique A-production at line (1), so we must try each of several productions in some order. Then, failure at line (7) is not ultimate failure, but suggests only that we need to return to line (1) and try another A-production. Only if there are no more A-productions to try do we declare that an input error has been found. In order to try another A-production, we need to be able to reset the input pointer to where it was when we first reached line (1). Thus, a local variable is needed to store this input pointer for future use.
 
 **Example 4.29:** Consider the grammar
+
 $$
 \begin{array}{lll}
 S &\to&  c\ A\ d     \\
@@ -762,7 +783,7 @@ To compute FOLLOW($A$) for all nonterminals $A$, apply the following rules until
 
 3.  FIRST($T’$) = {$ * $, $\epsilon$}. The reasoning is analogous to that for FIRST($E’$).
 
-4.  FOLLOW($E$) = FOLLOW($E’$) = {$)$, \$}. Since $E$ is the start symbol, FOLLOW($E$) must contain \$. The production body $(E)$ explains why the right parenthesis is in FOLLOW($E$). For $E’$, note that this nonterminal appears only at the ends of bodies of $E$-productions. Thus, FOLLOW($E’$) must be the same as FOLLOW($E$).
+4.  FOLLOW($E$) = FOLLOW($E’$) = $\{), \$\}$. Since $E$ is the start symbol, FOLLOW($E$) must contain $\$$. The production body $(E)$ explains why the right parenthesis is in FOLLOW($E$). For $E’$, note that this nonterminal appears only at the ends of bodies of $E$-productions. Thus, FOLLOW($E’$) must be the same as FOLLOW($E$).
 
 5.  FOLLOW($T$) = FOLLOW($T’$) = {$+$, $)$, \$}. Notice that $T$ appears in bodies only followed by $E’$. Thus, everything except $\epsilon$ that is in FIRST($E’$) must be in FOLLOW($T$); that explains the symbol $+$. However, since FIRST($E’$) contains $\epsilon$ (i.e., $E’ \overset*\implies \epsilon$), and $E’$ is the entire string following $T$ in the bodies of the $E$-productions, everything in FOLLOW($E$) must also be in FOLLOW($T$). That explains the symbols \$ and the right parenthesis. As for $T’$, since it appears only at the ends of the $T$-productions, it must be that FOLLOW($T’$) = FOLLOW($T$).
 
@@ -772,13 +793,13 @@ $\Box$
 
 ### 4.4.3 LL(1) Grammars
 
-Predictive parsers, that is, recursive-descent parsers needing no backtracking, can be constructed for a class of grammars called LL(1). The first ”L” in LL(1) stands for scanning the input from left to right, the second "L" for producing a leftmost derivation, and the "1" for using one input symbol of lookahead at each step to make parsing action decisions.
+Predictive parsers, that is, recursive-descent parsers needing no backtracking, can be constructed for a class of grammars called LL(1). The first “L” in LL(1) stands for scanning the input from left to right, the second “L” for producing a leftmost derivation, and the “1” for using one input symbol of lookahead at each step to make parsing action decisions.
 
 ---
 
-#### Transition Diagrams for Predictive Parsers
+##### Transition Diagrams for Predictive Parsers
 
-Transition diagrams are useful for visualizing predictive parsers. For example, the transition diagrams for nonterminals $E$ and $E’$ of grammar (4.28) appear in Fig. 4.16(a). To construct the transition diagram from a grammar, first eliminate left recursion and then left factor the grammar. Then, for each nonterminal $A$,
+Transition diagrams are useful for visualizing predictive parsers. For example, the transition diagrams for nonterminals $E$ and $E'$ of grammar (4.28) appear in Fig. 4.16(a). To construct the transition diagram from a grammar, first eliminate left recursion and then left factor the grammar. Then, for each nonterminal $A$,
 
 1.  Create an initial and final (return) state.
 
@@ -887,10 +908,10 @@ The grammar is ambiguous and the ambiguity is manifested by a choice in what pro
 A nonrecursive predictive parser can be built by maintaining a stack explicitly, rather than implicitly via recursive calls. The parser mimics a leftmost derivation. If $w$  is the input that has been matched so far, then the stack holds a sequence of grammar symbols $\alpha$ such that
 
 $$
-S \underset{lm}{\overset*\implies} w\alpha
+S \underset{lm}{\overset*\implies} w \alpha
 $$
 
-The table-driven parser in Fig. 4.19 has an input buffer, a stack containing a sequence of grammar symbols, a parsing table constructed by Algorithm 4.31, and an output stream. The input buffer contains the string to be parsed, followed by the endmarker \$. We reuse the symbol \$ to mark the bottom of the stack, which initially contains the start symbol of the grammar on top of \$.
+The table-driven parser in Fig. 4.19 has an input buffer, a stack containing a sequence of grammar symbols, a parsing table constructed by Algorithm 4.31, and an output stream. The input buffer contains the string to be parsed, followed by the endmarker $\$$. We reuse the symbol $\$$ to mark the bottom of the stack, which initially contains the start symbol of the grammar on top of $\$$.
 
 The parser is controlled by a program that considers $X$, the symbol on top of the stack, and a, the current input symbol. If $X$ is a nonterminal, the parser chooses an $X$-production by consulting entry $M[X, a]$ of the parsing table $M$. (Additional code could be executed here, for example, code to construct a node in a parse tree.) Otherwise, it checks for a match between the terminal $X$ and current input symbol $a$.
 
@@ -932,29 +953,29 @@ $$
 
 $$
 \begin{array}{lrrl}
-MATCHED      & STACK    & INPUT          & ACTION\\
+\text{MATCHED}      & \text{STACK}    & \text{INPUT}          & \text{ACTION} \\
 \hline
-             &      E \$& id + id * id\$ & \\
-             &    T E’\$& id + id * id\$ & \text{output }E \to T E’\\
-             &  F T’E’\$& id + id * id\$ & \text{output }T \to F T’\\
-             & id T’E’\$& id + id * id\$ & \text{output }F \to id\\
-id           &    T’E’\$&    + id * id\$ & \text{match }id\\
-id           &      E’\$&    + id * id\$ & \text{output }T’\to \epsilon\\
-id           &  + T E’\$&    + id * id\$ & \text{output }E’\to + T E’\\
-id +         &    T E’\$&      id * id\$ & \text{match }+\\
-id +         &  F T’E’\$&      id * id\$ & \text{output }T \to F T’\\
-id +         & id T’E’\$&      id * id\$ & \text{output }F \to id\\
-id + id      &    T’E’\$&         * id\$ & \text{match }id\\
-id + id      &* F T’E’\$&         * id\$ & \text{output }T’\to * F T’\\
-id + id *    &  F T’E’\$&           id\$ & \text{match }*\\
-id + id *    & id T’E’\$&           id\$ & \text{output }F \to id\\
-id + id * id &    T’E’\$&             \$ & \text{match }id\\
-id + id * id &      E’\$&             \$ & \text{output }T’\to \epsilon\\
-id + id * id &        \$&             \$ & \text{output }E’\to \epsilon
+             &      E \$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \\
+             &    T E’\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }E \to T E’\\
+             &  F T’E’\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }T \to F T’\\
+             & \textbf{id} T’E’\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }F \to \textbf{id}\\
+\textbf{id}           &    T’E’\$&    + \textbf{id} * \textbf{id}\$ & \text{match }\textbf{id}\\
+\textbf{id}           &      E’\$&    + \textbf{id} * \textbf{id}\$ & \text{output }T’\to \epsilon\\
+\textbf{id}           &  + T E’\$&    + \textbf{id} * \textbf{id}\$ & \text{output }E’\to + T E’\\
+\textbf{id} +         &    T E’\$&      \textbf{id} * \textbf{id}\$ & \text{match }+\\
+\textbf{id} +         &  F T’E’\$&      \textbf{id} * \textbf{id}\$ & \text{output }T \to F T’\\
+\textbf{id} +         & \textbf{id} T’E’\$&      \textbf{id} * \textbf{id}\$ & \text{output }F \to \textbf{id}\\
+\textbf{id} + \textbf{id}      &    T’E’\$&         * \textbf{id}\$ & \text{match }\textbf{id}\\
+\textbf{id} + \textbf{id}      &* F T’E’\$&         * \textbf{id}\$ & \text{output }T’\to * F T’\\
+\textbf{id} + \textbf{id} *    &  F T’E’\$&           \textbf{id}\$ & \text{match }*\\
+\textbf{id} + \textbf{id} *    & \textbf{id} T’E’\$&           \textbf{id}\$ & \text{output }F \to \textbf{id}\\
+\textbf{id} + \textbf{id} * \textbf{id} &    T’E’\$&             \$ & \text{match }\textbf{id}\\
+\textbf{id} + \textbf{id} * \textbf{id} &      E’\$&             \$ & \text{output }T’\to \epsilon\\
+\textbf{id} + \textbf{id} * \textbf{id} &        \$&             \$ & \text{output }E’\to \epsilon
 \end{array}
 $$
 
-Figure 4.21: Moves made by a predictive parser on input $\textbf{id} + \textbf{id}*\textbf{id}$
+Figure 4.21: Moves made by a predictive parser on input $\textbf{id} + \textbf{id} * \textbf{id}$
 
 Note that the sentential forms in this derivation correspond to the input that has already been matched (in column MATCHED) followed by the stack contents. The matched input is shown only to highlight the correspondence. For the same reason, the top of the stack is to the left; when we consider bottom-up parsing, it will be more natural to show the top of the stack to the right. The input pointer points to the leftmost symbol of the string in the INPUT column. $\Box$
 
@@ -992,25 +1013,26 @@ The table in Fig. 4.22 is to be used as follows. If the parser looks up entry M 
 
   Figure 4.22: Synchronizing tokens added to the parsing table of Fig. 4.17
 
-On the erroneous input $) id * + id$, the parser and error recovery mechanism of Fig. 4.22 behave as in Fig. 4.23. $\Box$
+On the erroneous input $) \textbf{id} * + \textbf{id}$, the parser and error recovery mechanism of Fig. 4.22 behave as in Fig. 4.23. $\Box$
+
 $$
 \begin{array}{rrl}
-STACK     &    INPUT     &        REMARK           \\
+\text{STACK}     &    \text{INPUT}     &        \text{REMARK}           \\
 \hline
-      E \$& ) id * + id\$& \text{error, skip )}    \\
-      E \$&   id * + id\$& \text{id is in FIRST(E)}\\  
-    T E’\$&   id * + id\$&                         \\
-  F T’E’\$&   id * + id\$&                         \\
- id T’E’\$&   id * + id\$&                         \\
-    T’E’\$&      * + id\$&                         \\
-* F T’E’\$&      * + id\$&                          \\
-  F T’E’\$&        + id\$& \text{error, M[F, +] = synch}\\
-    T’E’\$&        + id\$& \text{F has been popped}\\
-      E’\$&        + id\$&                          \\
-  + T E’\$&        + id\$&                          \\
-    T E’\$&          id\$&                          \\       
-  F T’E’\$&          id\$&                          \\       
- id T’E’\$&          id\$&                          \\       
+      E \$& ) \textbf{id} * + \textbf{id}\$& \text{error, skip )}    \\
+      E \$&   \textbf{id} * + \textbf{id}\$& \textbf{id}\text{ is in FIRST}(E)\\  
+    T E’\$&   \textbf{id} * + \textbf{id}\$&                         \\
+  F T’E’\$&   \textbf{id} * + \textbf{id}\$&                         \\
+ \textbf{id} T’E’\$&   \textbf{id} * + \textbf{id}\$&                         \\
+    T’E’\$&      * + \textbf{id}\$&                         \\
+* F T’E’\$&      * + \textbf{id}\$&                          \\
+  F T’E’\$&        + \textbf{id}\$& \text{error, }M[F, +] = synch\\
+    T’E’\$&        + \textbf{id}\$& F\text{ has been popped}\\
+      E’\$&        + \textbf{id}\$&                          \\
+  + T E’\$&        + \textbf{id}\$&                          \\
+    T E’\$&          \textbf{id}\$&                          \\       
+  F T’E’\$&          \textbf{id}\$&                          \\       
+ \textbf{id} T’E’\$&          \textbf{id}\$&                          \\       
     T’E’\$&            \$&                          \\          
       E’\$&            \$&                          \\          
         \$&            \$&                          \\          
@@ -1024,7 +1046,6 @@ The above discussion of panic-mode recovery does not address the important issue
 #### Phrase-level Recovery
 
 Phrase-level error recovery is implemented by filling in the blank entries in the predictive parsing table with pointers to error routines. These routines may change, insert, or delete symbols on the input and issue appropriate error messages. They may also pop from the stack. Alteration of stack symbols or the pushing of new symbols onto the stack is questionable for several reasons. First, the steps carried out by the parser might then not correspond to the derivation of any word in the language at all. Second, we must ensure that there is no possibility of an infinite loop. Checking that any recovery action eventually results in an input symbol being consumed (or the stack being shortened if the end of the input has been reached) is a good way to protect against such loops.
-
 
 
 ## 4.5 Bottom-Up Parsing
@@ -1044,17 +1065,21 @@ We can think of bottom-up parsing as the process of "reducing" a string $w$  to 
 The key decisions during bottom-up parsing are about when to reduce and about what production to apply, as the parse proceeds.
 
 **Example 4.37:** The snapshots in Fig. 4.25 illustrate a sequence of reductions; the grammar is the expression grammar (4.1). The reductions will be discussed in terms of the sequence of strings
+
 $$
 \textbf{id} * \textbf{id},\ F * \textbf{id},\ T * \textbf{id},\ T * F,\ T,\ E
 $$
+
 The strings in this sequence are formed from the roots of all the subtrees in the snapshots. The sequence starts with the input string $\textbf{id} * \textbf{id}$. The first reduction produces $F * \textbf{id}$ by reducing the leftmost **id** to $F$, using the production $F \to \textbf{id}$. The second reduction produces $T * \textbf{id}$ by reducing $F$ to $T$.
 
 Now, we have a choice between reducing the string $T$, which is the body of $E \to T$, and the string consisting of the second **id**, which is the body of $F \to \textbf{id}$. Rather than reduce $T$ to $E$, the second **id** is reduced to $T$, resulting in the string $T * F$. This string then reduces to $T$. The parse completes with the reduction of $T$ to the start symbol $E$. $\Box$
 
 By definition, a reduction is the reverse of a step in a derivation (recall that in a derivation, a nonterminal in a sentential form is replaced by the body of one of its productions). The goal of bottom-up parsing is therefore to construct a derivation in reverse. The following derivation corresponds to the parse in Fig. 4.25:
+
 $$
 E \implies T \implies T * F \implies T * \textbf{id} \implies F * \textbf{id} \implies \textbf{id} * \textbf{id}
 $$
+
 This derivation is in fact a rightmost derivation.
 
 ### 4.5.2 Handle Pruning
@@ -1064,7 +1089,7 @@ Bottom-up parsing during a left-to-right scan of the input constructs a rightmos
 For example, adding subscripts to the tokens **id** for clarity, the handles during the parse of $\textbf{id}_1 * \textbf{id}_2$ according to the expression grammar (4.1) are as in Fig. 4.26. Although $T$ is the body of the production $E \to T$, the symbol $T$ is not a handle in the sentential form $T * \textbf{id}_2$. If $T$ were indeed replaced by $E$, we would get the string $E * \textbf{id}_2$, which cannot be derived from the start symbol $E$. Thus, the leftmost substring that matches the body of some production need not be a handle.
 $$
 \begin{array}{rcl}
-\textbf{RIGHT SENTENTIAL FORM}&\textbf{HANDLE}&\textbf{REDUCING PRODUCTION}\\
+\text{RIGHT SENTENTIAL FORM}&\text{HANDLE}&\text{REDUCING PRODUCTION}\\
 \hline
 \textbf{id}_1 * \textbf{id}_2& \textbf{id}_1   &F\to \textbf{id}\\
   F * \textbf{id}_2& F     &T\to F \\
@@ -1084,6 +1109,7 @@ Figure 4.27: A handle $A \to \beta$ in the parse tree for $\alpha\beta w$
 Notice that the string $w$ to the right of the handle must contain only terminal symbols. For convenience, we refer to the body $\beta$ rather than $A \to \beta$ as a handle. Note we say "a handle" rather than "the handle", because the grammar could be ambiguous, with more than one rightmost derivation of $\alpha\beta w$. If a grammar is unambiguous, then every right-sentential form of the grammar has exactly one handle.
 
 A rightmost derivation in reverse can be obtained by "handle pruning". That is, we start with a string of terminals $w$ to be parsed. If $w$  is a sentence of the grammar at hand, then let $w  = \gamma_n$, where $\gamma_n$ is the n-th right-sentential form of some as yet unknown rightmost derivation
+
 $$
 S = \gamma_0 \underset{rm}\implies \gamma_1 \underset{rm}\implies  \gamma_2 \underset{rm}\implies\dots\underset{rm}\implies \gamma_n = w
 $$
@@ -1096,7 +1122,8 @@ We then repeat this process. That is, we locate the handle $\beta_{n-1}$ in $\ga
 
 Shift-reduce parsing is a form of bottom-up parsing in which a stack holds grammar symbols and an input buffer holds the rest of the string to be parsed. As we shall see, the handle always appears at the top of the stack just before it is identified as the handle.
 
-We use \$ to mark the bottom of the stack and also the right end of the input. Conventionally, when discussing bottom-up parsing, we show the top of the stack on the right, rather than on the left as we did for top-down parsing. Initially, the stack is empty, and the string $w$  is on the input, as follows:
+We use $\$$ to mark the bottom of the stack and also the right end of the input. Conventionally, when discussing bottom-up parsing, we show the top of the stack on the right, rather than on the left as we did for top-down parsing. Initially, the stack is empty, and the string $w$  is on the input, as follows:
+
 $$
 \begin{array}{lr}
 \text{STACK}&\text{INPUT}\\
@@ -1105,6 +1132,7 @@ $$
 $$
 
 During a left-to-right scan of the input string, the parser shifts zero or more input symbols onto the stack, until it is ready to reduce a string $\beta$ of grammar symbols on top of the stack. It then reduces $\beta$ to the head of the appropriate production. The parser repeats this cycle until it has detected an error or until the stack contains the start symbol and the input is empty:
+
 $$
 \begin{array}{lr}
 \text{STACK}&\text{INPUT}\\
@@ -1113,6 +1141,7 @@ $$
 $$
 
 Upon entering this configuration, the parser halts and announces successful completion of parsing. Figure 4.28 steps through the actions a shift-reduce parser might take in parsing the input string $\textbf{id}_1 * \textbf{id}_2$ according to the expression grammar (4.1).
+
 $$
 \begin{array}{lrl}
 \textbf{STACK} & \textbf{INPUT} & \textbf{ACTION}\\
@@ -1133,13 +1162,13 @@ Figure 4.28: Configurations of a shift-reduce parser on input $\textbf{id}_1 * \
 
 While the primary operations are shift and reduce, there are actually four possible actions a shift-reduce parser can make: (1) shift, (2) reduce, (3) accept, and (4) error.
 
-1.  *Shift*. Shift the next input symbol onto the top of the stack.
+1. *Shift*. Shift the next input symbol onto the top of the stack.
 
-2.  *Reduce*. The right end of the string to be reduced must be at the top of the stack. Locate the left end of the string within the stack and decide with what nonterminal to replace the string.
+2. *Reduce*. The right end of the string to be reduced must be at the top of the stack. Locate the left end of the string within the stack and decide with what nonterminal to replace the string.
 
-3.  *Accept*. Announce successful completion of parsing.
+3. *Accept*. Announce successful completion of parsing.
 
-4.  *Error*. Discover a syntax error and call an error recovery routine.
+4. *Error*. Discover a syntax error and call an error recovery routine.
 
 The use of a stack in shift-reduce parsing is justified by an important fact: the handle will always eventually appear on top of the stack, never inside. This fact can be shown by considering the possible forms of two successive steps in any rightmost derivation. Figure 4.29 illustrates the two possible cases. In case (1), $A$ is replaced by $\beta B y$, and then the rightmost nonterminal $B$ in the body $\beta B y$ is replaced by $\gamma$. In case (2), $A$ is again expanded first, but this time the body is a string $y$ of terminals only. The next rightmost nonterminal $B$ will be somewhere to the left of $y$.
 
@@ -1212,8 +1241,6 @@ we cannot tell whether $\textbf{if } expr \textbf{ then }stmt$ is the handle, no
 
 Note that shift-reduce parsing can be adapted to parse certain ambiguous grammars, such as the if-then-else grammar above. If we resolve the shift/reduce conflict on **else** in favor of shifting, the parser will behave as we expect, associating each **else** with the previous unmatched **then**. We discuss parsers for such ambiguous grammars in Section 4.8.$\Box$
 
-
-
 Another common setting for conflicts occurs when we know we have a handle, but the stack contents and the next input symbol are insufficient to determine which production should be used in a reduction. The next example illustrates this situation.
 
 **Example 4.39:** Suppose we have a lexical analyzer that returns the token name **id** for all names, regardless of their type. Suppose also that our language invokes procedures by giving their names, with parameters surrounded by parentheses, and that arrays are referenced by the same syntax. Since the translation of indices in array references and parameters in procedure calls are different, we want to use different productions to generate lists of actual parameters and indices. Our grammar might therefore have (among others) productions such as those in Fig. 4.30.
@@ -1256,7 +1283,6 @@ $$
 or in the configuration above. In the former case, we choose reduction by production (5); in the latter case by production (7). Notice how the third symbol from the top of the stack determines the reduction to be made, even though it is not involved in the reduction. Shift-reduce parsing can utilize information far down in the stack to guide the parse.$\Box$
 
 
-
 ## 4.6 Introduction to LR Parsing: Simple LR
 
 The most prevalent type of bottom-up parser today is based on a concept called LR($k$) parsing; the "L" is for left-to-right scanning of the input, the "R" for constructing a rightmost derivation in reverse, and the $k$ for the number of input symbols of lookahead that are used in making parsing decisions. The cases $k = 0$ or $k = 1$ are of practical interest, and we shall only consider LR parsers with $k \le 1$ here. When ($k$) is omitted, $k$ is assumed to be 1.
@@ -1267,7 +1293,7 @@ Section 4.7 introduces two, more complex methods canonical-LR and LALR that are 
 
 ### 4.6.1 Why LR Parsers?
 
-LR parsers are table-driven, much like the nonrecursive LL parsers of Section 4.4.4. A grammar for which we can construct a parsing table using one of the methods in this section and the next is said to be an LR grammar. Intuitively, for a grammar to be LR it is sufficient that a left-to-right shift-reduce parser be able to recognize handles of right-sentential forms when they appear on top of the stack.
+LR parsers are table-driven, much like the nonrecursive LL parsers of Section 4.4.4. A grammar for which we can construct a parsing table using one of the methods in this section and the next is said to be an *LR grammar*. Intuitively, for a grammar to be LR it is sufficient that a left-to-right shift-reduce parser be able to recognize handles of right-sentential forms when they appear on top of the stack.
 
 LR parsing is attractive for a variety of reasons:
 
@@ -1277,15 +1303,15 @@ LR parsing is attractive for a variety of reasons:
 
 -   An LR parser can detect a syntactic error as soon as it is possible to do so on a left-to-right scan of the input.
 
--   The class of grammars that can be parsed using LR methods is a proper superset of the class of grammars that can be parsed with predictive or LL methods. For a grammar to be LR($k$), we must be able to recognize the occurrence of the right side of a production in a right-sentential form, with k input symbols of lookahead. This requirement is far less stringent than that for LL($k$) grammars where we must be able to recognize the use of a production seeing only the first $k$ symbols of what its right side derives. Thus, it should not be surprising that LR grammars can describe more languages than LL grammars.
+-   The class of grammars that can be parsed using LR methods is a proper superset of the class of grammars that can be parsed with predictive or LL methods. For a grammar to be LR($k$), we must be able to recognize the occurrence of the right side of a production in a right-sentential form, with $k$ input symbols of lookahead. This requirement is far less stringent than that for LL($k$) grammars where we must be able to recognize the use of a production seeing only the first $k$ symbols of what its right side derives. Thus, it should not be surprising that LR grammars can describe more languages than LL grammars.
 
 The principal drawback of the LR method is that it is too much work to construct an LR parser by hand for a typical programming-language grammar. A specialized tool, an LR parser generator, is needed. Fortunately, many such generators are available, and we shall discuss one of the most commonly used ones, Yacc, in Section 4.9. Such a generator takes a context-free grammar and automatically produces a parser for that grammar. If the grammar contains ambiguities or other constructs that are difficult to parse in a left-to-right scan of the input, then the parser generator locates these constructs and provides detailed diagnostic messages.
 
-### 4.6.2 Items and the LR (0) Automaton
+### 4.6.2 Items and the LR(0) Automaton
 
-How does a shift-reduce parser know when to shift and when to reduce? For example, with stack contents \$ $T$ and next input symbol $ * $ in Fig. 4.28, how does the parser know that $T$ on the top of the stack is not a handle, so the appropriate action is to shift and not to reduce $T$ to $E$?
+How does a shift-reduce parser know when to shift and when to reduce? For example, with stack contents $\$T$ and next input symbol $*$ in Fig. 4.28, how does the parser know that $T$ on the top of the stack is not a handle, so the appropriate action is to shift and not to reduce $T$ to $E$?
 
-An LR parser makes shift-reduce decisions by maintaining states to keep track of where we are in a parse. States represent sets of "items". An LR(0) item (item for short) of a grammar G is a production of G with a dot at some position of the body. Thus, production $A \to XYZ$ yields the four items
+An LR parser makes shift-reduce decisions by maintaining states to keep track of where we are in a parse. States represent sets of "items". An *LR(0)​ item* (item for short) of a grammar G is a production of G with a dot at some position of the body. Thus, production $A \to XYZ$ yields the four items
 
 $$
 \begin{array}{lll}
@@ -1298,25 +1324,29 @@ $$
 
 The production $A \to \epsilon$ generates only one item, $A \to \cdot$.
 
-#### Representing Item Sets
+---
+
+##### Representing Item Sets
 
 A parser generator that produces a bottom-up parser may need to represent items and sets of items conveniently. Note that an item can be represented by a pair of integers, the first of which is the number of one of the productions of the underlying grammar, and the second of which is the position of the dot. Sets of items can be represented by a list of these pairs. However, as we shall see, the necessary sets of items often include "closure" items, where the dot is at the beginning of the body. These can always be reconstructed from the other items in the set, and we do not have to include them in the list.
 
+---
+
 Intuitively, an item indicates how much of a production we have seen at a given point in the parsing process. For example, the item $A \to \cdot XYZ$ indicates that we hope to see a string derivable from $XYZ$ next on the input. Item $A \to X\cdot YZ$ indicates that we have just seen on the input a string derivable from $X$ and that we hope next to see a string derivable from $YZ$. Item $A \to XYZ\cdot$ indicates that we have seen the body $XYZ$ and that it may be time to reduce $XYZ$ to $A$.
 
-One collection of sets of LR(0) items, called the canonical LR(0) collection, provides the basis for constructing a deterministic finite automaton that is used to make parsing decisions. Such an automaton is called an LR(0) *automaton*.^3^ In particular, each state of the LR(0) automaton represents a set of items in the canonical LR(0) collection. The automaton for the expression grammar (4.1), shown in Fig. 4.31, will serve as the running example for discussing the canonical LR(0) collection for a grammar.
+One collection of sets of LR(0) items, called the *canonical* LR(0) collection, provides the basis for constructing a deterministic finite automaton that is used to make parsing decisions. Such an automaton is called an *LR(0) automaton*.[^3] In particular, each state of the LR(0) automaton represents a set of items in the canonical LR(0) collection. The automaton for the expression grammar (4.1), shown in Fig. 4.31, will serve as the running example for discussing the canonical LR(0) collection for a grammar.
 
-To construct the canonical LR(0) collection for a grammar, we define an augmented grammar and two functions, CLOSURE and GOTO. If $G$ is a grammar with start symbol $S$, then $G'$, the augmented grammar for $G$, is $G$ with a new start symbol $S'$ and production $S' \to S$. The purpose of this new starting production is to indicate to the parser when it should stop parsing and announce acceptance of the input. That is, acceptance occurs when and only when the parser is about to reduce by $S' \to S$.
+To construct the canonical LR(0) collection for a grammar, we define an augmented grammar and two functions, CLOSURE and GOTO. If $G$ is a grammar with start symbol $S$, then $G'$, the *augmented grammar* for $G$, is $G$ with a new start symbol $S'$ and production $S' \to S$. The purpose of this new starting production is to indicate to the parser when it should stop parsing and announce acceptance of the input. That is, acceptance occurs when and only when the parser is about to reduce by $S' \to S$.
+
+[^3]: Technically, the automaton misses being deterministic according to the definition of Section 3.6.4, because we do not have a dead state, corresponding to the empty set of items. As a result, there are some state input pairs for which no next state exists.
 
 #### Closure of Item Sets
 
-If I is a set of items for a grammar $G$, then CLOSURE($I$) is the set of items constructed from I by the two rules:
+If $I$ is a set of items for a grammar $G$, then CLOSURE($I$) is the set of items constructed from $I$ by the two rules:
 
 1.  Initially, add every item in $I$ to CLOSURE($I$).
 
-2.  If $A \to a\cdot B\beta$  is in CLOSURE($I$) and $B \to \gamma$  is a production, then add the item $B \to \gamma$  to CLOSURE(I), if it is not already there. Apply this rule until no more new items can be added to CLOSURE($I$).
-
-^3^Technically, the automaton misses being deterministic according to the definition of Section 3.6.4, because we do not have a dead state, corresponding to the empty set of items. As a result, there are some state input pairs for which no next state exists.
+2.  If $A \to a\cdot B\beta$  is in CLOSURE($I$) and $B \to \gamma$  is a production, then add the item $B \to \gamma$  to CLOSURE($I$), if it is not already there. Apply this rule until no more new items can be added to CLOSURE($I$).
 
 ![](images/figure4.31.png)
 
@@ -1325,22 +1355,24 @@ Figure 4.31: LR(0) automaton for the expression grammar (4.1)
 Intuitively, $A \to a\cdot B\beta$ in CLOSURE($I$) indicates that, at some point in the parsing process, we think we might next see a substring derivable from $B\beta$ as input. The substring derivable from $B\beta$ will have a prefix derivable from $B$ by applying one of the $B$-productions. We therefore add items for all the $B$-productions; that is, if $B \to \gamma$  is a production, we also include $B \to \cdot\gamma$ in CLOSURE($I$).
 
 **Example 4.40:** Consider the augmented expression grammar:
+
 $$
 \begin{array}{lrl}
 E'&\to& E \\
-E &\to& E+T|T \\
-T &\to& T*F|F \\
-F &\to& (E)|id
+E &\to& E+T\ |\ T \\
+T &\to& T*F\ |\ F \\
+F &\to& (E)\ |\ \textbf{id}
 \end{array}
 $$
-If I is the set of one item {\[ $E' \to \cdot E$\]}, then CLOSURE($I$) contains the set of items $I_0$ in Fig. 4.31.
+
+If $I$ is the set of one item $\{[ E' \to \cdot E\ ]\}$, then CLOSURE($I$) contains the set of items $I_0$ in Fig. 4.31.
 
 To see how the closure is computed, $E' \to \cdot E$ is put in CLOSURE($I$) by rule (1). Since there is an $E$ immediately to the right of a dot, we add the $E$-productions with dots at the left ends: $E \to \cdot E + T$ and $E \to \cdot T$. Now there is a $T$ immediately to the right of a dot in the latter item, so we add $T \to \cdot T * F$ and $T \to \cdot F$. Next, the $F$ to the right of a dot forces us to add $F \to \cdot(E)$ and $F \to \cdot \textbf{id}$, but no other items need to be added. $\Box$
 
-The closure can be computed as in Fig. 4.32. A convenient way to implement the function closure is to keep a boolean array added, indexed by the nonterminals of $G$, such that added\[B\] is set to true if and when we add the item $B \to \cdot\gamma$  for each B-production $B \to \gamma$ .
+The closure can be computed as in Fig. 4.32. A convenient way to implement the function *closure* is to keep a boolean array *added*, indexed by the nonterminals of $G$, such that *added*\[B\] is set to **true** if and when we add the item $B \to \cdot\gamma$  for each $B$-production $B \to \gamma$ .
 
 SetOfltems CLOSURE (I) {
-J I;
+J = I;
 repeat
 for (each item $A \to a\cdot B\beta$  in $J$ )
 for (each production $B \to \gamma$  of $G$)
@@ -1350,34 +1382,36 @@ return $J$; }
 
 Figure 4.32: Computation of CLOSURE
 
-Note that if one B-production is added to the closure of I with the dot at the left end, then all $B$-productions will be similarly added to the closure. Hence, it is not necessary in some circumstances actually to list the items $B \to \cdot\gamma$  added to I by CLOSURE. A list of the nonterminals $B$ whose productions were so added will suffice. We divide all the sets of items of interest into two classes:
+Note that if one $B$-production is added to the closure of $I$ with the dot at the left end, then all $B$-productions will be similarly added to the closure. Hence, it is not necessary in some circumstances actually to list the items $B \to \cdot\gamma$  added to $I$ by CLOSURE. A list of the nonterminals $B$ whose productions were so added will suffice. We divide all the sets of items of interest into two classes:
 
-1.  *Kernel items:* the initial item, $S' \to \cdot S$, and all items whose dots are not at the left end.
+1.  *Kernel items*: the initial item, $S' \to \cdot S$, and all items whose dots are not at the left end.
 
-2.  *Nonkernel items:* all items with their dots at the left end, except for $S' \to \cdot S$.
+2.  *Nonkernel items*: all items with their dots at the left end, except for $S' \to \cdot S$.
 
 Moreover, each set of items of interest is formed by taking the closure of a set of kernel items; the items added in the closure can never be kernel items, of course. Thus, we can represent the sets of items we are really interested in with very little storage if we throw away all nonkernel items, knowing that they could be regenerated by the closure process. In Fig. 4.31, nonkernel items are in the shaded part of the box for a state.
 
 #### The Function GOTO
 
-The second useful function is GOTO(I, X) where I is a set of items and X is a grammar symbol. GOTO(I, X) is defined to be the closure of the set of all items \[$A\to \alpha X\cdot\beta$ \] such that \[$A\to \alpha\cdot X\beta$ \] is in I. Intuitively, the GOTO function is used to define the transitions in the LR(0) automaton for a grammar. The states of the automaton correspond to sets of items, and GOTO(I, X) specifies the transition from the state for $I$ under input $X$.
+The second useful function is GOTO($I$, $X$) where $I$ is a set of items and $X$ is a grammar symbol. GOTO($I$, $X$) is defined to be the closure of the set of all items $[A \to \alpha X \cdot \beta ]$ such that $[A\to \alpha\cdot X\beta ]$ is in $I$. Intuitively, the GOTO function is used to define the transitions in the LR(0) automaton for a grammar. The states of the automaton correspond to sets of items, and GOTO($I$, $X$) specifies the transition from the state for $I$ under input $X$.
 
-**Example 4.41:** If I is the set of two items {\[$E' \to E \cdot$\], \[$E \to E \cdot + T$\]}, then GOTO(I, +) contains the items
+**Example 4.41:** If $I$ is the set of two items $\{[E' \to E \cdot ], [ E \to E \cdot + T]\}$, then GOTO($I$, $+$) contains the items
+
 $$
 \begin{array}{lrl}
 E &\to&  E + \cdot T\\
 T &\to&  \cdot T * F\\
 T &\to&  \cdot F\\
 F &\to&  \cdot ( E )\\
-F &\to&  \cdot id
+F &\to&  \cdot \textbf{id}
 \end{array}
 $$
-We computed GOTO (I, +) by examining I for items with + immediately to the right of the dot. $E' \to E \cdot$ is not such an item, but $E \to E \cdot + T$ is. We moved the dot over the + to get $E \to E + \cdot T$ and then took the closure of this singleton set. $\Box$
+
+We computed GOTO ($I$, $+$) by examining $I$ for items with $+$ immediately to the right of the dot. $E' \to E \cdot$ is not such an item, but $E \to E \cdot + T$ is. We moved the dot over the $+$ to get $E \to E + \cdot T$ and then took the closure of this singleton set. $\Box$
 
 We are now ready for the algorithm to construct C, the canonical collection of sets of LR(0) items for an augmented grammar G' the algorithm is shown in Fig. 4.33.
 
 void items( G') {
-C = CLOSURE ({\[$S' \to \cdot S$\]});
+C = CLOSURE ($\{[S' \to \cdot S]\}$);
 repeat
 for(each set of items I in C)
 for(each grammar symbol X)
@@ -1387,7 +1421,7 @@ until no new sets of items are added to C on a round;
 }
 Figure 4.33: Computation of the canonical collection of sets of LR(0) items
 
-**Example 4.42:** The canonical collection of sets of LR(0) items for grammar (4.1) and the GOTO function are shown in Fig. 4.31. GOTO is encoded by the transitions in the figure.$\Box$
+**Example 4.42:** The canonical collection of sets of LR(0) items for grammar (4.1) and the GOTO function are shown in Fig. 4.31. GOTO is encoded by the transitions in the figure. $\Box$
 
 #### Use of the LR(0) Automaton
 
@@ -1395,33 +1429,35 @@ The central idea behind "Simple LR", or SLR, parsing is the construction from th
 
 The start state of the LR(0) automaton is CLOSURE({\[$S' \to \cdot S$\]}), where $S'$ is the start symbol of the augmented grammar. All states are accepting states. We say "state j" to refer to the state corresponding to the set of items $I_j$.
 
-How can LR(0) automaton help with shift-reduce decisions? Shift-reduce decisions can be made as follows. Suppose that the string $\gamma$ of grammar symbols takes the LR(0) automaton from the start state 0 to some state j. Then, shift on next input symbol a if state j has a transition on a. Otherwise, we choose to reduce; the items in state j will tell us which production to use.
+How can LR(0) automaton help with shift-reduce decisions? Shift-reduce decisions can be made as follows. Suppose that the string $\gamma$ of grammar symbols takes the LR(0) automaton from the start state 0 to some state j. Then, shift on next input symbol a if state j has a transition on $a$. Otherwise, we choose to reduce; the items in state j will tell us which production to use.
 
 The LR-parsing algorithm to be introduced in Section 4.6.3 uses its stack to keep track of states as well as grammar symbols; in fact, the grammar symbol can be recovered from the state, so the stack holds states. The next example gives a preview of how an LR(0) automaton and a stack of states can be used to make shift-reduce parsing decisions.
 
-**Example 4.43:** Figure 4.34 illustrates the actions of a shift-reduce parser on input $id * id$, using the LR(0) automaton in Fig. 4.31. We use a stack to hold states; for clarity, the grammar symbols corresponding to the states on the stack appear in column SYMBOLS. At line (1), the stack holds the start state 0 of the automaton; the corresponding symbol is the bottom-of-stack marker \$.
+**Example 4.43:** Figure 4.34 illustrates the actions of a shift-reduce parser on input $\textbf{id} * \textbf{id}$, using the LR(0) automaton in Fig. 4.31. We use a stack to hold states; for clarity, the grammar symbols corresponding to the states on the stack appear in column SYMBOLS. At line (1), the stack holds the start state 0 of the automaton; the corresponding symbol is the bottom-of-stack marker $\$$.
+
 $$
 \begin{array}{c|llrl}
-LINE   &STACK    &SYMBOLS     &INPUT       &ACTION      \\
+\text{LINE}   &\text{STACK}    &\text{SYMBOLS}     &\text{INPUT}       &\text{ACTION}      \\
 \hline
-(1)    &0        &\$          &id* id \$   &\text{shift to 5}  \\
-(2)    &0|5      &\$ id       &  * id \$   &\text{reduce by }F\to id \\
-(3)    &0|3      &\$ F        &  * id \$   &\text{reduce by }T\to F \\
-(4)    &0|2      &\$ T        &  * id \$   &\text{shift to 7 }\\
-(5)    &0|2|7    &\$ T *      &    id \$   &\text{shift to 5 }\\
-(6)    &0|2|7|5  &\$ T * id   &       \$   &\text{reduce by }F\to id \\
-(7)    &0|2|7|10 &\$ T * F    &       \$   &\text{reduce by }T\to T*F \\
-(8)    &0|2      &\$ T        &       \$   &\text{reduce by }E\to T \\
+(1)    &0        &\$          &\textbf{id}  * \textbf{id} \$   &\text{shift to 5}  \\
+(2)    &0|5      &\$ \textbf{id}       &  * \textbf{id} \$   &\text{reduce by }F \to \textbf{id} \\
+(3)    &0|3      &\$ F        &  * \textbf{id} \$   &\text{reduce by }T \to F \\
+(4)    &0|2      &\$ T        &  * \textbf{id} \$   &\text{shift to 7 }\\
+(5)    &0|2|7    &\$ T *      &    \textbf{id} \$   &\text{shift to 5 }\\
+(6)    &0|2|7|5  &\$ T * \textbf{id}   &       \$   &\text{reduce by }F \to \textbf{id} \\
+(7)    &0|2|7|10 &\$ T * F    &       \$   &\text{reduce by }T \to T * F \\
+(8)    &0|2      &\$ T        &       \$   &\text{reduce by }E \to T \\
 (9)    &0|1      &\$ E        &       \$   &\text{accept}
 \end{array}
 $$
-Figure 4.34: The parse of $id * id$
 
-The next input symbol is id and state 0 has a transition on id to state 5. We therefore shift. At line (2), state 5 (symbol id) has been pushed onto the stack. There is no transition from state 5 on input \*, so we reduce. From item \[$F \to id \cdot$\] in state 5, the reduction is by production $F \to id$.
+Figure 4.34: The parse of $\textbf{id}  * \textbf{id}$
 
-With symbols, a reduction is implemented by popping the body of the production from the stack (on line (2), the body is $id$) and pushing the head of the production (in this case, $F$). With states, we pop state 5 for symbol $id$, which brings state 0 to the top and look for a transition on F, the head of the production. In Fig. 4.31, state 0 has a transition on F to state 3, so we push state 3, with corresponding symbol $F$; see line (3).
+The next input symbol is **id** and state 0 has a transition on **id** to state 5. We therefore shift. At line (2), state 5 (symbol **id**) has been pushed onto the stack. There is no transition from state 5 on input $*$, so we reduce. From item $[F \to \textbf{id} \cdot]$ in state 5, the reduction is by production $F \to \textbf{id}$.
 
-As another example, consider line (5), with state 7 (symbol \* ) on top of the stack. This state has a transition to state 5 on input id, so we push state 5 (symbol id). State 5 has no transitions, so we reduce by $F \to id$. When we pop state 5 for the body id, state 7 comes to the top of the stack. Since state 7 has a transition on $F$ to state 10, we push state 10 (symbol F). $\Box$
+With symbols, a reduction is implemented by popping the body of the production from the stack (on line (2), the body is **id**) and pushing the head of the production (in this case, $F$). With states, we pop state 5 for symbol **id**, which brings state 0 to the top and look for a transition on $F$, the head of the production. In Fig. 4.31, state 0 has a transition on $F$ to state 3, so we push state 3, with corresponding symbol $F$; see line (3).
+
+As another example, consider line (5), with state 7 (symbol $*$ ) on top of the stack. This state has a transition to state 5 on input **id**, so we push state 5 (symbol **id**). State 5 has no transitions, so we reduce by $F \to \textbf{id}$. When we pop state 5 for the body **id**, state 7 comes to the top of the stack. Since state 7 has a transition on $F$ to state 10, we push state 10 (symbol $F$). $\Box$
 
 ### 4.6.3 The LR-Parsing Algorithm
 
@@ -1431,9 +1467,9 @@ A schematic of an LR parser is shown in Fig. 4.35. It consists of an input, an o
 
 Figure 4.35: Model of an LR parser
 
-The stack holds a sequence of states, $s_0s_1\dots s_m$, where $s_m$ is on top. In the SLR method, the stack holds states from the LR(0) automaton; the canonical LR and LALR methods are similar. By construction, each state has a corresponding grammar symbol. Recall that states correspond to sets of items, and that there is a transition from state $i$ to state $j$ if GOTO(Ii, X) = $I_j$. All transitions to state j must be for the same grammar symbol $X$. Thus, each state, except the start state 0, has a unique grammar symbol associated with it. ^4^
+The stack holds a sequence of states, $s_0s_1\dots s_m$, where $s_m$ is on top. In the SLR method, the stack holds states from the LR(0) automaton; the canonical LR and LALR methods are similar. By construction, each state has a corresponding grammar symbol. Recall that states correspond to sets of items, and that there is a transition from state $i$ to state $j$ if GOTO(Ii, X) = $I_j$. All transitions to state j must be for the same grammar symbol $X$. Thus, each state, except the start state 0, has a unique grammar symbol associated with it. [^4]
 
-^4^The converse need not hold; that is, more than one state may have the same grammar symbol. See for example states 1 and 8 in the LR(0) automaton in Fig. 4.31, which are both entered by transitions on $E$, or states 2 and 9, which are both entered by transitions on $T$.
+[^4]: The converse need not hold; that is, more than one state may have the same grammar symbol. See for example states 1 and 8 in the LR(0) automaton in Fig. 4.31, which are both entered by transitions on $E$, or states 2 and 9, which are both entered by transitions on $T$.
 
 #### Structure of the LR Parsing Table
 
@@ -1513,6 +1549,7 @@ else call error-recovery routine;
 Figure 4.36: LR-parsing program
 
 **Example 4.45:** Figure 4.37 shows the ACTION and GOTO functions of an LR-parsing table for the expression grammar (4.1), repeated here with the productions numbered:
+
 $$
 \begin{array}{llll}
 (1) &E&\to& E+T\\
@@ -1520,14 +1557,15 @@ $$
 (3) &T&\to& T*F\\
 (4) &T&\to& F\\
 (5) &F&\to& (E)\\
-(6) &F&\to& id
+(6) &F&\to& \textbf{id}
 \end{array}
 $$
+
 The codes for the actions are:
 
-1.  $si$ means shift and stack state i,
+1.  $s_i$ means shift and stack state i,
 
-2.  $rj$ means reduce by the production numbered j,
+2.  $r_j$ means reduce by the production numbered j,
 
 3.  acc means accept,
 
@@ -1552,9 +1590,9 @@ Note that the value of GOTO\[s, a\] for terminal a is found in the ACTION field 
 
 Figure 4.37: Parsing table for expression grammar
 
-On input $id * id + id$, the sequence of stack and input contents is shown in Fig. 4.38. Also shown for clarity, are the sequences of grammar symbols corresponding to the states held on the stack. For example, at line (1) the LR parser is in state 0, the initial state with no grammar symbol, and with id the first input symbol. The action in row 0 and column id of the action field of Fig. 4.37 is s5, meaning shift by pushing state 5. That is what has happened at line (2): the state symbol 5 has been pushed onto the stack, and id has been removed from the input.
+On input $\textbf{id} * \textbf{id} + \textbf{id}$, the sequence of stack and input contents is shown in Fig. 4.38. Also shown for clarity, are the sequences of grammar symbols corresponding to the states held on the stack. For example, at line (1) the LR parser is in state 0, the initial state with no grammar symbol, and with id the first input symbol. The action in row 0 and column **id** of the action field of Fig. 4.37 is $s_5$, meaning shift by pushing state 5. That is what has happened at line (2): the state symbol 5 has been pushed onto the stack, and id has been removed from the input.
 
-Then, $ * $ becomes the current input symbol, and the action of state 5 on input $ * $ is to reduce by $F \to id$. One state symbol is popped off the stack. State 0 is then exposed. Since the GOTO of state 0 on F is 3, state 3 is pushed onto the stack. We now have the configuration in line (3). Each of the remaining moves is determined similarly.$\Box$
+Then, $*$ becomes the current input symbol, and the action of state 5 on input $*$ is to reduce by $F \to \textbf{id}$. One state symbol is popped off the stack. State 0 is then exposed. Since the GOTO of state 0 on F is 3, state 3 is pushed onto the stack. We now have the configuration in line (3). Each of the remaining moves is determined similarly. $\Box$
 
 ### 4.6.4 Constructing SLR-Parsing Tables
 
@@ -1564,22 +1602,22 @@ The SLR method begins with LR(0) items and LR(0) automata, introduced in Section
 
 |      | STACK | SYMBOLS |        INPUT | ACTION                 |
 | :--: | :---- | :------ | -----------: | :--------------------- |
-|  1   | 0,    |         | $id*id+id$\$ | shift                  |
-|  2   | 0,    | $id$    |   $*id+id$\$ | reduce by $F\to id$    |
-|  3   | 0,    | $F$     |   $*id+id$\$ | reduce by $T\to F$     |
-|  4   | 0,    | $T$     |   $*id+id$\$ | shift                  |
-|  5   | 0,    | $T*$    |    $id+id$\$ | shift                  |
-|  6   | 0,    | $T*id$  |      $+id$\$ | reduce by $F\to id$    |
-|  7   | 0,    | $T*F$   |      $+id$\$ | reduce by $T\to T * F$ |
-|  8   | 0,    | $T$     |      $+id$\$ | reduce by $E\to T$     |
-|  9   | 0,    | $E$     |      $+id$\$ | shift                  |
-|  10  | 0,    | $E+$    |       $id$\$ | shift                  |
-|  11  | 0,    | $E+id$  |           \$ | reduce by $F\to id$    |
-|  12  | 0,    | $E+F$   |           \$ | reduce by $T\to F$     |
-|  13  | 0,    | $E+T$   |           \$ | reduce by $E\to E + T$ |
-|  14  | 0,    | $E$     |           \$ | accept                 |
+|  1   | 0    |         | $\textbf{id}*\textbf{id}+\textbf{id}$\$ | shift                  |
+|  2   | 0,5 | $\textbf{id}$    |   $*\textbf{id}+\textbf{id}$\$ | reduce by $F\to \textbf{id}$    |
+|  3   | 0,3  | $F$     |   $*\textbf{id}+\textbf{id}$\$ | reduce by $T\to F$     |
+|  4   | 0,2  | $T$     |   $*\textbf{id}+\textbf{id}$\$ | shift                  |
+|  5   | 0,2,7 | $T*$    |    $\textbf{id}+\textbf{id}$\$ | shift                  |
+|  6   | 0,2,7,5 | $T*\textbf{id}$  |      $+\textbf{id}$\$ | reduce by $F\to \textbf{id}$    |
+|  7   | 0,2,7,10 | $T*F$   |      $+\textbf{id}$\$ | reduce by $T\to T * F$ |
+|  8   | 0,2  | $T$     |      $+\textbf{id}$\$ | reduce by $E\to T$     |
+|  9   | 0,1  | $E$     |      $+\textbf{id}$\$ | shift                  |
+|  10  | 0,1,6 | $E+$    |       $\textbf{id}$\$ | shift                  |
+|  11  | 0,1,6,5 | $E+\textbf{id}$  |           \$ | reduce by $F\to \textbf{id}$    |
+|  12  | 0,1,6,3 | $E+F$   |           \$ | reduce by $T\to F$     |
+|  13  | 0,1,6,9 | $E+T$   |           \$ | reduce by $E\to E + T$ |
+|  14  | 0,1   | $E$     |           \$ | accept                 |
 
-Figure 4.38: Moves of an LR parser on $id * id + id$
+Figure 4.38: Moves of an LR parser on $\textbf{id} * \textbf{id} + \textbf{id}$
 
 The ACTION and GOTO entries in the parsing table are then constructed using the following algorithm. It requires us to know FOLLOW(A) for each nonterminal A of a grammar (see Section 4.4).
 
@@ -1591,7 +1629,7 @@ The ACTION and GOTO entries in the parsing table are then constructed using the 
 
 **METHOD:**
 
-1.  Construct C {$I_0, I_1,\dots , I_n$}, the collection of sets of LR(0) items for $G'$.
+1.  Construct C = {$I_0, I_1,\dots , I_n$}, the collection of sets of LR(0) items for $G'$.
 
 2.  State i is constructed from Ii . The parsing actions for state i are determined as follows:
 
@@ -1611,9 +1649,9 @@ If any conflicting actions result from the above rules, we say the grammar is no
 
 $\Box$
 
-The parsing table consisting of the ACTION and GOTO functions determined by Algorithm 4.46 is called the SLR(1) table for $G$. An LR parser using the SLR(1) table for $G$ is called the SLR (1) parser for $G$, and a grammar having an SLR (1) parsing table is said to be SLR(1). We usually omit the "(1)" after the "SLR", since we shall not deal here with parsers having more than one symbol of lookahead.
+The parsing table consisting of the ACTION and GOTO functions determined by Algorithm 4.46 is called the SLR(1) table for $G$. An LR parser using the SLR(1) table for $G$ is called the SLR(1) parser for $G$, and a grammar having an SLR(1) parsing table is said to be SLR(1). We usually omit the "(1)" after the "SLR", since we shall not deal here with parsers having more than one symbol of lookahead.
 
-**Example 4.47:** Let us construct the SLR table for the augmented expression grammar. The canonical collection of sets of LR (0) items for the grammar was shown in Fig. 4.31. First consider the set of items $I_0$:
+**Example 4.47:** Let us construct the SLR table for the augmented expression grammar. The canonical collection of sets of LR(0) items for the grammar was shown in Fig. 4.31. First consider the set of items $I_0$:
 $$
 \begin{array}{lll}
 E'&\to& \cdot E\\
@@ -1622,14 +1660,14 @@ E &\to& \cdot T\\
 T &\to& \cdot T*F\\
 T &\to& \cdot F\\
 F &\to& \cdot(E)\\
-F &\to& \cdot id
+F &\to& \cdot \textbf{id}
 \end{array}
 $$
-The item $F \to \cdot (E)$ gives rise to the entry ACTION\[O, (\] = shift 4, and the item $F \to \cdot id$ to the entry ACTION\[O, id\] = shift 5. Other items in $I_0$ yield no actions. Now consider $I_1$:
+The item $F \to \cdot (E)$ gives rise to the entry ACTION\[O, (\] = shift 4, and the item $F \to \cdot \textbf{id}$ to the entry ACTION\[O, id\] = shift 5. Other items in $I_0$ yield no actions. Now consider $I_1$:
 $$
 \begin{array}{lll}
 E'&\to& \cdot E \\
-E &\to& E\cdot+T
+E &\to& E\cdot + T
 \end{array}
 $$
 
@@ -1648,24 +1686,25 @@ $$
 The second item makes ACTION\[2, \*\] = shift 7. Continuing in this fashion we obtain the ACTION and GOTO tables that were shown in Fig. 4.31. In that figure, the numbers of productions in reduce actions are the same as the order in which they appear in the original grammar (4.1). That is, $E \to E + T$ is number 1, $E \to T$ is 2, and so on. $\Box$
 
 **Example 4.48:** Every SLR(1) grammar is unambiguous, but there are many unambiguous grammars that are not SLR(1). Consider the grammar with productions
+
 $$
 \begin{array}{lll}
-S&\to& L=R|R \\
-L&\to& *R|id \\
+S&\to& L\ =\ R\ |\ R \\
+L&\to& * R\ |\ \textbf{id} \\
 R&\to& L
 \end{array}
 $$
 
-Think of L and R as standing for l-value and r-value, respectively, and \* as an operator indicating "contents of".^5^ The canonical collection of sets of LR(0) items for grammar (4.49) is shown in Fig. 4.39.
+Think of L and R as standing for l-value and r-value, respectively, and \* as an operator indicating "contents of".[^5] The canonical collection of sets of LR(0) items for grammar (4.49) is shown in Fig. 4.39.
 
-^5^ As in Section 2.8.3, an l value designates a location and an r value is a value that can be stored in a location.
+[^5]: As in Section 2.8.3, an l value designates a location and an r value is a value that can be stored in a location.
 $$
 \begin{array}{llll}
 I_0:&S'&\to& \cdot S\\
    &S &\to& \cdot L=R\\
    &S &\to& \cdot R\\
    &S &\to& \cdot *R\\
-   &L &\to& \cdot id\\
+   &L &\to& \cdot \textbf{id}\\
    &R &\to& \cdot L\\
 I_1:&S'&\to& S\cdot\\
 I_2:&S &\to& L\cdot =R\\
@@ -1674,12 +1713,12 @@ I_3:&S &\to& R\cdot\\
 I_4:&L &\to& *\cdot R\\
    &R &\to& \cdot L\\
    &L &\to& \cdot *R\\
-   &L &\to& \cdot id\\
-I_5:&L &\to& id\cdot\\
+   &L &\to& \cdot \textbf{id}\\
+I_5:&L &\to& \textbf{id}\cdot\\
 I_6:&S &\to& L=\cdot R\\
    &R &\to& \cdot L\\
    &L &\to& \cdot *R\\
-   &L &\to& \cdot id\\
+   &L &\to& \cdot \textbf{id}\\
 I_7:&L &\to& *R\cdot \\
 I_8:&R &\to& L\cdot \\
 I_9:&S &\to& L=R\cdot
@@ -1697,32 +1736,41 @@ Grammar (4.49) is not ambiguous. This shift/reduce conflict arises from the fact
 Why can LR(0) automata be used to make shift-reduce decisions? The LR(0) automaton for a grammar characterizes the strings of grammar symbols that can appear on the stack of a shift-reduce parser for the grammar. The stack contents must be a prefix of a right-sentential form. If the stack holds $\alpha$ and the rest of the input is $x$, then a sequence of reductions will take $\alpha x$ to $S$. In terms of derivations, $S\underset{rm}{\overset*\implies} \alpha x$.
 
 Not all prefixes of right-sentential forms can appear on the stack, however, since the parser must not shift past the handle. For example, suppose
+
 $$
-E\underset{rm}{\overset*\implies} F*id\underset{rm}\implies (E)*id
+E\underset{rm}{\overset*\implies} F * \textbf{id} \underset{rm}\implies (E)*\textbf{id}
 $$
+
 Then, at various times during the parse, the stack will hold $($, $(E$, and $(E)$, but it must not hold $(E)*$, since $(E)$ is a handle, which the parser must reduce to F before shifting $*$ .
 
 The prefixes of right sentential forms that can appear on the stack of a shift reduce parser are called *viable prefixes*. They are defined as follows: a viable prefix is a prefix of a right-sentential form that does not continue past the right end of the rightmost handle of that sentential form. By this definition, it is always possible to add terminal symbols to the end of a viable prefix to obtain a right-sentential form.
 
-SLR parsing is based on the fact that LR(0) automata recognize viable prefixes. We say item $A \to \beta_1\beta_2$ is valid for a viable prefix $\alpha\beta_1$ if there is a derivation $S' \underset{rm}{\overset * \implies} \alpha Aw \underset{rm}\implies \alpha\beta_1\beta_2w$. In general, an item will be valid for many viable prefixes.
+SLR parsing is based on the fact that LR(0) automata recognize viable prefixes. We say item $A \to \beta_1\beta_2$ is valid for a viable prefix $\alpha\beta_1$ if there is a derivation $S' \underset{rm}{\overset * \implies} \alpha A w \underset{rm}\implies \alpha\beta_1\beta_2w$. In general, an item will be valid for many viable prefixes.
 
 The fact that $A \to \beta_1\beta_2$ is valid for $\alpha\beta_1$ tells us a lot about whether to shift or reduce when we find $\alpha\beta_1$ on the parsing stack. In particular, if $\beta_2\not=\epsilon$, then it suggests that we have not yet shifted the handle onto the stack, so shift is our move. If $\beta_2=\epsilon$, then it looks as if $A \to \beta_1$ is the handle, and we should reduce by this production. Of course, two valid items may tell us to do different things for the same viable prefix. Some of these conflicts can be resolved by looking at the next input symbol, and others can be resolved by the methods of Section 4.8, but we should not suppose that all parsing action conflicts can be resolved if the LR method is applied to an arbitrary grammar.
 
 We can easily compute the set of valid items for each viable prefix that can appear on the stack of an LR parser. In fact, it is a central theorem of LR-parsing theory that the set of valid items for a viable prefix $\gamma$  is exactly the set of items reached from the initial state along the path labeled $\gamma$  in the LR(0) automaton for the grammar. In essence, the set of valid items embodies all the useful information that can be gleaned from the stack. While we shall not prove this theorem here, we shall give an example.
 
+---
+
 #### Items as States of an NFA
 
 A nondeterministic finite automaton N for recognizing viable prefixes can be constructed by treating the items themselves as states. There is a transition from $A \to \alpha\cdot X\beta$  to $A \to \alpha X\cdot\beta$  labeled $X$, and there is a transition from $A \to \alpha \cdot B \beta$  to $B \to \cdot \gamma$  labeled $\epsilon$. Then CLOSURE($I$) for set of items (states of N) I is exactly the $\epsilon$-closure of a set of NFA states defined in Section 3.7.1. Thus, GOTO($I$, $X$) gives the transition from $I$ on symbol $X$ in the DFA constructed from $N$ by the subset construction. Viewed in this way, the procedure items($G'$) in Fig. 4.33 is just the subset construction itself applied to the NFA N with items as states.
 
+---
+
 **Example 4.50:** Let us consider the augmented expression grammar again, whose sets of items and GOTO function are exhibited in Fig. 4.31. Clearly, the string $E + T * $ is a viable prefix of the grammar. The automaton of Fig. 4.31 will be in state 7 after having read $E + T * $. State 7 contains the items
+
 $$
 \begin{array}{lll}
 T&\to& T*\cdot F\\
 F&\to& \cdot(E)\\
-F&\to& \cdot id
+F&\to& \cdot \textbf{id}
 \end{array}
 $$
+
 which are precisely the items valid for $E+T * $. To see why, consider the following three rightmost derivations
+
 $$
 \begin{array}{lll}
 E'&\underset{rm}\implies& E \\ 
@@ -1737,11 +1785,11 @@ E'&\underset{rm}\implies& E \\
 E'&\underset{rm}\implies& E \\
 &\underset{rm}\implies& E+T \\
 &\underset{rm}\implies& E+T*F \\
-&\underset{rm}\implies& E+T*id 
+&\underset{rm}\implies& E+T*\textbf{id}
 \end{array}
 $$
 
-The first derivation shows the validity of $T \to T * \cdot F$, the second the validity of $F \to \cdot(E)$, and the third the validity of $F \to \cdot id$. It can be shown that there are no other valid items for $E + T * $, although we shall not prove that fact here. $\Box$
+The first derivation shows the validity of $T \to T * \cdot F$, the second the validity of $F \to \cdot(E)$, and the third the validity of $F \to \cdot \textbf{id}$. It can be shown that there are no other valid items for $E + T * $, although we shall not prove that fact here. $\Box$
 
 ## 4.7 More Powerful LR Parsers
 
@@ -1755,7 +1803,7 @@ After introducing both these methods, we conclude with a discussion of how to co
 
 ### 4.7.1 Canonical LR(1) Items
 
-We shall now present the most general technique for constructing an LR parsing table from a grammar. Recall that in the SLR method, state i calls for reduction by $A \to \alpha$ if the set of items Ii contains item \[$A \to \alpha\cdot$\] and a is in FOLLOW($A$). In some situations, however, when state i appears on top of the stack, the viable prefix $\beta\alpha$ on the stack is such that $\beta A$ cannot be followed by a in any right-sentential form. Thus, the reduction by $A \to \alpha$ should be invalid on input $a$.
+We shall now present the most general technique for constructing an LR parsing table from a grammar. Recall that in the SLR method, state i calls for reduction by $A \to \alpha$ if the set of items $I_i$ contains item \[$A \to \alpha\cdot$\] and a is in FOLLOW($A$). In some situations, however, when state i appears on top of the stack, the viable prefix $\beta\alpha$ on the stack is such that $\beta A$ cannot be followed by a in any right-sentential form. Thus, the reduction by $A \to \alpha$ should be invalid on input $a$.
 
 **Example 4.51:** Let us reconsider Example 4.48, where in state 2 we had item $R \to L\cdot$, which could correspond to $A \to \alpha$ above, and a could be the $=$ sign, which is in FOLLOW($R$). Thus, the SLR parser calls for reduction by $R \to L$ in state 2 with = as the next input (the shift action is also called for, because of item $S \to L\cdot=R$ in state 2). However, there is no right-sentential form of the grammar in Example 4.48 that begins $R = \dots$. Thus state 2, which is the state corresponding to viable prefix $L$ only, should not really call for reduction of that $L$ to $R$. $\Box$
 
@@ -1772,6 +1820,7 @@ Formally, we say LR(1) item \[$A \to \alpha\cdot\beta$, a\] is valid for a viabl
 2.  Either $a$ is the first symbol of $w$, or $w$  is $\epsilon$ and $a$ is \$.
 
 **Example 4.52:** Let us consider the grammar
+
 $$
 \begin{array}{lll}
 S &\to& B B \\
