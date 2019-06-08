@@ -2103,7 +2103,7 @@ I_{89}: &C\to cC\cdot&, c/d/\$
 \end{array}
 $$
 The LALR action and GOTO functions for the condensed sets of items are shown in Fig. 4.43.
-| STATE | ACT | IO |  N  | GO | TO |
+| STATE | AC | TI |  ON  | GO | TO |
 | ----: | :----: | :--: | :--: | ---: | ---: |
 |       |  $c$   | $d$  |  $   |  $S$ |  $C$ |
 |     0 |  s36   | s47  |      |    1 |    2 |
