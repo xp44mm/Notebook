@@ -54,10 +54,10 @@ The following non-left-recursive variant of the expression grammar (4.1) will be
 
 $$
 \begin{array}{ll}
-E & \to & T E’\\ \tag{4.2}
-E’ & \to & + T E’ | \epsilon \\
-T & \to & F T’\\
-T’ & \to & * F T’ | \epsilon \\
+E & \to & T E'\\ \tag{4.2}
+E' & \to & + T E' | \epsilon \\
+T & \to & F T'\\
+T' & \to & * F T' | \epsilon \\
 F & \to & ( E ) | \textbf{id} \\
 \end{array}
 $$
@@ -498,8 +498,8 @@ Figure 4.10: Unambiguous grammar for if-then-else statements
 A grammar is *left recursive* if it has a nonterminal $A$ such that there is a derivation $A\overset+\implies A\alpha$ for some string $\alpha$. Top-down parsing methods cannot handle left-recursive grammars, so a transformation is needed to eliminate left recursion. In Section 2.4.5, we discussed *immediate left recursion*, where there is a production of the form $A \to A\alpha$. Here, we study the general case. In Section 2.4.5, we showed how the left-recursive pair of productions $A \to A\alpha\ |\ \beta$  could be replaced by the non-left-recursive productions:
 $$
 \begin{array}{lll}
-A &\to& \beta A’\\
-A’&\to& \alpha A’\ |\ \epsilon
+A &\to& \beta A'\\
+A'&\to& \alpha A'\ |\ \epsilon
 \end{array}
 $$
 without changing the strings derivable from $A$. This rule by itself suffices for many grammars.
@@ -507,14 +507,14 @@ without changing the strings derivable from $A$. This rule by itself suffices fo
 **Example 4.17:** The non-left-recursive expression grammar (4.2), repeated here,
 $$
 \begin{array}{lll}
-E  & \to&  T E’     \\
-E’ & \to&  + T E’\ |\ \epsilon \\
-T  & \to&  F T’     \\     
-T’ & \to&  * F T’\ |\ \epsilon \\ 
+E  & \to&  T E'     \\
+E' & \to&  + T E'\ |\ \epsilon \\
+T  & \to&  F T'     \\     
+T' & \to&  * F T'\ |\ \epsilon \\ 
 F  & \to&  ( E )\ |\ id
 \end{array}
 $$
-is obtained by eliminating immediate left recursion from the expression grammar (4.1). The left-recursive pair of productions $E \to E + T | T$ are replaced by $E \to T E’$ and $E’ \to + T E’ | \epsilon$. The new productions for $T$ and $T’$ are obtained similarly by eliminating immediate left recursion. $\Box$
+is obtained by eliminating immediate left recursion from the expression grammar (4.1). The left-recursive pair of productions $E \to E + T | T$ are replaced by $E \to T E'$ and $E' \to + T E' | \epsilon$. The new productions for $T$ and $T'$ are obtained similarly by eliminating immediate left recursion. $\Box$
 
 Immediate left recursion can be eliminated by the following technique, which works for any number of A-productions. First, group the productions as
 $$
@@ -524,12 +524,12 @@ where no $\beta_i$ begins with an $A$. Then, replace the A-productions by
 
 $$
 \begin{array}{ll}
-A&\to&  \beta_1 A’\ |\ \beta_2 A’\ |\ \dots\ |\ \beta_n A’ \\
-A’&\to&  \alpha_1 A’\ |\ \alpha_2 A’\ |\ \dots\ |\ \alpha_m A’\ |\ \epsilon
+A&\to&  \beta_1 A'\ |\ \beta_2 A'\ |\ \dots\ |\ \beta_n A' \\
+A'&\to&  \alpha_1 A'\ |\ \alpha_2 A'\ |\ \dots\ |\ \alpha_m A'\ |\ \epsilon
 \end{array}
 $$
 
-The nonterminal $A$ generates the same strings as before but is no longer left recursive. This procedure eliminates all left recursion from the $A$ and $A’$ productions (provided no $\alpha_i$ is $\epsilon$), but it does not eliminate left recursion involving derivations of two or more steps. For example, consider the grammar
+The nonterminal $A$ generates the same strings as before but is no longer left recursive. This procedure eliminates all left recursion from the $A$ and $A'$ productions (provided no $\alpha_i$ is $\epsilon$), but it does not eliminate left recursion involving derivations of two or more steps. For example, consider the grammar
 
 $$
 \begin{array}{ll}
@@ -580,8 +580,8 @@ Eliminating the immediate left recursion among these $A$-productions yields the 
 $$
 \begin{array}{ll}
 S  & \to & A\ a\ |\ b           \\          
-A  & \to & b\ d\ A’\ |\ A’\       \\ 
-A’ & \to & c\ A’\ |\ a\ d\ A’\ |\ \epsilon \\
+A  & \to & b\ d\ A'\ |\ A'\       \\ 
+A' & \to & c\ A'\ |\ a\ d\ A'\ |\ \epsilon \\
 \end{array}
 $$
 
@@ -600,11 +600,11 @@ stmt &\to &\textbf{if }expr\ \textbf{then}\ stmt\ \textbf{else}\ stmt \\
 \end{array}
 $$
 
-on seeing the input **if**, we cannot immediately tell which production to choose to expand $stmt$. In general, if $A \to \alpha\beta_1\ |\ \alpha\beta_2$ are two $A$-productions, and the input begins with a nonempty string derived from $\alpha$, we do not know whether to expand $A$ to $\alpha\beta_1$ or $\alpha\beta_2$. However, we may defer the decision by expanding $A$ to $A’$. Then, after seeing the input derived from $\alpha$, we expand $A’$ to $\beta_1$ or to $\beta_2$. That is, left-factored, the original productions become
+on seeing the input **if**, we cannot immediately tell which production to choose to expand $stmt$. In general, if $A \to \alpha\beta_1\ |\ \alpha\beta_2$ are two $A$-productions, and the input begins with a nonempty string derived from $\alpha$, we do not know whether to expand $A$ to $\alpha\beta_1$ or $\alpha\beta_2$. However, we may defer the decision by expanding $A$ to $A'$. Then, after seeing the input derived from $\alpha$, we expand $A'$ to $\beta_1$ or to $\beta_2$. That is, left-factored, the original productions become
 $$
 \begin{array}{ll}
-A  &\to &\alpha A’ \\
-A’ &\to &\beta_1\ |\ \beta_2
+A  &\to &\alpha A' \\
+A' &\to &\beta_1\ |\ \beta_2
 \end{array}
 $$
 
@@ -617,8 +617,8 @@ $$
 **METHOD:** For each nonterminal $A$, find the longest prefix $\alpha$ common to two or more of its alternatives. If $\alpha \not= \epsilon$ i.e., there is a nontrivial common prefix — replace all of the $A$-productions $A \to \alpha\beta_1 |\alpha\beta_2 | \dots  |\alpha\beta_n | \gamma$, where represents all alternatives that do not begin with $\alpha$, by
 $$
 \begin{array}{ll}
-A &\to &\alpha A’ | \gamma \\
-A’ &\to &\beta_1 |\beta_2 | \dots  |\beta_n
+A &\to &\alpha A' | \gamma \\
+A' &\to &\beta_1 |\beta_2 | \dots  |\beta_n
 \end{array}
 $$
 Here $A'$ is a new nonterminal. Repeatedly apply this transformation until no two alternatives for a nonterminal have a common prefix. $\Box$
@@ -635,13 +635,13 @@ Here, $i$, $t$, and $e$ stand for `if`, `then`, and `else`; $E$ and $S$ stand fo
 
 $$
 \begin{array}{lll}
-S  &\to&  i\ E\ t\ S\ S’\ |\ a \\ \tag{4.24}
-S’ &\to&  e\ S\ |\ \epsilon \\
+S  &\to&  i\ E\ t\ S\ S'\ |\ a \\ \tag{4.24}
+S' &\to&  e\ S\ |\ \epsilon \\
 E  &\to&  b
 \end{array}
 $$
 
-Thus, we may expand $S$ to $iEtSS’$ on input $i$, and wait until $iEtS$ has been seen to decide whether to expand $S’$ to $eS$ or to $\epsilon$. Of course, these grammars are both ambiguous, and on input $e$, it will not be clear which alternative for $S’$ should be chosen. Example 4.33 discusses a way out of this dilemma. $\Box$
+Thus, we may expand $S$ to $iEtSS’$ on input $i$, and wait until $iEtS$ has been seen to decide whether to expand $S'$ to $eS$ or to $\epsilon$. Of course, these grammars are both ambiguous, and on input $e$, it will not be clear which alternative for $S'$ should be chosen. Example 4.33 discusses a way out of this dilemma. $\Box$
 
 ### 4.3.5 Non-Context-Free Language Constructs
 
@@ -676,10 +676,10 @@ Top-down parsing can be viewed as the problem of constructing a parse tree for t
 
 $$
 \begin{array}{lll}
-E  &\to&  T E’           \\ \tag{4.28}
-E’ &\to&  + T E’ | \epsilon \\ 
-T  &\to&  F T’           \\
-T’ &\to&  * F T’ | \epsilon \\   
+E  &\to&  T E'           \\ \tag{4.28}
+E' &\to&  + T E' | \epsilon \\ 
+T  &\to&  F T'           \\
+T' &\to&  * F T' | \epsilon \\   
 F  &\to&  ( E ) | \textbf{id}
 \end{array}
 $$
@@ -694,7 +694,7 @@ The section begins with a general form of top-down parsing, called recursive-des
 
 Figure 4.12: Top-down parse for $\textbf{id} + \textbf{id} * \textbf{id}$
 
-For example, consider the top-down parse in Fig. 4.12, which constructs a tree with two nodes labeled $E’$. At the first $E’$ node (in preorder), the production $E’ \to +T E’$ is chosen; at the second $E’$ node, the production $E’ \to \epsilon$ is chosen. A predictive parser can choose between $E’$-productions by looking at the next input symbol.
+For example, consider the top-down parse in Fig. 4.12, which constructs a tree with two nodes labeled $E'$. At the first $E'$ node (in preorder), the production $E' \to +T E'$ is chosen; at the second $E'$ node, the production $E' \to \epsilon$ is chosen. A predictive parser can choose between $E'$-productions by looking at the next input symbol.
 
 The class of grammars for which we can construct predictive parsers looking $k$ symbols ahead in the input is sometimes called the *LL(k)*​ class. We discuss the *LL(1)*​ class in Section 4.4.3, but introduce certain computations, called FIRST and FOLLOW, in a preliminary Section 4.4.2. From the FIRST and FOLLOW sets for a grammar, we shall construct “predictive parsing tables,” which make explicit the choice of production during top-down parsing. These sets are also useful during bottom-up parsing, as we shall see.
 
@@ -779,13 +779,13 @@ To compute FOLLOW($A$) for all nonterminals $A$, apply the following rules until
 
 1.  FIRST($F$) = FIRST($T$) = FIRST($E$) = {$($, $\textbf{id}$}. To see why, note that the two productions for $F$ have bodies that start with these two terminal symbols, **id** and the left parenthesis. $T$ has only one production, and its body starts with $F$. Since $F$ does not derive $\epsilon$, FIRST($T$) must be the same as FIRST($F$). The same argument covers FIRST($E$).
 
-2.  FIRST($E’$) = {$+$, $\epsilon$}. The reason is that one of the two productions for $E’$ has a body that begins with terminal $+$, and the other's body is $\epsilon$. Whenever a nonterminal derives $\epsilon$, we place in FIRST for that nonterminal.
+2.  FIRST($E'$) = {$+$, $\epsilon$}. The reason is that one of the two productions for $E'$ has a body that begins with terminal $+$, and the other's body is $\epsilon$. Whenever a nonterminal derives $\epsilon$, we place in FIRST for that nonterminal.
 
-3.  FIRST($T’$) = {$ * $, $\epsilon$}. The reasoning is analogous to that for FIRST($E’$).
+3.  FIRST($T'$) = {$ * $, $\epsilon$}. The reasoning is analogous to that for FIRST($E'$).
 
-4.  FOLLOW($E$) = FOLLOW($E’$) = $\{), \$\}$. Since $E$ is the start symbol, FOLLOW($E$) must contain $\$$. The production body $(E)$ explains why the right parenthesis is in FOLLOW($E$). For $E’$, note that this nonterminal appears only at the ends of bodies of $E$-productions. Thus, FOLLOW($E’$) must be the same as FOLLOW($E$).
+4.  FOLLOW($E$) = FOLLOW($E'$) = $\{), \$\}$. Since $E$ is the start symbol, FOLLOW($E$) must contain $\$$. The production body $(E)$ explains why the right parenthesis is in FOLLOW($E$). For $E'$, note that this nonterminal appears only at the ends of bodies of $E$-productions. Thus, FOLLOW($E'$) must be the same as FOLLOW($E$).
 
-5.  FOLLOW($T$) = FOLLOW($T’$) = {$+$, $)$, \$}. Notice that $T$ appears in bodies only followed by $E’$. Thus, everything except $\epsilon$ that is in FIRST($E’$) must be in FOLLOW($T$); that explains the symbol $+$. However, since FIRST($E’$) contains $\epsilon$ (i.e., $E’ \overset*\implies \epsilon$), and $E’$ is the entire string following $T$ in the bodies of the $E$-productions, everything in FOLLOW($E$) must also be in FOLLOW($T$). That explains the symbols \$ and the right parenthesis. As for $T’$, since it appears only at the ends of the $T$-productions, it must be that FOLLOW($T’$) = FOLLOW($T$).
+5.  FOLLOW($T$) = FOLLOW($T'$) = {$+$, $)$, \$}. Notice that $T$ appears in bodies only followed by $E'$. Thus, everything except $\epsilon$ that is in FIRST($E'$) must be in FOLLOW($T$); that explains the symbol $+$. However, since FIRST($E'$) contains $\epsilon$ (i.e., $E' \overset*\implies \epsilon$), and $E'$ is the entire string following $T$ in the bodies of the $E$-productions, everything in FOLLOW($E$) must also be in FOLLOW($T$). That explains the symbols \$ and the right parenthesis. As for $T'$, since it appears only at the ends of the $T$-productions, it must be that FOLLOW($T'$) = FOLLOW($T$).
 
 6.  FOLLOW($F$) = {$+$,$ * $, $)$, \$}. The reasoning is analogous to that for $T$ in point (5).
 
@@ -809,11 +809,11 @@ Transition diagrams for predictive parsers differ from those for lexical analyze
 
 With an $LL(1)$ grammar, the ambiguity of whether or not to take an $\epsilon$-edge can be resolved by making $\epsilon$-transitions the default choice.
 
-Transition diagrams can be simplified, provided the sequence of grammar symbols along paths is preserved. We may also substitute the diagram for a nonterminal A in place of an edge labeled $A$. The diagrams in Fig. 4.16(a) and (b) are equivalent: if we trace paths from $E$ to an accepting state and substitute for $E’$, then, in both sets of diagrams, the grammar symbols along the paths make up strings of the form $T + T + \dots  + T$. The diagram in (b) can be obtained from (a) by transformations akin to those in Section 2.5.4, where we used tail-recursion removal and substitution of procedure bodies to optimize the procedure for a nonterminal.
+Transition diagrams can be simplified, provided the sequence of grammar symbols along paths is preserved. We may also substitute the diagram for a nonterminal A in place of an edge labeled $A$. The diagrams in Fig. 4.16(a) and (b) are equivalent: if we trace paths from $E$ to an accepting state and substitute for $E'$, then, in both sets of diagrams, the grammar symbols along the paths make up strings of the form $T + T + \dots  + T$. The diagram in (b) can be obtained from (a) by transformations akin to those in Section 2.5.4, where we used tail-recursion removal and substitution of procedure bodies to optimize the procedure for a nonterminal.
 
 ![](images/figure4.16.png) 
 
-Figure 4.16: Transition diagrams for nonterminals $E$ and $E’$ of grammar 4.28
+Figure 4.16: Transition diagrams for nonterminals $E$ and $E'$ of grammar 4.28
 
 ---
 
@@ -869,13 +869,13 @@ If, after performing the above, there is no production at all in $M[A, a]$, then
 
 Figure 4.17: Parsing table M for Example 4.32
 
-Consider production $E \to T E’$. Since
+Consider production $E \to T E'$. Since
 
 $$
-FIRST(T\ E’) = FIRST(T) = \{(, \textbf{id}\}
+FIRST(T\ E') = FIRST(T) = \{(, \textbf{id}\}
 $$
 
-this production is added to $M[E, (]$ and $M[E, \textbf{id}]$. production $E’ \to +\ T\ E’$ is added to $M[E’, +]$ since $FIRST(+T\ E’) = \{+\}$. Since $FOLLOW(E’) = \{), \$\}$, production $E’ \to \epsilon$ is added to $M[E’, )]$ and $M[E’, \$]$. $\Box$
+this production is added to $M[E, (]$ and $M[E, \textbf{id}]$. production $E' \to +\ T\ E'$ is added to $M[E', +]$ since $FIRST(+T\ E') = \{+\}$. Since $FOLLOW(E') = \{), \$\}$, production $E' \to \epsilon$ is added to $M[E', )]$ and $M[E', \$]$. $\Box$
 
 Algorithm 4.31 can be applied to any grammar *G* to produce a parsing table $M$. For every LL(1) grammar, each parsing-table entry uniquely identifies a production or signals an error. For some grammars, however, $M$ may have some entries that are multiply defined. For example, if *G* is left-recursive or ambiguous, then $M$ will have at least one multiply defined entry. Although left-recursion elimination and left factoring are easy to do, there are some grammars for which no amount of alteration will produce an LL(1)​ grammar.
 
@@ -886,22 +886,22 @@ The language in the following example has no $LL(1)$ grammar at all.
 $$
 \begin{array}{lll}
 S &\to& iEtSS’ | a \\
-S’&\to& eS | \epsilon \\
+S'&\to& eS | \epsilon \\
 E &\to& b
 \end{array}
 $$
 
-The parsing table for this grammar appears in Fig. 4.18. The entry for $M[S’, e]$ contains both $S’\to e S$ and $S’\to \epsilon$.
+The parsing table for this grammar appears in Fig. 4.18. The entry for $M[S', e]$ contains both $S'\to e S$ and $S'\to \epsilon$.
 
 | NONTERMINAL | a         | b         | e                     | i              | t    | $                |
 | ----------- | --------- | --------- | --------------------- | -------------- | ---- | ---------------- |
 | $S$         | $S \to a$ |           |                       | $S \to iEtSS’$ |      |                  |
-| $S’$        |           |           | $S’\to \epsilon | eS$ |                |      | $S’\to \epsilon$ |
+| $S'$        |           |           | $S'\to \epsilon | eS$ |                |      | $S'\to \epsilon$ |
 | $E$         |           | $E \to b$ |                       |                |      |                  |
 
 Figure 4.18: Parsing table M for Example 4.33
 
-The grammar is ambiguous and the ambiguity is manifested by a choice in what production to use when an e (**else**) is seen. We can resolve this ambiguity by choosing $S’\to eS$. This choice corresponds to associating an **else** with the closest previous **then**. Note that the choice $S’\to \epsilon$ would prevent $e$ from ever being put on the stack or removed from the input, and is surely wrong. $\Box$
+The grammar is ambiguous and the ambiguity is manifested by a choice in what production to use when an e (**else**) is seen. We can resolve this ambiguity by choosing $S'\to eS$. This choice corresponds to associating an **else** with the closest previous **then**. Note that the choice $S'\to \epsilon$ would prevent $e$ from ever being put on the stack or removed from the input, and is surely wrong. $\Box$
 
 ### 4.4.4 Nonrecursive Predictive Parsing
 
@@ -948,7 +948,7 @@ Figure 4.20: Predictive parsing algorithm
 **Example 4.35:** Consider grammar (4.28); we have already seen it’s the parsing table in Fig. 4.17. On input $\textbf{id} + \textbf{id}*\textbf{id}$, the nonrecursive predictive parser of Algorithm 4.34 makes the sequence of moves in Fig. 4.21. These moves correspond to a leftmost derivation (see Fig. 4.12 for the full derivation):
 
 $$
-E \underset{lm}\implies T E’ \underset{lm}\implies F T’E’ \underset{lm}\implies \textbf{id} T’E’\underset{lm}\implies \textbf{id} E’\underset{lm}\implies \textbf{id} + T E’ \underset{lm}\implies \dots
+E \underset{lm}\implies T E' \underset{lm}\implies F T'E' \underset{lm}\implies \textbf{id} T'E'\underset{lm}\implies \textbf{id} E'\underset{lm}\implies \textbf{id} + T E' \underset{lm}\implies \dots
 $$
 
 $$
@@ -956,22 +956,22 @@ $$
 \text{MATCHED}      & \text{STACK}    & \text{INPUT}          & \text{ACTION} \\
 \hline
              &      E \$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \\
-             &    T E’\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }E \to T E’\\
-             &  F T’E’\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }T \to F T’\\
-             & \textbf{id} T’E’\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }F \to \textbf{id}\\
-\textbf{id}           &    T’E’\$&    + \textbf{id} * \textbf{id}\$ & \text{match }\textbf{id}\\
-\textbf{id}           &      E’\$&    + \textbf{id} * \textbf{id}\$ & \text{output }T’\to \epsilon\\
-\textbf{id}           &  + T E’\$&    + \textbf{id} * \textbf{id}\$ & \text{output }E’\to + T E’\\
-\textbf{id} +         &    T E’\$&      \textbf{id} * \textbf{id}\$ & \text{match }+\\
-\textbf{id} +         &  F T’E’\$&      \textbf{id} * \textbf{id}\$ & \text{output }T \to F T’\\
-\textbf{id} +         & \textbf{id} T’E’\$&      \textbf{id} * \textbf{id}\$ & \text{output }F \to \textbf{id}\\
-\textbf{id} + \textbf{id}      &    T’E’\$&         * \textbf{id}\$ & \text{match }\textbf{id}\\
-\textbf{id} + \textbf{id}      &* F T’E’\$&         * \textbf{id}\$ & \text{output }T’\to * F T’\\
-\textbf{id} + \textbf{id} *    &  F T’E’\$&           \textbf{id}\$ & \text{match }*\\
-\textbf{id} + \textbf{id} *    & \textbf{id} T’E’\$&           \textbf{id}\$ & \text{output }F \to \textbf{id}\\
-\textbf{id} + \textbf{id} * \textbf{id} &    T’E’\$&             \$ & \text{match }\textbf{id}\\
-\textbf{id} + \textbf{id} * \textbf{id} &      E’\$&             \$ & \text{output }T’\to \epsilon\\
-\textbf{id} + \textbf{id} * \textbf{id} &        \$&             \$ & \text{output }E’\to \epsilon
+             &    T E'\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }E \to T E'\\
+             &  F T'E'\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }T \to F T'\\
+             & \textbf{id} T'E'\$& \textbf{id} + \textbf{id} * \textbf{id}\$ & \text{output }F \to \textbf{id}\\
+\textbf{id}           &    T'E'\$&    + \textbf{id} * \textbf{id}\$ & \text{match }\textbf{id}\\
+\textbf{id}           &      E'\$&    + \textbf{id} * \textbf{id}\$ & \text{output }T'\to \epsilon\\
+\textbf{id}           &  + T E'\$&    + \textbf{id} * \textbf{id}\$ & \text{output }E'\to + T E'\\
+\textbf{id} +         &    T E'\$&      \textbf{id} * \textbf{id}\$ & \text{match }+\\
+\textbf{id} +         &  F T'E'\$&      \textbf{id} * \textbf{id}\$ & \text{output }T \to F T'\\
+\textbf{id} +         & \textbf{id} T'E'\$&      \textbf{id} * \textbf{id}\$ & \text{output }F \to \textbf{id}\\
+\textbf{id} + \textbf{id}      &    T'E'\$&         * \textbf{id}\$ & \text{match }\textbf{id}\\
+\textbf{id} + \textbf{id}      &* F T'E'\$&         * \textbf{id}\$ & \text{output }T'\to * F T'\\
+\textbf{id} + \textbf{id} *    &  F T'E'\$&           \textbf{id}\$ & \text{match }*\\
+\textbf{id} + \textbf{id} *    & \textbf{id} T'E'\$&           \textbf{id}\$ & \text{output }F \to \textbf{id}\\
+\textbf{id} + \textbf{id} * \textbf{id} &    T'E'\$&             \$ & \text{match }\textbf{id}\\
+\textbf{id} + \textbf{id} * \textbf{id} &      E'\$&             \$ & \text{output }T'\to \epsilon\\
+\textbf{id} + \textbf{id} * \textbf{id} &        \$&             \$ & \text{output }E'\to \epsilon
 \end{array}
 $$
 
@@ -1005,10 +1005,10 @@ The table in Fig. 4.22 is to be used as follows. If the parser looks up entry M 
 
 | NON-TERMINAL |      id      |         +         |        *        |       (       |         )         |         $         |
 | :----------: | :----------: | :---------------: | :-------------: | :-----------: | :---------------: | :---------------: |
-|     $E$      | $E \to T E’$ |                   |                 | $E \to T E’$  |       synch       |       synch       |
-|     $E'$     |              |  $E \to + T E’$   |                 |               | $E \to \epsilon$  | $E \to \epsilon$  |
-|     $T$      | $T \to F T’$ |       synch       |                 | $T \to F T’$  |       synch       |       synch       |
-|     $T'$     |              | $T’ \to \epsilon$ | $T’ \to * F T’$ |               | $T’ \to \epsilon$ | $T’ \to \epsilon$ |
+|     $E$      | $E \to T E'$ |                   |                 | $E \to T E'$  |       synch       |       synch       |
+|     $E'$     |              |  $E \to + T E'$   |                 |               | $E \to \epsilon$  | $E \to \epsilon$  |
+|     $T$      | $T \to F T'$ |       synch       |                 | $T \to F T'$  |       synch       |       synch       |
+|     $T'$     |              | $T' \to \epsilon$ | $T' \to * F T'$ |               | $T' \to \epsilon$ | $T' \to \epsilon$ |
 |     $F$      |  $F \to id$  |       synch       |      synch      | $F \to ( E )$ |       synch       |       synch       |
 
   Figure 4.22: Synchronizing tokens added to the parsing table of Fig. 4.17
@@ -1021,20 +1021,20 @@ $$
 \hline
       E \$& ) \textbf{id} * + \textbf{id}\$& \text{error, skip )}    \\
       E \$&   \textbf{id} * + \textbf{id}\$& \textbf{id}\text{ is in FIRST}(E)\\  
-    T E’\$&   \textbf{id} * + \textbf{id}\$&                         \\
-  F T’E’\$&   \textbf{id} * + \textbf{id}\$&                         \\
- \textbf{id} T’E’\$&   \textbf{id} * + \textbf{id}\$&                         \\
-    T’E’\$&      * + \textbf{id}\$&                         \\
-* F T’E’\$&      * + \textbf{id}\$&                          \\
-  F T’E’\$&        + \textbf{id}\$& \text{error, }M[F, +] = synch\\
-    T’E’\$&        + \textbf{id}\$& F\text{ has been popped}\\
-      E’\$&        + \textbf{id}\$&                          \\
-  + T E’\$&        + \textbf{id}\$&                          \\
-    T E’\$&          \textbf{id}\$&                          \\       
-  F T’E’\$&          \textbf{id}\$&                          \\       
- \textbf{id} T’E’\$&          \textbf{id}\$&                          \\       
-    T’E’\$&            \$&                          \\          
-      E’\$&            \$&                          \\          
+    T E'\$&   \textbf{id} * + \textbf{id}\$&                         \\
+  F T'E'\$&   \textbf{id} * + \textbf{id}\$&                         \\
+ \textbf{id} T'E'\$&   \textbf{id} * + \textbf{id}\$&                         \\
+    T'E'\$&      * + \textbf{id}\$&                         \\
+* F T'E'\$&      * + \textbf{id}\$&                          \\
+  F T'E'\$&        + \textbf{id}\$& \text{error, }M[F, +] = synch\\
+    T'E'\$&        + \textbf{id}\$& F\text{ has been popped}\\
+      E'\$&        + \textbf{id}\$&                          \\
+  + T E'\$&        + \textbf{id}\$&                          \\
+    T E'\$&          \textbf{id}\$&                          \\       
+  F T'E'\$&          \textbf{id}\$&                          \\       
+ \textbf{id} T'E'\$&          \textbf{id}\$&                          \\       
+    T'E'\$&            \$&                          \\          
+      E'\$&            \$&                          \\          
         \$&            \$&                          \\          
 \end{array}
 $$
@@ -1974,23 +1974,23 @@ We now give the rules for constructing the LR(1) ACTION and GOTO functions from 
 
 **METHOD:**
 
-1.  Construct $C’ = \{I_0, I_1, \dots, I_n\}$, the collection of sets of LR(1) items for *G'*.
+1. Construct $C' = \{I_0, I_1, \dots, I_n\}$, the collection of sets of LR(1) items for *G'*.
 
-2.  State i of the parser is constructed from $I_i$. The parsing action for state i is determined as follows.
+2. State *i* of the parser is constructed from $I_i$. The parsing action for state *i* is determined as follows.
 
-    a.  If [$A\to \alpha\cdot a\beta$, $b$] is in $I_i$ and GOTO($I_i$,$a$) = $I_j$, then set ACTION[$I$, $a$] to “shift j.” Here a must be a terminal.
+   a. If $[A\to \alpha\cdot a\beta, b]$ is in $I_i$ and $\text{GOTO}(I_i, a) = I_j$, then set ACTION[$I, a$] to “shift *j*.” Here $a$ must be a terminal.
 
-    b.  If [$A \to \alpha\cdot$, $a$] is in $I_i$, $A \not= S’$, then set ACTION[I, a] to “reduce $A \to \alpha\cdot$”
+   b. If $[A \to \alpha\cdot, a]$ is in $I_i$, $A \not= S'$, then set ACTION[$I, a$] to “reduce $A \to \alpha \cdot$”
 
-    c.  If [$S’ \to S\cdot$, \$] is in $I_i$, then set ACTION[$I$, \$] to “accept.”
+   c. If $[S' \to S \cdot, \$]$ is in $I_i$, then set ACTION[$I, \$$] to “accept.”
 
-If any conflicting actions result from the above rules, we say the grammar is not LR(1). The algorithm fails to produce a parser in this case.
+   If any conflicting actions result from the above rules, we say the grammar is not LR(1). The algorithm fails to produce a parser in this case.
 
-1.  The GOTO transitions for state i are constructed for all nonterminals A using the rule: If GOTO($I_i$, $A$) = $I_j$, then GOTO[$I$, $A$] = j.
+4. The GOTO transitions for state *i* are constructed for all nonterminals *A* using the rule: If $\text{GOTO}(I_i, A) = I_j$, then $\text{GOTO}[I, A] = j$.
 
-2.  All entries not defined by rules (2) and (3) are made “error.”
+5. All entries not defined by rules (2) and (3) are made “error.”
 
-3.  The initial state of the parser is the one constructed from the set of items containing [$S’ \to \cdot S$, \$].
+6. The initial state of the parser is the one constructed from the set of items containing $[S' \to \cdot S, \$]$.
 
 $\Box$
 
@@ -2041,8 +2041,8 @@ It is possible, however, that a merger will produce a reduce/reduce conflict, as
 
 $$
 \begin{array}{lll}
-S’&\to& S\\
-S &\to& a A d | b B d | a B e | b A e\\
+S'&\to& S\\
+S &\to& a A d\ |\ b B d\ |\ a B e\ |\ b A e\\
 A &\to& c\\
 B &\to& c
 \end{array}
@@ -2057,7 +2057,7 @@ B\to c\cdot, &d/e
 \end{array}
 $$
 
-generates a reduce/reduce conflict, since reductions by both $A\to c$ and $B\to c$ are called for on inputs $d$ and $e$. $\Box$
+generates a reduce/reduce conflict, since reductions by both $A \to c$ and $B \to c$ are called for on inputs $d$ and $e$. $\Box$
 
 We are now prepared to give the first of two LALR table-construction algorithms. The general idea is to construct the sets of LR(1) items, and if no conflicts arise, merge sets with common cores. We then construct the parsing table from the collection of merged sets of items. The method we are about to describe serves primarily as a definition of LALR(1) grammars. Constructing the entire collection of LR(1) sets of items requires too much space and time to be useful in practice.
 
@@ -2069,19 +2069,20 @@ We are now prepared to give the first of two LALR table-construction algorithms.
 
 **METHOD:**
 
-1.  Construct C = {$I_0, I_1, \dots , I_n$}, the collection of sets of LR(1) items.
+1. Construct $C = \{I_0, I_1, \dots , I_n\}$, the collection of sets of LR(1) items.
 
-2.  For each core present among the set of LR(1) items, find all sets having that core, and replace these sets by their union.
+2. For each core present among the set of LR(1) items, find all sets having that core, and replace these sets by their union.
 
-3.  Let C’ = {$J_0, J_1, \dots , J_m$} be the resulting sets of LR(1) items. The parsing actions for state i are constructed from $J_i$ in the same manner as in Algorithm 4.56. If there is a parsing action conflict, the algorithm fails to produce a parser, and the grammar is said not to be LALR(1).
+3. Let $C' = \{J_0, J_1, \dots , J_m\}$ be the resulting sets of LR(1) items. The parsing actions for state *i* are constructed from $J_i$ in the same manner as in Algorithm 4.56. If there is a parsing action conflict, the algorithm fails to produce a parser, and the grammar is said not to be LALR(1).
 
-4.  The GOTO table is constructed as follows. If J is the union of one or more sets of LR(1) items, that is, $J = I_1\cup I_2\cup\dots \cup I_k$, then the cores of $GOTO(I_1, X), GOTO (I_2, X), \dots , GOTO(I_k, X)$ are the same, since $I_1, I_2, \dots , I_k$ all have the same core. Let $K$ be the union of all sets of items having the same core as $GOTO(I_1, X)$. Then $GOTO(J, X) = K$.
+4. The GOTO table is constructed as follows. If $J$ is the union of one or more sets of LR(1) items, that is, $J = I_1\cup I_2 \cup \dots \cup I_k$, then the cores of $\text{GOTO}(I_1, X), \text{GOTO}(I_2, X), \dots , \text{GOTO}(I_k, X)$ are the same, since $I_1, I_2, \dots , I_k$ all have the same core. Let $K$ be the union of all sets of items having the same core as $GOTO(I_1, X)$. Then $GOTO(J, X) = K$.
 
 $\Box$
 
-The table produced by Algorithm 4.59 is called the LALR parsing table for G. If there are no parsing action conflicts, then the given grammar is said to be an LALR(1) grammar. The collection of sets of items constructed in step (3) is called the LALR(1) col lection.
+The table produced by Algorithm 4.59 is called the *LALR parsing table* for *G*. If there are no parsing action conflicts, then the given grammar is said to be an *LALR(1) grammar*. The collection of sets of items constructed in step(3) is called the *LALR(1) collection*.
 
 **Example 4.60:** Again consider grammar (4.55) whose GOTO graph was shown in Fig. 4.41. As we mentioned, there are three pairs of sets of items that can be merged. $I_3$ and $I_6$ are replaced by their union:
+
 $$
 \begin{array}{lll}
 I_{36} : &C\to c\cdot C&, c/d/\$\\
@@ -2146,27 +2147,29 @@ Finally, state 2 has action error on input \$, so the error is now discovered.
 
 There are several modifications we can make to Algorithm 4.59 to avoid constructing the full collection of sets of LR(1) items in the process of creating an LALR(1) parsing table.
 
--   First, we can represent any set of LR(0) or LR(1) items I by its kernel, that is, by those items that are either the initial item—[$S’\to \cdot S$] or [$S’\to \cdot S$,\$]—or that have the dot somewhere other than at the beginning of the production body.
+- First, we can represent any set of LR(0) or LR(1) items $I$ by its kernel, that is, by those items that are either the initial item—$[S' \to \cdot S]$ or $[S'\to \cdot S,\$]$—or that have the dot somewhere other than at the beginning of the production body.
 
--   We can construct the LALR(1)-item kernels from the LR(0)-item kernels by a process of propagation and spontaneous generation of lookaheads, that we shall describe shortly.
+- We can construct the LALR(1)-item kernels from the LR(0)-item kernels by a process of propagation and spontaneous generation of lookaheads, that we shall describe shortly.
 
--   If we have the LALR(1) kernels, we can generate the LALR(1) parsing table by closing each kernel, using the function CLOSURE of Fig. 4.40, and then computing table entries by Algorithm 4.56, as if the LALR(1) sets of items were canonical LR(1) sets of items.
+- If we have the LALR(1) kernels, we can generate the LALR(1) parsing table by closing each kernel, using the function CLOSURE of Fig. 4.40, and then computing table entries by Algorithm 4.56, as if the LALR(1) sets of items were canonical LR(1) sets of items.
 
 **Example 4.61:** We shall use as an example of the efficient LALR(1) table-construction method the non-SLR grammar from Example 4.48, which we reproduce below in its augmented form:
+
 $$
 \begin{array}{lll}
-S’&\to& S\\
-S &\to& L = R | R\\
-L &\to& * R | id\\
+S'&\to& S\\
+S &\to& L = R\ |\ R\\
+L &\to& * R\ |\ \textbf{id}\\
 R &\to& L
 \end{array}
 $$
 
 The complete sets of LR(0) items for this grammar were shown in Fig. 4.39. The kernels of these items are shown in Fig. 4.44. $\Box$
+
 $$
 \begin{array}{llll}
-I_0:&S’&\to& \cdot S \\      
-I_1:&S’&\to& S\cdot \\     
+I_0:&S'&\to& \cdot S \\      
+I_1:&S'&\to& S\cdot \\     
 I_2:&S &\to& L\cdot = R \\
    &R &\to& L\cdot \\
 I_3:&S &\to& R\cdot  \\     
@@ -2178,27 +2181,30 @@ I_8:&R &\to& L\cdot \\
 I_9:&S &\to& L = R\cdot
 \end{array}
 $$
+
 Figure 4.44: Kernels of the sets of LR(0) items for grammar (4.49)
 
-Now we must attach the proper lookaheads to the LR(0) items in the kernels, to create the kernels of the sets of LALR(1) items. There are two ways a lookahead b can get attached to an LR(0) item $B\to \gamma \cdot\delta$ in some set of LALR(1) items $J$ :
+Now we must attach the proper lookaheads to the LR(0) items in the kernels, to create the kernels of the sets of LALR(1) items. There are two ways a lookahead $b$ can get attached to an LR(0) item $B \to \gamma \cdot \delta$ in some set of LALR(1) items $J$:
 
-1.  There is a set of items $I$, with a kernel item $A \to \alpha \cdot \beta$, $a$, and $J=GOTO(I, X)$, and the construction of 
-    GOTO(CLOSURE({[$A\to \alpha\cdot\beta$, $a$]}), $X$)
-    as given in Fig. 4.40, contains [$B \to \gamma \cdot \delta$, $b$], regardless of a. Such a lookahead b is said to be generated spontaneously for $B\to \gamma \cdot \delta$. As a special case, lookahead \$ is generated spontaneously for the item $S’\to \cdot S$ in the initial set of items.
+1. There is a set of items $I$, with a kernel item $A \to \alpha \cdot \beta, a$, and $J = \text{GOTO}(I, X)$, and the construction of 
+   $$
+   \text{GOTO}(\text{CLOSURE}(\{[A \to \alpha \cdot \beta, a]\}), X)
+   $$
+   as given in Fig. 4.40, contains $[B \to \gamma \cdot \delta, b]$, regardless of $a$. Such a lookahead $b$ is said to be generated *spontaneously* for $B \to \gamma \cdot \delta$. As a special case, lookahead $\$$ is generated spontaneously for the item $S' \to \cdot S$ in the initial set of items.
 
-2.  All is as in (1), but $a = b$, and GOTO(CLOSURE({[$A\to \alpha\cdot\beta$, $a$]}), $X$), as given in Fig. 4.40, contains [$B\to \gamma \cdot\delta$, $b$] only because $A \to \alpha\cdot\beta$ has $b$ as one of its associated lookaheads. In such a case, we say that lookaheads propagate from $A\to \alpha\cdot\beta$  in the kernel of $I$ to $B\to \gamma \cdot\delta$ in the kernel of $J$. Note that propagation does not depend on the particular lookahead symbol; either all lookaheads propagate from one item to another, or none do.
+2. All is as in (1), but $a = b$, and $\text{GOTO}(\text{CLOSURE}(\{[A \to \alpha \cdot \beta, b]\}), X)$, as given in Fig. 4.40, contains $[B\to \gamma \cdot\delta, b]$ only because $A \to \alpha \cdot \beta$ has $b$ as one of its associated lookaheads. In such a case, we say that lookaheads *propagate* from $A \to \alpha \cdot \beta$ in the kernel of $I$ to $B \to \gamma \cdot \delta$ in the kernel of $J$. Note that propagation does not depend on the particular lookahead symbol; either all lookaheads propagate from one item to another, or none do.
 
-We need to determine the spontaneously generated lookaheads for each set of LR(0) items, and also to determine which items propagate lookaheads from which. The test is actually quite simple. Let \# be a symbol not in the grammar at hand. Let $A\to \alpha \cdot \beta$  be a kernel LR(0) item in set $I$. Compute, for each $X$, $J$ = GOTO(CLOSURE({[$A\to \alpha\cdot\beta$, \#]}), $X$). For each kernel item in $J$, we examine its set of lookaheads. If \# is a lookahead, then lookaheads propagate to that item from $A \to \alpha\cdot\beta$. Any other lookahead is spontaneously generated. These ideas are made precise in the following algorithm, which also makes use of the fact that the only kernel items in $J$ must have $X$ immediately to the left of the dot; that is, they must be of the form $B \to \gamma X \cdot \delta$.
+We need to determine the spontaneously generated lookaheads for each set of LR(0) items, and also to determine which items propagate lookaheads from which. The test is actually quite simple. Let $\#$ be a symbol not in the grammar at hand. Let $A\to \alpha \cdot \beta$ be a kernel LR(0) item in set $I$. Compute, for each $X$, $J = \text{GOTO(CLOSURE}(\{[A\to \alpha\cdot\beta, \#]\}), X)$. For each kernel item in $J$, we examine its set of lookaheads. If $\#$ is a lookahead, then lookaheads propagate to that item from $A \to \alpha\cdot\beta$. Any other lookahead is spontaneously generated. These ideas are made precise in the following algorithm, which also makes use of the fact that the only kernel items in $J$ must have $X$ immediately to the left of the dot; that is, they must be of the form $B \to \gamma X \cdot \delta$.
 
 **Algorithm 4.62:** Determining lookaheads.
 
 **INPUT:** The kernel $K$ of a set of LR(0) items $I$ and a grammar symbol $X$.
 
-**OUTPUT:** The lookaheads spontaneously generated by items in I for kernel items in GOTO($I$, $X$) and the items in I from which lookaheads are propagated to kernel items in GOTO($I$, $X$).
+**OUTPUT:** The lookaheads spontaneously generated by items in $I$ for kernel items in GOTO($I, X$) and the items in $I$ from which lookaheads are propagated to kernel items in GOTO($I, X$).
 
 **METHOD:** The algorithm is given in Fig. 4.45. $\Box$
 
-for ( each item $A \to \alpha\cdot\beta$  in $K$ ) {
+for ( each item $A \to \alpha\cdot\beta$ in $K$ ) {
 J := CLOSURE({[$A\to \alpha\cdot\beta$, \#]});
 if ( [$B\to \gamma X\cdot\delta$, $a$] is in J, and a is not \# )
 conclude that lookahead a is generated spontaneously for item
@@ -2207,9 +2213,10 @@ if ( [$B\to \gamma X\cdot\delta$, \#] is in J)
 conclude that lookaheads propagate from $A\to \alpha\cdot\beta$  in $I$ to
 $B \to \gamma \cdot \delta$ in GOTO ($I$, $X$);
 }
+
 Figure 4.45: Discovering propagated and spontaneous lookaheads
 
-We are now ready to attach lookaheads to the kernels of the sets of LR(0) items to form the sets of LALR(1) items. First, we know that \$ is a lookahead for $S_0 \to S$ in the initial set of LR(0) items. Algorithm 4.62 gives us all the lookaheads generated spontaneously. After listing all those lookaheads, we must allow them to propagate until no further propagation is possible. There are many different approaches, all of which in some sense keep track of “new” lookaheads that have propagated into an item but which have not yet propagated out. The next algorithm describes one technique to propagate lookaheads to all items.
+We are now ready to attach lookaheads to the kernels of the sets of LR(0) items to form the sets of LALR(1) items. First, we know that $\$$ is a lookahead for $S' \to S$ in the initial set of LR(0) items. Algorithm 4.62 gives us all the lookaheads generated spontaneously. After listing all those lookaheads, we must allow them to propagate until no further propagation is possible. There are many different approaches, all of which in some sense keep track of “new” lookaheads that have propagated into an item but which have not yet propagated out. The next algorithm describes one technique to propagate lookaheads to all items.
 
 **Algorithm 4.63:** Efficient computation of the kernels of the LALR(1) collection of sets of items.
 
@@ -2219,31 +2226,33 @@ We are now ready to attach lookaheads to the kernels of the sets of LR(0) items 
 
 **METHOD:**
 
-1.  Construct the kernels of the sets of LR(0) items for *G*. If space is not at a premium, the simplest way is to construct the LR(0) sets of items, as in Section 4.6.2, and then remove the nonkernel items. If space is severely constrained, we may wish instead to store only the kernel items for each set, and compute GOTO for a set of items $I$ by first computing the closure of $I$.
+1. Construct the kernels of the sets of LR(0) items for *G*. If space is not at a premium, the simplest way is to construct the LR(0) sets of items, as in Section 4.6.2, and then remove the nonkernel items. If space is severely constrained, we may wish instead to store only the kernel items for each set, and compute GOTO for a set of items $I$ by first computing the closure of $I$.
 
-2.  Apply Algorithm 4.62 to the kernel of each set of LR(0) items and grammar symbol X to determine which lookaheads are spontaneously generated for kernel items in GOTO($I$, $X$), and from which items in I lookaheads are propagated to kernel items in GOTO($I$, $X$).
+2. Apply Algorithm 4.62 to the kernel of each set of LR(0) items and grammar symbol $X$ to determine which lookaheads are spontaneously generated for kernel items in GOTO$(I, X)$, and from which items in $I$ lookaheads are propagated to kernel items in GOTO$(I, X)$.
 
-3.  Initialize a table that gives, for each kernel item in each set of items, the associated lookaheads. Initially, each item has associated with it only those lookaheads that we determined in step (2) were generated spontaneously.
+3. Initialize a table that gives, for each kernel item in each set of items, the associated lookaheads. Initially, each item has associated with it only those lookaheads that we determined in step (2) were generated spontaneously.
 
-4.  Make repeated passes over the kernel items in all sets. When we visit an item $i$, we look up the kernel items to which i propagates its lookaheads, using information tabulated in step (2). The current set of lookaheads for i is added to those already associated with each of the items to which i propagates its lookaheads. We continue making passes over the kernel items until no more new lookaheads are propagated.
+4. Make repeated passes over the kernel items in all sets. When we visit an item $i$, we look up the kernel items to which $i$ propagates its lookaheads, using information tabulated in step (2). The current set of lookaheads for $i$ is added to those already associated with each of the items to which $i$ propagates its lookaheads. We continue making passes over the kernel items until no more new lookaheads are propagated.
 
 $\Box$
 
-**Example 4.64:** Let us construct the kernels of the LALR(1) items for the grammar of Example 4.61. The kernels of the LR(0) items were shown in Fig. 4.44. When we apply Algorithm 4.62 to the kernel of set of items $I_0$, we first compute CLOSURE ({[$S’\to \cdot S$, \#]}), which is
+**Example 4.64:** Let us construct the kernels of the LALR(1) items for the grammar of Example 4.61. The kernels of the LR(0) items were shown in Fig. 4.44. When we apply Algorithm 4.62 to the kernel of set of items $I_0$, we first compute $\text{CLOSURE}(\{[S' \to \cdot S, \#]\})$, which is
+
 $$
 \begin{array}{llll}
-S’&\to \cdot S, \#      &L&\to \cdot * R, \#/= \\
-S &\to \cdot L = R, \#  &L&\to \cdot id, \#/= \\
+S'&\to \cdot S, \#      &L&\to \cdot * R, \#/= \\
+S &\to \cdot L = R, \#  &L&\to \cdot \textbf{id}, \#/= \\
 S &\to \cdot R, \#      &R&\to \cdot L, \#
 \end{array}
 $$
 
-Among the items in the closure, we see two where the lookahead = has been generated spontaneously. The first of these is $L\to \cdot\ * R$. This item, with $ * $ to the right of the dot, gives rise to [$L \to \cdot * R$, =]. That is, = is a spontaneously generated lookahead for $L\to \cdot * R$, which is in set of items $I_4$. Similarly, [$L\to \cdot id$, =] tells us that = is a spontaneously generated lookahead for $L\to id\cdot$ in $I_5$.
+Among the items in the closure, we see two where the lookahead $=$ has been generated spontaneously. The first of these is $L \to \cdot\ * R$. This item, with $*$ to the right of the dot, gives rise to $[L \to \cdot * R, =]$. That is, $=$ is a spontaneously generated lookahead for $L \to \cdot * R$, which is in set of items $I_4$. Similarly, $[L \to \cdot \textbf{id}, =]$ tells us that $=$ is a spontaneously generated lookahead for $L\to \textbf{id}\cdot$ in $I_5$.
 
-As \# is a lookahead for all six items in the closure, we determine that the item $S’\to \cdot S$ in $I_0$ propagates lookaheads to the following six items:
+As $\#$ is a lookahead for all six items in the closure, we determine that the item $S'\to \cdot S$ in $I_0$ propagates lookaheads to the following six items:
+
 $$
 \begin{array}{lll}
-S’&\to& S\cdot\text{ in }I_1     \\
+S'&\to& S\cdot\text{ in }I_1     \\
 S &\to& L\cdot = R\text{ in }I_2 \\
 S &\to& R\cdot\text{ in }I_3     \\
 L &\to& *\cdot R\text{ in }I_4\\
@@ -2252,11 +2261,9 @@ R &\to& L\cdot\text{ in }I_2\\
 \end{array}
 $$
 
-
-
 | FROM                   | TO                     |
 | :--------------------- | :--------------------- |
-| $I0: S’\to \cdot S$    | $I1: S’\to S\cdot$     |
+| $I0: S'\to \cdot S$    | $I1: S'\to S\cdot$     |
 |                        | $I2: S\to L\cdot = R$  |
 |                        | $I2: R\to L\cdot$      |
 |                        | $I3: S\to R\cdot$      |
@@ -2274,18 +2281,18 @@ $$
 
 Figure 4.46: Propagation of lookaheads
 
-In Fig. 4.47, we show steps (3) and (4) of Algorithm 4.63. The column labeled INIT shows the spontaneously generated lookaheads for each kernel item. These are only the two occurrences of = discussed earlier, and the spontaneous lookahead \$ for the initial item $S’\to \cdot S$.
+In Fig. 4.47, we show steps (3) and (4) of Algorithm 4.63. The column labeled INIT shows the spontaneously generated lookaheads for each kernel item. These are only the two occurrences of $=$ discussed earlier, and the spontaneous lookahead $\$$ for the initial item $S' \to \cdot S$.
 
-On the first pass, the lookahead \$ propagates from $S’ \to \cdot S$ in $I_0$ to the six items listed in Fig. 4.46. The lookahead = propagates from $L\to *\cdot R$ in $I_4$ to items $L\to *R\cdot$ in $I_7$ and $R\to L\cdot$ in $I_8$. It also propagates to itself and to $L\to id\cdot$ in $I_5$, but these lookaheads are already present. In the second and third passes, the only new lookahead propagated is \$, discovered for the successors of $I_2$ and $I_4$ on pass 2 and for the successor of $I_6$ on pass 3. No new lookaheads are propagated on pass 4, so the final set of lookaheads is shown in the rightmost column of Fig. 4.47.
+On the first pass, the lookahead $\$$ propagates from $S' \to \cdot S$ in $I_0$ to the six items listed in Fig. 4.46. The lookahead $=$ propagates from $L\to *\cdot R$ in $I_4$ to items $L\to *R\cdot$ in $I_7$ and $R\to L\cdot$ in $I_8$. It also propagates to itself and to $L\to \textbf{id}\cdot$ in $I_5$, but these lookaheads are already present. In the second and third passes, the only new lookahead propagated is $\$$, discovered for the successors of $I_2$ and $I_4$ on pass 2 and for the successor of $I_6$ on pass 3. No new lookaheads are propagated on pass 4, so the final set of lookaheads is shown in the rightmost column of Fig. 4.47.
 
-Note that the shift/reduce conflict found in Example 4.48 using the SLR method has disappeared with the LALR technique. The reason is that only lookahead \$ is associated with $R\to L\cdot$ in $I_2$, so there is no conflict with the parsing action of shift on = generated by item $S\to L\cdot = R$ in $I_2$.
+Note that the shift/reduce conflict found in Example 4.48 using the SLR method has disappeared with the LALR technique. The reason is that only lookahead $\$$ is associated with $R\to L\cdot$ in $I_2$, so there is no conflict with the parsing action of shift on $=$ generated by item $S\to L\cdot = R$ in $I_2$.
 
 $\Box$
 
 | SET    | ITEM               | INIT | PASS 1 | PASS 2 | PASS 3 |
 | :----- | :----------------- | :--: | :----: | :----: | :----: |
-| $I_0:$ | $S’\to \cdot S$    |  \$  |   \$   |   \$   |   \$   |
-| $I_1:$ | $S’\to S\cdot$     |      |   \$   |   \$   |   \$   |
+| $I_0:$ | $S'\to \cdot S$    |  \$  |   \$   |   \$   |   \$   |
+| $I_1:$ | $S'\to S\cdot$     |      |   \$   |   \$   |   \$   |
 | $I_2:$ | $S\to L\cdot = R$  |      |   \$   |   \$   |   \$   |
 |        | $R\to L\cdot$      |      |   \$   |   \$   |   \$   |
 | $I_3:$ | $S\to R\cdot$      |      |   \$   |   \$   |   \$   |
@@ -2297,6 +2304,8 @@ $\Box$
 | $I_9:$ | $S\to L = R\cdot$  |      |        |        |   \$   |
 
 Figure 4.47: Computation of lookaheads
+
+
 
 ### 4.7.6 Compaction of LR Parsing Tables
 
@@ -2420,7 +2429,7 @@ I_0: &E'&\to \cdot E    \\
     &E &\to \cdot (E)    \\
     &E &\to \cdot id     \\
 \hline
-I_1: &E’&\to E \cdot \\
+I_1: &E'&\to E \cdot \\
     &E &\to E \cdot + E \\
     &E &\to E \cdot * E \\
 \hline
@@ -2495,11 +2504,11 @@ stmt &\to& \text{if }expr\text{ then }stmt\text{ else }stmt\\
 \end{array}
 $$
 
-As we noted in Section 4.3.2, this grammar is ambiguous because it does not resolve the dangling-else ambiguity. To simplify the discussion, let us consider an abstraction of this grammar, where i stands for if expr then, e stands for else, and a stands for “all other productions.” We can then write the grammar, with augmenting production S’\to S, as
+As we noted in Section 4.3.2, this grammar is ambiguous because it does not resolve the dangling-else ambiguity. To simplify the discussion, let us consider an abstraction of this grammar, where i stands for if expr then, e stands for else, and a stands for “all other productions.” We can then write the grammar, with augmenting production S'\to S, as
 
 $$
 \begin{array}{ll}
-S’&\to S                  \\\tag{4.67}
+S'&\to S                  \\\tag{4.67}
 S &\to i S e S | i S | a   
 \end{array}
 $$
@@ -2509,11 +2518,11 @@ The sets of LR(0) items for grammar (4.67) are shown in Fig. 4.50. The ambiguity
 Translating back to the if-then-else terminology, given
 $$
 \begin{array}{lll}
-I_0: &S’&\to S     \\
+I_0: &S'&\to S     \\
      &S &\to iS eS \\
      &S &\to iS    \\ 
      &S &\to a     \\          
-I_1: &S’&\to S     \\
+I_1: &S'&\to S     \\
 I_2: &S &\to iS eS \\
      &S &\to iS    \\
      &S &\to iS eS \\
