@@ -1841,6 +1841,20 @@ There is a rightmost derivation $S \underset{rm}{\overset * \implies} aaBab \und
 
 The method for building the collection of sets of valid LR (1) items is essentially the same as the one for building the canonical collection of sets of LR (0) items. We need only to modify the two procedures CLOSURE and GOTO.
 
+To appreciate the new definition of the CLOSURE operation, in particular, why $b$ must be in FIRST($\beta a$), consider an item of the form $[A \to \alpha\cdot B\beta, a]$ in the set of items valid for some viable prefix $\gamma$. Then there is a rightmost derivation $S \underset{rm}{\overset * \implies} \delta A a x \underset{rm}\implies \delta\alpha B\beta ax$, where $\gamma =\delta\alpha$. Suppose $\beta a x$ derives terminal string $b y$. Then for each production of the form $B \to \eta $ for some $\eta$, we have derivation $S \underset{rm}{\overset * \implies} \gamma Bby \underset{rm}\implies \gamma\eta by$. Thus, $[B \to \cdot\eta, b]$ is valid for $\gamma$. Note that $b$ can be the first terminal derived from $\beta$, or it is possible that $\beta$ derives $\epsilon$ in the derivation $\beta a x \implies  b y$, and $b$ can therefore be $a$. To summarize both possibilities we say that $b$ can be any terminal in FIRST($\beta a x$), where FIRST is the function from Section 4.4. Note that $x$ cannot contain the first terminal of $b y$, so $\text{FIRST}(\beta a x) = \text{FIRST}(\beta a)$. We now give the LR(1) sets of items construction.
+
+![](images/figure4.41.png)
+
+Figure 4.41: The GOTO graph for grammar (4.55)
+
+**Algorithm 4.53:** Construction of the sets of LR(1) items.
+
+**INPUT:** An augmented grammar *G'*.
+
+**OUTPUT:** The sets of LR(1) items that are the set of items valid for one or more viable prefixes of *G'*.
+
+**METHOD:** The procedures CLOSURE and GOTO and the main routine *items* for constructing the sets of items were shown in Fig. 4.40. $\Box$
+
 SetOfItems CLOSURE(I)  { 
 repeat 
 for ( each item [$A \to  \alpha\cdot B\beta$, $a$]  in I ) 
@@ -1867,20 +1881,6 @@ until no new sets of items are added to C;
 } 
 
 Figure 4.40: Sets-of-LR(1)-items construction for grammar *G'*
-
-To appreciate the new definition of the CLOSURE operation, in particular, why $b$ must be in FIRST($\beta\alpha$), consider an item of the form $[A \to \alpha\cdot B\beta, a]$ in the set of items valid for some viable prefix $\gamma$. Then there is a rightmost derivation $S \underset{rm}{\overset * \implies} \delta A a x \underset{rm}\implies \delta\alpha B\beta ax$, where $\gamma =\delta\alpha$. Suppose $\beta a x$ derives terminal string $b y$. Then for each production of the form $B \to \eta $ for some $\eta$, we have derivation $S \underset{rm}{\overset * \implies} \gamma Bby \underset{rm}\implies \gamma\eta by$. Thus, $[B \to \cdot\eta, b]$ is valid for $\gamma$. Note that $b$ can be the first terminal derived from $\beta$, or it is possible that $\beta$ derives $\epsilon$ in the derivation $\beta a x \implies  b y$, and $b$ can therefore be $a$. To summarize both possibilities we say that $b$ can be any terminal in FIRST($\beta a x$), where FIRST is the function from Section 4.4. Note that $x$ cannot contain the first terminal of $b y$, so $\text{FIRST}(\beta a x) = \text{FIRST}(\beta a)$. We now give the LR(1) sets of items construction.
-
-![](images/figure4.41.png)
-
-Figure 4.41: The GOTO graph for grammar (4.55)
-
-**Algorithm 4.53:** Construction of the sets of LR(1) items.
-
-**INPUT:** An augmented grammar *G'*.
-
-**OUTPUT:** The sets of LR(1) items that are the set of items valid for one or more viable prefixes of *G'*.
-
-**METHOD:** The procedures CLOSURE and GOTO and the main routine *items* for constructing the sets of items were shown in Fig. 4.40. $\Box$
 
 **Example 4.54:** Consider the following augmented grammar.
 
@@ -1999,19 +1999,19 @@ The table formed from the parsing action and GOTO functions produced by Algorith
 **Example 4.57:** The canonical parsing table for grammar (4.55) is shown in Fig. 4.42. Productions 1, 2, and 3 are $S \to C C$, $C\to cC$, and $C\to d$, respectively. $\Box$
 
 Every SLR(1) grammar is an LR(1) grammar, but for an SLR(1) grammar the canonical LR parser may have more states than the SLR parser for the same grammar. The grammar of the previous examples is SLR and has an SLR parser with seven states, compared with the ten of Fig. 4.42.
-| STATE | AC | TI |  ON  | GO |  TO  |
-| ----: | :----: | :--: | :--: | :--: | :--: |
-|       |  $c$   | $d$  |  $   | $S$  | $C$  |
-|     0 |   s3   |  s4  |      |  1   |  2   |
-|     1 |        |      | acc  |      |      |
-|     2 |   s6   |  s7  |      |      |  5   |
-|     3 |   s3   |  s4  |      |      |  8   |
-|     4 |   r3   |  r3  |      |      |      |
-|     5 |        |      |  r1  |      |      |
-|     6 |   s6   |  s7  |      |      |  9   |
-|     7 |        |      |  r3  |      |      |
-|     8 |   r2   |  r2  |      |      |      |
-|     9 |        |      |  r2  |      |      |
+| STATE |  AC  |  TI  |  ON  |  GO  |  TO  |
+| ----: | :--: | :--: | :--: | :--: | :--: |
+|       | $c$  | $d$  |  $   | $S$  | $C$  |
+|     0 |  s3  |  s4  |      |  1   |  2   |
+|     1 |      |      | acc  |      |      |
+|     2 |  s6  |  s7  |      |      |  5   |
+|     3 |  s3  |  s4  |      |      |  8   |
+|     4 |  r3  |  r3  |      |      |      |
+|     5 |      |      |  r1  |      |      |
+|     6 |  s6  |  s7  |      |      |  9   |
+|     7 |      |      |  r3  |      |      |
+|     8 |  r2  |  r2  |      |      |      |
+|     9 |      |      |  r2  |      |      |
 
 Figure 4.42: Canonical parsing table for grammar (4.55)
 
@@ -2021,7 +2021,7 @@ We now introduce our last parser construction method, the LALR(*lookahead*-LR) t
 
 For a comparison of parser size, the SLR and LALR tables for a grammar always have the same number of states, and this number is typically several hundred states for a language like C. The canonical LR table would typically have several thousand states for the same-size language. Thus, it is much easier and more economical to construct SLR and LALR tables than the canonical LR tables.
 
-By way of introduction, let us again consider grammar (4.55), whose sets of LR(1) items were shown in Fig. 4.41. Take a pair of similar looking states, such as $I_4$ and $I_7$. Each of these states has only items with first component $C\to d\cdot$. In $I_4$, the lookaheads are $c$ or $d$; in $I_7$, $\$$ is the only lookahead.
+By way of introduction, let us again consider grammar (4.55), whose sets of LR(1) items were shown in Fig. 4.41. Take a pair of similar looking states, such as $I_4$ and $I_7$. Each of these states has only items with first component $C \to d \cdot$. In $I_4$, the lookaheads are $c$ or $d$; in $I_7$, $\$$ is the only lookahead.
 
 To see the difference between the roles of $I_4$ and $I_7$ in the parser, note that the grammar generates the regular language **c\*dc\*d**. When reading an input $cc \dots cdcc \dots cd$, the parser shifts the first group of $c$'s and their following $d$ onto the stack, entering state 4 after reading the $d$. The parser then calls for $a$ reduction by $C \to d$, provided the next input symbol is $c$ or $d$. The requirement that $c$ or $d$ follow makes sense, since these are the symbols that could begin strings in **c\*d**. If $\$$ follows the first $d$, we have an input like $ccd$, which is not in the language, and state 4 correctly declares an error if $\$$ is the next input.
 
@@ -2029,7 +2029,7 @@ The parser enters state 7 after reading the second $d$. Then, the parser must se
 
 Let us now replace $I_4$ and $I_7$ by $I_{47}$, the union of $I_4$ and $I_7$, consisting of the set of three items represented by $[C \to d\cdot, c/d/\$]$. The GOTO’s on $d$ to $I_4$ or $I_7$ from $I_0$, $I_2$, $I_3$, and $I_6$ now enter $I_{47}$. The action of state 47 is to reduce on any input. The revised parser behaves essentially like the original, although it might reduce $d$ to $C$ in circumstances where the original would declare error, for example, on input like $ccd$ or $cdcdc$. The error will eventually be caught; in fact, it will be caught before any more input symbols are shifted.
 
-More generally, we can look for sets of LR(1) items having the same *core*, that is, set of first components, and we may merge these sets with common cores into one set of items. For example, in Fig. 4.41, $I_4$ and $I_7$ form such a pair, with core $\{C \to d \cdot\}$. Similarly, $I_3$ and $I_6$ form another pair, with core $\{C \to c \cdot C, C \to \cdot c C, C\to \cdot d\}$. There is one more pair, $I_8$ and $I_9$, with common core $\{ C \to c C \cdot\}$. Note that, in general, a core is a set of LR(0) items for the grammar at hand, and that an LR(1) grammar may produce more than two sets of items with the same core.
+More generally, we can look for sets of LR(1) items having the same *core*, that is, set of first components, and we may merge these sets with common cores into one set of items. For example, in Fig. 4.41, $I_4$ and $I_7$ form such a pair, with core $\{ C \to d \cdot \}$. Similarly, $I_3$ and $I_6$ form another pair, with core $\{C \to c \cdot C, C \to \cdot c C, C\to \cdot d \}$. There is one more pair, $I_8$ and $I_9$, with common core $\{ C \to c C \cdot\}$. Note that, in general, a core is a set of LR(0) items for the grammar at hand, and that an LR(1) grammar may produce more than two sets of items with the same core.
 
 Since the core of GOTO($I, X$) depends only on the core of $I$, the GOTO’s of merged sets can themselves be merged. Thus, there is no problem revising the GOTO function as we merge sets of items. The action functions are modified to reflect the non-error actions of all sets of items in the merger.
 
@@ -2104,16 +2104,16 @@ I_{89}: &C\to cC\cdot&, c/d/\$
 \end{array}
 $$
 The LALR action and GOTO functions for the condensed sets of items are shown in Fig. 4.43.
-| STATE | AC | TI |  ON  | GO | TO |
-| ----: | :----: | :--: | :--: | ---: | ---: |
-|       |  $c$   | $d$  |  $   |  $S$ |  $C$ |
-|     0 |  s36   | s47  |      |    1 |    2 |
-|     1 |        |      | acc  |      |      |
-|     2 |  s36   | s47  |      |      |    5 |
-|    36 |  s36   | s47  |      |      |   89 |
-|    47 |   r3   |  r3  |  r3  |      |      |
-|     5 |        |      |  r1  |      |      |
-|    89 |   r2   |  r2  |  r2  |      |      |
+| STATE |  AC  |  TI  |  ON  |   GO |   TO |
+| ----: | :--: | :--: | :--: | ---: | ---: |
+|       | $c$  | $d$  |  $   |  $S$ |  $C$ |
+|     0 | s36  | s47  |      |    1 |    2 |
+|     1 |      |      | acc  |      |      |
+|     2 | s36  | s47  |      |      |    5 |
+|    36 | s36  | s47  |      |      |   89 |
+|    47 |  r3  |  r3  |  r3  |      |      |
+|     5 |      |      |  r1  |      |      |
+|    89 |  r2  |  r2  |  r2  |      |      |
 
 Figure 4.43: LALR parsing table for the grammar of Example 4.54
 
@@ -2121,19 +2121,19 @@ To see how the GOTO's are computed, consider GOTO ($I_{36}$, $C$). In the origin
 
 When presented with a string from the language $c*dc*d$, both the LR parser of Fig. 4.42 and the LALR parser of Fig. 4.43 make exactly the same sequence of shifts and reductions, although the names of the states on the stack may differ. For instance, if the LR parser puts $I_3$ or $I_6$ on the stack, the LALR parser will put $I_{36}$ on the stack. This relationship holds in general for an LALR grammar. The LR and LALR parsers will mimic one another on correct inputs.
 
-When presented with erroneous input, the LALR parser may proceed to do some reductions after the LR parser has declared an error. However, the LALR parser will never shift another symbol after the LR parser declares an error. For example, on input ccd followed by \$, the LR parser of Fig. 4.42 will put
+When presented with erroneous input, the LALR parser may proceed to do some reductions after the LR parser has declared an error. However, the LALR parser will never shift another symbol after the LR parser declares an error. For example, on input $ccd$ followed by $\$$, the LR parser of Fig. 4.42 will put
 
 0 3 3 4
 
-on the stack, and in state 4 will discover an error, because \$ is the next input symbol and state 4 has action error on \$. In contrast, the LALR parser of Fig.4.43 will make the corresponding moves, putting
+on the stack, and in state 4 will discover an error, because $\$$ is the next input symbol and state 4 has action error on $\$$. In contrast, the LALR parser of Fig.4.43 will make the corresponding moves, putting
 
 0 36 36 47
 
-on the stack. But state 47 on input \$ has action reduce $C\to d$. The LALR parser will thus change its stack to
+on the stack. But state 47 on input $\$$ has action reduce $C \to d$. The LALR parser will thus change its stack to
 
 0 36 36 89
 
-Now the action of state 89 on input \$ is reduce $C\to cC$. The stack becomes
+Now the action of state 89 on input $\$$ is reduce $C \to cC$. The stack becomes
 
 0 36 89
 
@@ -2141,7 +2141,7 @@ whereupon a similar reduction is called for, obtaining stack
 
 0 2
 
-Finally, state 2 has action error on input \$, so the error is now discovered.
+Finally, state 2 has action error on input $\$$, so the error is now discovered.
 
 ### 4.7.5 Efficient Construction of LALR Parsing Tables
 
@@ -2237,7 +2237,6 @@ We are now ready to attach lookaheads to the kernels of the sets of LR(0) items 
 $\Box$
 
 **Example 4.64:** Let us construct the kernels of the LALR(1) items for the grammar of Example 4.61. The kernels of the LR(0) items were shown in Fig. 4.44. When we apply Algorithm 4.62 to the kernel of set of items $I_0$, we first compute $\text{CLOSURE}(\{[S' \to \cdot S, \#]\})$, which is
-
 $$
 \begin{array}{llll}
 S'&\to \cdot S, \#      &L&\to \cdot * R, \#/= \\
@@ -2251,43 +2250,39 @@ Among the items in the closure, we see two where the lookahead $=$ has been gene
 As $\#$ is a lookahead for all six items in the closure, we determine that the item $S'\to \cdot S$ in $I_0$ propagates lookaheads to the following six items:
 
 $$
-\begin{array}{lll}
-S'&\to& S\cdot\text{ in }I_1     \\
-S &\to& L\cdot = R\text{ in }I_2 \\
-S &\to& R\cdot\text{ in }I_3     \\
-L &\to& *\cdot R\text{ in }I_4\\
-L &\to& id\cdot\text{ in }I_5\\
-R &\to& L\cdot\text{ in }I_2\\
+\begin{array}{llll}
+S'&\to& S\cdot     &\text{in }I_1     \\
+S &\to& L\cdot = R &\text{in }I_2 \\
+S &\to& R\cdot     &\text{in }I_3     \\
+L &\to& *\cdot R   &\text{in }I_4\\
+L &\to& id\cdot    &\text{in }I_5\\
+R &\to& L\cdot     &\text{in }I_2\\
 \end{array}
 $$
 
-| FROM                   | TO                     |
-| :--------------------- | :--------------------- |
-| $I0: S'\to \cdot S$    | $I1: S'\to S\cdot$     |
-|                        | $I2: S\to L\cdot = R$  |
-|                        | $I2: R\to L\cdot$      |
-|                        | $I3: S\to R\cdot$      |
-|                        | $I4: L\to *\cdot R$    |
-|                        | $I5: L\to id\cdot$     |
-| $I2: S\to L\cdot = R$  | $I6: S\to L = \cdot R$ |
-| $I4: L\to *\cdot R$    | $I4: L\to *\cdot R$    |
-|                        | $I5: L\to id\cdot$     |
-|                        | $I7: L\to *R\cdot$     |
-|                        | $I8: R\to L\cdot$      |
-| $I6: S\to L = \cdot R$ | $I4: L\to *\cdot R$    |
-|                        | $I5: L\to id\cdot$     |
-|                        | $I8: R\to L\cdot$      |
-|                        | $I9: S\to L = R\cdot$  |
+| FROM                    | TO                      |
+| :---------------------- | :---------------------- |
+| $I_0: S'\to \cdot S$    | $I_1: S'\to S\cdot$     |
+|                         | $I_2: S\to L\cdot = R$  |
+|                         | $I_2: R\to L\cdot$      |
+|                         | $I_3: S\to R\cdot$      |
+|                         | $I_4: L\to *\cdot R$    |
+|                         | $I_5: L\to id\cdot$     |
+| $I_2: S\to L\cdot = R$  | $I_6: S\to L = \cdot R$ |
+| $I_4: L\to *\cdot R$    | $I_4: L\to *\cdot R$    |
+|                         | $I_5: L\to id\cdot$     |
+|                         | $I_7: L\to *R\cdot$     |
+|                         | $I_8: R\to L\cdot$      |
+| $I_6: S\to L = \cdot R$ | $I_4: L\to *\cdot R$    |
+|                         | $I_5: L\to id\cdot$     |
+|                         | $I_8: R\to L\cdot$      |
+|                         | $I_9: S\to L = R\cdot$  |
 
 Figure 4.46: Propagation of lookaheads
 
 In Fig. 4.47, we show steps (3) and (4) of Algorithm 4.63. The column labeled INIT shows the spontaneously generated lookaheads for each kernel item. These are only the two occurrences of $=$ discussed earlier, and the spontaneous lookahead $\$$ for the initial item $S' \to \cdot S$.
 
 On the first pass, the lookahead $\$$ propagates from $S' \to \cdot S$ in $I_0$ to the six items listed in Fig. 4.46. The lookahead $=$ propagates from $L\to *\cdot R$ in $I_4$ to items $L\to *R\cdot$ in $I_7$ and $R\to L\cdot$ in $I_8$. It also propagates to itself and to $L\to \textbf{id}\cdot$ in $I_5$, but these lookaheads are already present. In the second and third passes, the only new lookahead propagated is $\$$, discovered for the successors of $I_2$ and $I_4$ on pass 2 and for the successor of $I_6$ on pass 3. No new lookaheads are propagated on pass 4, so the final set of lookaheads is shown in the rightmost column of Fig. 4.47.
-
-Note that the shift/reduce conflict found in Example 4.48 using the SLR method has disappeared with the LALR technique. The reason is that only lookahead $\$$ is associated with $R\to L\cdot$ in $I_2$, so there is no conflict with the parsing action of shift on $=$ generated by item $S\to L\cdot = R$ in $I_2$.
-
-$\Box$
 
 | SET    | ITEM               | INIT | PASS 1 | PASS 2 | PASS 3 |
 | :----- | :----------------- | :--: | :----: | :----: | :----: |
@@ -2305,17 +2300,20 @@ $\Box$
 
 Figure 4.47: Computation of lookaheads
 
+Note that the shift/reduce conflict found in Example 4.48 using the SLR method has disappeared with the LALR technique. The reason is that only lookahead $\$$ is associated with $R\to L\cdot$ in $I_2$, so there is no conflict with the parsing action of shift on $=$ generated by item $S\to L\cdot = R$ in $I_2$.
 
+$\Box$
 
 ### 4.7.6 Compaction of LR Parsing Tables
 
 A typical programming language grammar with 50 to 100 terminals and 100 productions may have an LALR parsing table with several hundred states. The action function may easily have 20,000 entries, each requiring at least 8 bits to encode. On small devices, a more efficient encoding than a two-dimensional array may be important. We shall mention briefly a few techniques that have been used to compress the ACTION and GOTO fields of an LR parsing table.
 
-One useful technique for compacting the action field is to recognize that usually many rows of the action table are identical. For example, in Fig. 4.42, states 0 and 3 have identical action entries, and so do 2 and 6. We can therefore save considerable space, at little cost in time, if we create a pointer for each state into a one-dimensional array. Pointers for states with the same actions point to the same location. To access information from this array, we assign each terminal a number from zero to one less than the number of terminals, and we use this integer as an offset from the pointer value for each state. In a given state, the parsing action for the ith terminal will be found i locations past the pointer value for that state.
+One useful technique for compacting the action field is to recognize that usually many rows of the action table are identical. For example, in Fig. 4.42, states 0 and 3 have identical action entries, and so do 2 and 6. We can therefore save considerable space, at little cost in time, if we create a pointer for each state into a one-dimensional array. Pointers for states with the same actions point to the same location. To access information from this array, we assign each terminal a number from zero to one less than the number of terminals, and we use this integer as an offset from the pointer value for each state. In a given state, the parsing action for the *i*th terminal will be found *i* locations past the pointer value for that state.
 
 Further space efficiency can be achieved at the expense of a somewhat slower parser by creating a list for the actions of each state. The list consists of (terminal-symbol, action) pairs. The most frequent action for a state can be placed at the end of the list, and in place of a terminal we may use the notation “any,” meaning that if the current input symbol has not been found so far on the list, we should do that action no matter what the input is. Moreover, error entries can safely be replaced by reduce actions, for further uniformity along a row. The errors will be detected later, before a shift move.
 
 **Example 4.65:** Consider the parsing table of Fig. 4.37. First, note that the actions for states 0, 4, 6, and 7 agree. We can represent them all by the list
+
 $$
 \begin{array}{ll}
 SYMBOL   &ACTION\\
@@ -2326,6 +2324,7 @@ any      &error\\
 $$
 
 State 1 has a similar list:
+
 $$
 \begin{array}{ll}
 +        &s6 \\
@@ -2336,6 +2335,7 @@ $$
 
 
 In state 2, we can replace the error entries by r2, so reduction by production 2 will occur on any input but \*. Thus the list for state 2 is
+
 $$
 \begin{array}{ll}
 *       &s7 \\
@@ -2344,6 +2344,7 @@ any     &r2
 $$
 
 State 3 has only error and r4 entries. We can replace the former by the latter, so the list for state 3 consists of only the pair (any, r4). States 5, 10, and 11 can be treated similarly. The list for state 8 is
+
 $$
 \begin{array}{ll}
 +   &s6 \\
@@ -2353,6 +2354,7 @@ any &error
 $$
 
 and for state 9
+
 $$
 \begin{array}{ll}
 *   &S7 \\
