@@ -4,17 +4,17 @@ Sometimes, you want to tokenize and parse a nonstandard language format, such as
 
 In this section, you will implement a simple tokenizer and parser for a language of polynomial expressions for inputted text fragments, such as
 
-$$
+```
 x^5 - 2x^3 + 20
-$$
+```
 
 or
 
-$$
+```
 x + 3
-$$
+```
 
-The aim is simply to produce a structured value that represents the polynomial to permit subsequent processing. For example, this may be necessary when writing an application that performs simple symbolic differentiation—say, on polynomials only. You want to read polynomials, such as $x^5 - 2x^3 + 20$, as input from your users, which in turn is converted to your internal polynomial representation so that you can perform symbolic differentiation and pretty-print the result to the screen. One way to represent polynomials is as a list of terms that are added or subtracted to form the polynomial:
+The aim is simply to produce a structured value that represents the polynomial to permit subsequent processing. For example, this may be necessary when writing an application that performs simple symbolic differentiation—say, on polynomials only. You want to read polynomials, such as `x^5 - 2x^3 + 20`, as input from your users, which in turn is converted to your internal polynomial representation so that you can perform symbolic differentiation and pretty-print the result to the screen. One way to represent polynomials is as a list of terms that are added or subtracted to form the polynomial:
 
 ```F#
 type Term =
@@ -23,7 +23,7 @@ type Term =
 type Polynomial = Term list
 ```
 
-For instance, the polynomial $x^5 – 2x^3 + 20$ is represented as:
+For instance, the polynomial `x^5 – 2x^3 + 20` is represented as:
 
 ```F#
 [Term (1,"x",5); Term (-2,"x",3); Const 20]
@@ -33,7 +33,7 @@ For instance, the polynomial $x^5 – 2x^3 + 20$ is represented as:
 
 First, you implement a tokenizer for the input, using regular expressions. See Listing 8-2.
 
-##### Listing 8-2.  Tokenizer for polynomials using regular expressions
+##### Listing 8-2. Tokenizer for polynomials using regular expressions
 
 ```F#
 type Token =
@@ -91,6 +91,7 @@ type Term =
     | Const of int
 
 type Polynomial = Term list
+
 type TokenStream = Token list
 
 let tryToken (src : TokenStream) =
@@ -136,7 +137,7 @@ let parse input =
     | None -> result
 ```
 
-The functions here have these types (using the type aliases you defined) :
+The functions here have these types (using the type aliases you defined):
 
 ```F#
 val tryToken : src:TokenStream -> (Token * Token list) option

@@ -1,6 +1,6 @@
 ## 4.2 公式排版基础
 
-Add $a​$ squared and $b​$ squared to get $c​$ squared. Or, using a more mathematical approach: $a^2 + b^2 = c^2​$
+Add $a$ squared and $b$ squared to get $c$ squared. Or, using a more mathematical approach: $a^2 + b^2 = c^2$
 
 Add $a$ squared and $b$ squared
 to get $c$ squared

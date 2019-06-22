@@ -310,3 +310,8 @@ WindowsBase
 
 
 
+### NuGet找不到资产文件 project.assets.json
+
+解决办法：
+使用 cmd cd 目前 .net core 项目文件夹中
+运行 dotnet build
