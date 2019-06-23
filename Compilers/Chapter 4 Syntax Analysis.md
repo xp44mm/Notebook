@@ -2525,23 +2525,23 @@ Translating back to the if-then-else terminology, given
 
 $$
 \begin{array}{lll}
-I_0: &S'&\to S       \\
-     &S &\to i S e S \\
-     &S &\to i S     \\ 
-     &S &\to a       \\          
-I_1: &S'&\to S       \\
-I_2: &S &\to i S e S \\
-     &S &\to i S     \\
-     &S &\to i S e S \\
-     &S &\to i S     \\
-     &S &\to a       \\  
-I_3: &S &\to a       \\       
-I_4: &S &\to i S e S \\     
-I_5: &S &\to i S e S \\
-     &S &\to i S e S \\
-     &S &\to i S     \\
-     &S &\to a       \\ 
-I_6: &S &\to i S e S \\ 
+I_0: &S'&\to \cdot S       \\
+     &S &\to \cdot i S e S \\
+     &S &\to \cdot i S     \\ 
+     &S &\to \cdot a       \\          
+I_1: &S'&\to S \cdot      \\
+I_2: &S &\to i \cdot S e S \\
+     &S &\to i \cdot S     \\
+     &S &\to \cdot i S e S \\
+     &S &\to \cdot i S     \\
+     &S &\to \cdot a       \\  
+I_3: &S &\to a \cdot      \\       
+I_4: &S &\to i S \cdot e S \\     
+I_5: &S &\to i S e \cdot S \\
+     &S &\to \cdot i S e S \\
+     &S &\to \cdot i S     \\
+     &S &\to \cdot a       \\ 
+I_6: &S &\to i S e S \cdot \\ 
 \end{array}
 $$
 
@@ -2768,19 +2768,19 @@ would be written in Yacc as
        | <body>_n {<semantic action>_n}
        ;
 ```
-In a Yacc production, unquoted strings of letters and digits hot declared to be tokens are taken to be nontermirials. A quoted single character, e.g. 't', is taken to be the terminal symbol c, as well as the integer code for the token represented by that character (i.e., Lex would return the character code for 'c' to the parser, as an integer). Alternative bodies can be separated by a vertical bar, and a semicolon follows each head with its alternatives and their semantic actions. The first head is taken to be the start symbol.
+In a Yacc production, unquoted strings of letters and digits not declared to be tokens are taken to be nonterminals. A quoted single character, e.g. `'c'`, is taken to be the terminal symbol $c$, as well as the integer code for the token represented by that character (i.e., Lex would return the character code for `'c'` to the parser, as an integer). Alternative bodies can be separated by a vertical bar, and a semicolon follows each head with its alternatives and their semantic actions. The first head is taken to be the start symbol.
 
-A Yacc semantic action is a sequence of C statements. In a semantic action, the symbol `$$` refers to the attribute value associated with the nonterminal of the head, while `$i` refers to the value associated with the i^th^ grammar symbol (terminal or nonterminal) of the body. The semantic action is performed whenever we reduce by the associated production, so normally the semantic action computes a value for `$$` in terms of the `$i`'s. In the Yacc specification, we have written the two $E$-productions
+A Yacc semantic action is a sequence of C statements. In a semantic action, the symbol `$$` refers to the attribute value associated with the nonterminal of the head, while $\$i$ refers to the value associated with the $i$th grammar symbol (terminal or nonterminal) of the body. The semantic action is performed whenever we reduce by the associated production, so normally the semantic action computes a value for `$$` in terms of the `$i`'s. In the Yacc specification, we have written the two $E$-productions
 $$
-E \to E + T | T
+E \to E + T\ |\ T
 $$
 and their associated semantic actions as:
 ```C
 expr : expr '+' term { $$ = $1 + $3; }
-| term
-;
+     | term
+     ;
 ```
-Note that the nonterminal term in the first production is the third grammar symbol of the body, while + is the second. The semantic action associated with the first production adds the value of the expr and the term of the body and assigns the result as the value for the nonterminal expr of the head. We have omitted the semantic action for the second production altogether, since copying the value is the default action for productions with a single grammar symbol in the body. In general, `{ $$ = $1; }` is the default semantic action.
+Note that the nonterminal `term` in the first production is the third grammar symbol of the body, while `'+'` is the second. The semantic action associated with the first production adds the value of the `expr` and the `term` of the body and assigns the result as the value for the nonterminal `expr` of the head. We have omitted the semantic action for the second production altogether, since copying the value is the default action for productions with a single grammar symbol in the body. In general, `{ $$ = $1; }` is the default semantic action.
 
 Notice that we have added a new starting production
 ```C
@@ -2790,11 +2790,11 @@ to the Yacc specification. This production says that an input to the desk calcul
 
 #### The Supporting C-Routines Part
 
-The third part of a Yacc specification consists of supporting C-routines. A lexical analyzer by the name yylex() must be provided. Using Lex to produce yylex() is a common choice; see Section 4.9.3. Other procedures such as error recovery routines may be added as necessary.
+The third part of a Yacc specification consists of supporting C-routines. A lexical analyzer by the name `yylex()` must be provided. Using Lex to produce `yylex()` is a common choice; see Section 4.9.3. Other procedures such as error recovery routines may be added as necessary.
 
-The lexical analyzer yylex() produces tokens consisting of a token name and its associated attribute value. If a token name such as DIGIT is returned, the token name must be declared in the first section of the Yacc specification. The attribute value associated with a token is communicated to the parser through a Yacc-defined variable yylval.
+The lexical analyzer `yylex()` produces tokens consisting of a token name and its associated attribute value. If a token name such as `DIGIT` is returned, the token name must be declared in the first section of the Yacc specification. The attribute value associated with a token is communicated to the parser through a Yacc-defined variable `yylval`.
 
-The lexical analyzer in Fig. 4.58 is very crude. It reads input characters one at a time using the C-function getchar(). If the character is a digit, the value of the digit is stored in the variable yylval, and the token name DIGIT is returned. Otherwise, the character itself is returned as the token name.
+The lexical analyzer in Fig. 4.58 is very crude. It reads input characters one at a time using the C-function `getchar()`. If the character is a digit, the value of the digit is stored in the variable `yylval`, and the token name `DIGIT` is returned. Otherwise, the character itself is returned as the token name.
 
 ### 4.9.2 Using Yacc with Ambiguous Grammars
 
@@ -2809,7 +2809,7 @@ In Yacc, an empty alternative, as the third line is, denotes $\epsilon$.
 
 Second, we shall enlarge the class of expressions to include numbers instead of single digits and to include the arithmetic operators `+`, `-`, (both binary and unary), `*`, and `/`. The easiest way to specify this class of expressions is to use the ambiguous grammar
 $$
-E \to E+E | E-E | E*E | E/E | -E | number
+E \to E+E\ |\ E-E\ |\ E*E\ |\ E/E\ |\ -E\ |\ \textbf{number}
 $$
 The resulting Yacc specification is shown in Fig. 4.59.
 ```C
@@ -2818,44 +2818,40 @@ The resulting Yacc specification is shown in Fig. 4.59.
 #include <stdio.h>
 #define YYSTYPE double /* double type for Yacc stack */
 %}
-
 %token NUMBER
-%left '+' '-'
-%left '\*' '/'
-%right UMINUS
 
+%left '+' '-'
+%left '*' '/'
+%right UMINUS
 %%
 
 lines : lines expr '\n' { printf("%g\n", $2); }
       | lines '\n'
       | /* empty */
-;
-
+      ;
 expr : expr '+' expr { $$ = $1 + $3; }
      | expr '-' expr { $$ = $1 - $3; }
-     | expr '\*' expr { $$ = $1 * $3; }
+     | expr '*' expr { $$ = $1 * $3; }
      | expr '/' expr { $$ = $1 / $3; }
      | '(' expr ')' { $$ = $2; }
      | '-' expr %prec UMINUS { $$ = - $2; }
      | NUMBER
      ;
-
 %%
-
 yylex() {
-int c;
-while((c = getchar())==' ');
-if((c=='.'||isdigit(c))) {
-ungetc(c,stdin);
-scanf("%lf",&yylval);
-return NUMBER;
-}
-return c;
+    int c;
+    while((c = getchar()) == ' ');
+    if((c=='.') || (isdigit(c))) {
+        ungetc(c,stdin);
+        scanf("%lf",&yylval);
+        return NUMBER;
+    }
+    return c;
 }
 ```
-Figure 4.59: Yacc specification for a more advanced desk calculator
+Figure 4.59: Yacc specification for a more advanced desk calculator.
 
-Since the grammar in the Yacc specification in Fig. 4.59 is ambiguous, the LALR algorithm will generate parsing-action conflicts. Yacc reports the number of parsing-action conflicts that are generated. A description of the sets of items and the parsing-action conflicts can be obtained by invoking Yacc with a -v option. This option generates an additional file y.output that contains the kernels of the sets of items found for the grammar, a description of the parsing action conflicts generated by the LALR algorithm, and a readable representation of the LR parsing table showing how the parsing action conflicts were resolved. Whenever Yacc reports that it has found parsing-action conflicts, it is wise to create and consult the file y.output to see why the parsing-action conflicts were generated and to see whether they were resolved correctly.
+Since the grammar in the Yacc specification in Fig. 4.59 is ambiguous, the LALR algorithm will generate parsing-action conflicts. Yacc reports the number of parsing-action conflicts that are generated. A description of the sets of items and the parsing-action conflicts can be obtained by invoking Yacc with a `-v` option. This option generates an additional file `y.output` that contains the kernels of the sets of items found for the grammar, a description of the parsing action conflicts generated by the LALR algorithm, and a readable representation of the LR parsing table showing how the parsing action conflicts were resolved. Whenever Yacc reports that it has found parsing-action conflicts, it is wise to create and consult the file `y.output` to see why the parsing-action conflicts were generated and to see whether they were resolved correctly.
 
 Unless otherwise instructed Yacc will resolve all parsing action conflicts using the following two rules:
 
