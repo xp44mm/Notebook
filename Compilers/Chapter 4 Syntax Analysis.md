@@ -783,7 +783,7 @@ To compute FOLLOW($A$) for all nonterminals $A$, apply the following rules until
 
 3.  FIRST($T'$) = {$ * $, $\epsilon$}. The reasoning is analogous to that for FIRST($E'$).
 
-4.  FOLLOW($E$) = FOLLOW($E'$) = $\{), \$\}$. Since $E$ is the start symbol, FOLLOW($E$) must contain $\$$. The production body $(E)$ explains why the right parenthesis is in FOLLOW($E$). For $E'$, note that this nonterminal appears only at the ends of bodies of $E$-productions. Thus, FOLLOW($E'$) must be the same as FOLLOW($E$).
+4.  FOLLOW($E$) = FOLLOW($E'$) = $\{), \$\}$. Since $E$ is the start symbol, FOLLOW($E$) must contain \$. The production body $(E)$ explains why the right parenthesis is in FOLLOW($E$). For $E'$, note that this nonterminal appears only at the ends of bodies of $E$-productions. Thus, FOLLOW($E'$) must be the same as FOLLOW($E$).
 
 5.  FOLLOW($T$) = FOLLOW($T'$) = {$+$, $)$, \$}. Notice that $T$ appears in bodies only followed by $E'$. Thus, everything except $\epsilon$ that is in FIRST($E'$) must be in FOLLOW($T$); that explains the symbol $+$. However, since FIRST($E'$) contains $\epsilon$ (i.e., $E' \overset*\implies \epsilon$), and $E'$ is the entire string following $T$ in the bodies of the $E$-productions, everything in FOLLOW($E$) must also be in FOLLOW($T$). That explains the symbols \$ and the right parenthesis. As for $T'$, since it appears only at the ends of the $T$-productions, it must be that FOLLOW($T'$) = FOLLOW($T$).
 
@@ -911,7 +911,7 @@ $$
 S \underset{lm}{\overset*\implies} w \alpha
 $$
 
-The table-driven parser in Fig. 4.19 has an input buffer, a stack containing a sequence of grammar symbols, a parsing table constructed by Algorithm 4.31, and an output stream. The input buffer contains the string to be parsed, followed by the endmarker $\$$. We reuse the symbol $\$$ to mark the bottom of the stack, which initially contains the start symbol of the grammar on top of $\$$.
+The table-driven parser in Fig. 4.19 has an input buffer, a stack containing a sequence of grammar symbols, a parsing table constructed by Algorithm 4.31, and an output stream. The input buffer contains the string to be parsed, followed by the endmarker \$. We reuse the symbol \$ to mark the bottom of the stack, which initially contains the start symbol of the grammar on top of \$.
 
 The parser is controlled by a program that considers $X$, the symbol on top of the stack, and a, the current input symbol. If $X$ is a nonterminal, the parser chooses an $X$-production by consulting entry $M[X, a]$ of the parsing table $M$. (Additional code could be executed here, for example, code to construct a node in a parse tree.) Otherwise, it checks for a match between the terminal $X$ and current input symbol $a$.
 
@@ -1122,7 +1122,7 @@ We then repeat this process. That is, we locate the handle $\beta_{n-1}$ in $\ga
 
 Shift-reduce parsing is a form of bottom-up parsing in which a stack holds grammar symbols and an input buffer holds the rest of the string to be parsed. As we shall see, the handle always appears at the top of the stack just before it is identified as the handle.
 
-We use $\$$ to mark the bottom of the stack and also the right end of the input. Conventionally, when discussing bottom-up parsing, we show the top of the stack on the right, rather than on the left as we did for top-down parsing. Initially, the stack is empty, and the string $w$  is on the input, as follows:
+We use \$ to mark the bottom of the stack and also the right end of the input. Conventionally, when discussing bottom-up parsing, we show the top of the stack on the right, rather than on the left as we did for top-down parsing. Initially, the stack is empty, and the string $w$  is on the input, as follows:
 
 $$
 \begin{array}{lr}
@@ -1433,7 +1433,7 @@ How can LR(0) automaton help with shift-reduce decisions? Shift-reduce decisions
 
 The LR-parsing algorithm to be introduced in Section 4.6.3 uses its stack to keep track of states as well as grammar symbols; in fact, the grammar symbol can be recovered from the state, so the stack holds states. The next example gives a preview of how an LR(0) automaton and a stack of states can be used to make shift-reduce parsing decisions.
 
-**Example 4.43:** Figure 4.34 illustrates the actions of a shift-reduce parser on input $\textbf{id} * \textbf{id}$, using the LR(0) automaton in Fig. 4.31. We use a STACK to hold states; for clarity, the grammar symbols corresponding to the states on the stack appear in column SYMBOLS. At line (1), the stack holds the start state 0 of the automaton; the corresponding symbol is the bottom-of-stack marker $\$$.
+**Example 4.43:** Figure 4.34 illustrates the actions of a shift-reduce parser on input $\textbf{id} * \textbf{id}$, using the LR(0) automaton in Fig. 4.31. We use a STACK to hold states; for clarity, the grammar symbols corresponding to the states on the stack appear in column SYMBOLS. At line (1), the stack holds the start state 0 of the automaton; the corresponding symbol is the bottom-of-stack marker \$.
 $$
 \begin{array}{c|llrl}
 \text{LINE}   &\text{STACK}    &\text{SYMBOLS}     &\text{INPUT}       &\text{ACTION}      \\
@@ -1474,7 +1474,7 @@ The stack holds a sequence of states, $s_0s_1\dots s_m$, where $s_m$ is on top. 
 
 The parsing table consists of two parts: a parsing-action function ACTION and a goto function GOTO.
 
-1.  The ACTION function takes as arguments a state $i$ and a terminal $a$ (or $\$$, the input endmarker). The value of $\text{ACTION}[i, a]$ can have one of four forms:
+1.  The ACTION function takes as arguments a state $i$ and a terminal $a$ (or \$, the input endmarker). The value of $\text{ACTION}[i, a]$ can have one of four forms:
 
     - Shift $j$, where $j$ is a state. The action taken by the parser effectively shifts input $a$ to the stack, but uses state $j$ to represent $a$.
 
@@ -1816,7 +1816,7 @@ We shall now present the most general technique for constructing an LR parsing t
 
 It is possible to carry more information in the state that will allow us to rule out some of these invalid reductions by $A \to \alpha$. By splitting states when necessary, we can arrange to have each state of an LR parser indicate exactly which input symbols can follow a handle $\alpha$ for which there is a possible reduction to A.
 
-The extra information is incorporated into the state by redefining items to include a terminal symbol as a second component. The general form of an item becomes $[A \to \alpha \cdot \beta, a]$, where $A \to \alpha\beta$ is a production and $a$ is a terminal or the right endmarker $\$$. We call such an object an *LR(1) item*. The 1 refers to the length of the second component, called the *lookahead* of the item.[^6] The lookahead has no effect in an item of the form $[A \to \alpha\cdot\beta, a]$, where $\beta$  is not $\epsilon$, but an item of the form $[A \to \alpha\cdot, a]$ calls for a reduction by $A\to \alpha$ only if the next input symbol is $a$. Thus, we are compelled to reduce by $A \to \alpha$ only on those input symbols $a$ for which $[A \to \alpha \cdot \beta, a]$ is an LR(1) item in the state on top of the stack. The set of such $a$'s will always be a subset of FOLLOW($A$), but it could be a proper subset, as in Example 4.51.
+The extra information is incorporated into the state by redefining items to include a terminal symbol as a second component. The general form of an item becomes $[A \to \alpha \cdot \beta, a]$, where $A \to \alpha\beta$ is a production and $a$ is a terminal or the right endmarker \$. We call such an object an *LR(1) item*. The 1 refers to the length of the second component, called the *lookahead* of the item.[^6] The lookahead has no effect in an item of the form $[A \to \alpha\cdot\beta, a]$, where $\beta$  is not $\epsilon$, but an item of the form $[A \to \alpha\cdot, a]$ calls for a reduction by $A\to \alpha$ only if the next input symbol is $a$. Thus, we are compelled to reduce by $A \to \alpha$ only on those input symbols $a$ for which $[A \to \alpha \cdot \beta, a]$ is an LR(1) item in the state on top of the stack. The set of such $a$'s will always be a subset of FOLLOW($A$), but it could be a proper subset, as in Example 4.51.
 
 [^6]: Lookaheads that are strings of length greater than one are possible, of course, but we shall not consider such lookaheads here.
 
@@ -1894,7 +1894,7 @@ $$
 
 We begin by computing the closure of {[$S' \to \cdot S$, \$]}. To close, we match the item [$S' \to \cdot S$, \$] with the item [$A \to \alpha \cdot B\beta$, $a$] in the procedure CLOSURE.
 
-That is, $A = S', \alpha = \eta, B = S, \beta = \eta$, and $a = \$$. Function CLOSURE tells us to add [$B \to \cdot \gamma$, $b$] for each production $B \to \gamma$ and terminal $b$ in FIRST($\beta a$). In terms of the present grammar, $B \to \gamma$ must be $S \to C C$, and since $\beta$ is $E$ and $a$ is $\$$, $b$ may only be \$. Thus we add [$S \to \cdot C C$, \$].
+That is, $A = S', \alpha = \eta, B = S, \beta = \eta$, and $a = \$$. Function CLOSURE tells us to add [$B \to \cdot \gamma$, $b$] for each production $B \to \gamma$ and terminal $b$ in FIRST($\beta a$). In terms of the present grammar, $B \to \gamma$ must be $S \to C C$, and since $\beta$ is $E$ and $a$ is \$, $b$ may only be \$. Thus we add [$S \to \cdot C C$, \$].
 
 We continue to compute the closure by adding all items [$C \to \cdot \gamma$ , $b$] for $b$ in FIRST($C\$$). That is, matching [$S \to \cdot C C$, \$] against [$A \to \alpha \cdot B \beta$, $a$], we have $A = S, \alpha = \gamma, B = C, \beta = C$, and $a = \$$. Since $C$ does not derive the empty string, FIRST($C\$$) = FIRST($C$). Since FIRST($C$) contains terminals $c$ and $d$, we add items [$C \to \cdot c C$, $c$], [$C \to \cdot c C$, $d$] , [$C \to \cdot d$, $c$] and [$C \to \cdot d$, $d$] . None of the new items has a nonterminal immediately to the right of the dot, so we have completed our first set of LR(1) items. The initial set of items is
 $$
@@ -2021,11 +2021,11 @@ We now introduce our last parser construction method, the LALR(*lookahead*-LR) t
 
 For a comparison of parser size, the SLR and LALR tables for a grammar always have the same number of states, and this number is typically several hundred states for a language like C. The canonical LR table would typically have several thousand states for the same-size language. Thus, it is much easier and more economical to construct SLR and LALR tables than the canonical LR tables.
 
-By way of introduction, let us again consider grammar (4.55), whose sets of LR(1) items were shown in Fig. 4.41. Take a pair of similar looking states, such as $I_4$ and $I_7$. Each of these states has only items with first component $C \to d \cdot$. In $I_4$, the lookaheads are $c$ or $d$; in $I_7$, $\$$ is the only lookahead.
+By way of introduction, let us again consider grammar (4.55), whose sets of LR(1) items were shown in Fig. 4.41. Take a pair of similar looking states, such as $I_4$ and $I_7$. Each of these states has only items with first component $C \to d \cdot$. In $I_4$, the lookaheads are $c$ or $d$; in $I_7$, \$ is the only lookahead.
 
-To see the difference between the roles of $I_4$ and $I_7$ in the parser, note that the grammar generates the regular language **c\*dc\*d**. When reading an input $cc \dots cdcc \dots cd$, the parser shifts the first group of $c$'s and their following $d$ onto the stack, entering state 4 after reading the $d$. The parser then calls for $a$ reduction by $C \to d$, provided the next input symbol is $c$ or $d$. The requirement that $c$ or $d$ follow makes sense, since these are the symbols that could begin strings in **c\*d**. If $\$$ follows the first $d$, we have an input like $ccd$, which is not in the language, and state 4 correctly declares an error if $\$$ is the next input.
+To see the difference between the roles of $I_4$ and $I_7$ in the parser, note that the grammar generates the regular language **c\*dc\*d**. When reading an input $cc \dots cdcc \dots cd$, the parser shifts the first group of $c$'s and their following $d$ onto the stack, entering state 4 after reading the $d$. The parser then calls for $a$ reduction by $C \to d$, provided the next input symbol is $c$ or $d$. The requirement that $c$ or $d$ follow makes sense, since these are the symbols that could begin strings in **c\*d**. If \$ follows the first $d$, we have an input like $ccd$, which is not in the language, and state 4 correctly declares an error if \$ is the next input.
 
-The parser enters state 7 after reading the second $d$. Then, the parser must see $\$$ on the input, or it started with a string not of the form **c\*dc\*d**. It thus makes sense that state 7 should reduce by $C \to d$ on input $\$$ and declare error on inputs $c$ or $d$.
+The parser enters state 7 after reading the second $d$. Then, the parser must see \$ on the input, or it started with a string not of the form **c\*dc\*d**. It thus makes sense that state 7 should reduce by $C \to d$ on input \$ and declare error on inputs $c$ or $d$.
 
 Let us now replace $I_4$ and $I_7$ by $I_{47}$, the union of $I_4$ and $I_7$, consisting of the set of three items represented by $[C \to d\cdot, c/d/\$]$. The GOTO’s on $d$ to $I_4$ or $I_7$ from $I_0$, $I_2$, $I_3$, and $I_6$ now enter $I_{47}$. The action of state 47 is to reduce on any input. The revised parser behaves essentially like the original, although it might reduce $d$ to $C$ in circumstances where the original would declare error, for example, on input like $ccd$ or $cdcdc$. The error will eventually be caught; in fact, it will be caught before any more input symbols are shifted.
 
@@ -2121,19 +2121,19 @@ To see how the GOTO's are computed, consider GOTO ($I_{36}$, $C$). In the origin
 
 When presented with a string from the language $c*dc*d$, both the LR parser of Fig. 4.42 and the LALR parser of Fig. 4.43 make exactly the same sequence of shifts and reductions, although the names of the states on the stack may differ. For instance, if the LR parser puts $I_3$ or $I_6$ on the stack, the LALR parser will put $I_{36}$ on the stack. This relationship holds in general for an LALR grammar. The LR and LALR parsers will mimic one another on correct inputs.
 
-When presented with erroneous input, the LALR parser may proceed to do some reductions after the LR parser has declared an error. However, the LALR parser will never shift another symbol after the LR parser declares an error. For example, on input $ccd$ followed by $\$$, the LR parser of Fig. 4.42 will put
+When presented with erroneous input, the LALR parser may proceed to do some reductions after the LR parser has declared an error. However, the LALR parser will never shift another symbol after the LR parser declares an error. For example, on input $ccd$ followed by \$, the LR parser of Fig. 4.42 will put
 
 0 3 3 4
 
-on the stack, and in state 4 will discover an error, because $\$$ is the next input symbol and state 4 has action error on $\$$. In contrast, the LALR parser of Fig.4.43 will make the corresponding moves, putting
+on the stack, and in state 4 will discover an error, because \$ is the next input symbol and state 4 has action error on \$. In contrast, the LALR parser of Fig.4.43 will make the corresponding moves, putting
 
 0 36 36 47
 
-on the stack. But state 47 on input $\$$ has action reduce $C \to d$. The LALR parser will thus change its stack to
+on the stack. But state 47 on input \$ has action reduce $C \to d$. The LALR parser will thus change its stack to
 
 0 36 36 89
 
-Now the action of state 89 on input $\$$ is reduce $C \to cC$. The stack becomes
+Now the action of state 89 on input \$ is reduce $C \to cC$. The stack becomes
 
 0 36 89
 
@@ -2141,7 +2141,7 @@ whereupon a similar reduction is called for, obtaining stack
 
 0 2
 
-Finally, state 2 has action error on input $\$$, so the error is now discovered.
+Finally, state 2 has action error on input \$, so the error is now discovered.
 
 ### 4.7.5 Efficient Construction of LALR Parsing Tables
 
@@ -2190,7 +2190,7 @@ Now we must attach the proper lookaheads to the LR(0) items in the kernels, to c
    $$
    \text{GOTO}(\text{CLOSURE}(\{[A \to \alpha \cdot \beta, a]\}), X)
    $$
-   as given in Fig. 4.40, contains $[B \to \gamma \cdot \delta, b]$, regardless of $a$. Such a lookahead $b$ is said to be generated *spontaneously* for $B \to \gamma \cdot \delta$. As a special case, lookahead $\$$ is generated spontaneously for the item $S' \to \cdot S$ in the initial set of items.
+   as given in Fig. 4.40, contains $[B \to \gamma \cdot \delta, b]$, regardless of $a$. Such a lookahead $b$ is said to be generated *spontaneously* for $B \to \gamma \cdot \delta$. As a special case, lookahead \$ is generated spontaneously for the item $S' \to \cdot S$ in the initial set of items.
 
 2. All is as in (1), but $a = b$, and $\text{GOTO}(\text{CLOSURE}(\{[A \to \alpha \cdot \beta, b]\}), X)$, as given in Fig. 4.40, contains $[B\to \gamma \cdot\delta, b]$ only because $A \to \alpha \cdot \beta$ has $b$ as one of its associated lookaheads. In such a case, we say that lookaheads *propagate* from $A \to \alpha \cdot \beta$ in the kernel of $I$ to $B \to \gamma \cdot \delta$ in the kernel of $J$. Note that propagation does not depend on the particular lookahead symbol; either all lookaheads propagate from one item to another, or none do.
 
@@ -2216,7 +2216,7 @@ $B \to \gamma \cdot \delta$ in GOTO ($I$, $X$);
 
 Figure 4.45: Discovering propagated and spontaneous lookaheads
 
-We are now ready to attach lookaheads to the kernels of the sets of LR(0) items to form the sets of LALR(1) items. First, we know that $\$$ is a lookahead for $S' \to S$ in the initial set of LR(0) items. Algorithm 4.62 gives us all the lookaheads generated spontaneously. After listing all those lookaheads, we must allow them to propagate until no further propagation is possible. There are many different approaches, all of which in some sense keep track of “new” lookaheads that have propagated into an item but which have not yet propagated out. The next algorithm describes one technique to propagate lookaheads to all items.
+We are now ready to attach lookaheads to the kernels of the sets of LR(0) items to form the sets of LALR(1) items. First, we know that \$ is a lookahead for $S' \to S$ in the initial set of LR(0) items. Algorithm 4.62 gives us all the lookaheads generated spontaneously. After listing all those lookaheads, we must allow them to propagate until no further propagation is possible. There are many different approaches, all of which in some sense keep track of “new” lookaheads that have propagated into an item but which have not yet propagated out. The next algorithm describes one technique to propagate lookaheads to all items.
 
 **Algorithm 4.63:** Efficient computation of the kernels of the LALR(1) collection of sets of items.
 
@@ -2280,9 +2280,9 @@ $$
 
 Figure 4.46: Propagation of lookaheads
 
-In Fig. 4.47, we show steps (3) and (4) of Algorithm 4.63. The column labeled INIT shows the spontaneously generated lookaheads for each kernel item. These are only the two occurrences of $=$ discussed earlier, and the spontaneous lookahead $\$$ for the initial item $S' \to \cdot S$.
+In Fig. 4.47, we show steps (3) and (4) of Algorithm 4.63. The column labeled INIT shows the spontaneously generated lookaheads for each kernel item. These are only the two occurrences of $=$ discussed earlier, and the spontaneous lookahead \$ for the initial item $S' \to \cdot S$.
 
-On the first pass, the lookahead $\$$ propagates from $S' \to \cdot S$ in $I_0$ to the six items listed in Fig. 4.46. The lookahead $=$ propagates from $L\to *\cdot R$ in $I_4$ to items $L\to *R\cdot$ in $I_7$ and $R\to L\cdot$ in $I_8$. It also propagates to itself and to $L\to \textbf{id}\cdot$ in $I_5$, but these lookaheads are already present. In the second and third passes, the only new lookahead propagated is $\$$, discovered for the successors of $I_2$ and $I_4$ on pass 2 and for the successor of $I_6$ on pass 3. No new lookaheads are propagated on pass 4, so the final set of lookaheads is shown in the rightmost column of Fig. 4.47.
+On the first pass, the lookahead \$ propagates from $S' \to \cdot S$ in $I_0$ to the six items listed in Fig. 4.46. The lookahead $=$ propagates from $L\to *\cdot R$ in $I_4$ to items $L\to *R\cdot$ in $I_7$ and $R\to L\cdot$ in $I_8$. It also propagates to itself and to $L\to \textbf{id}\cdot$ in $I_5$, but these lookaheads are already present. In the second and third passes, the only new lookahead propagated is \$, discovered for the successors of $I_2$ and $I_4$ on pass 2 and for the successor of $I_6$ on pass 3. No new lookaheads are propagated on pass 4, so the final set of lookaheads is shown in the rightmost column of Fig. 4.47.
 
 | SET    | ITEM               | INIT | PASS 1 | PASS 2 | PASS 3 |
 | :----- | :----------------- | :--: | :----: | :----: | :----: |
@@ -2300,7 +2300,7 @@ On the first pass, the lookahead $\$$ propagates from $S' \to \cdot S$ in $I_0$ 
 
 Figure 4.47: Computation of lookaheads
 
-Note that the shift/reduce conflict found in Example 4.48 using the SLR method has disappeared with the LALR technique. The reason is that only lookahead $\$$ is associated with $R\to L\cdot$ in $I_2$, so there is no conflict with the parsing action of shift on $=$ generated by item $S\to L\cdot = R$ in $I_2$.
+Note that the shift/reduce conflict found in Example 4.48 using the SLR method has disappeared with the LALR technique. The reason is that only lookahead \$ is associated with $R\to L\cdot$ in $I_2$, so there is no conflict with the parsing action of shift on $=$ generated by item $S\to L\cdot = R$ in $I_2$.
 
 $\Box$
 
@@ -2501,83 +2501,89 @@ Figure 4.49: Parsing table for grammar (4.3)
 ### 4.8.2 The “Dangling-Else” Ambiguity
 
 Consider again the following grammar for conditional statements:
+
 $$
-\begin{array}{lrl}
-stmt &\to& \text{if }expr\text{ then }stmt\text{ else }stmt\\
-       &|& \text{if }expr\text{ then }stmt\\
-       &|& other
+\begin{array}{rl}
+stmt \to& \textbf{if}\ expr\ \textbf{then}\ stmt\ \textbf{else}\ stmt\\
+       |& \textbf{if}\ expr\ \textbf{then}\ stmt\\
+       |& other
 \end{array}
 $$
 
-As we noted in Section 4.3.2, this grammar is ambiguous because it does not resolve the dangling-else ambiguity. To simplify the discussion, let us consider an abstraction of this grammar, where i stands for if expr then, e stands for else, and a stands for “all other productions.” We can then write the grammar, with augmenting production S'\to S, as
+As we noted in Section 4.3.2, this grammar is ambiguous because it does not resolve the dangling-else ambiguity. To simplify the discussion, let us consider an abstraction of this grammar, where $i$ stands for $\textbf{if}\ expr\ \textbf{then}$, $e$ stands for **else**, and $a$ stands for “all other productions.” We can then write the grammar, with augmenting production $S'\to S$, as
 
 $$
 \begin{array}{ll}
 S'&\to S                  \\\tag{4.67}
-S &\to i S e S | i S | a   
+S &\to i S e S\ |\ i S\ |\ a
 \end{array}
 $$
 
-The sets of LR(0) items for grammar (4.67) are shown in Fig. 4.50. The ambiguity in (4.67) gives rise to a shift/reduce conflict in $I_4$. There, $S\to iS eS$ calls for a shift of e and, since FOLLOW($S$) = {$e$, \$}, item $S\to iS$ calls for reduction by $S\to iS$ on input $e$.
+The sets of LR(0) items for grammar (4.67) are shown in Fig. 4.50. The ambiguity in (4.67) gives rise to a shift/reduce conflict in $I_4$. There, $S\to i S e S$ calls for a shift of $e$ and, since $\text{FOLLOW}(S) = \{e, \$\}$, item $S \to i S$ calls for reduction by $S\to i S$ on input $e$.
 
 Translating back to the if-then-else terminology, given
+
 $$
 \begin{array}{lll}
-I_0: &S'&\to S     \\
-     &S &\to iS eS \\
-     &S &\to iS    \\ 
-     &S &\to a     \\          
-I_1: &S'&\to S     \\
-I_2: &S &\to iS eS \\
-     &S &\to iS    \\
-     &S &\to iS eS \\
-     &S &\to iS    \\
-     &S &\to a     \\  
-I_3: &S &\to a     \\       
-I_4: &S &\to iS eS \\     
-I_5: &S &\to iS eS \\
-     &S &\to iS eS \\
-     &S &\to iS    \\
-     &S &\to a     \\ 
-I_6: &S &\to iS eS \\ 
+I_0: &S'&\to S       \\
+     &S &\to i S e S \\
+     &S &\to i S     \\ 
+     &S &\to a       \\          
+I_1: &S'&\to S       \\
+I_2: &S &\to i S e S \\
+     &S &\to i S     \\
+     &S &\to i S e S \\
+     &S &\to i S     \\
+     &S &\to a       \\  
+I_3: &S &\to a       \\       
+I_4: &S &\to i S e S \\     
+I_5: &S &\to i S e S \\
+     &S &\to i S e S \\
+     &S &\to i S     \\
+     &S &\to a       \\ 
+I_6: &S &\to i S e S \\ 
 \end{array}
 $$
-Figure 4.50: LR(0) states for augmented grammar (4.67)
-$$
-\text{if }expr\text{ then }stmt
-$$
-on the stack and else as the first input symbol, should we shift else onto the stack (i.e., shift e) or reduce if expr then stmt (i.e., reduce by $S\to iS$)? The answer is that we should shift else, because it is “associated” with the previous then. In the terminology of grammar (4.67), the e on the input, standing for else, can only form part of the body beginning with the iS now on the top of the stack. If what follows e on the input cannot be parsed as an $S$, completing body $iS eS$, then it can be shown that there is no other parse possible.
 
-We conclude that the shift/reduce conflict in $I_4$ should be resolved in favor of shift on input e. The SLR parsing table constructed from the sets of items of Fig. 4.50, using this resolution of the parsing-action conflict in $I_4$ on input $e$, is shown in Fig. 4.51. Productions 1 through 3 are $S\to iS eS$, $S\to iS$, and $S\to a$, respectively.
-| STATE |  <=  |      | ACTION |  =>  | GOTO |
-| :---: | :--: | :--: | :----: | :--: | :--: |
-|       | $i$  | $e$  |  $a$   |  \$  | $S$  |
-|   0   |  s2  |      |   s3   |      |  1   |
-|   1   |      |      |        | acc  |      |
-|   2   |  s2  |      |   s3   |      |  4   |
-|   3   |      |  r3  |        |  r3  |      |
-|   4   |      |  s5  |        |  r2  |      |
-|   5   |  s2  |      |   s3   |      |  6   |
-|   6   |      |  r1  |        |  r1  |      |
+Figure 4.50: LR(0) states for augmented grammar (4.67)
+
+$$
+\textbf{if}\ expr\ \textbf{then}\ stmt
+$$
+
+on the stack and **else** as the first input symbol, should we shift **else** onto the stack (i.e., shift $e$) or reduce $\textbf{if}\ expr\ \textbf{then}\ stmt$(i.e., reduce by $S\to i S$)? The answer is that we should shift **else**, because it is “associated” with the previous **then**. In the terminology of grammar (4.67), the $e$ on the input, standing for **else**, can only form part of the body beginning with the iS now on the top of the stack. If what follows $e$ on the input cannot be parsed as an $S$, completing body $i S e S$, then it can be shown that there is no other parse possible.
+
+We conclude that the shift/reduce conflict in $I_4$ should be resolved in favor of shift on input $e$. The SLR parsing table constructed from the sets of items of Fig. 4.50, using this resolution of the parsing-action conflict in $I_4$ on input $e$, is shown in Fig. 4.51. Productions 1 through 3 are $S \to i S e S$, $S \to i S$, and $S \to a$, respectively.
+
+| STATE |  AC  |  T   |  I   |  ON  | GOTO |
+| :---: | :--: | :--: | :--: | :--: | :--: |
+|       | $i$  | $e$  | $a$  |  \$  | $S$  |
+|   0   |  s2  |      |  s3  |      |  1   |
+|   1   |      |      |      | acc  |      |
+|   2   |  s2  |      |  s3  |      |  4   |
+|   3   |      |  r3  |      |  r3  |      |
+|   4   |      |  s5  |      |  r2  |      |
+|   5   |  s2  |      |  s3  |      |  6   |
+|   6   |      |  r1  |      |  r1  |      |
 
 Figure 4.51: LR parsing table for the "dangling-else" grammar
 
-For example, on input iiaea, the parser makes the moves shown in Fig. 4.52, corresponding to the correct resolution of the “dangling-else.” At line (5), state 4 selects the shift action on input e, whereas at line (9), state 4 calls for reduction by $S\to iS$ on input \$.
+For example, on input $iiaea$, the parser makes the moves shown in Fig. 4.52, corresponding to the correct resolution of the “dangling-else.” At line (5), state 4 selects the shift action on input $e$, whereas at line (9), state 4 calls for reduction by $S \to i S$ on input \$.
 
-|      | STACK       | SYMBOLS   |         INPUT | ACTION                 |
-| ---: | :---------- | :-------- | ------------: | ---------------------- |
-|  (1) | 0           |           | i i a e a  \$ | shift                  |
-|  (2) | 0 2         | i         |    i a e a \$ | shift                  |
-|  (3) | 0 2 2       | i i       |      a e a \$ | shift                  |
-|  (4) | 0 2 2 3     | i i a     |       e a  \$ | shift                  |
-|  (5) | 0 2 2 4     | i i S     |       e a  \$ | reduce by $S\to a$     |
-|  (6) | 0 2 2 4 5   | i i S e   |          a \$ | shift                  |
-|  (7) | 0 2 2 4 5 3 | i i S e a |            \$ | reduce by $S\to a$     |
-|  (8) | 0 2 2 4 5 6 | i i S e S |            \$ | reduce by $S\to iS eS$ |
-|  (9) | 0 2 4       | i S       |            \$ | reduce by $S\to iS$    |
-| (10) | 0 1         | S         |            \$ | accept                 |
+|      | STACK       | SYMBOLS         |               INPUT | ACTION                 |
+| ---: | :---------- | :-------------- | ------------------: | ---------------------- |
+|  (1) | 0           |                 | $i\ i\ a\ e\ a\ \$$ | shift                  |
+|  (2) | 0 2         | $i$             |    $i\ a\ e\ a\ \$$ | shift                  |
+|  (3) | 0 2 2       | $i\ i$          |       $a\ e\ a\ \$$ | shift                  |
+|  (4) | 0 2 2 3     | $i\ i\ a$       |          $e\ a\ \$$ | shift                  |
+|  (5) | 0 2 2 4     | $i\ i\ S$       |          $e\ a\ \$$ | reduce by $S\to a$     |
+|  (6) | 0 2 2 4 5   | $i\ i\ S\ e$    |             $a\ \$$ | shift                  |
+|  (7) | 0 2 2 4 5 3 | $i\ i\ S\ e\ a$ |                $\$$ | reduce by $S\to a$     |
+|  (8) | 0 2 2 4 5 6 | $i\ i\ S\ e\ S$ |                $\$$ | reduce by $S\to iS eS$ |
+|  (9) | 0 2 4       | $i\ S$          |                $\$$ | reduce by $S\to iS$    |
+| (10) | 0 1         | $S$             |                $\$$ | accept                 |
 
-Figure 4.52: Parsing actions on input iiaea
+Figure 4.52: Parsing actions on input $iiaea$
 
 By way of comparison, if we are unable to use an ambiguous grammar to specify conditional statements, then we would have to use a bulkier grammar along the lines of Example 4.16.
 
@@ -2585,35 +2591,23 @@ By way of comparison, if we are unable to use an ambiguous grammar to specify co
 
 An LR parser will detect an error when it consults the parsing action table and finds an error entry. Errors are never detected by consulting the GOTO table. An LR parser will announce an error as soon as there is no valid continuation for the portion of the input thus far scanned. A canonical LR parser will not make even a single reduction before announcing an error. SLR and LALR parsers may make several reductions before announcing an error, but they will never shift an erroneous input symbol onto the stack.
 
-In LR parsing, we can implement panic-mode error recovery as follows. We scan down the stack until a states with a GOTO on a particular nonterminal A is found. Zero or more input symbols are then discarded until a symbol a is found that can legitimately follow A. The parser then stacks the state GOTO($s$, $A$) and resumes normal parsing. There might be more than one choice for the nonterminal $A$. Normally these would be nonterminals representing major program pieces, such as an expression, statement, or block. For example, if A is the nonterminal stmt, a might be semicolon or g, which marks the end of a statement sequence.
+In LR parsing, we can implement panic-mode error recovery as follows. We scan down the stack until a state $s$ with a GOTO on a particular nonterminal $A$ is found. Zero or more input symbols are then discarded until a symbol $a$ is found that can legitimately follow $A$. The parser then stacks the state GOTO($s, A$) and resumes normal parsing. There might be more than one choice for the nonterminal $A$. Normally these would be nonterminals representing major program pieces, such as an expression, statement, or block. For example, if $A$ is the nonterminal $stmt$, $a$ might be semicolon or }, which marks the end of a statement sequence.
 
-This method of recovery attempts to eliminate the phrase containing the syntactic error. The parser determines that a string derivable from $A$ contains an error. Part of that string has already been processed, and the result of this processing is a sequence of states on top of the stack. The remainder of the string is still in the input, and the parser attempts to skip over the remainder of this string by looking for a symbol on the input that can legitimately follow $A$. By removing states from the stack, skipping over the input, and pushing GOTO($s$, $A$) on the stack, the parser pretends that it has found an instance of $A$ and resumes normal parsing.
+This method of recovery attempts to eliminate the phrase containing the syntactic error. The parser determines that a string derivable from $A$ contains an error. Part of that string has already been processed, and the result of this processing is a sequence of states on top of the stack. The remainder of the string is still in the input, and the parser attempts to skip over the remainder of this string by looking for a symbol on the input that can legitimately follow $A$. By removing states from the stack, skipping over the input, and pushing GOTO($s, A$) on the stack, the parser pretends that it has found an instance of $A$ and resumes normal parsing.
 
 Phrase-level recovery is implemented by examining each error entry in the LR parsing table and deciding on the basis of language usage the most likely programmer error that would give rise to that error. An appropriate recovery procedure can then be constructed, presumably the top of the stack and/or first input symbols would be modified in a way deemed appropriate for each error entry.
 
-In designing specific error-handling routines for an LR parser, we can ll in each blank entry in the action field with a pointer to an error routine that will take the appropriate action selected by the compiler designer. The actions may include insertion or deletion of symbols from the stack or the input or both, or alteration and transposition of input symbols. We must make our choices so that the LR parser will not get into an in finite loop. A safe strategy will assure that at least one input symbol will be removed or shifted eventually, or that the stack will eventually shrink if the end of the input has been reached.
-
-Popping a stack state that covers a nonterminal should be avoided, because this modification eliminates from the stack a construct that has already been successfully parsed.
+In designing specific error-handling routines for an LR parser, we can fill in each blank entry in the action field with a pointer to an error routine that will take the appropriate action selected by the compiler designer. The actions may include insertion or deletion of symbols from the stack or the input or both, or alteration and transposition of input symbols. We must make our choices so that the LR parser will not get into an in finite loop. A safe strategy will assure that at least one input symbol will be removed or shifted eventually, or that the stack will eventually shrink if the end of the input has been reached. Popping a stack state that covers a nonterminal should be avoided, because this modification eliminates from the stack a construct that has already been successfully parsed.
 
 **Example 4.68:** Consider again the expression grammar
+
 $$
-E\to E + E | E * E | (E) | id
+E \to E + E\ |\ E * E\ |\ (E)\ |\ \textbf{id}
 $$
+
 Figure 4.53 shows the LR parsing table from Fig. 4.49 for this grammar, modified for error detection and recovery. We have changed each state that calls for a particular reduction on some input symbols by replacing error entries in that state by the reduction. This change has the erect of postponing the error detection until one or more reductions are made, but the error will still be caught before any shift move takes place. The remaining blank entries from Fig. 4.49 have been replaced by calls to error routines.
 
-The error routines are as follows.
-
-e1: This routine is called from states 0, 2, 4 and 5, all of which expect the beginning of an operand, either an id or a left parenthesis. Instead, +, \* or the end of the input was found.
-
-  push state 3 (the GOTO of states 0, 2, 4 and 5 on id);
-  issue diagnostic “missing operand.”
-
-e2: Called from states 0, 1, 2, 4 and 5 on finding a right parenthesis.
-
-  remove the right parenthesis from the input,
-  issue diagnostic “unbalanced right parenthesis.”
-
-| STATE | ACTION |      |      |      |      |      | GOTO |
+| STATE | A |   C   |   T   |   I   |   O   |   N   | GOTO |
 | :---: | :----: | :--: | :--: | :--: | :--: | :--: | :--: |
 |       |   id   |  +   |  \*  |  (   |  )   |  \$  |  E   |
 |   0   |   s3   |  e1  |  e1  |  s2  |  e2  |  e1  |  1   |
@@ -2626,44 +2620,75 @@ e2: Called from states 0, 1, 2, 4 and 5 on finding a right parenthesis.
 |   7   |   r1   |  r1  |  s5  |  r1  |  r1  |  r1  |      |
 |   8   |   r2   |  r2  |  r2  |  r2  |  r2  |  r2  |      |
 |   9   |   r3   |  r3  |  r3  |  r3  |  r3  |  r3  |      |
+
 Figure 4.53: LR parsing table with error routines
 
-e3: Called from states 1 or 6 when expecting an operator, and an id or right parenthesis is found.
+The error routines are as follows.
 
-  push state 4 (corresponding to symbol +) onto the stack;
+**e1:** This routine is called from states 0, 2, 4 and 5, all of which expect the beginning of an operand, either an **id** or a left parenthesis. Instead, +, \* or the end of the input was found.
+
+  push state 3 (the GOTO of states 0, 2, 4 and 5 on **id**);
+  issue diagnostic “missing operand.”
+
+**e2:** Called from states 0, 1, 2, 4 and 5 on finding a right parenthesis.
+
+  remove the right parenthesis from the input,
+  issue diagnostic “unbalanced right parenthesis.”
+
+**e3:** Called from states 1 or 6 when expecting an operator, and an **id** or right parenthesis is found.
+
+  push state 4 (corresponding to symbol $+$) onto the stack;
   issue diagnostic “missing operator.”
 
-e4: Called from state 6 when the end of the input is found.
+**e4:** Called from state 6 when the end of the input is found.
 
   push state 9 (for a right parenthesis) onto the stack;
   issue diagnostic “missing right parenthesis.”
 
-On the erroneous input id + ), the sequence of configurations entered by the parser is shown in Fig. 4.54.
+On the erroneous input $id\ +\ )$, the sequence of configurations entered by the parser is shown in Fig. 4.54. $\Box$
 
-$\Box$
+| STACK   | SYMBOLS |     INPUT | ACTION                         |
+| :------ | :------ | --------: | ------------------------------ |
+| 0       |         | id + ) $ |                                |
+| 0 3     | id      |    + ) $ |                                |
+| 0 1     | E       |    + ) $ |                                |
+| 0 1 4   | E +     |      ) $ | “unbalanced right parenthesis” |
+|         |         |          | e2 removes right parenthesis   |
+| 0 1 4   | E +     |        $ | “missing operand”              |
+|         |         |          | e1 pushes state 3 onto stack   |
+| 0 1 4 3 | E + id  |        $ |                                |
+| 0 1 4 7 | E +     |        $ |                                |
+| 0 1     | E +     |        $ |                                |
+
+Figure 4.54: Parsing and error recovery moves made by an LR parser
 
 
 ## 4.9 Parser Generators
 
-This section shows how a parser generator can be used to facilitate the construction of the front end of a compiler. We shall use the LALR parser generator Yacc as the basis of our discussion, since it implements many of the concepts discussed in the previous two sections and it is widely available. Yacc stands for "yet another compiler-compiler," reflecting the popularity of parser generators in the early 1970s when the first version of Yacc was created by S. C. Johnson. Yacc is available as a command on the UNIX system, and has been used to help implement many production compilers.
+This section shows how a parser generator can be used to facilitate the construction of the front end of a compiler. We shall use the LALR parser generator Yacc as the basis of our discussion, since it implements many of the concepts discussed in the previous two sections and it is widely available. Yacc stands for “yet another compiler-compiler,” reflecting the popularity of parser generators in the early 1970s when the first version of Yacc was created by S. C. Johnson. Yacc is available as a command on the UNIX system, and has been used to help implement many production compilers.
 
 ### 4.9.1 The Parser Generator Yacc
 
-A translator can be constructed using Yacc in the manner illustrated in Fig. 4.57. First, a file, say translate.y, containing a Yacc specification of the translator is prepared. The UNIX system command
+A translator can be constructed using Yacc in the manner illustrated in Fig. 4.57. First, a file, say `translate.y`, containing a Yacc specification of the translator is prepared. The UNIX system command
+
 ```
 > yacc translate.y
 ```
-transforms the file translate.y into a C program called y.tab.c using the LALR method outlined in Algorithm 4.63. The program y.tab.c is a representation of an LALR parser written in C, along with other C routines that the user may have prepared. The LALR parsing table is compacted as described in Section 4.7. By compiling y.tab.c along with the ly library that contains the LR parsing program using the command
+
+transforms the file `translate.y` into a C program called `y.tab.c` using the LALR method outlined in Algorithm 4.63. The program `y.tab.c` is a representation of an LALR parser written in C, along with other C routines that the user may have prepared. The LALR parsing table is compacted as described in Section 4.7. By compiling `y.tab.c` along with the `ly` library that contains the LR parsing program using the command
+
 ```
 > cc y.tab.c –ly
 ```
-we obtain the desired object program a.out that performs the translation specified by the original Yacc program. If other procedures are needed, they can be compiled or loaded with `y.tab.c`, just as with any C program.
 
-![](figure4.57.png)
+we obtain the desired object program `a.out` that performs the translation specified by the original Yacc program. If other procedures are needed, they can be compiled or loaded with `y.tab.c`, just as with any C program.
+
+![](/images/figure4.57.png)
 
 Figure 4.57: Creating an input/output translator with Yacc
 
 A Yacc source program has three parts:
+
 ```
 declarations
 %%
@@ -2671,65 +2696,62 @@ translation rules
 %%
 supporting C routines
 ```
+
 **Example 4.69:** To illustrate how to prepare a Yacc source program, let us construct a simple desk calculator that reads an arithmetic expression, evaluates it, and then prints its numeric value. We shall build the desk calculator starting with the following grammar for arithmetic expressions:
+
 $$
 \begin{array}{ll}
-E \to E + T | T\\
-T \to T * F | F\\
-F \to ( E ) | digit
+E \to E + T\ |\ T\\
+T \to T * F\ |\ F\\
+F \to ( E )\ |\ \textbf{digit}
 \end{array}
 $$
 
-The token digit is a single digit between 0 and 9. A Yacc desk calculator program derived from this grammar is shown in Fig. 4.58. $\Box$
+The token **digit** is a single digit between 0 and 9. A Yacc desk calculator program derived from this grammar is shown in Fig. 4.58. $\Box$
+
 ```C
 %{
 #include <ctype.h>
 %}
 %token DIGIT
 %%
-
-line : expr '\n' { printf("%d\n", $1); }
-;
-
-expr : expr '+' term { $$ = $1 + $3; }
-| term
-;
-
-term : term '*' factor { $$ = $1 * $3; }
-| factor
-;
-
+line   : expr '\n' { printf("%d\n", $1); }
+       ;
+expr   : expr '+' term { $$ = $1 + $3; }
+       | term
+       ;
+term   : term '*' factor { $$ = $1 * $3; }
+       | factor
+       ;
 factor : '(' expr ')' { $$ = $2; }
-| DIGIT
-;
-
+       | DIGIT
+       ;
 %%
-
 yylex() {
-int c;
-c = getchar();
-if(isdigit(c)) {
-yylval = c - 'O';
-return DIGIT;
-}
-return c;
+    int c;
+    c = getchar();
+    if(isdigit(c)) {
+        yylval = c - 'O';
+        return DIGIT;
+    }
+    return c;
 }
 ```
 Figure 4.58: Yacc specification of a simple desk calculator
 
 #### The Declarations Part
 
-There are two sections in the declarations part of a Yacc program; both are optional. In the first section, we put ordinary C declarations, delimited by %{ and %}. Here we place declarations of any temporaries used by the translation rules or procedures of the second and third sections. In Fig. 4.58, this section contains only the include-statement
+There are two sections in the declarations part of a Yacc program; both are optional. In the first section, we put ordinary C declarations, delimited by `%{` and `%}`. Here we place declarations of any temporaries used by the translation rules or procedures of the second and third sections. In Fig. 4.58, this section contains only the include-statement
 ```C
 #include<ctype.h>
 ```
-that causes the C preprocessor to include the standard header file `<ctype.h>` that contains the predicate isdigit.
+that causes the C preprocessor to include the standard header file `<ctype.h>` that contains the predicate `isdigit`.
 
 Also in the declarations part are declarations of grammar tokens. In Fig. 4.58, the statement
 ```C
 %token DIGIT
 ```
-declares DIGIT to be a token. Tokens declared in this section can then be used in the second and third parts of the Yacc specification. If Lex is used to create the lexical analyzer that passes token to the Yacc parser, then these token declarations are also made available to the analyzer generated by Lex, as discussed in Section 3.5.2.
+declares `DIGIT` to be a token. Tokens declared in this section can then be used in the second and third parts of the Yacc specification. If Lex is used to create the lexical analyzer that passes token to the Yacc parser, then these token declarations are also made available to the analyzer generated by Lex, as discussed in Section 3.5.2.
 
 #### The Translation Rules Part
 
