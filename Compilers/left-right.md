@@ -19,7 +19,7 @@ LR parsing is attractive for a variety of reasons:
 
 -   An LR parser can detect a syntactic error as soon as it is possible to do so on a left-to-right scan of the input.
 
--   The class of grammars that can be parsed using LR methods is a proper superset of the class of grammars that can be parsed with predictive or LL methods. For a grammar to be LR(k​), we must be able to recognize the occurrence of the right side of a production in a right-sentential form, with $k$ input symbols of lookahead. This requirement is far less stringent than that for LL(k​) grammars where we must be able to recognize the use of a production seeing only the first $k$ symbols of what its right side derives. Thus, it should not be surprising that LR grammars can describe more languages than LL grammars.
+-   The class of grammars that can be parsed using LR methods is a proper superset of the class of grammars that can be parsed with predictive or LL methods. For a grammar to be LR(k​), we must be able to recognize the occurrence of the right side of a production in a right-sentential form, with k​ input symbols of lookahead. This requirement is far less stringent than that for LL(k​) grammars where we must be able to recognize the use of a production seeing only the first k​ symbols of what its right side derives. Thus, it should not be surprising that LR grammars can describe more languages than LL grammars.
 
 The principal drawback of the LR method is that it is too much work to construct an LR parser by hand for a typical programming-language grammar. A specialized tool, an LR parser generator, is needed. Fortunately, many such generators are available, and we shall discuss one of the most commonly used ones, Yacc, in Section 4.9. Such a generator takes a context-free grammar and automatically produces a parser for that grammar. If the grammar contains ambiguities or other constructs that are difficult to parse in a left-to-right scan of the input, then the parser generator locates these constructs and provides detailed diagnostic messages.
 
@@ -121,7 +121,7 @@ F &\to&  \cdot \textbf{id}
 \end{array}
 $$
 
-We computed GOTO($I$, $+$) by examining $I$ for items with $+$ immediately to the right of the dot. $E' \to E \cdot$ is not such an item, but $E \to E \cdot + T$ is. We moved the dot over the $+$ to get $E \to E + \cdot T$ and then took the closure of this singleton set. $\Box$
+We computed GOTO($I, +$) by examining $I$ for items with $+$ immediately to the right of the dot. $E' \to E \cdot$ is not such an item, but $E \to E \cdot + T$ is. We moved the dot over the $+$ to get $E \to E + \cdot T$ and then took the closure of this singleton set. $\Box$
 
 We are now ready for the algorithm to construct C, the canonical collection of sets of LR(0) items for an augmented grammar G' the algorithm is shown in Fig. 4.33.
 
@@ -143,16 +143,17 @@ Figure 4.33: Computation of the canonical collection of sets of LR(0) items
 
 The central idea behind "Simple LR", or SLR, parsing is the construction from the grammar of the LR(0) automaton. The states of this automaton are the sets of items from the canonical LR(0) collection, and the transitions are given by the GOTO function. The LR(0) automaton for the expression grammar (4.1) appeared earlier in Fig. 4.31.
 
-The start state of the LR(0) automaton is CLOSURE({[$S' \to \cdot S$]}), where $S'$ is the start symbol of the augmented grammar. All states are accepting states. We say "state $j$" to refer to the state corresponding to the set of items $I_j$.
+The start state of the LR(0) automaton is CLOSURE($\{[S' \to \cdot S]\}$), where $S'$ is the start symbol of the augmented grammar. All states are accepting states. We say "state $j$" to refer to the state corresponding to the set of items $I_j$.
 
 How can LR(0) automaton help with shift-reduce decisions? Shift-reduce decisions can be made as follows. Suppose that the string $\gamma$ of grammar symbols takes the LR(0) automaton from the start state 0 to some state $j$. Then, shift on next input symbol $a$ if state $j$ has a transition on $a$. Otherwise, we choose to reduce; the items in state $j$ will tell us which production to use.
 
 The LR-parsing algorithm to be introduced in Section 4.6.3 uses its stack to keep track of states as well as grammar symbols; in fact, the grammar symbol can be recovered from the state, so the stack holds states. The next example gives a preview of how an LR(0) automaton and a stack of states can be used to make shift-reduce parsing decisions.
 
 **Example 4.43:** Figure 4.34 illustrates the actions of a shift-reduce parser on input $\textbf{id} * \textbf{id}$, using the LR(0) automaton in Fig. 4.31. We use a STACK to hold states; for clarity, the grammar symbols corresponding to the states on the stack appear in column SYMBOLS. At line (1), the stack holds the start state 0 of the automaton; the corresponding symbol is the bottom-of-stack marker \$.
+
 $$
 \begin{array}{c|llrl}
-\text{LINE}   &\text{STACK}    &\text{SYMBOLS}     &\text{INPUT}       &\text{ACTION}      \\
+\text{LINE} &\text{STACK}  &\text{SYMBOLS}   &\text{INPUT}     &\text{ACTION}    \\
 \hline
 (1)    &0        &\$          &\textbf{id}  * \textbf{id} \$   &\text{shift to 5}  \\
 (2)    &0\ 5      &\$ \textbf{id}       &  * \textbf{id} \$   &\text{reduce by }F \to \textbf{id} \\
@@ -182,7 +183,7 @@ A schematic of an LR parser is shown in Fig. 4.35. It consists of an input, an o
 
 Figure 4.35: Model of an LR parser
 
-The stack holds a sequence of states, $s_0s_1\dots s_m$, where $s_m$ is on top. In the SLR method, the stack holds states from the LR(0) automaton; the canonical-LR and LALR methods are similar. By construction, each state has a corresponding grammar symbol. Recall that states correspond to sets of items, and that there is a transition from state $i$ to state $j$ if $\text{GOTO}(I_i, X) = I_j$. All transitions to state $j$ must be for the same grammar symbol $X$. Thus, each state, except the start state 0, has a unique grammar symbol associated with it. [^4]
+The stack holds a sequence of states, $s_0 s_1 \dots s_m$, where $s_m$ is on top. In the SLR method, the stack holds states from the LR(0) automaton; the canonical-LR and LALR methods are similar. By construction, each state has a corresponding grammar symbol. Recall that states correspond to sets of items, and that there is a transition from state $i$ to state $j$ if $\text{GOTO}(I_i, X) = I_j$. All transitions to state $j$ must be for the same grammar symbol $X$. Thus, each state, except the start state 0, has a unique grammar symbol associated with it. [^4]
 
 [^4]: The converse need not hold; that is, more than one state may have the same grammar symbol. See for example states 1 and 8 in the LR(0) automaton in Fig. 4.31, which are both entered by transitions on $E$, or states 2 and 9, which are both entered by transitions on $T$.
 
@@ -190,7 +191,7 @@ The stack holds a sequence of states, $s_0s_1\dots s_m$, where $s_m$ is on top. 
 
 The parsing table consists of two parts: a parsing-action function ACTION and a goto function GOTO.
 
-1.  The ACTION function takes as arguments a state $i$ and a terminal $a$ (or \$, the input endmarker). The value of $\text{ACTION}[i, a]$ can have one of four forms:
+1.  The ACTION function takes as arguments a state $i$ and a terminal $a$ (or \$, the input endmarker). The value of ACTION[$i, a$] can have one of four forms:
 
     - Shift $j$, where $j$ is a state. The action taken by the parser effectively shifts input $a$ to the stack, but uses state $j$ to represent $a$.
 
@@ -205,29 +206,37 @@ The parsing table consists of two parts: a parsing-action function ACTION and a 
 #### LR-Parser Configurations
 
 To describe the behavior of an LR parser, it helps to have a notation representing the complete state of the parser: its stack and the remaining input. A *configuration* of an LR parser is a pair:
+
 $$
-(s_0s_1\dots s_m,\ a_ia_{i+1}\dots a_n\$)
+(s_0 s_1 \dots s_m,\ a_i a_{i+1} \dots a_n\$)
 $$
+
 where the first component is the stack contents (top on the right), and the second component is the remaining input. This configuration represents the right-sentential form
+
 $$
-X_1 X_2 \dots X_m\ a_i a_{i+1}\dots a_n
+X_1 X_2 \dots X_m\ a_i a_{i+1} \dots a_n
 $$
+
 in essentially the same way as a shift-reduce parser would; the only difference is that instead of grammar symbols, the stack holds states from which grammar symbols can be recovered. That is, $X_i$ is the grammar symbol represented by state $s_i$. Note that $s_0$, the start state of the parser, does not represent a grammar symbol, and serves as a bottom-of-stack marker, as well as playing an important role in the parse.
 
 #### Behavior of the LR Parser
 
 The next move of the parser from the configuration above is determined by reading $a_i$, the current input symbol, and $s_m$, the state on top of the stack, and then consulting the entry ACTION[$s_m, a_i$] in the parsing action table. The configurations resulting after each of the four types of move are as follows
 
-1. If $\text{ACTION}[s_m, a_i] = \text{shift }s$, the parser executes a shift move; it shifts the next state s onto the stack, entering the configuration
+1. If $\text{ACTION}[s_m, a_i] = \text{shift}\ s$, the parser executes a shift move; it shifts the next state s onto the stack, entering the configuration
+
    $$
-   (s_0s_1 \dots s_ms,\ a_{i+1}\dots a_n\$)
+   (s_0 s_1 \dots s_m s,\ a_{i+1} \dots a_n\$)
    $$
-   The symbol $a_i$ need not be held on the stack, since it can be recovered from $s$, if needed (which in practice it never is). The current input symbol is now $a _ {i+1}$.
+
+   The symbol $a_i$ need not be held on the stack, since it can be recovered from $s$, if needed (which in practice it never is). The current input symbol is now $a_{i+1}$.
 
 2. If $\text{ACTION}[s_m, a_i] = \text{reduce } A \to \beta$ , then the parser executes a reduce move, entering the configuration
+
    $$
    (s_0 s_1\dots s_{m-r}s,\ a_ia_{i+1}\dots a_n\$)
    $$
+
    where $r$ is the length of $\beta$ , and $s = \text{GOTO}[s_{m-r}, A]$. Here the parser first popped $r$ state symbols off the stack, exposing state $S_{m-r}$. The parser then pushed $s$, the entry for GOTO[$s_{m-r}, A$], onto the stack. The current input symbol is not changed in a reduce move. For the LR parsers we shall construct, $X_{m-r+1} \dots X_m$, the sequence of grammar symbols corresponding to the states popped off the stack, will always match $\beta$, the right side of the reducing production.
 
    The output of an LR parser is generated after a reduce move by executing the semantic action associated with the reducing production. For the time being, we shall assume the output consists of just printing the reducing production.
@@ -241,7 +250,7 @@ The LR-parsing algorithm is summarized below. All LR parsers behave in this fash
 
 **Algorithm 4.44:** LR-parsing algorithm.
 
-**INPUT:** An input string $w$  and $a_n$ LR-parsing table with functions ACTION and GOTO for a grammar G.
+**INPUT:** An input string $w$ and $a_n$ LR-parsing table with functions ACTION and GOTO for a grammar G.
 
 **OUTPUT:** If $w$ is in L(G), the reduction steps of a bottom-up parse for $w$; otherwise, an error indication.
 
@@ -311,22 +320,22 @@ On input $\textbf{id} * \textbf{id} + \textbf{id}$, the sequence of stack and in
 
 Then, $*$ becomes the current input symbol, and the action of state 5 on input $*$ is to reduce by $F \to \textbf{id}$. One state symbol is popped off the stack. State 0 is then exposed. Since the GOTO of state 0 on $F$ is 3, state 3 is pushed onto the stack. We now have the configuration in line (3). Each of the remaining moves is determined similarly. $\Box$
 
-|      | STACK | SYMBOLS |        INPUT | ACTION                 |
-| :--: | :---- | :------ | -----------: | :--------------------- |
-|  1   | 0    |         | $\textbf{id}*\textbf{id}+\textbf{id}$\$ | shift                  |
-|  2   | 0,5 | $\textbf{id}$    |   $*\textbf{id}+\textbf{id}$\$ | reduce by $F\to \textbf{id}$    |
-|  3   | 0,3  | $F$     |   $*\textbf{id}+\textbf{id}$\$ | reduce by $T\to F$     |
-|  4   | 0,2  | $T$     |   $*\textbf{id}+\textbf{id}$\$ | shift                  |
-|  5   | 0,2,7 | $T*$  |    $\textbf{id}+\textbf{id}$\$ | shift                  |
-|  6   | 0,2,7,5 | $T*\textbf{id}$  |      $+\textbf{id}$\$ | reduce by $F\to \textbf{id}$    |
-|  7   | 0,2,7,10 | $T*F$   |      $+\textbf{id}$\$ | reduce by $T\to T * F$ |
-|  8   | 0,2  | $T$     |      $+\textbf{id}$\$ | reduce by $E\to T$     |
-|  9   | 0,1  | $E$     |      $+\textbf{id}$\$ | shift                  |
-|  10  | 0,1,6 | $E+$    |       $\textbf{id}$\$ | shift                  |
-|  11  | 0,1,6,5 | $E+\textbf{id}$  |           \$ | reduce by $F\to \textbf{id}$    |
-|  12  | 0,1,6,3 | $E+F$   |           \$ | reduce by $T\to F$     |
-|  13  | 0,1,6,9 | $E+T$   |           \$ | reduce by $E\to E + T$ |
-|  14  | 0,1   | $E$     |           \$ | accept                 |
+|      | STACK    | SYMBOLS         |                                   INPUT | ACTION                       |
+| :--: | :------- | :-------------- | --------------------------------------: | :--------------------------- |
+|  1   | 0        |                 | $\textbf{id}*\textbf{id}+\textbf{id}$\$ | shift                        |
+|  2   | 0 5      | $\textbf{id}$   |            $*\textbf{id}+\textbf{id}$\$ | reduce by $F\to \textbf{id}$ |
+|  3   | 0 3      | $F$             |            $*\textbf{id}+\textbf{id}$\$ | reduce by $T\to F$           |
+|  4   | 0 2      | $T$             |            $*\textbf{id}+\textbf{id}$\$ | shift                        |
+|  5   | 0 2 7    | $T*$            |             $\textbf{id}+\textbf{id}$\$ | shift                        |
+|  6   | 0 2 7 5  | $T*\textbf{id}$ |                        $+\textbf{id}$\$ | reduce by $F\to \textbf{id}$ |
+|  7   | 0 2 7 10 | $T*F$           |                        $+\textbf{id}$\$ | reduce by $T\to T * F$       |
+|  8   | 0 2      | $T$             |                        $+\textbf{id}$\$ | reduce by $E\to T$           |
+|  9   | 0 1      | $E$             |                        $+\textbf{id}$\$ | shift                        |
+|  10  | 0 1 6    | $E+$            |                         $\textbf{id}$\$ | shift                        |
+|  11  | 0 1 6 5  | $E+\textbf{id}$ |                                      \$ | reduce by $F\to \textbf{id}$ |
+|  12  | 0 1 6 3  | $E+F$           |                                      \$ | reduce by $T\to F$           |
+|  13  | 0 1 6 9  | $E+T$           |                                      \$ | reduce by $E\to E + T$       |
+|  14  | 0 1      | $E$             |                                      \$ | accept                       |
 
 Figure 4.38: Moves of an LR parser on $\textbf{id} * \textbf{id} + \textbf{id}$
 
@@ -351,7 +360,7 @@ The ACTION and GOTO entries in the parsing table are then constructed using the 
 
 2. State $i$ is constructed from $I_i$. The parsing actions for state $i$ are determined as follows:
 
-   a. If $[A \to \alpha \cdot a \beta ]$ is in $I_i$ and $\text{GOTO}(I_i, a) = I_j$, then set ACTION[$i, a$] to "shift $j$". Here $a$ must be a terminal.
+   a. If $[A \to \alpha \cdot a \beta]$ is in $I_i$ and $\text{GOTO}(I_i, a) = I_j$, then set ACTION[$i, a$] to "shift $j$". Here $a$ must be a terminal.
 
    b. If $[A \to a \cdot]$ is in $I_i$, then set ACTION[$i, a$] to "reduce $A \to a$" for all a in FOLLOW($A$); here $A$ may not be $S'$.
 
@@ -370,6 +379,7 @@ $\Box$
 The parsing table consisting of the ACTION and GOTO functions determined by Algorithm 4.46 is called the *SLR(1) table* for *G*. An LR parser using the SLR(1) table for *G* is called the SLR(1) parser for *G*, and a grammar having an SLR(1) parsing table is said to be *SLR(1)*. We usually omit the "(1)" after the "SLR", since we shall not deal here with parsers having more than one symbol of lookahead.
 
 **Example 4.47:** Let us construct the *SLR table* for the augmented expression grammar. The canonical collection of sets of LR(0) items for the grammar was shown in Fig. 4.31. First consider the set of items $I_0$:
+
 $$
 \begin{array}{lll}
 E'&\to& \cdot E\\
@@ -382,7 +392,7 @@ F &\to& \cdot \textbf{id}
 \end{array}
 $$
 
-The item $F \to \cdot (E)$ gives rise to the entry $\text{ACTION}[O, (] = \text{shift }4$, and the item $F \to \cdot \textbf{id}$ to the entry $\text{ACTION}[O, \textbf{id}] = \text{shift }5$. Other items in $I_0$ yield no actions. Now consider $I_1$:
+The item $F \to \cdot (E)$ gives rise to the entry $\text{ACTION}[0, (] = \text{shift }4$, and the item $F \to \cdot \textbf{id}$ to the entry $\text{ACTION}[0, \textbf{id}] = \text{shift }5$. Other items in $I_0$ yield no actions. Now consider $I_1$:
 
 $$
 \begin{array}{lll}
@@ -409,15 +419,16 @@ $$
 The second item makes $\text{ACTION}[2, *] = \text{shift }7$. Continuing in this fashion we obtain the ACTION and GOTO tables that were shown in Fig. 4.31. In that figure, the numbers of productions in reduce actions are the same as the order in which they appear in the original grammar (4.1). That is, $E \to E + T$ is number 1, $E \to T$ is 2, and so on. $\Box$
 
 **Example 4.48:** Every SLR(1) grammar is unambiguous, but there are many unambiguous grammars that are not SLR(1). Consider the grammar with productions
+
 $$
-\begin{array}{lll}
-S&\to& L = R\ |\ R \\
-L&\to& * R\ |\ \textbf{id} \\
-R&\to& L
+\begin{array}{ll}
+S\to& L = R\ |\ R \\
+L\to& * R\ |\ \textbf{id} \\
+R\to& L
 \end{array}
 $$
 
-Think of $L$ and $R$ as standing for l-value and r-value, respectively, and $*$ as an operator indicating "contents of".[^5] The canonical collection of sets of LR(0) items for grammar (4.49) is shown in Fig. 4.39.
+Think of $L$ and $R$ as standing for l-value and r-value, respectively, and \* as an operator indicating "contents of".[^5] The canonical collection of sets of LR(0) items for grammar (4.49) is shown in Fig. 4.39.
 
 [^5]: As in Section 2.8.3, an l-value designates a location and an r-value is a value that can be stored in a location.
 
@@ -1032,10 +1043,10 @@ Further space efficiency can be achieved at the expense of a somewhat slower par
 
 $$
 \begin{array}{ll}
-SYMBOL   &ACTION\\
-id       &s5\\
+\text{SYMBOL}   &\text{ACTION}\\
+\textbf{id}       &s5\\
 (        &s4\\
-any      &error\\
+\textbf{any}      &error\\
 \end{array}
 $$
 
@@ -1045,7 +1056,7 @@ $$
 \begin{array}{ll}
 +        &s6 \\
 \$       &acc \\
-any      &error
+\textbf{any}      &error
 \end{array}
 $$
 
@@ -1055,7 +1066,7 @@ In state 2, we can replace the error entries by r2, so reduction by production 2
 $$
 \begin{array}{ll}
 *       &s7 \\
-any     &r2
+\textbf{any}     &r2
 \end{array}
 $$
 
@@ -1065,7 +1076,7 @@ $$
 \begin{array}{ll}
 +   &s6 \\
 )   &s11 \\
-any &error
+\textbf{any} &error
 \end{array}
 $$
 
@@ -1074,24 +1085,28 @@ and for state 9
 $$
 \begin{array}{ll}
 *   &S7 \\
-any &R1
+\textbf{any} &R1
 \end{array}
 $$
 
 $\Box$
 
-We can also encode the GOTO table by a list, but here it appears more efficient to make a list of pairs for each nonterminal $A$. Each pair on the list for $A$ is of the form (currentState, nextState), indicating
-GOTO [currentState, A] = nextState
+We can also encode the GOTO table by a list, but here it appears more efficient to make a list of pairs for each nonterminal $A$. Each pair on the list for $A$ is of the form $(currentState, nextState)$, indicating
+
+$$
+\text{GOTO}[currentState, A] = nextState
+$$
+
 This technique is useful because there tend to be rather few states in any one column of the GOTO table. The reason is that the GOTO on nonterminal $A$ can only be a state derivable from a set of items in which some items have $A$ immediately to the left of a dot. No set has items with $X$ and $Y$ immediately to the left of a dot if $X \not= Y$. Thus, each state appears in at most one GOTO column.
 
-For more space reduction, we note that the error entries in the GOTO table are never consulted. We can therefore replace each error entry by the most common non-error entry in its column. This entry becomes the default; it is represented in the list for each column by one pair with any in place of currentState.
+For more space reduction, we note that the error entries in the GOTO table are never consulted. We can therefore replace each error entry by the most common non-error entry in its column. This entry becomes the default; it is represented in the list for each column by one pair with any in place of *currentState*.
 
-**Example 4.66:** Consider Fig. 4.37 again. The column for F has entry 10 for state 7, and all other entries are either 3 or error. We may replace error by 3 and create for column F the list
+**Example 4.66:** Consider Fig. 4.37 again. The column for $F$ has entry 10 for state 7, and all other entries are either 3 or error. We may replace error by 3 and create for column $F$ the list
 
 | CURRENTSTATE | NEXTSTATE |
 | :----------- | :-------: |
 | 7            |    10     |
-| any          |     3     |
+| **any**          |     3     |
 
 Similarly, a suitable list for column $T$ is
 
@@ -1101,7 +1116,7 @@ Similarly, a suitable list for column $T$ is
 | any          |     2     |
 
 
-For column E we may choose either 1 or 8 to be the default; two entries are necessary in either case. For example, we might create for column E the list
+For column $E$ we may choose either 1 or 8 to be the default; two entries are necessary in either case. For example, we might create for column $E$ the list
 
 | CURRENTSTATE | NEXTSTATE |
 | :----------- | :-------: |
@@ -1486,7 +1501,7 @@ would be written in Yacc as
 ```
 In a Yacc production, unquoted strings of letters and digits not declared to be tokens are taken to be nonterminals. A quoted single character, e.g. `'c'`, is taken to be the terminal symbol $c$, as well as the integer code for the token represented by that character (i.e., Lex would return the character code for `'c'` to the parser, as an integer). Alternative bodies can be separated by a vertical bar, and a semicolon follows each head with its alternatives and their semantic actions. The first head is taken to be the start symbol.
 
-A Yacc semantic action is a sequence of C statements. In a semantic action, the symbol `$$` refers to the attribute value associated with the nonterminal of the head, while $\$i$ refers to the value associated with the $i$th grammar symbol (terminal or nonterminal) of the body. The semantic action is performed whenever we reduce by the associated production, so normally the semantic action computes a value for `$$` in terms of the `$i`'s. In the Yacc specification, we have written the two $E$-productions
+A Yacc semantic action is a sequence of C statements. In a semantic action, the symbol `$$` refers to the attribute value associated with the nonterminal of the head, while $\$i$ refers to the value associated with the *i*th grammar symbol (terminal or nonterminal) of the body. The semantic action is performed whenever we reduce by the associated production, so normally the semantic action computes a value for `$$` in terms of the `$i`'s. In the Yacc specification, we have written the two $E$-productions
 $$
 E \to E + T\ |\ T
 $$
@@ -1714,8 +1729,8 @@ lines: error '\n'
 
 This error production causes the desk calculator to suspend normal parsing when a syntax error is found on an input line. On encountering the error, the parser in the desk calculator starts popping symbols from its stack until it encounters a state that has a shift action on the token **error**. State 0 is such a state (in this example, it's the only such state), since its items include
 
-```c
-lines \to \cdot error '\n'
-```
+$$
+lines \to \cdot \textbf{error}\ \text{'\n'}
+$$
 
-Also, state 0 is always on the bottom of the stack. The parser shifts the token **error** onto the stack, and then proceeds to skip ahead in the input until it has found a newline character. At this point the parser shifts the newline onto the stack, reduces $error ' \n'$ to $lines$, and emits the diagnostic message “reenter previous line:” The special Yacc routine `yyerrok` resets the parser to its normal mode of operation. $\Box$
+Also, state 0 is always on the bottom of the stack. The parser shifts the token **error** onto the stack, and then proceeds to skip ahead in the input until it has found a newline character. At this point the parser shifts the newline onto the stack, reduces $\textbf{error}\ \text{'\n'}$ to $lines$, and emits the diagnostic message “reenter previous line:” The special Yacc routine `yyerrok` resets the parser to its normal mode of operation. $\Box$
