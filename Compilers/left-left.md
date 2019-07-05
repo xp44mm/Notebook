@@ -163,7 +163,7 @@ $$
 \textbf{id}+-*/()
 $$
 
-The nonterminal symbols are $expression$, $term$ and $factor$, and $expression$ is the start symbol. $\Box$
+The nonterminal symbols are $expression$, $term$ and $factor$, and $expression$ is the start symbol. □
 
 $$
 \begin{array}{rrl}
@@ -226,7 +226,7 @@ F & \to & ( E ) | \textbf{id}
 \end{array}
 $$
 
-The notational conventions tell us that $E$, $T$, and $F$ are nonterminals, with $E$ the start symbol. The remaining symbols are terminals. $\Box$
+The notational conventions tell us that $E$, $T$, and $F$ are nonterminals, with $E$ the start symbol. The remaining symbols are terminals. □
 
 ### 4.2.3 Derivations
 
@@ -317,7 +317,7 @@ To model this step of the derivation, find the $j$th non-$\epsilon$ leaf from th
 
 **Example 4.10:** The sequence of parse trees constructed from the derivation (4.8) is shown in Fig. 4.4. In the first step of the derivation, $E \implies  - E$. To model this step, add two children, labeled $-$ and $E$, to the root $E$ of the initial tree. The result is the second tree.
 
-In the second step of the derivation $- E \implies  - ( E )$. Consequently, add three children, labeled $($, $E$, and $)$, to the leaf labeled $E$ of the second tree, to obtain the third tree with yield $- (E)$. Continuing in this fashion we obtain the complete parse tree as the sixth tree. $\Box$
+In the second step of the derivation $- E \implies  - ( E )$. Consequently, add three children, labeled $($, $E$, and $)$, to the leaf labeled $E$ of the second tree, to obtain the third tree with yield $- (E)$. Continuing in this fashion we obtain the complete parse tree as the sixth tree. □
 
 ![](images/Figure4.4.png)
 
@@ -345,7 +345,7 @@ $$
 
 The corresponding parse trees appear in Fig. 4.5.
 
-Note that the parse tree of Fig. 4.5(a) reflects the commonly assumed precedence of $+$ and $ * $, while the tree of Fig. 4.5(b) does not. That is, it is customary to treat operator $ * $ as having higher precedence than $+$, corresponding to the fact that we would normally evaluate an expression like $a + b * c$ as $a + (b * c)$, rather than as $(a + b) * c$. $\Box$
+Note that the parse tree of Fig. 4.5(a) reflects the commonly assumed precedence of $+$ and $ * $, while the tree of Fig. 4.5(b) does not. That is, it is customary to treat operator $ * $ as having higher precedence than $+$, corresponding to the fact that we would normally evaluate an expression like $a + b * c$ as $a + (b * c)$, rather than as $(a + b) * c$. □
 
   ![](images/Figure4.5.png)
 
@@ -383,7 +383,7 @@ Having thus shown that any string derivable from $S$ is balanced, we must next s
 $$
 S \implies (S)S \overset*\implies (x)S \overset*\implies (x)y
 $$
-proving that $w = (x)y$ is also derivable from $S$. $\Box$
+proving that $w = (x)y$ is also derivable from $S$. □
 
 ### 4.2.7 Context-Free Grammars Versus Regular Expressions
 
@@ -480,7 +480,7 @@ In all programming languages with conditional statements of this form, the first
 [^1]: The subscripts on $E$ and $S$ are just to distinguish different occurrences of the same nonterminal, and do not imply distinct nonterminals.
 [^2]: We should note that C and its derivatives are included in this class. Even though the C family of languages do not use the keyword **then**, its role is played by the closing parenthesis for the condition that follows **if**.
 
-**Example 4.16:** We can rewrite the dangling-else grammar (4.14) as the following unambiguous grammar. The idea is that a statement appearing between a **then** and an **else** must be “matched”; that is, the interior statement must not end with an unmatched or open **then**. A matched statement is either an if-then-else statement containing no open statements or it is any other kind of unconditional statement. Thus, we may use the grammar in Fig. 4.10. This grammar generates the same strings as the dangling-else grammar (4.14), but it allows only one parsing for string (4.15); namely, the one that associates each **else** with the closest previous unmatched **then**. $\Box$
+**Example 4.16:** We can rewrite the dangling-else grammar (4.14) as the following unambiguous grammar. The idea is that a statement appearing between a **then** and an **else** must be “matched”; that is, the interior statement must not end with an unmatched or open **then**. A matched statement is either an if-then-else statement containing no open statements or it is any other kind of unconditional statement. Thus, we may use the grammar in Fig. 4.10. This grammar generates the same strings as the dangling-else grammar (4.14), but it allows only one parsing for string (4.15); namely, the one that associates each **else** with the closest previous unmatched **then**. □
 $$
 \begin{array}{rrl}
 stmt &\to &matched\_stmt \\
@@ -514,7 +514,7 @@ T' & \to&  * F T'\ |\ \epsilon \\
 F  & \to&  ( E )\ |\ id
 \end{array}
 $$
-is obtained by eliminating immediate left recursion from the expression grammar (4.1). The left-recursive pair of productions $E \to E + T | T$ are replaced by $E \to T E'$ and $E' \to + T E' | \epsilon$. The new productions for $T$ and $T'$ are obtained similarly by eliminating immediate left recursion. $\Box$
+is obtained by eliminating immediate left recursion from the expression grammar (4.1). The left-recursive pair of productions $E \to E + T | T$ are replaced by $E \to T E'$ and $E' \to + T E' | \epsilon$. The new productions for $T$ and $T'$ are obtained similarly by eliminating immediate left recursion. □
 
 Immediate left recursion can be eliminated by the following technique, which works for any number of A-productions. First, group the productions as
 $$
@@ -548,7 +548,7 @@ Algorithm 4.19, below, systematically eliminates left recursion from a grammar. 
 
 **OUTPUT:** An equivalent grammar with no left recursion.
 
-**METHOD:** Apply the algorithm in Fig. 4.11 to *G*. Note that the resulting non-left-recursive grammar may have $\epsilon$-productions.  $\Box$
+**METHOD:** Apply the algorithm in Fig. 4.11 to *G*. Note that the resulting non-left-recursive grammar may have $\epsilon$-productions.  □
 
   1)   arrange the nonterminals in some order $A_1, A_2, \dots ,A_n$.
 
@@ -585,7 +585,7 @@ A' & \to & c\ A'\ |\ a\ d\ A'\ |\ \epsilon \\
 \end{array}
 $$
 
-$\Box$
+□
 
 ### 4.3.4 Left Factoring
 
@@ -621,7 +621,7 @@ A &\to &\alpha A' | \gamma \\
 A' &\to &\beta_1 |\beta_2 | \dots  |\beta_n
 \end{array}
 $$
-Here $A'$ is a new nonterminal. Repeatedly apply this transformation until no two alternatives for a nonterminal have a common prefix. $\Box$
+Here $A'$ is a new nonterminal. Repeatedly apply this transformation until no two alternatives for a nonterminal have a common prefix. □
 
 **Example 4.22:** The following grammar abstracts the **dangling-else** problem:
 $$
@@ -641,7 +641,7 @@ E  &\to&  b
 \end{array}
 $$
 
-Thus, we may expand $S$ to $iEtSS’$ on input $i$, and wait until $iEtS$ has been seen to decide whether to expand $S'$ to $eS$ or to $\epsilon$. Of course, these grammars are both ambiguous, and on input $e$, it will not be clear which alternative for $S'$ should be chosen. Example 4.33 discusses a way out of this dilemma. $\Box$
+Thus, we may expand $S$ to $iEtSS’$ on input $i$, and wait until $iEtS$ has been seen to decide whether to expand $S'$ to $eS$ or to $\epsilon$. Of course, these grammars are both ambiguous, and on input $e$, it will not be clear which alternative for $S'$ should be chosen. Example 4.33 discusses a way out of this dilemma. □
 
 ### 4.3.5 Non-Context-Free Language Constructs
 
@@ -651,7 +651,7 @@ A few syntactic constructs found in typical programming languages cannot be spec
 
 The abstract language is $L_1 = \{w c w  | w \text{  is in }(a|b) * \}$. $L_1$ consists of all words composed of a repeated string of $a$’s and $b$’s separated by $c$, such as $aabcaab$. While it is beyond the scope of this book to prove it, the non-context-freedom of $L_1$ directly implies the non-context-freedom of programming languages like C and Java, which require declaration of identifiers before their use and which allow identifiers of arbitrary length.
 
-For this reason, a grammar for C or Java does not distinguish among identifiers that are different character strings. Instead, all identifiers are represented by a token such as **id** in the grammar. In a compiler for such a language, the semantic-analysis phase checks that identifiers are declared before they are used. $\Box$
+For this reason, a grammar for C or Java does not distinguish among identifiers that are different character strings. Instead, all identifiers are represented by a token such as **id** in the grammar. In a compiler for such a language, the semantic-analysis phase checks that identifiers are declared before they are used. □
 
 **Example 4.26:** The non-context-free language in this example abstracts the problem of checking that the number of formal parameters in the declaration of a function agrees with the number of actual parameters in a use of the function. The language consists of strings of the form $a^nb^mc^nd^m$. (Recall $a^n$ means a written n times.) Here $a^n$ and $b^m$ could represent the formal-parameter lists of two functions declared to have $n$ and $m$ arguments, respectively, while $c^n$ and $d^m$ represent the actual-parameter lists in calls to these two functions.
 
@@ -665,7 +665,7 @@ expr\_list   &\to& expr\_list , expr \\
              &|& expr
 \end{array}
 $$
-with suitable productions for $expr$. Checking that the number of parameters in a call is correct is usually done during the semantic-analysis phase. $\Box$
+with suitable productions for $expr$. Checking that the number of parameters in a call is correct is usually done during the semantic-analysis phase. □
 
 
 ## 4.4 Top-Down Parsing
@@ -684,7 +684,7 @@ F  &\to&  ( E ) | \textbf{id}
 \end{array}
 $$
 
-This sequence of trees corresponds to a leftmost derivation of the input. $\Box$
+This sequence of trees corresponds to a leftmost derivation of the input. □
 
 At each step of a top-down parse, the key problem is that of determining the production to be applied for a nonterminal, say $A$. Once an $A$-production is chosen, the rest of the parsing process consists of “matching” the terminal symbols in the production body with the input string.
 
@@ -740,7 +740,7 @@ Now, we expand $A$ using the first alternative $A \to a b$ to obtain the tree of
 
 In going back to $A$, we must reset the input pointer to position 2, the position it had when we first came to $A$, which means that the procedure for $A$ must store the input pointer in a local variable.
 
-The second alternative for $A$ produces the tree of Fig. 4.14(c). The leaf a matches the second symbol of $w$ and the leaf $d$ matches the third symbol. Since we have produced a parse tree for $w$, we halt and announce successful completion of parsing. $\Box$
+The second alternative for $A$ produces the tree of Fig. 4.14(c). The leaf a matches the second symbol of $w$ and the leaf $d$ matches the third symbol. Since we have produced a parse tree for $w$, we halt and announce successful completion of parsing. □
 
 A left-recursive grammar can cause a recursive-descent parser, even one with backtracking, to go into an infinite loop. That is, when we try to expand a nonterminal $A$, we may eventually find ourselves again trying to expand $A$ without having consumed any input.
 
@@ -789,7 +789,7 @@ To compute FOLLOW($A$) for all nonterminals $A$, apply the following rules until
 
 6.  FOLLOW($F$) = {$+$,$ * $, $)$, \$}. The reasoning is analogous to that for $T$ in point (5).
 
-$\Box$
+□
 
 ### 4.4.3 LL(1) Grammars
 
@@ -855,7 +855,7 @@ The next algorithm collects the information from FIRST and FOLLOW sets into a pr
 
 2.  If $\epsilon$ is in FIRST($\alpha$), then for each terminal b in FOLLOW($A$), add $A \to \alpha$ to $M[A, b]$. If $\epsilon$ is in FIRST($\alpha$) and \$ is in FOLLOW($A$), add $A \to \alpha$ to $M[A, \$]$ as well.
 
-If, after performing the above, there is no production at all in $M[A, a]$, then set $M[A, a]$ to error (which we normally represent by an empty entry in the table). $\Box$
+If, after performing the above, there is no production at all in $M[A, a]$, then set $M[A, a]$ to error (which we normally represent by an empty entry in the table). □
 
 **Example 4.32:** For the expression grammar (4.28), Algorithm 4.31 produces the parsing table in Fig. 4.17. Blanks are error entries; non-blanks indicate a production with which to expand a nonterminal.
 
@@ -875,7 +875,7 @@ $$
 FIRST(T\ E') = FIRST(T) = \{(, \textbf{id}\}
 $$
 
-this production is added to $M[E, (]$ and $M[E, \textbf{id}]$. production $E' \to +\ T\ E'$ is added to $M[E', +]$ since $FIRST(+T\ E') = \{+\}$. Since $FOLLOW(E') = \{), \$\}$, production $E' \to \epsilon$ is added to $M[E', )]$ and $M[E', \$]$. $\Box$
+this production is added to $M[E, (]$ and $M[E, \textbf{id}]$. production $E' \to +\ T\ E'$ is added to $M[E', +]$ since $FIRST(+T\ E') = \{+\}$. Since $FOLLOW(E') = \{), \$\}$, production $E' \to \epsilon$ is added to $M[E', )]$ and $M[E', \$]$. □
 
 Algorithm 4.31 can be applied to any grammar *G* to produce a parsing table $M$. For every LL(1) grammar, each parsing-table entry uniquely identifies a production or signals an error. For some grammars, however, $M$ may have some entries that are multiply defined. For example, if *G* is left-recursive or ambiguous, then $M$ will have at least one multiply defined entry. Although left-recursion elimination and left factoring are easy to do, there are some grammars for which no amount of alteration will produce an LL(1)​ grammar.
 
@@ -901,7 +901,7 @@ The parsing table for this grammar appears in Fig. 4.18. The entry for $M[S', e]
 
 Figure 4.18: Parsing table M for Example 4.33
 
-The grammar is ambiguous and the ambiguity is manifested by a choice in what production to use when an e (**else**) is seen. We can resolve this ambiguity by choosing $S'\to eS$. This choice corresponds to associating an **else** with the closest previous **then**. Note that the choice $S'\to \epsilon$ would prevent $e$ from ever being put on the stack or removed from the input, and is surely wrong. $\Box$
+The grammar is ambiguous and the ambiguity is manifested by a choice in what production to use when an e (**else**) is seen. We can resolve this ambiguity by choosing $S'\to eS$. This choice corresponds to associating an **else** with the closest previous **then**. Note that the choice $S'\to \epsilon$ would prevent $e$ from ever being put on the stack or removed from the input, and is surely wrong. □
 
 ### 4.4.4 Nonrecursive Predictive Parsing
 
@@ -927,7 +927,7 @@ The behavior of the parser can be described in terms of its *configurations*, wh
 
 Figure 4.19: Model of a table-driven predictive parser
 
-**METHOD:** Initially, the parser is in a configuration with $w\$$ in the input buffer and the start symbol $S$ of *G* on top of the stack, above \$. The program in Fig. 4.20 uses the predictive parsing table M to produce a predictive parse for the input. $\Box$
+**METHOD:** Initially, the parser is in a configuration with $w\$$ in the input buffer and the start symbol $S$ of *G* on top of the stack, above \$. The program in Fig. 4.20 uses the predictive parsing table M to produce a predictive parse for the input. □
 
 let $a$ be the first symbol of $w$ ;
 let $X$ be the top stack symbol;
@@ -977,7 +977,7 @@ $$
 
 Figure 4.21: Moves made by a predictive parser on input $\textbf{id} + \textbf{id} * \textbf{id}$
 
-Note that the sentential forms in this derivation correspond to the input that has already been matched (in column MATCHED) followed by the stack contents. The matched input is shown only to highlight the correspondence. For the same reason, the top of the stack is to the left; when we consider bottom-up parsing, it will be more natural to show the top of the stack to the right. The input pointer points to the leftmost symbol of the string in the INPUT column. $\Box$
+Note that the sentential forms in this derivation correspond to the input that has already been matched (in column MATCHED) followed by the stack contents. The matched input is shown only to highlight the correspondence. For the same reason, the top of the stack is to the left; when we consider bottom-up parsing, it will be more natural to show the top of the stack to the right. The input pointer points to the leftmost symbol of the string in the INPUT column. □
 
 ### 4.4.5 Error Recovery in Predictive Parsing
 
@@ -1013,7 +1013,7 @@ The table in Fig. 4.22 is to be used as follows. If the parser looks up entry M 
 
   Figure 4.22: Synchronizing tokens added to the parsing table of Fig. 4.17
 
-On the erroneous input $) \textbf{id} * + \textbf{id}$, the parser and error recovery mechanism of Fig. 4.22 behave as in Fig. 4.23. $\Box$
+On the erroneous input $) \textbf{id} * + \textbf{id}$, the parser and error recovery mechanism of Fig. 4.22 behave as in Fig. 4.23. □
 
 $$
 \begin{array}{rrl}
@@ -1072,7 +1072,7 @@ $$
 
 The strings in this sequence are formed from the roots of all the subtrees in the snapshots. The sequence starts with the input string $\textbf{id} * \textbf{id}$. The first reduction produces $F * \textbf{id}$ by reducing the leftmost **id** to $F$, using the production $F \to \textbf{id}$. The second reduction produces $T * \textbf{id}$ by reducing $F$ to $T$.
 
-Now, we have a choice between reducing the string $T$, which is the body of $E \to T$, and the string consisting of the second **id**, which is the body of $F \to \textbf{id}$. Rather than reduce $T$ to $E$, the second **id** is reduced to $T$, resulting in the string $T * F$. This string then reduces to $T$. The parse completes with the reduction of $T$ to the start symbol $E$. $\Box$
+Now, we have a choice between reducing the string $T$, which is the body of $E \to T$, and the string consisting of the second **id**, which is the body of $F \to \textbf{id}$. Rather than reduce $T$ to $E$, the second **id** is reduced to $T$, resulting in the string $T * F$. This string then reduces to $T$. The parse completes with the reduction of $T$ to the start symbol $E$. □
 
 By definition, a reduction is the reverse of a step in a derivation (recall that in a derivation, a nonterminal in a sentential form is replaced by the body of one of its productions). The goal of bottom-up parsing is therefore to construct a derivation in reverse. The following derivation corresponds to the parse in Fig. 4.25:
 
@@ -1240,7 +1240,7 @@ $$
 
 we cannot tell whether $\textbf{if } expr \textbf{ then }stmt$ is the handle, no matter what appears below it on the stack. Here there is a shift/reduce conflict. Depending on what follows the **else** on the input, it might be correct to reduce $\textbf{if } expr \textbf{ then }stmt$ to $stmt$, or it might be correct to shift **else** and then to look for another $stmt$ to complete the alternative $\textbf{if }expr\textbf{ then }stmt\textbf{ else }stmt$.
 
-Note that shift-reduce parsing can be adapted to parse certain ambiguous grammars, such as the if-then-else grammar above. If we resolve the shift/reduce conflict on **else** in favor of shifting, the parser will behave as we expect, associating each **else** with the previous unmatched **then**. We discuss parsers for such ambiguous grammars in Section 4.8.$\Box$
+Note that shift-reduce parsing can be adapted to parse certain ambiguous grammars, such as the if-then-else grammar above. If we resolve the shift/reduce conflict on **else** in favor of shifting, the parser will behave as we expect, associating each **else** with the previous unmatched **then**. We discuss parsers for such ambiguous grammars in Section 4.8.□
 
 Another common setting for conflicts occurs when we know we have a handle, but the stack contents and the next input symbol are insufficient to determine which production should be used in a reduction. The next example illustrates this situation.
 
@@ -1284,4 +1284,4 @@ $$
 \end{array}
 $$
 
-or in the configuration above. In the former case, we choose reduction by production (5); in the latter case by production (7). Notice how the third symbol from the top of the stack determines the reduction to be made, even though it is not involved in the reduction. Shift-reduce parsing can utilize information far down in the stack to guide the parse.$\Box$
+or in the configuration above. In the former case, we choose reduction by production (5); in the latter case by production (7). Notice how the third symbol from the top of the stack determines the reduction to be made, even though it is not involved in the reduction. Shift-reduce parsing can utilize information far down in the stack to guide the parse.□

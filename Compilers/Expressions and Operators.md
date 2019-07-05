@@ -561,3 +561,78 @@ In order to understand how the `instanceof` operator works, you must understand 
 
 ## 4.10 Logical Expressions
 
+The logical operators `&&`, `||`, and `!` perform Boolean algebra and are often used in conjunction with the relational operators to combine two relational expressions into one more complex expression. These operators are described in the subsections that follow. In order to fully understand them, you may want to review the concept of “truthy” and “falsy” values introduced in §3.3.
+
+### 4.10.1 Logical AND (&&)
+
+The `&&` operator can be understood at three different levels. At the simplest level, when used with boolean operands, `&&` performs the Boolean AND operation on the two values: it returns true if and only if both its first operand and its second operand are true. If one or both of these operands is false, it returns false. && is often used as a conjunction to join two relational expressions:
+
+```js
+x == 0 && y == 0   // true if, and only if x and y are both 0
+```
+
+Relational expressions always evaluate to true or false, so when used like this, the `&&` operator itself returns true or false. Relational operators have higher precedence than `&&` (and `||`), so expressions like these can safely be written without parentheses.
+
+But `&&` does not require that its operands be boolean values. Recall that all JavaScript values are either “truthy” or “falsy.” (See §3.3 for details. The falsy values are `false`, `null`, `undefined`, 0, -0, `NaN`, and `""`. All other values, including all objects, are truthy.) The second level at which `&&` can be understood is as a Boolean AND operator for truthy and falsy values. If both operands are truthy, the operator returns a truthy value. Otherwise, one or both operands must be falsy, and the operator returns a falsy value. In JavaScript, any expression or statement that expects a boolean value will work with a truthy or falsy value, so the fact that `&&` does not always return true or false does not cause practical problems.
+
+Notice that the description above says that the operator returns “a truthy value” or “a falsy value,” but does not specify what that value is. For that, we need to describe `&&` at the third and final level. This operator starts by evaluating its first operand, the expression on its left. If the value on the left is falsy, the value of the entire expression must also be falsy, so `&&` simply returns the value on the left and does not even evaluate the expression on the right.
+
+On the other hand, if the value on the left is truthy, then the overall value of the expression depends on the value on the right-hand side. If the value on the right is truthy, then the overall value must be truthy, and if the value on the right is falsy, then the overall value must be falsy. So when the value on the left is truthy, the `&&` operator evaluates and returns the value on the right:
+
+```js
+var o = { x : 1 };
+var p = null;
+o && o.x     // => 1: o is truthy, so return value of o.x
+p && p.x     // => null: p is falsy, so return it and don't evaluate p.x
+```
+
+It is important to understand that `&&` may or may not evaluate its right-side operand. In the code above, the variable `p` is set to null, and the expression `p.x` would, if evaluated, cause a `TypeError`. But the code uses `&&` in an idiomatic way so that `p.x` is evaluated only if `p` is truthy—not null or undefined.
+
+The behavior of `&&` is sometimes called “short circuiting,” and you may sometimes see code that purposely exploits this behavior to conditionally execute code. For example, the following two lines of JavaScript code have equivalent effects:
+
+```js
+if (a == b) stop();   // Invoke stop() only if a == b
+(a == b) && stop();   // This does the same thing
+```
+
+In general, you must be careful whenever you write an expression with side effects (assignments, increments, decrements, or function invocations) on the right-hand side of `&&`. Whether those side effects occur depends on the value of the left-hand side.
+
+Despite the somewhat complex way that this operator actually works, it is most commonly used as a simple Boolean algebra operator that works on truthy and falsy values.
+
+### 4.10.2 Logical OR (||)
+
+The `||` operator performs the Boolean OR operation on its two operands. If one or both operands is truthy, it returns a truthy value. If both operands are falsy, it returns a falsy value.
+
+Although the `||` operator is most often used simply as a Boolean OR operator, it, like the `&&` operator, has more complex behavior. It starts by evaluating its first operand, the expression on its left. If the value of this first operand is truthy, it returns that truthy value. Otherwise, it evaluates its second operand, the expression on its right, and returns the value of that expression.
+
+As with the `&&` operator, you should avoid right-side operands that include side effects, unless you purposely want to use the fact that the right-side expression may not be evaluated.
+
+An idiomatic usage of this operator is to select the first truthy value in a set of alternatives:
+
+```js
+// If max_width is defined, use that. Otherwise look for a value in
+// the preferences object. If that is not defined use a hard-coded constant.
+var max = max_width || preferences.max_width || 500;
+```
+
+This idiom is often used in function bodies to supply default values for parameters:
+
+```js
+// Copy the properties of o to p, and return p
+function copy(o, p) {
+   p = p || {}; // If no object passed for p, use a newly created object.
+   // function body goes here
+}
+```
+
+### 4.10.3 Logical NOT (!)
+
+The `!` operator is a unary operator; it is placed before a single operand. Its purpose is to invert the boolean value of its operand. For example, if `x` is truthy `!x` evaluates to false. If `x` is falsy, then `!x` is true.
+
+Unlike the `&&` and `||` operators, the `!` operator converts its operand to a boolean value (using the rules described in Chapter 3) before inverting the converted value. This means that `!` always returns true or false, and that you can convert any value `x` to its equivalent boolean value by applying this operator twice: `!!x` (see §3.8.2). As a unary operator, `!` has high precedence and binds tightly. If you want to invert the value of an expression like `p && q`, you need to use parentheses: `!(p && q)`. It is worth noting two theorems of Boolean algebra here that we can express using JavaScript syntax:
+
+```js
+// These two equalities hold for any values of p and q
+!(p && q) === !p || !q
+!(p || q) === !p && !q
+```

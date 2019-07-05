@@ -253,7 +253,7 @@ let pattern = "^(0|(?!0)\d{1,4})$"
 
 ```
 
-If the upper limit of the accepted range isn't a number in the form 99…999, you can still use regular expressions to do the validation, but the pattern becomes more complex. For example, the following pattern checks that a number is in the range 0 to 255 with no leading zeros:
+If the upper limit of the accepted range isn't a number in the form 99...999, you can still use regular expressions to do the validation, but the pattern becomes more complex. For example, the following pattern checks that a number is in the range 0 to 255 with no leading zeros:
 
 ```F#
 let pattern = @"^(25[0–5]|2[0–4]\d|1\d\d|[1–9]\d|\d)$"
@@ -331,11 +331,11 @@ let s5 : String = @"(0?2)/29/(\d\d)?(0[48]|[2468][048]|[13579][26])"
 let pattern = String.Format("^({0}|{1}|{2}|{3}|{4})$", s1, s2, s3, s4, s5)
 ```
 
-(Notice that I might have merged the portions s4 and s5 in a single subexpression that validates all leap years, but I kept the two expressions separate for clarity's sake.) It's easy to derive a similar regular expression for dates in dd/mm/yy format and to account for separators other than the dash character.
+(Notice that I might have merged the portions s4 and s5 in a single subexpression that validates all leap years, but I kept the two expressions separate for clarity's sake.) It's easy to derive a similar regular expression for dates in `dd/mm/yy` format and to account for separators other than the dash character.
 
 ### Searching for Nested Tags
 
-When you apply regular expressions to HTML or XML files, you must take the hierarchical natures of these files into account. For example, let's say that you want to extract the contents of `<table>…</table>` sections in an HTML file. You can't simply use a pattern such as this:
+When you apply regular expressions to HTML or XML files, you must take the hierarchical natures of these files into account. For example, let's say that you want to extract the contents of `<table>...</table>` sections in an HTML file. You can't simply use a pattern such as this:
 
 ```regex
 <table[\s>].*?</table>
@@ -344,7 +344,7 @@ When you apply regular expressions to HTML or XML files, you must take the hiera
 because it would return bogus results when you apply it to a text that contains nested tables, such as this:
 
 ```html
-<table border=1><tr><td><table>…</table></td><td>…</td></tr></table>
+<table border=1><tr><td><table>...</table></td><td>...</td></tr></table>
 ```
 
 In cases like these, the balancing group definition construct shown in Table 14-1 can help because it lets you take nested tags into account. (For a great example of how you can use this construct, read http://blogs.msdn.com/bclteam/archive/2005/03/15/396452.aspx.) However, this construct is quite difficult to use and has some limitations, the most notable of which is that it doesn't work well if you're looking for a series of nested tags, as when you want to display all `<table>`, `<tr>`, and `<td>` blocks. In cases like these, you need two nested loops, as in the following code:
@@ -361,7 +361,7 @@ let relevantTags =
         tag,re
     ) |> dict
 
-// Find all nested HTML tags in a file. (e.g., <table>…</table>)
+// Find all nested HTML tags in a file. (e.g., <table>...</table>)
 let findNestedTags (text:string) =
     // We've found an open tag. Let's look for open and close versions of this tag.
     let rec loop (m0: Match) (mr: Match) (openTags: int) =
@@ -466,7 +466,7 @@ let pattern =
     |> sprintf @"^\s*%s\s*$"
 ```
 
-The `(?<q1>["'])` subexpression matches either the single or the double leading quotation mark delimiter and assigns this group the name "q1". (The double quotation mark character is doubled because it appears in a Visual Basic string.) The `\k<q1>` subexpression is a back reference to whatever the q1 group found and therefore matches whichever quotation mark character was used at the beginning of the field. The q2 and q3 groups have the same role for the next two fields. Once again, you don't need to change any other statement in the parsing routine.
+The `(?<q1>["'])` subexpression matches either the single or the double leading quotation mark delimiter and assigns this group the name "``q1`". (The double quotation mark character is doubled because it appears in a Visual Basic string.) The `\k<q1>` subexpression is a back reference to whatever the `q1` group found and therefore matches whichever quotation mark character was used at the beginning of the field. The `q2` and `q3` groups have the same role for the next two fields. Once again, you don't need to change any other statement in the parsing routine.
 
 The previous pattern has a small defect, though. Many programs that output data in delimited format enclose a text field in quotation marks only if the field contains the delimiter character. For example, in the following data file the first and last fields in the first record are enclosed in quotation marks because they embed a comma, but the fields in the second record aren't.
 
@@ -488,9 +488,9 @@ let pattern =
     |> sprintf @"^\s*%s\s*$"
 ```
 
-The `(?<q1>["']?)` is similar to the pattern used in the previous example, except it has a trailing `?` character; therefore, it matches an optional single or double quotation mark character. Later in the same line you find the `(?(q1)\k<q1>)` clause, which tests whether the q1 group is defined and, if so, matches its value. In other words, if the q1 group actually matched the single or double quotation mark character, the expression `(?(q1)\k<q1>)` matches it again; otherwise, the expression is ignored. The same reasoning applies to the other two fields in the record.
+The `(?<q1>["']?)` is similar to the pattern used in the previous example, except it has a trailing `?` character; therefore, it matches an optional single or double quotation mark character. Later in the same line you find the `(?(q1)\k<q1>)` clause, which tests whether the `q1` group is defined and, if so, matches its value. In other words, if the `q1` group actually matched the single or double quotation mark character, the expression `(?(q1)\k<q1>)` matches it again; otherwise, the expression is ignored. The same reasoning applies to the other two fields in the record.
 
-The `(?(expr)…)` clause has an optional "no" portion (see Table 14-1), so you might even match a portion of a string if a previous group has *not* been matched.
+The `(?(expr)...)` clause has an optional "no" portion (see Table 14-1), so you might even match a portion of a string if a previous group has *not* been matched.
 
 ### Parsing and Evaluating Expressions
 
