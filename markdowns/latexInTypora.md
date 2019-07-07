@@ -69,7 +69,10 @@ $a_1 + a_2 + \cdots + a_n$
 
 ### 4.3.2 指数、上下标和导数
 
-$p^3_{ij} \qquad m_\mathrm{Knuth}\qquad\sum_{k=1}^3 k $
+$p^3_{ij} \qquad m_\mathrm{Knuth} $
+
+$\qquad\sum_{k=1}^3 k$
+
 $a^x+y \neq a^{x+y}\qquad e^{x^2} \neq {e^x}^2$ 
 
 $f(x) = x^2 \quad f’(x)= 2x \quad f’’^{2}(x) = 4$
