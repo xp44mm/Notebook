@@ -1,6 +1,6 @@
-﻿# Chapter 3 Lexical Analysis
+# Chapter 3 Lexical Analysis
 
-In this chapter we show how to construct a lexical analyzer. To implement a lexical analyzer by hand, it helps to start with a diagram or other description for the lexemes of each token. We can then write code to identify each occurrence of each lexeme on the input and to return information about the token identified. We can also produce a lexical analyzer automatically by specifying the lexeme patterns to a lexical-analyzer generator and compiling those patterns into code that functions as a lexical analyzer. This approach makes it easier to mod­ify a lexical analyzer, since we have only to rewrite the affected patterns, not the entire program. It also speeds up the process of implementing the lexical analyzer, since the programmer specifies the software at the very high level of patterns and relies on the generator to produce the detailed code. We shall introduce in Section 3.5 a lexical-analyzer generator called Lex ( or Flex in a more recent embodiment ).
+In this chapter we show how to construct a lexical analyzer. To implement a lexical analyzer by hand, it helps to start with a diagram or other description for the lexemes of each token. We can then write code to identify each occurrence of each lexeme on the input and to return information about the token identified. We can also produce a lexical analyzer automatically by specifying the lexeme patterns to a lexical-analyzer generator and compiling those patterns into code that functions as a lexical analyzer. This approach makes it easier to modify a lexical analyzer, since we have only to rewrite the affected patterns, not the entire program. It also speeds up the process of implementing the lexical analyzer, since the programmer specifies the software at the very high level of patterns and relies on the generator to produce the detailed code. We shall introduce in Section 3.5 a lexical-analyzer generator called Lex ( or Flex in a more recent embodiment ).
 
 We begin the study of lexical-analyzer generators by introducing regular expressions, a convenient notation for specifying lexeme patterns. We show how this notation can be transformed, first into nondeterministic automata and then into deterministic automata. The latter two notations can be used as input to a "driver," that is, code which simulates these automata and uses them as a guide to determining the next token. This driver and the specification of the automaton form the nucleus of the lexical analyzer.
 
@@ -64,15 +64,15 @@ In many programming languages, the following classes cover most or all of the to
 
 ### 3.1.3 Attributes for Tokens
 
-When more than one lexeme can match a pattern, the lexical analyzer must provide the subsequent compiler phases additional information about the par­ticular lexeme that matched. For example, the pattern for token number matches both 0 and 1, but it is extremely important for the code generator to know which lexeme was found in the source program. Thus, in many cases the lexical analyzer returns to the parser not only a token name, but an attribute value that describes the lexeme represented by the token; the token name in­fluences parsing decisions, while the attribute value influences translation of tokens after the parse.
+When more than one lexeme can match a pattern, the lexical analyzer must provide the subsequent compiler phases additional information about the particular lexeme that matched. For example, the pattern for token number matches both 0 and 1, but it is extremely important for the code generator to know which lexeme was found in the source program. Thus, in many cases the lexical analyzer returns to the parser not only a token name, but an attribute value that describes the lexeme represented by the token; the token name influences parsing decisions, while the attribute value influences translation of tokens after the parse.
 
-We shall assume that tokens have at most one associated attribute, although this attribute may have a structure that combines several pieces of information. The most important example is the token id, where we need to associate with the token a great deal of information. Normally, information about an identi­fier e.g., its lexeme, its type, and the location at which it is first found ( in case an error message about that identifier must be issued ) is kept in the symbol table. Thus, the appropriate attribute value for an identifier is a pointer to the symbol-table entry for that identifier. 
+We shall assume that tokens have at most one associated attribute, although this attribute may have a structure that combines several pieces of information. The most important example is the token id, where we need to associate with the token a great deal of information. Normally, information about an identifier e.g., its lexeme, its type, and the location at which it is first found ( in case an error message about that identifier must be issued ) is kept in the symbol table. Thus, the appropriate attribute value for an identifier is a pointer to the symbol-table entry for that identifier. 
 
 ---
 
 ##### Tricky Problems When Recognizing Tokens
 
-Usually, given the pattern describing the lexemes of a token, it is relatively simple to recognize matching lexemes when they occur on the input. How­ever, in some languages it is not immediately apparent when we have seen an instance of a lexeme corresponding to a token. The following example is taken from Fortran, in the fixed-format still allowed in Fortran 90. In the statement
+Usually, given the pattern describing the lexemes of a token, it is relatively simple to recognize matching lexemes when they occur on the input. However, in some languages it is not immediately apparent when we have seen an instance of a lexeme corresponding to a token. The following example is taken from Fortran, in the fixed-format still allowed in Fortran 90. In the statement
 
 ```Fortran
 DO 5 I = 1.25
@@ -88,7 +88,7 @@ in which the first lexeme is the keyword `DO`.
 
 ---
 
-Example 3.2 : The token names and associated attribute values for the For­tran statement 
+Example 3.2 : The token names and associated attribute values for the Fortran statement 
 
 ```Fortran
 E  =  M  *  C  **  2 
@@ -106,7 +106,7 @@ are written below as a sequence of pairs.
 <number, integer value 2>
 ```
 
-Note that in certain pairs, especially operators, punctuation, and keywords, there is no need for an attribute value. In this example, the token number has been given an integer-valued attribute. In practice, a typical compiler would instead store a character string representing the constant and use as an attribute value for number a pointer to that string. 0
+Note that in certain pairs, especially operators, punctuation, and keywords, there is no need for an attribute value. In this example, the token number has been given an integer-valued attribute. In practice, a typical compiler would instead store a character string representing the constant and use as an attribute value for number a pointer to that string. □
 
 ### 3.1.4 Lexical Errors
 
@@ -130,7 +130,7 @@ Other possible error-recovery actions are:
 
 4. Transpose two adjacent characters.
 
-Transformations like these may be tried in an attempt to repair the input. The simplest such strategy is to see whether a prefix of the remaining input can be transformed into a valid lexeme by a single transformation. This strategy makes sense, since in practice most lexical errors involve a single character. A more general correction strategy is to find the smallest number of transforma­tions needed to convert the source program into one that consists only of valid lexemes, but this approach is considered too expensive in practice to be worth the effort. 
+Transformations like these may be tried in an attempt to repair the input. The simplest such strategy is to see whether a prefix of the remaining input can be transformed into a valid lexeme by a single transformation. This strategy makes sense, since in practice most lexical errors involve a single character. A more general correction strategy is to find the smallest number of transformations needed to convert the source program into one that consists only of valid lexemes, but this approach is considered too expensive in practice to be worth the effort. 
 
 ## 3.2 Input Buffering
 
@@ -138,7 +138,7 @@ Before discussing the problem of recognizing lexemes in the input, let us examin
 
 ### 3.2.1 Buffer Pairs
 
-Because of the amount of time taken to process characters and the large number of characters that must be processed during the compilation of a large source program, specialized buffering techniques have been developed to reduce the amount of overhead required to process a single input character. An impor­tant scheme involves two buffers that are alternately reloaded, as suggested in Fig. 3.3. 
+Because of the amount of time taken to process characters and the large number of characters that must be processed during the compilation of a large source program, specialized buffering techniques have been developed to reduce the amount of overhead required to process a single input character. An important scheme involves two buffers that are alternately reloaded, as suggested in Fig. 3.3. 
 
 Figure 3.3: Using a pair of input buffers
 
@@ -166,17 +166,9 @@ Figure 3.4 shows the same arrangement as Fig. 3.3, but with the sentinels added.
 
 In most modern languages, lexemes are short, and one or two characters of lookahead is sufficient. Thus a buffer size N in the thousands is ample, and the double-buffer scheme of Section 3.2.1 works without problem. However, there are some risks. For example, if character strings can be very long, extending over many lines, then we could face the possibility that a lexeme is longer than N. To avoid problems with long character strings, we can treat them as a concatenation of components, one from each line over which the string is written. For instance, in Java it is conventional to represent long strings by writing a piece on each line and concatenating pieces with a + operator at the end of each piece.
 
-A more difficult problem occurs when arbitrarily long lookahead may be needed. For example, some languages like PL/I do not treat key­words as reserved; that is, you can use identifiers with the same name as a keyword like DECLARE. If the lexical analyzer is presented with text of a PL/I program that begins `DECLARE ( ARG1 , ARG2 , ...` it cannot be sure whether DECLARE is a keyword, and ARG1 and so on are variables being de­clared, or whether DECLARE is a procedure name with its arguments. For this reason, modern languages tend to reserve their keywords. However, if not, one can treat a keyword like DECLARE as an ambiguous identifier, and let the parser resolve the issue, perhaps in conjunction with symbol-table lookup. 
+A more difficult problem occurs when arbitrarily long lookahead may be needed. For example, some languages like PL/I do not treat keywords as reserved; that is, you can use identifiers with the same name as a keyword like DECLARE. If the lexical analyzer is presented with text of a PL/I program that begins `DECLARE ( ARG1 , ARG2 , ...` it cannot be sure whether DECLARE is a keyword, and ARG1 and so on are variables being declared, or whether DECLARE is a procedure name with its arguments. For this reason, modern languages tend to reserve their keywords. However, if not, one can treat a keyword like DECLARE as an ambiguous identifier, and let the parser resolve the issue, perhaps in conjunction with symbol-table lookup. 
 
 ---
-
-## 3.3 Specification of Tokens
-
-Regular expressions are an important notation for specifying lexeme patterns. While they cannot express all possible patterns, they are very effective in specifying those types of patterns that we actually need for tokens. In this section we shall study the formal notation for regular expressions, and in Section 3.5 we shall see how these expressions are used in a lexical-analyzer generator. Then, Section 3.7 shows how to build the lexical analyzer by converting regular expressions to automata that perform the recognition of the specified tokens.
-
-### 3.3.1 Strings and Languages
-
-An alphabet is any finite set of symbols. Typical examples of symbols are let­ters, digits, and punctuation. The set {a, 1} is the *binary alphabet*. ASCII is an important example of an alphabet; it is used in many software systems. Unicode, which includes approximately 100,000 characters from alphabets around the world, is another important example of an alphabet. 
 
 Figure 3.4: Sentinels at the end of each buffer
 
@@ -186,13 +178,22 @@ Figure 3.5: Lookahead code with sentinels
 
 ##### Implementing Multiway Branches
 
-We might imagine that the switch in Fig. 3.5 requires many steps to exe­cute, and that placing the case eof first is not a wise choice. Actually, it doesn't matter in what order we list the cases for each character. In prac­tice, a multiway branch depending on the input character is be made in one step by jumping to an address found in an array of addresses, indexed by characters. 
+We might imagine that the switch in Fig. 3.5 requires many steps to execute, and that placing the case eof first is not a wise choice. Actually, it doesn't matter in what order we list the cases for each character. In practice, a multiway branch depending on the input character is be made in one step by jumping to an address found in an array of addresses, indexed by characters. 
 
 ---
 
+## 3.3 Specification of Tokens
+
+Regular expressions are an important notation for specifying lexeme patterns. While they cannot express all possible patterns, they are very effective in specifying those types of patterns that we actually need for tokens. In this section we shall study the formal notation for regular expressions, and in Section 3.5 we shall see how these expressions are used in a lexical-analyzer generator. Then, Section 3.7 shows how to build the lexical analyzer by converting regular expressions to automata that perform the recognition of the specified tokens.
+
+### 3.3.1 Strings and Languages
+
+An *alphabet* is any finite set of symbols. Typical examples of symbols are letters, digits, and punctuation. The set {0, 1} is the *binary alphabet*. ASCII is an important example of an alphabet; it is used in many software systems. Unicode, which includes approximately 100,000 characters from alphabets around the world, is another important example of an alphabet. 
+
+
 A *string* over an alphabet is a finite sequence of symbols drawn from that alphabet. In language theory, the terms "sentence" and "word" are often used as synonyms for "string." The length of a string s, usually written $|s|$ is the number of occurrences of symbols in s. For example, `banana` is a string of length six. The empty string, denoted ε, is the string of length zero.
 
-A language is any countable set of strings over some fixed alphabet. This definition is very broad. Abstract languages like $phi$, the empty set, or $\{\epsilon\}$, the set containing only the empty string, are languages under this definition. So too are the set of all syntactically well-formed C programs and the set of all grammatically correct English sentences, although the latter two languages are difficult to specify exactly. Note that the definition of "language" does not require that any meaning be ascribed to the strings in the language. Methods for defining the "meaning" of strings are discussed in Chapter 5. 
+A language is any countable set of strings over some fixed alphabet. This definition is very broad. Abstract languages like Ø, the *empty set*, or {ε}, the set containing only the empty string, are languages under this definition. So too are the set of all syntactically well-formed C programs and the set of all grammatically correct English sentences, although the latter two languages are difficult to specify exactly. Note that the definition of "language" does not require that any meaning be ascribed to the strings in the language. Methods for defining the "meaning" of strings are discussed in Chapter 5. 
 
 ---
 
@@ -218,7 +219,7 @@ If we think of concatenation as a product, we can define the "exponentiation" of
 
 ### 3.3.2 Operations on Languages
 
-In lexical analysis, the most important operations on languages are union, con­catenation, and closure, which are defined formally in Fig. 3.6. Union is the familiar operation on sets. The concatenation of languages is all strings formed by taking a string from the first language and a string from the second lan­guage, in all possible ways, and concatenating them. The (Kleene) closure of a language L, denoted L*, is the set of strings you get by concatenating L zero or more times. Note that L^0^, the "concatenation of L zero times," is defined to be $\{\epsilon\}$, and inductively, L^i^ is L^i-1^L. Finally, the positive closure, denoted L^+^, is the same as the Kleene closure, but without the term L^O^. That is, ε will not be in L^+^ unless it is in L itself. 
+In lexical analysis, the most important operations on languages are union, concatenation, and closure, which are defined formally in Fig. 3.6. Union is the familiar operation on sets. The concatenation of languages is all strings formed by taking a string from the first language and a string from the second language, in all possible ways, and concatenating them. The (Kleene) closure of a language L, denoted L*, is the set of strings you get by concatenating L zero or more times. Note that L^0^, the "concatenation of L zero times," is defined to be $\{\epsilon\}$, and inductively, L^i^ is L^i-1^L. Finally, the positive closure, denoted L^+^, is the same as the Kleene closure, but without the term L^O^. That is, ε will not be in L^+^ unless it is in L itself. 
 
 | OPERATION                | DEFINITION  AND  NOTATION                              |
 | ------------------------ | ------------------------------------------------------ |
@@ -247,7 +248,7 @@ Example 3.3 : Let L be the set of letters {A, B, ... , Z, a, b, ... , z} and let
 
 ### 3.3.3 Regular Expressions
 
-Suppose we wanted to describe the set of valid C identifiers. It is almost ex­actly the language described in item (5) above; the only difference is that the underscore is included among the letters.
+Suppose we wanted to describe the set of valid C identifiers. It is almost exactly the language described in item (5) above; the only difference is that the underscore is included among the letters.
 
 In Example 3.3, we were able to describe identifiers by giving names to sets of letters and digits and using the language operators union, concatenation, and closure. This process is so useful that a notation called regular expressions has come into common use for describing all the languages that can be built from these operators applied to the symbols of some alphabet. In this notation, if letter_ is established to stand for any letter or the underscore, and digit is established to stand for any digit, then we could describe the language of C identifiers by:
 
@@ -255,13 +256,13 @@ In Example 3.3, we were able to describe identifiers by giving names to sets of 
 letter_ ( letter_ | digit ) *
 ```
 
-The vertical bar above means union, the parentheses are used to group subex­pressions, the star means "zero or more occurrences of," and the juxtaposition of letter_ with the remainder of the expression signifies concatenation.
+The vertical bar above means union, the parentheses are used to group subexpressions, the star means "zero or more occurrences of," and the juxtaposition of letter_ with the remainder of the expression signifies concatenation.
 
-The regular expressions are built recursively out of smaller regular expres­sions, using the rules described below. Each regular expression r denotes a language L(r), which is also defined recursively from the languages denoted by r's subexpressions. Here are the rules that define the regular expressions over some alphabet ∑ and the languages that those expressions denote.
+The regular expressions are built recursively out of smaller regular expressions, using the rules described below. Each regular expression r denotes a language L(r), which is also defined recursively from the languages denoted by r's subexpressions. Here are the rules that define the regular expressions over some alphabet ∑ and the languages that those expressions denote.
 
 BASIS: There are two rules that form the basis:
 
-1. ε is a regular expression, and L(ε) is { ε }, that is, the language whose sole member is the empty string.
+1. ε is a regular expression, and L(ε) is {ε}, that is, the language whose sole member is the empty string.
 
 2. If a is a symbol in ∑, then a is a regular expression, and L(a) = {a}, that is, the language with one string, of length one, with a in its one position. Note that by convention, we use italics for symbols, and boldface for their corresponding regular expression. [^1]
 
@@ -277,7 +278,7 @@ INDUCTION: There are four parts to the induction whereby larger regular expressi
 
 4. (r) is a regular expression denoting L(r) . This last rule says that we can add additional pairs of parentheses around expressions without changing the language they denote.
 
-As defined, regular expressions often contain unnecessary pairs of paren­theses. We may drop certain pairs of parentheses if we adopt the conventions that:
+As defined, regular expressions often contain unnecessary pairs of parentheses. We may drop certain pairs of parentheses if we adopt the conventions that:
 
 a) The unary operator * has highest precedence and is left associative.
 
@@ -317,7 +318,7 @@ Figure 3.7: Algebraic laws for regular expressions
 
 ### 3.3.4 Regular Definitions
 
-For notational convenience, we may wish to give names to certain regular ex­pressions and use those names in subsequent expressions, as if the names were themselves symbols. If ∑ is an alphabet of basic symbols, then a *regular defi­nition* is a sequence of definitions of the form: 
+For notational convenience, we may wish to give names to certain regular expressions and use those names in subsequent expressions, as if the names were themselves symbols. If ∑ is an alphabet of basic symbols, then a *regular definition* is a sequence of definitions of the form: 
 
 ```
 d1 -> r1 
@@ -332,7 +333,7 @@ where:
 
 2. Each ri is a regular expression over the alphabet ∑ U {d1, d2, ... , d_{i-1}}·
 
-By restricting ri to ∑ and the previously defined d's, we avoid recursive defini­tions, and we can construct a regular expression over ∑ alone, for each ri. We do so by first replacing uses of d1 in r2 (which cannot use any of the d's except for d1, then replacing uses of d1 and d2 in r3 by r1 and (the substituted) r2, and so on. Finally, in rn we replace each di, for i = 1, 2, ... , n-1, by the substituted version of ri, each of which has only symbols of ∑.
+By restricting ri to ∑ and the previously defined d's, we avoid recursive definitions, and we can construct a regular expression over ∑ alone, for each ri. We do so by first replacing uses of d1 in r2 (which cannot use any of the d's except for d1, then replacing uses of d1 and d2 in r3 by r1 and (the substituted) r2, and so on. Finally, in rn we replace each di, for i = 1, 2, ... , n-1, by the substituted version of ri, each of which has only symbols of ∑.
 
 Example 3.5 : C identifiers are strings of letters, digits, and underscores. Here is a regular definition for the language of C identifiers. We shall conventionally use italics for the symbols defined in regular definitions. 
 
@@ -360,7 +361,7 @@ is a precise specification for this set of strings. That is, an `optionalFractio
 
 ### 3.3.5 Extensions of Regular Expressions
 
-Since Kleene introduced regular expressions with the basic operators for union, concatenation, and Kleene closure in the 1950s, many extensions have been added to regular expressions to enhance their ability to specify string patterns. Here we mention a few notational extensions that were first incorporated into Unix utilities such as Lex that are particularly useful in the specification lexical analyzers. The references to this chapter contain a discussion of some regular ­expression variants in use today.
+Since Kleene introduced regular expressions with the basic operators for union, concatenation, and Kleene closure in the 1950s, many extensions have been added to regular expressions to enhance their ability to specify string patterns. Here we mention a few notational extensions that were first incorporated into Unix utilities such as Lex that are particularly useful in the specification lexical analyzers. The references to this chapter contain a discussion of some regular expression variants in use today.
 
 1. One or more instances. The unary, postfix operator + represents the positive closure of a regular expression and its language. That is, if r is a regular expression, then (r)+ denotes the language (L(r))+. The operator + has the same precedence and associativity as the operator \*. Two useful algebraic laws, `r* = r+|ε` and `r+ = rr* = r*r` relate the Kleene closure and positive closure.
 
@@ -388,7 +389,7 @@ number -> digits ( . digits)? ( E [+-]? digits )?
 
 ## 3.4 Recognition of Tokens
 
-In the previous section we learned how to express patterns using regular expres­sions. Now, we must study how to take the patterns for all the needed tokens and build a piece of code that examines the input string and finds a prefix that is a lexeme matching one of the patterns. Our discussion will make use of the following running example. 
+In the previous section we learned how to express patterns using regular expressions. Now, we must study how to take the patterns for all the needed tokens and build a piece of code that examines the input string and finds a prefix that is a lexeme matching one of the patterns. Our discussion will make use of the following running example. 
 
 $$
 \begin{array}{rcl}
@@ -426,7 +427,7 @@ Figure 3.11: Patterns for tokens of Example 3.8
 
 For this language, the lexical analyzer will recognize the keywords `if`, `then`, and `else`, as well as lexemes that match the patterns for *relop*, *id*, and *number*. To simplify matters, we make the common assumption that keywords are also *reserved words*: that is, they are not identifiers, even though their lexemes match the pattern for identifiers.
 
-In addition, we assign the lexical analyzer the job of stripping out white­space, by recognizing the "token" ws defined by:
+In addition, we assign the lexical analyzer the job of stripping out whitespace, by recognizing the "token" ws defined by:
 
 ```
 ws -> ( blank | tab | newline ) +
@@ -455,7 +456,7 @@ Figure 3.12: Tokens, their patterns, and attribute values
 
 ### 3.4.1 Transition Diagrams
 
-As an intermediate step in the construction of a lexical analyzer, we first convert patterns into stylized flowcharts, called "transition diagrams." In this section, we perform the conversion from regular-expression patterns to transition dia­grams by hand, but in Section 3.6, we shall see that there is a mechanical way to construct these diagrams from collections of regular expressions.
+As an intermediate step in the construction of a lexical analyzer, we first convert patterns into stylized flowcharts, called "transition diagrams." In this section, we perform the conversion from regular-expression patterns to transition diagrams by hand, but in Section 3.6, we shall see that there is a mechanical way to construct these diagrams from collections of regular expressions.
 
 *Transition diagrams* have a collection of nodes or circles, called states. Each state represents a condition that could occur during the process of scanning the input looking for a lexeme that matches one of several patterns. We may think of a state as summarizing all we need to know about what characters we have seen between the lexemeBegin pointer and the forward pointer ( as in the situation of Fig. 3.3).
 
@@ -481,9 +482,9 @@ Recognizing keywords and identifiers presents a problem. Usually, keywords like 
 
 Figure 3.14: A transition diagram for id's and keywords
 
-There are two ways that we can handle reserved words that look like iden­tifiers :
+There are two ways that we can handle reserved words that look like identifiers :
 
-1. Install the reserved words in the symbol table initially. A field of the symbol-table entry indicates that these strings are never ordinary identi­fiers, and tells which token they represent. We have supposed that this method is in use in Fig. 3.14. When we find an identifier, a call to `installID` places it in the symbol table if it is not already there and returns a pointer to the symbol-table entry for the lexeme found. Of course, any identifier not in the symbol table during lexical analysis cannot be a reserved word, so its token is **id**. The function `getToken` examines the symbol table entry for the lexeme found, and returns whatever token name the symbol table says this lexeme represents - either id or one of the keyword tokens that was initially installed in the table.
+1. Install the reserved words in the symbol table initially. A field of the symbol-table entry indicates that these strings are never ordinary identifiers, and tells which token they represent. We have supposed that this method is in use in Fig. 3.14. When we find an identifier, a call to `installID` places it in the symbol table if it is not already there and returns a pointer to the symbol-table entry for the lexeme found. Of course, any identifier not in the symbol table during lexical analysis cannot be a reserved word, so its token is **id**. The function `getToken` examines the symbol table entry for the lexeme found, and returns whatever token name the symbol table says this lexeme represents - either id or one of the keyword tokens that was initially installed in the table.
 
 2. Create separate transition diagrams for each keyword; an example for the keyword then is shown in Fig. 3.15. Note that such a transition diagram consists of states representing the situation after each successive letter of the keyword is seen, followed by a test for a "nonletter-or-digit," i.e., any character that cannot be the continuation of an identifier. It is necessary to check that the identifier has ended, or else we would return token then in situations where the correct token was id, with a lexeme like `thenextvalue` that has `then` as a proper prefix. If we adopt this approach, then we must prioritize the tokens so that the reserved-word tokens are recognized in preference to id, when the lexeme matches both patterns. We do not use this approach in our example, which is why the states in Fig. 3.15 are unnumbered. 
 
@@ -513,7 +514,7 @@ Example 3.10: In Fig. 3.18 we see a sketch of `getRelop()` , a C++ function whos
 
 We see the typical behavior of a state in case 0, the case where the current state is 0. A function next Char 0 obtains the next character from the input and assigns it to local variable c. We then check c for the three characters we expect to find , making the state transition dictated by the transition diagram of Fig. 3.13 in each case. For example, if the next input character is =, we go to state 5.
 
-If the next input character is not one that can begin a comparison operator, then a function `fail()` is called. What `fail()` does depends on the global error­-recovery strategy of the lexical analyzer. It should reset the `forward` pointer to `lexemeBegin`, in order to allow another transition diagram to be applied to the true beginning of the unprocessed input. It might then change the value of state to be the start state for another transition diagram, which will search for another token. Alternatively, if there is no other transition diagram that remains unused, `fail()` could initiate an error-correction phase that will try to repair the input and find a lexeme, as discussed in Section 3.1.4.
+If the next input character is not one that can begin a comparison operator, then a function `fail()` is called. What `fail()` does depends on the global error-recovery strategy of the lexical analyzer. It should reset the `forward` pointer to `lexemeBegin`, in order to allow another transition diagram to be applied to the true beginning of the unprocessed input. It might then change the value of state to be the start state for another transition diagram, which will search for another token. Alternatively, if there is no other transition diagram that remains unused, `fail()` could initiate an error-correction phase that will try to repair the input and find a lexeme, as discussed in Section 3.1.4.
 
 ```C++
 TOKEN getRelop () 
@@ -549,9 +550,9 @@ We also show the action for state 8 in Fig. 3.18. Because state 8 bears a * , we
 
 To place the simulation of one transition diagram in perspective, let us consider the ways code like Fig. 3.18 could fit into the entire lexical analyzer.
 
-1. We could arrange for the transition diagrams for each token to be tried se­quentially. Then, the function `fail()` of Example 3.10 resets the pointer forward and starts the next transition diagram, each time it is called. This method allows us to use transition diagrams for the individual key­words, like the one suggested in Fig. 3.15. We have only to use these before we use the diagram for id, in order for the keywords to be reserved words. 
+1. We could arrange for the transition diagrams for each token to be tried sequentially. Then, the function `fail()` of Example 3.10 resets the pointer forward and starts the next transition diagram, each time it is called. This method allows us to use transition diagrams for the individual keywords, like the one suggested in Fig. 3.15. We have only to use these before we use the diagram for id, in order for the keywords to be reserved words. 
 
-2. We could run the various transition diagrams "in parallel," feeding the next input character to all of them and allowing each one to make what­ever transitions it required. If we use this strategy, we must be careful to resolve the case where one diagram finds a lexeme that matches its pattern, while one or more other diagrams are still able to process input. The normal strategy is to take the longest prefix of the input that matches any pattern. That rule allows us to prefer identifier thenext to keyword then, or the operator -> to -, for example.
+2. We could run the various transition diagrams "in parallel," feeding the next input character to all of them and allowing each one to make whatever transitions it required. If we use this strategy, we must be careful to resolve the case where one diagram finds a lexeme that matches its pattern, while one or more other diagrams are still able to process input. The normal strategy is to take the longest prefix of the input that matches any pattern. That rule allows us to prefer identifier thenext to keyword then, or the operator -> to -, for example.
 
 3. The preferred approach, and the one we shall take up in the following sections, is to combine all the transition diagrams into one. We allow the transition diagram to read input until there is no possible next state, and then take the longest lexeme that matched any pattern, as we discussed in item (2) above. In our running example, this combination is easy, because no two tokens can start with the same character; i.e., the first character immediately tells us which token we are looking for. Thus, we could simply combine states 0, 9, 12, and 22 into one start state, leaving other transitions intact. However, in general, the problem of combining transition diagrams for several tokens is more complex, as we shall see shortly. 
 
