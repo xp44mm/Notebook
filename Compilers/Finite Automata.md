@@ -1,41 +1,41 @@
-﻿## 3.6 Finite Automata
+## 3.6 Finite Automata
 
-We shall now discover how Lex turns its input program into a lexical analyzer. At the heart of the transition is the formalism known as finite automata. These are essentially graphs, like transition diagrams, with a few differences:
+We shall now discover how Lex turns its input program into a lexical analyzer. At the heart of the transition is the formalism known as *finite automata*. These are essentially graphs, like transition diagrams, with a few differences:
 
-1. Finite automata are recognizers; they simply say "yes" or "no" about each possible input string.
+1. Finite automata are *recognizers*; they simply say "yes" or "no" about each possible input string.
 
 2. Finite automata come in two flavors:
 
-   (a) Nondeterministic finite automata (NFA) have no restrictions on the labels of their edges. A symbol can label several edges out of the same state, and ε, the empty string, is a possible label.
+   (a) *Nondeterministic finite automata* (NFA) have no restrictions on the labels of their edges. A symbol can label several edges out of the same state, and ε, the empty string, is a possible label.
 
-   (b) Deterministic finite automata (DFA) have, for each state, and for each symbol of its input alphabet exactly one edge with that symbol leaving that state.
+   (b) *Deterministic finite automata* (DFA) have, for each state, and for each symbol of its input alphabet exactly one edge with that symbol leaving that state.
 
-Both deterministic and nondeterministic finite automata are capable of recognizing the same languages. In fact these languages are exactly the same languages, called the regular languages, that regular expressions can describe.[^4]
+Both deterministic and nondeterministic finite automata are capable of recognizing the same languages. In fact these languages are exactly the same languages, called the *regular languages*, that regular expressions can describe .[^4]
 
 [^4]: There is a small lacuna: as we defined them, regular expressions cannot describe the empty language, since we would never want to use this pattern in practice. However, finite automata can define the empty language. In the theory, Ø is treated as an additional regular expression for the sole purpose of defining the empty language.
 
 
 ### 3.6.1 Nondeterministic Finite Automata
 
-A nondeterministic finite automaton (NFA) consists of:
+A *nondeterministic finite automaton* (NFA) consists of:
 
 1. A finite set of states S.
 
-2. A set of input symbols ∑, the input alphabet. We assume that ε, which stands for the empty string, is never a member of ∑.
+2. A set of input symbols ∑, the *input alphabet*. We assume that ε, which stands for the empty string, is never a member of ∑.
 
-3. A transition function that gives, for each state, and for each symbol in ∑ ∪ {ε} a set of next states.
+3. A *transition function* that gives, for each state, and for each symbol in ∑ ∪ {ε} a set of *next states*.
 
-4. A state s_0 from S that is distinguished as the start state (or initial state).
+4. A state s~0~ from S that is distinguished as the *start state* (or *initial state*).
 
-5. A set of states F, a subset of S, that is distinguished as the accepting states (or final states).
+5. A set of states F, a subset of S, that is distinguished as the *accepting states* (or *final states*).
 
-We can represent either an NFA or DFA by a transition graph, where the nodes are states and the labeled edges represent the transition function. There is an edge labeled a from state s to state t if and only if t is one of the next states for state s and input a. This graph is very much like a transition diagram, except:
+We can represent either an NFA or DFA by a *transition graph*, where the nodes are states and the labeled edges represent the transition function. There is an edge labeled a from state s to state t if and only if t is one of the next states for state s and input a. This graph is very much like a transition diagram, except:
 
 a) The same symbol can label edges from one state to several different states, and
 
 b) An edge may be labeled by ε, the empty string, instead of, or in addition to, symbols from the input alphabet.
 
-Example 3.14 : The transition graph for an NFA recognizing the language of regular expression `(a|b)*abb` is shown in Fig. 3.24. This abstract example, describing all strings of a's and b's ending in the particular string abb, will be used throughout this section. It is similar to regular expressions that describe languages of real interest, however. For instance, an expression describing all files whose name ends in `.o` is `any*.o` , where **any** stands for any printable character.
+**Example 3.14:** The transition graph for an NFA recognizing the language of regular expression `(a|b)*abb` is shown in Fig. 3.24. This abstract example, describing all strings of a's and b's ending in the particular string abb, will be used throughout this section. It is similar to regular expressions that describe languages of real interest, however. For instance, an expression describing all files whose name ends in `.o` is `any*.o` , where **any** stands for any printable character.
 
 Figure 3.24: A nondeterministic finite automaton
 
@@ -43,68 +43,87 @@ Following our convention for transition diagrams, the double circle around state
 
 ### 3.6.2 Transition Tables
 
-We can also represent an NFA by a transition table, whose rows correspond to states, and whose columns correspond to the input symbols and ε. The entry for a given state and input is the value of the transition function applied to those arguments. If the transition function has no information about that state-input pair, we put 0 in the table for the pair.
+We can also represent an NFA by a *transition table*, whose rows correspond to states, and whose columns correspond to the input symbols and ε. The entry for a given state and input is the value of the transition function applied to those arguments. If the transition function has no information about that state-input pair, we put Ø in the table for the pair.
 
-Example 3.15 : The transition table for the NFA of Fig. 3.24 is shown in Fig. 3.25. □
+**Example 3.15:** The transition table for the NFA of Fig. 3.24 is shown in Fig. 3.25. □
 
 The transition table has the advantage that we can easily find the transitions on a given state and input. Its disadvantage is that it takes a lot of space, when the input alphabet is large, yet most states do not have any moves on most of the input symbols.
+
+|STATE | a      | b   | ε   |
+|---    | ---      | ---  | ---   |
+|0     | {0, 1} | {0} | Ø   |
+|1     | Ø      | {2} | Ø   |
+|2     | Ø      | {3} | Ø   |
+|3     | Ø      | Ø   | Ø   |
 
 Figure 3.25: Transition table for the NFA of Fig. 3.24
 
 ### 3.6.3 Acceptance of Input Strings by Automata
 
-An NFA accepts input string x if and only if there is some path in the transition graph from the start state to one of the accepting states, such that the symbols along the path spell out x. Note that ε labels along the path are effectively ignored, since the empty string does not contribute to the string constructed along the path.
+An NFA *accepts* input string x if and only if there is some path in the transition graph from the start state to one of the accepting states, such that the symbols along the path spell out x. Note that ε labels along the path are effectively ignored, since the empty string does not contribute to the string constructed along the path.
 
-Example 3.16 : The string aabb is accepted by the NFA of Fig. 3.24. The path labeled by aabb from state 0 to state 3 demonstrating this fact is:
+**Example 3.16:** The string aabb is accepted by the NFA of Fig. 3.24. The path labeled by aabb from state 0 to state 3 demonstrating this fact is:
+
+```
+0--a-->0--a-->1--b-->2--b-->3
+```
 
 Note that several paths labeled by the same string may lead to different states. For instance, path
 
+```
+0--a-->0--a-->0--b-->0--b-->0
+```
+
 is another path from state 0 labeled by the string aabb. This path leads to state 0, which is not accepting. However, remember that an NFA accepts a string as long as some path labeled by that string leads from the start state to an accepting state. The existence of other paths leading to a nonaccepting state is irrelevant. □
 
-The language defined ( or accepted) by an NFA is the set of strings labeling some path from the start to an accepting state. As was mentioned, the NFA of Fig. 3.24 defines the same language as does the regular expression `(a|b)*abb`, that is, all strings from the alphabet {a , b} that end in abb. We may use L(A) to stand for the language accepted by automaton A.
+The *language defined* ( or *accepted*) by an NFA is the set of strings labeling some path from the start to an accepting state. As was mentioned, the NFA of Fig. 3.24 defines the same language as does the regular expression `(a|b)*abb`, that is, all strings from the alphabet {a , b} that end in abb. We may use L(A) to stand for the language accepted by automaton A.
 
-Example 3.17 : Figure 3.26 is an NFA accepting L(`aa*|bb*`). String aaa is accepted because of the path
+**Example 3.17:** Figure 3.26 is an NFA accepting L(`aa*|bb*`). String aaa is accepted because of the path
 
-Note that ε'S "disappear" in a concatenation, so the label of the path is aaa. 
+```
+0--ε-->1--a-->2--a-->2--a-->2
+```
+
+Note that ε's "disappear" in a concatenation, so the label of the path is aaa. 
 
 □
 
 ### 3.6.4 Deterministic Finite Automata
 
-A deterministic finite automaton ( DFA ) is a special case of an NFA where:
+A *deterministic finite automaton* ( DFA ) is a special case of an NFA where:
 
 Figure 3.26: NFA accepting `aa*|bb*`
 
 1. There are no moves on input ε, and
 
-2. For each state S and input symbol a, there is exactly one edge out of s labeled a.
+2. For each state s and input symbol a, there is exactly one edge out of s labeled a.
 
 If we are using a transition table to represent a DFA, then each entry is a single state. we may therefore represent this state without the curly braces that we use to form sets.
 
 While the NFA is an abstract representation of an algorithm to recognize the strings of a certain language, the DFA is a simple, concrete algorithm for recognizing strings. It is fortunate indeed that every regular expression and every NFA can be converted to a DFA accepting the same language, because it is the DFA that we really implement or simulate when building lexical analyzers. The following algorithm shows how to apply a DFA to a string.
 
-Algorithm 3.18 : Simulating a DFA.
+**Algorithm 3.18:** Simulating a DFA.
 
-INPUT: An input string x terminated by an end-of-file character eof. A DFA D with start state s_0, accepting states F, and transition function move.
+**INPUT:** An input string x terminated by an end-of-file character **eof**. A DFA D with start state s~0~, accepting states F, and transition function `move`.
 
-OUTPUT: Answer "yes" if D accepts x; "no" otherwise.
+**OUTPUT:** Answer "yes" if D accepts x; "no" otherwise.
 
-METHOD: Apply the algorithm in Fig. 3.27 to the input string x. The function `move(s, c)` gives the state to which there is an edge from state s on input c. The function `nextChar` returns the next character of the input string x. □
+**METHOD:** Apply the algorithm in Fig. 3.27 to the input string x. The function `move(s, c)` gives the state to which there is an edge from state s on input c. The function `nextChar` returns the next character of the input string x. □
 
-```
-    s  =  s_0; 
+```c
+    s  =  s.[0]; 
     c  =  nextChar(); 
     while ( c  !=  eof )  { 
-        s  =  move(s, c ) ; 
+        s  =  move(s, c ); 
         c  =  nextChar(); 
     } 
     if ( s is in F ) return "yes"; 
     else return "no"; 
 ```
 
-Figure 3.27: Simlllating a DFA
+Figure 3.27: Simulating a DFA
 
-Example 3.19 : In Fig. 3.28 we see the transition graph of a DFA accepting the language `(a|b)*abb`, the same as that accepted by the NFA of Fig. 3.24. Given the input string ababb, this DFA enters the sequence of states 0, 1, 2, 1, 2, 3 and returns "yes." □
+**Example 3.19:** In Fig. 3.28 we see the transition graph of a DFA accepting the language `(a|b)*abb`, the same as that accepted by the NFA of Fig. 3.24. Given the input string ababb, this DFA enters the sequence of states 0, 1, 2, 1, 2, 3 and returns "yes." □
 
 Figure 3.28: DFA accepting (a|b)*abb 
 
@@ -120,27 +139,26 @@ The general idea behind the subset construction is that each state of the constr
 
 It is possible that the number of DFA states is exponential in the number of NFA states, which could lead to difficulties when we try to implement this DFA. However, part of the power of the automaton-based approach to lexical analysis is that for real languages, the NFA and DFA have approximately the same number of states, and the exponential behavior is not seen.
 
-Algorithm 3.20 : The subset construction of a DFA from an NFA.
+**Algorithm 3.20:** The subset construction of a DFA from an NFA.
 
-INPUT: An NFA N.
+**INPUT:** An NFA N.
 
-OUTPUT: A DFA D accepting the same language as N.
+**OUTPUT:** A DFA D accepting the same language as N.
 
-METHOD: Our algorithm constructs a transition table Dtran for D. Each state of D is a set of NFA states, and we construct Dtran so D will simulate "in parallel" all possible moves N can make on a given input string. Our first problem is to deal with ε-transitions of N properly. In Fig. 3.31 we see the definitions of several functions that describe basic computations on the states of N that are needed in the algorithm. Note that s is a single state of N, while T is a set of states of N. 
+**METHOD:** Our algorithm constructs a transition table Dtran for D. Each state of D is a set of NFA states, and we construct Dtran so D will simulate "in parallel" all possible moves N can make on a given input string. Our first problem is to deal with ε-transitions of N properly. In Fig. 3.31 we see the definitions of several functions that describe basic computations on the states of N that are needed in the algorithm. Note that s is a single state of N, while T is a set of states of N. 
 
-|OPERATION | DESCRIPTION |
-| ---|---|
-|ε-closure( s ) | Set of NFA states reachable from NFA state s on ε-transitions alone. |
-|ε-closure( T )  | Set of NFA states reachable from some NFA state s in set T on ε-transitions alone; Us in T ε-closure(s).|
-|move( T, a )    | Set of NFA states to which there is a transition on input symbol a from some state s in T. |
+| OPERATION      | DESCRIPTION                                                  |
+| -------------- | ------------------------------------------------------------ |
+| ε-closure( s ) | Set of NFA states reachable from NFA state s on ε-transitions alone. |
+| ε-closure( T ) | Set of NFA states reachable from some NFA state s in set T on ε-transitions alone; =∪~s in T~ ε-closure(s). |
+| move( T, a )   | Set of NFA states to which there is a transition on input symbol a from some state s in T. |
 
 Figure 3.31: Operations on NFA states
 
-We must explore those sets of states that N can be in after seeing some input string. As a basis, before reading the first input symbol, N can be in any of the states of ε-closure(s_0), where s_0 is its start state. For the induction, suppose that N can be in set of states T after reading input string x. If it next reads input a, then N can immediately go to any of the states in move(T, a ) . However, after reading a, it may also make several ε-transitions; thus N could be in any state of ε-closure( move(T, a ) ) after reading input xa. Following these ideas, the construction of the set of D's states, `Dstates`, and its transition function Dtran, is shown in Fig. 3.32.
-
-The start state of D is ε-closure( s_0 ), and the accepting states of D are all those sets of N's states that include at least one accepting state of N. To complete our description of the subset construction, we need only to show how initially, ε-closure( s_0 ) is the only state in `Dstates`, and it is unmarked; 
+We must explore those sets of states that N can be in after seeing some input string. As a basis, before reading the first input symbol, N can be in any of the states of ε-closure(s~0~), where s~0~ is its start state. For the induction, suppose that N can be in set of states T after reading input string x. If it next reads input a, then N can immediately go to any of the states in move(T, a ) . However, after reading a, it may also make several ε-transitions; thus N could be in any state of ε-closure( move(T, a ) ) after reading input xa. Following these ideas, the construction of the set of D's states, `Dstates`, and its transition function Dtran, is shown in Fig. 3.32.
 
 ```
+initially, ε-closure( s~0~ ) is the only state in `Dstates`, and it is unmarked; 
 while ( there is an unmarked state T in Dstates )  { 
     mark T; 
     for ( each input symbol a )  { 
@@ -154,7 +172,7 @@ while ( there is an unmarked state T in Dstates )  {
 
 Figure 3.32: The subset construction
 
-ε-closure(T) is computed for any set of NFA states T. This process, shown in Fig. 3.33, is a straightforward search in a graph from a set of states. In this case, imagine that only the ε-labeled edges are available in the graph. □
+The start state of D is ε-closure( s~0~ ), and the accepting states of D are all those sets of N's states that include at least one accepting state of N. To complete our description of the subset construction, we need only to show how ε-closure(T) is computed for any set of NFA states T. This process, shown in Fig. 3.33, is a straightforward search in a graph from a set of states. In this case, imagine that only the ε-labeled edges are available in the graph. □
 
 ```
 push all states of T onto stack;
@@ -171,7 +189,7 @@ while ( stack is not empty ) {
 
 Figure 3.33: Computing ε-closure(T)
 
-Example 3.21 : Figure 3.34 shows another NFA accepting `(a|b)*abb`; it happens to be the one we shall construct directly from this regular expression in Section 3.7. Let us apply Algorithm 3.20 to Fig. 3.29.
+**Example 3.21:** Figure 3.34 shows another NFA accepting `(a|b)*abb`; it happens to be the one we shall construct directly from this regular expression in Section 3.7. Let us apply Algorithm 3.20 to Fig. 3.34.
 
 The start state A of the equivalent DFA is ε-closure(0), or A = {0, 1, 2, 4, 7}, since these are exactly the states reachable from state 0 via a path all of whose edges have label ε. Note that a path can have zero edges, so state 0 is reachable from itself by an ε-labeled path.
 
@@ -183,12 +201,26 @@ Dtran[A, a] = ε-closure( move(A, a)) = ε-closure( {3, 8}) = {1, 2, 3, 4, 6, 7,
 
 Let us call this set B, so Dtran[A, a] = B.
 
-Figure 3.34: NFA N for (a|b)*abb 
+| STATE | a    | b    | ε     |
+| ----- | ---- | ---- | ----- |
+| 0     |      |      | {1,7} |
+| 1     |      |      | {2,4} |
+| 2     | {3}  |      |       |
+| 3     |      |      | {6}   |
+| 4     |      | {5}  |       |
+| 5     |      |      | {6}   |
+| 6     |      |      | {1,7} |
+| 7     | {8}  |      |       |
+| 8     |      | {9}  |       |
+| 9     |      | {10} |       |
+| 10    |      |      |       |
+
+Figure 3.34: NFA N for `(a|b)*abb` 
 
 Now, we must compute Dtran[A, b]. Among the states in A, only 4 has a transition on b, and it goes to 5. Thus,
 
 ```
-Dtran[A, b] = ε-closure( {5}) = {1, 2, 4, 6, 7}
+Dtran[A, b] = ε-closure( {5}) = {1, 2, 4, 5, 6, 7}
 ```
 
 Let us call the above set C, so Dtran[A, b] = C. 
@@ -211,24 +243,24 @@ Figure 3.36: Result of applying the subset construction to Fig. 3.34
 
 ### 3.7.2 Simulation of an NFA
 
-A strategy that has been used in a number of text-editing programs is to construct an NFA from a regular expression and then simulate the NFA using something like an on-the-fiy subset construction. The simulation is outlined below.
+A strategy that has been used in a number of text-editing programs is to construct an NFA from a regular expression and then simulate the NFA using something like an on-the-fly subset construction. The simulation is outlined below.
 
-Algorithm 3.22 : Simulating an NFA.
+**Algorithm 3.22:** Simulating an NFA.
 
-INPUT: An input string x terminated by an end-of-file character eof. An NFA N with start state s_0, accepting states F, and transition function move.
+**INPUT:** An input string x terminated by an end-of-file character **eof**. An NFA N with start state s~0~, accepting states F, and transition function `move`.
 
-OUTPUT: Answer "yes" if N accepts x ; "no" otherwise.
+**OUTPUT:** Answer "yes" if N accepts x ; "no" otherwise.
 
-METHOD: The algorithm keeps a set of current states S, those that are reached from s_0 following a path labeled by the inputs read so far. If c is the next input character, read by the function nextChar(), then we first compute move(S, c) and then close that set using ε-closure(). The algorithm is sketched in Fig. 3.37. □
+**METHOD:** The algorithm keeps a set of current states S, those that are reached from s~0~ following a path labeled by the inputs read so far. If c is the next input character, read by the function `nextChar()`, then we first compute `move(S, c)` and then close that set using ε-closure(). The algorithm is sketched in Fig. 3.37. □
 
-```
-1)  S = ε-closure(s_0) ;  
+```C
+1)  S = ε-closure(s~0~) ;  
 2)  c = nextChar(); 
 3)  while ( c  != eof )  { 
-4)      S = ε-closure( move(S, c)) ;  
+4)      S = ε-closure( move(S, c)) ;
 5)      c = nextChar(); 
 6)  } 
-7)  if ( S ∩ F  != Ø ) return "yes" ;  
+7)  if ( S ∩ F  != Ø ) return "yes" ;
 8)  else return "no"; 
 ```
 
@@ -238,13 +270,13 @@ Figure 3.37: Simulating an NFA
 
 If carefully implemented, Algorithm 3.22 can be quite efficient . As the ideas involved are useful in a number of similar algorithms involving search of graphs, we shall look at this implementation in additional detail. The data structures we need are:
 
-1. Two stacks, each of which holds a set of NFA states. One of these stacks, `oldStates`, holds the "current" set of states, i.e., the value of S on the right side of line (4) in Fig. 3.37. The second, `newStates`, holds the "next" set of states S on the left side of line (4). Unseen is a step where, as we go around the loop of lines ( 3 ) through (6), newStates is transferred to oldStates.
+1. Two stacks, each of which holds a set of NFA states. One of these stacks, `oldStates`, holds the "current" set of states, i.e., the value of S on the right side of line (4) in Fig. 3.37. The second, `newStates`, holds the "next" set of states S on the left side of line (4). Unseen is a step where, as we go around the loop of lines ( 3 ) through (6), `newStates` is transferred to `oldStates`.
 
 2. A boolean array `alreadyOn`, indexed by the NFA states, to indicate which states are in `newStates`. While the array and stack hold the same information, it is much faster to interrogate `alreadyOn[s]` than to search for state s on the stack `newStates`. It is for this efficiency that we maintain both representations.
 
 3. A two-dimensional array move[s, a] holding the transition table of the NFA. The entries in this table, which are sets of states, are represented by linked lists.
 
-To implement line (1) of Fig. 3.37, we need to set each entry in array alreadyOn to FALSE, then for each state s in ε-closure(s_0), push s onto oldStates and set alreadyOn[ s] to TRUE. This operation on state s, and the implementation of line (4) as well, are facilitated by a function we shall call addState(s). This function pushes state s onto newStates, sets alreadyOn[ s ] to TRUE, and calls itself recursively on the states in move[s, ε] in order to further the computation of ε-closure(s). However, to avoid duplicating work, we must be careful never to call addState on a state that is already on the stack newStates. Figure 3.38 sketches this function. 
+To implement line (1) of Fig. 3.37, we need to set each entry in array `alreadyOn` to FALSE, then for each state s in ε-closure(s~0~), push s onto `oldStates` and set `alreadyOn[s]` to TRUE. This operation on state s, and the implementation of line (4) as well, are facilitated by a function we shall call `addState(s)`. This function pushes state s onto `newStates`, sets `alreadyOn[s]` to TRUE, and calls itself recursively on the states in `move[s, ε]` in order to further the computation of ε-closure(s). However, to avoid duplicating work, we must be careful never to call `addState` on a state that is already on the stack `newStates`. Figure 3.38 sketches this function. 
 
 ```
  9) addState(s) { 
@@ -258,7 +290,7 @@ To implement line (1) of Fig. 3.37, we need to set each entry in array alreadyOn
 
 Figure 3.38: Adding a new state s, which is known not to be on newStates
 
-We implement line (4) of Fig. 3.37 by looking at each state s on oldStates. We first find the set of states move[s, c], where c is the next input, and for each of those states that is not already on newStates, we apply addState to it. Note that addState has the effect of computing the ε-closure and adding all those states to newStates as well, if they were not already on. This sequence of steps is summarized in Fig. 3.39. 
+We implement line (4) of Fig. 3.37 by looking at each state s on `oldStates`. We first find the set of states `move[s, c]`, where c is the next input, and for each of those states that is not already on `newStates`, we apply `addState` to it. Note that `addState` has the effect of computing the ε-closure and adding all those states to `newStates` as well, if they were not already on. This sequence of steps is summarized in Fig. 3.39. 
 
 ```
 16)  for ( s on oldStates )  { 
@@ -277,19 +309,19 @@ We implement line (4) of Fig. 3.37 by looking at each state s on oldStates. We f
 
 Figure 3.39: Implementation of step (4) of Fig. 3.37
 
-Now, suppose that the NFA N has n states and m transitions; i.e., m is the sum over all states of the number of symbols ( or ε) on which the state has a transition out. Not counting the call to addState at line (19) of Fig. 3.39, the time spent in the loop of lines (16) through (21) is O(n). That is, we can go around the loop at most n times, and each step of the loop requires constant work, except for the time spent in addState. The same is true of the loop of lines (22) through (26).
+Now, suppose that the NFA N has n states and m transitions; i.e., m is the sum over all states of the number of symbols ( or ε) on which the state has a transition out. Not counting the call to `addState` at line (19) of Fig. 3.39, the time spent in the loop of lines (16) through (21) is O(n). That is, we can go around the loop at most n times, and each step of the loop requires constant work, except for the time spent in `addState`. The same is true of the loop of lines (22) through (26).
 
-During one execution of Fig. 3.39, i.e., of step (4) of Fig. 3.37, it is only possible to call addState on a given state once. The reason is that whenever we call addState(s), we set alreadyOn[s] to TRUE at line (11) of Fig. 3.39. Once alreadyOn[s] is TRUE, the tests at line (13) of Fig. 3.38 and line (18 ) of Fig. 3.39 prevent another call.
+During one execution of Fig. 3.39, i.e., of step (4) of Fig. 3.37, it is only possible to call `addState` on a given state once. The reason is that whenever we call `addState(s)`, we set `alreadyOn[s]` to TRUE at line (11) of Fig. 3.39. Once `alreadyOn[s]` is TRUE, the tests at line (13) of Fig. 3.38 and line (18 ) of Fig. 3.39 prevent another call.
 
-The time spent in one call to addState, exclusive of the time spent in recursive calls at line (14), is O(1) for lines (10) and (11). For lines (12) and (13), the time depends on how many ε-transitions there are out of state s. We do not know this number for a given state, but we know that there are at most m transitions in total, out of all states. As a result, the aggregate time spent in lines (11) over all calls to addState during one execution of the code of Fig. 3.39 is O(m). The aggregate for the rest of the steps of addState is O(n), since it is a constant per call, and there are at most n calls.
+The time spent in one call to `addState`, exclusive of the time spent in recursive calls at line (14), is O(1) for lines (10) and (11). For lines (12) and (13), the time depends on how many ε-transitions there are out of state s. We do not know this number for a given state, but we know that there are at most m transitions in total, out of all states. As a result, the aggregate time spent in lines (11) over all calls to `addState` during one execution of the code of Fig. 3.39 is O(m). The aggregate for the rest of the steps of `addState` is O(n), since it is a constant per call, and there are at most n calls.
 
-We conclude that, implemented properly, the time to execute line (4) of Fig. 3.37 is O(n + m). The rest of the while-loop of lines (3) through (6) takes O(1) time per iteration. If the input x is of length k, then the total work in that loop is O(k(n + m)) . Line (1) of Fig. 3.37 can be executed in O(n + m) time, since it is essentially the steps of Fig. 3.39 with oldStates containing only the state s_0. Lines (2), (7), and (8) each take O(1) time. Thus, the running time of Algorithm 3.22, properly implemented, is O((k(n + m)) . That is, the time taken is proportional to the length of the input times the size (nodes plus edges) of the transition graph.
+We conclude that, implemented properly, the time to execute line (4) of Fig. 3.37 is O(n + m). The rest of the while-loop of lines (3) through (6) takes O(1) time per iteration. If the input x is of length k, then the total work in that loop is O(k(n + m)) . Line (1) of Fig. 3.37 can be executed in O(n + m) time, since it is essentially the steps of Fig. 3.39 with `oldStates` containing only the state s~0~. Lines (2), (7), and (8) each take O(1) time. Thus, the running time of Algorithm 3.22, properly implemented, is O((k(n + m)) . That is, the time taken is proportional to the length of the input times the size (nodes plus edges) of the transition graph.
 
 ---
 
 ##### Big-Oh Notation
 
-An expression like O(n) is a shorthand for "at most some constant times n." Technically, we say a function f(n), perhaps the running time of some step of an algorithm, is O(g(n)) if there are constants c and n_0, such that whenever n ≥ n_0, it is true that f(n) ≤ cg(n). A useful idiom is "O(1)," Which means "some constant." The use of this big-oh notation enables us to avoid getting too far into the details of what we count as a unit of execution time, yet lets us express the rate at which the running time of an algorithm grows.
+An expression like O(n) is a shorthand for "at most some constant times n." Technically, we say a function ƒ(n), perhaps the running time of some step of an algorithm, is O(g(n)) if there are constants c and n~0~, such that whenever n ≥ n~0~, it is true that ƒ(n) ≤ cg(n). A useful idiom is "O(1)," Which means "some constant." The use of this big-oh notation enables us to avoid getting too far into the details of what we count as a unit of execution time, yet lets us express the rate at which the running time of an algorithm grows.
 
 ---
 
@@ -297,23 +329,31 @@ An expression like O(n) is a shorthand for "at most some constant times n." Tech
 
 We now give an algorithm for converting any regular expression to an NFA that defines the same language. The algorithm is syntax-directed, in the sense that it works recursively up the parse tree for the regular expression. For each subexpression the algorithm constructs an NFA with a single accepting state.
 
-Algorithm 3.23 : The McNaughton-Yamada-Thompson algorithm to convert a regular expression to an NFA.
+**Algorithm 3.23:** The McNaughton-Yamada-Thompson algorithm to convert a regular expression to an NFA.
 
-INPUT: A regular expression r over alphabet ∑.
+**INPUT:** A regular expression r over alphabet ∑.
 
-OUTPUT: An NFA N accepting L(r).
+**OUTPUT:** An NFA N accepting L(r).
 
-METHOD: Begin by parsing r into its constituent subexpressions. The rules for constructing an NFA consist of basis rules for handling subexpressions with no operators, and inductive rules for constructing larger NFA's from the NFA's for the immediate subexpressions of a given expression.
+**METHOD:** Begin by parsing r into its constituent subexpressions. The rules for constructing an NFA consist of basis rules for handling subexpressions with no operators, and inductive rules for constructing larger NFA's from the NFA's for the immediate subexpressions of a given expression.
 
-BASIS: For expression ε construct the NFA
+**BASIS: **For expression ε construct the NFA
 
-Here, i is a new state, the start state of this NFA, and f is another new state, the accepting state for the NFA.
+```
+start->(i)--ε-->((ƒ))
+```
+
+Here, i is a new state, the start state of this NFA, and ƒ is another new state, the accepting state for the NFA.
 
 For any subexpressiop a in ∑, construct the NFA
 
-where again i and f are new states, the start and accepting states, respectively. Note that in both of the basis constructions, we construct a distinct NFA, with new states, for every occurrence of ε or some a as a subexpression of r.
+```
+start->(i)--a-->((ƒ))
+```
 
-INDUCTION: Suppose N(s) and N(t) are NFA's for regular expressions s and t, respectively.
+where again i and ƒ are new states,  the start and accepting states, respectively. Note that in both of the basis constructions, we construct a distinct NFA, with new states, for every occurrence of ε or some a as a subexpression of r.
+
+**INDUCTION: **Suppose N(s) and N(t) are NFA's for regular expressions s and t, respectively.
 
 a) Suppose r = s|t. Then N(r), the NFA for r, is constructed as in Fig. 3.40. Here, i and f are new states, the start and accepting states of N(r), respectively. There are ε-transitions from i to the start states of N (s) and N (t), and each of their accepting states have ε-transitions to the accepting state f. Note that the accepting states of N (s) and N (t) are not accepting in N (r) . Since any path from i to f must pass through either N(s) or N(t) exclusively, and since the label of that path is not changed by the ε'S leaving i or entering f, we conclude that N(r) accepts L(s) ∪ L(t), which is the same as L(r). That is, Fig. 3.40 is a correct construction for the union operator.
 
@@ -339,25 +379,25 @@ The method description in Algorithm 3.23 contains hints as to why the inductive 
 
 3. Each state of N(r) other than the accepting state has either one outgoing transition on a symbol in ∑ or two outgoing transitions, both on ε.
 
-Example 3.24 : Let us use Algorithm 3.23 to construct an NFA for `r = (a|b)*abb`. Figure 3.43 shows a parse tree for r that is analogous to the parse trees constructed for arithmetic expressions in Section 2.2.3. For subexpression r_1, the first a, we construct the NFA:
+**Example 3.24:** Let us use Algorithm 3.23 to construct an NFA for `r = (a|b)*abb`. Figure 3.43 shows a parse tree for r that is analogous to the parse trees constructed for arithmetic expressions in Section 2.2.3. For subexpression r~1~, the first a, we construct the NFA:
 
 Figure 3.43: Parse tree for (a|b)*abb 
 
-State numbers have been chosen for consistency with what follows. For r_2 we construct:
+State numbers have been chosen for consistency with what follows. For r~2~ we construct:
 
-We can now combine N(r_1) and N(r_2), using the construction of Fig. 3.40 to obtain the NFA for r_3 = r_1 | r_2 ; this NFA is shown in Fig. 3.44.
+We can now combine N(r~1~) and N(r~2~), using the construction of Fig. 3.40 to obtain the NFA for r~3~ = r~1~ | r~2~ ; this NFA is shown in Fig. 3.44.
 
-Figure 3.44: NFA for r_3
+Figure 3.44: NFA for r~3~
 
-The NFA for r_4 = (r_3) is the same as that for r_3 . The NFA for r_5 = (r_3 )* is then as shown in Fig. 3.45. We have used the construction in Fig. 3.42 to build this NFA from the NFA in Fig. 3.44. 
+The NFA for r~4~ = (r~3~) is the same as that for r~3~ . The NFA for r~5~ = (r~3~ )* is then as shown in Fig. 3.45. We have used the construction in Fig. 3.42 to build this NFA from the NFA in Fig. 3.44. 
 
-Now, consider subexpression r_6 , which is another a. We use the basis construction for a again, but we must use new states. It is not permissible to reuse the NFA we constructed for r_1 , even though r_1 and r_6 are the same expression. The NFA for r_6 is:
+Now, consider subexpression r~6~ , which is another a. We use the basis construction for a again, but we must use new states. It is not permissible to reuse the NFA we constructed for r~1~ , even though r~1~ and r~6~ are the same expression. The NFA for r~6~ is:
 
-Figure 3.45: NFA for r_5 
+Figure 3.45: NFA for r~5~ 
 
-To obtain the NFA for r_7 = r_5 r_6 , we apply the construction of Fig. 3.41. We merge states 7 and 7', yielding the NFA of Fig. 3.46. Continuing in this fashion with new NFA's for the two subexpressions b called r_8 and r_10 , we eventually construct the NFA for (a|b)*abb that we first met in Fig. 3.34. □
+To obtain the NFA for r~7~ = r~5~ r~6~ , we apply the construction of Fig. 3.41. We merge states 7 and 7', yielding the NFA of Fig. 3.46. Continuing in this fashion with new NFA's for the two subexpressions b called r~8~ and r_10 , we eventually construct the NFA for (a|b)*abb that we first met in Fig. 3.34. □
 
-Figure 3.46: NFA for r_7
+Figure 3.46: NFA for r~7~
 
 ### 3.7.5 Efficiency of String-Processing Algorithms
 
@@ -365,7 +405,7 @@ We observed that Algorithm 3.18 processes a string x in time O(|x|) , while in S
 
 One issue that may favor an NFA is that the subset construction can, in the worst case, exponentiate the number of states. While in principle, the number of DFA states does not influence the running time of Algorithm 3.18, should the number of states become so large that the transition table does not fit in main memory, then the true running time would have to include disk I/O and therefore rise noticeably. 
 
-Example 3.25: Consider the family of languages described by regular expressions of the form Ln = (a|b)*a(a|b)^n-1^, that is, each language Ln consists of strings of a's and b's such that the nth character to the left of the right end holds a. An n + 1-state NFA is easy to construct. It stays in its initial state under any input, but also has the option, on input a, of going to state 1. From state 1, it goes to state 2 on any input, and so on, until in state n it accepts. Figure 3.47 suggests this NFA. 
+**Example 3.25:** Consider the family of languages described by regular expressions of the form Ln = (a|b)*a(a|b)^n-1^, that is, each language Ln consists of strings of a's and b's such that the nth character to the left of the right end holds a. An n + 1-state NFA is easy to construct. It stays in its initial state under any input, but also has the option, on input a, of going to state 1. From state 1, it goes to state 2 on any input, and so on, until in state n it accepts. Figure 3.47 suggests this NFA. 
 
 Figure 3.47: An NFA that has many fewer states than the smallest equivalent DFA
 
@@ -413,9 +453,9 @@ These components are:
 
 3. The actions from the input program, which appear as fragments of code to be invoked at the appropriate time by the automaton simulator.
 
-To construct the automaton, we begin by taking each regular-expression pattern in the Lex program and converting it, using Algorithm 3.23, to an NFA. We need a single automaton that will recognize lexemes matching any of the patterns in the program, so we combine all the NFA's into one by introducing a new start state with ε-transitions to each of the start states of the NFA's N_i_ for pattern p_i_. This construction is shown in Fig. 3.50.
+To construct the automaton, we begin by taking each regular-expression pattern in the Lex program and converting it, using Algorithm 3.23, to an NFA. We need a single automaton that will recognize lexemes matching any of the patterns in the program, so we combine all the NFA's into one by introducing a new start state with ε-transitions to each of the start states of the NFA's N~i~ for pattern p~i~. This construction is shown in Fig. 3.50.
 
-Example 3.26 : We shall illustrate the ideas of this section with the following simple, abstract example: 
+**Example 3.26:** We shall illustrate the ideas of this section with the following simple, abstract example: 
 
 Figure 3.50: An NFA constructed from a Lex program 
 
@@ -425,7 +465,7 @@ abb  { action A2  for pattern P2  }
 a*b+ { action A3  for pattern P3  } 
 ```
 
-Note that these three patterns present some conflicts of the type discussed in Section 3.5.3. In particular, string abb matches both the second and third patterns, but we shall consider it a lexeme for pattern p_2 , since that pattern is listed first in the above Lex program. Then, input strings such as aabbb ... have many prefixes that match the third pattern. The Lex rule is to take the longest, so we continue reading b's, until another a is met, whereupon we report the lexeme to be the initial a's followed by as many b's as there are.
+Note that these three patterns present some conflicts of the type discussed in Section 3.5.3. In particular, string abb matches both the second and third patterns, but we shall consider it a lexeme for pattern p~2~ , since that pattern is listed first in the above Lex program. Then, input strings such as aabbb ... have many prefixes that match the third pattern. The Lex rule is to take the longest, so we continue reading b's, until another a is met, whereupon we report the lexeme to be the initial a's followed by as many b's as there are.
 
 Figure 3.51 shows three NFA's that recognize the three patterns. The third is a simplification of what would come out of Algorithm 3.23. Then, Fig. 3.52 shows these three NFA's combined into a single NFA by the addition of start state 0 and three ε-transitions. □
 
@@ -441,9 +481,9 @@ Figure 3.52: Combined NFA
 
 Figure 3.53: Sequence of sets of states entered when processing input aaba 
 
-We look backwards in the sequence of sets of states, until we find a set that includes one or more accepting states. If there are several accepting states in that set, pick the one associated with the earliest pattern p_i_ in the list from the Lex program. Move the forward pointer back to the end of the lexeme, and perform the action Ai associated with pattern p_i_.
+We look backwards in the sequence of sets of states, until we find a set that includes one or more accepting states. If there are several accepting states in that set, pick the one associated with the earliest pattern p~i~ in the list from the Lex program. Move the forward pointer back to the end of the lexeme, and perform the action Ai associated with pattern p~i~.
 
-Example 3.27 : Suppose we have the patterns of Example 3.26 and the input begins aaba. Figure 3.53 shows the sets of states of the NFA of Fig. 3.52 that we enter, starting with ε-closure of the initial state 0, which is {0, 1, 3, 7}, and proceeding from there. After reading the fourth input symbol, we are in an empty set of states, since in Fig. 3.52, there are no transitions out of state 8 on input a.
+**Example 3.27:** Suppose we have the patterns of Example 3.26 and the input begins aaba. Figure 3.53 shows the sets of states of the NFA of Fig. 3.52 that we enter, starting with ε-closure of the initial state 0, which is {0, 1, 3, 7}, and proceeding from there. After reading the fourth input symbol, we are in an empty set of states, since in Fig. 3.52, there are no transitions out of state 8 on input a.
 
 Thus, we need to back up, looking for a set of states that includes an accepting state. Notice that, as indicated in Fig. 3.53, after reading a we are in a set that includes state 2 and therefore indicates that the pattern a has been matched. However, after reading aab, we are in state 8, which indicates that `a*b+` has been matched; prefix aab is the longest prefix that gets us to an accepting state. We therefore select aab as the lexeme, and execute action A3, which should include a return to the parser indicating that the token whose pattern is `p3 = a*b+` has been found. □
 
@@ -451,11 +491,11 @@ Thus, we need to back up, looking for a set of states that includes an accepting
 
 Another architecture, resembling the output of Lex, is to convert the NFA for all the patterns into an equivalent DFA, using the subset construction of Algorithm 3.20. Within each DFA state, if there are one or more accepting NFA states, determine the first pattern whose accepting state is represented, and make that pattern the output of the DFA state.
 
-Example 3.28: Figure 3.54 shows a transition diagram based on the DFA that is constructed by the subset construction from the NFA in Fig. 3.52. The accepting states are labeled by the pattern that is identified by that state. For instance, the state {6, 8} has two accepting states, corresponding to patterns abb and a*b +. Since the former is listed first , that is the pattern associated with state {6, 8}. □
+**Example 3.28:** Figure 3.54 shows a transition diagram based on the DFA that is constructed by the subset construction from the NFA in Fig. 3.52. The accepting states are labeled by the pattern that is identified by that state. For instance, the state {6, 8} has two accepting states, corresponding to patterns abb and a*b +. Since the former is listed first , that is the pattern associated with state {6, 8}. □
 
 We use the DFA in a lexical analyzer much as we did the NFA. We simulate the DFA until at some point there is no next state ( or strictly speaking, the next state is 0, the dead state corresponding to the empty set of NFA states ) . At that point, we back up through the sequence of states we entered and, as soon as we meet an accepting DFA state, we perform the action associated with the pattern for that state.
 
-Example 3.29 : Suppose the DFA of Fig. 3.54 is given input abba. The sequence of states entered is 0137, 247, 58, 68, and at the final a there is no transition out of state 68. Thus, we consider the sequence from the end, and in this case, 68 itself is an accepting state that reports pattern p2 = abb. □
+**Example 3.29:** Suppose the DFA of Fig. 3.54 is given input abba. The sequence of states entered is 0137, 247, 58, 68, and at the final a there is no transition out of state 68. Thus, we consider the sequence from the end, and in this case, 68 itself is an accepting state that reports pattern p2 = abb. □
 
 Figure 3.54: Transition graph for DFA handling the patterns a, abb, and a*b+
 
@@ -473,7 +513,7 @@ Recall from Section 3.5.4 that the Lex lookahead operator / in a Lex pattern r1 
 
 If there is only one ε-transition state on the imaginary / in the NFA, then the end of the lexeme occurs when this state is entered for the last time as the following example illustrates. If the NFA has more than one ε-transition state on the imaginary /, then the general problem of finding the correct state s is much more difficult.
 
-Example 3.30 : An NFA for the pattern for the Fortran IF with lookahead, from Example 3.13, is shown in Fig. 3.55. Notice that the ε-transition from state 2 to state 3 represents the lookahead operator. State 6 indicates the presence of the keyword IF. However, we find the lexeme IF by scanning backwards to the last occurrence of state 2, whenever state 6 is entered. □
+**Example 3.30:** An NFA for the pattern for the Fortran IF with lookahead, from Example 3.13, is shown in Fig. 3.55. Notice that the ε-transition from state 2 to state 3 represents the lookahead operator. State 6 indicates the presence of the keyword IF. However, we find the lexeme IF by scanning backwards to the last occurrence of state 2, whenever state 6 is entered. □
 
 Figure 3.55: NFA recognizing the keyword IF 
 
@@ -511,13 +551,13 @@ The constructed NFA has only one accepting state, but this state, having no out-
 
 The important states of the NFA correspond directly to the positions in the regular expression that hold symbols of the alphabet. It is useful, as we shall see, to present the regular expression by its syntax tree, where the leaves correspond to operands and the interior nodes correspond to operators. An interior node is called a cat-node, or-node, or star-node if it is labeled by the concatenation operator (dot), union operator |, or star operator *, respectively. We can construct a syntax tree for a regular expression just as we did for arithmetic expressions in Section 2.5.1.
 
-Example 3.31 : Figure 3.56 shows the syntax tree for the regular expression of our running example. Cat-nodes are represented by circles. □
+**Example 3.31:** Figure 3.56 shows the syntax tree for the regular expression of our running example. Cat-nodes are represented by circles. □
 
 Figure 3.56: Syntax tree for (a|b)*abb#
 
 Leaves in a syntax tree are labeled by ε or by an alphabet symbol. To each leaf not labeled ε, we attach a unique integer. We refer to this integer as the position of the leaf and also as a position of its symbol. Note that a symbol can have several positions; for instance, a has positions 1 and 3 in Fig. 3.56. The positions in the syntax tree correspond to the important states of the constructed NFA.
 
-Example 3.32 : Figure 3.57 shows the NFA for the same regular expression as Fig. 3.56, with the important states numbered and other states represented by letters. The numbered states in the NFA and the positions in the syntax tree correspond in a way we shall soon see. □
+**Example 3.32:** Figure 3.57 shows the NFA for the same regular expression as Fig. 3.56, with the important states numbered and other states represented by letters. The numbered states in the NFA and the positions in the syntax tree correspond in a way we shall soon see. □
 
 Figure 3.57: NFA constructed by Algorithm 3.23 for (a|b)*abb#
 
@@ -531,9 +571,9 @@ To construct a DFA directly from a regular expression, we construct its syntax t
 
 3. lastpos(n) is the set of positions in the subtree rooted at n that correspond to the last symbol of at least one string in the language of the subexpression rooted at n. 
 
-4. followpos(p), for a position p, is the set of positions q in the entire syntax tree such that there is some string x = a1 a2 ... an in L ( ( r ) #) such that for some i, there is a way to explain the membership of x in L ( ( r ) #) by matching a_i_ to position p of the syntax tree and a_i+1_ to position q.
+4. followpos(p), for a position p, is the set of positions q in the entire syntax tree such that there is some string x = a1 a2 ... an in L ( ( r ) #) such that for some i, there is a way to explain the membership of x in L ( ( r ) #) by matching a~i~ to position p of the syntax tree and a~i~+1_ to position q.
 
-Example 3.33 : Consider the cat-node n in Fig. 3.56 that corresponds to the expression `(a|b)*a`. We claim nullable(n) is false, since this node generates all strings of a's and b's ending in an a; it does not generate ε. On the other hand, the star-node below it is nullable; it generates ε along with all other strings of a's and b's.
+**Example 3.33:** Consider the cat-node n in Fig. 3.56 that corresponds to the expression `(a|b)*a`. We claim nullable(n) is false, since this node generates all strings of a's and b's ending in an a; it does not generate ε. On the other hand, the star-node below it is nullable; it generates ε along with all other strings of a's and b's.
 
 firstpos(n) = {1, 2, 3}. In a typical generated string like aa, the first position of the string corresponds to position 1 of the tree, and in a string like ba, the first position of the string comes from position 2 of the tree. However, when the string generated by the expression of node n is just a, then this a comes from position 3.
 
@@ -567,7 +607,7 @@ firstpos( c1 )
 
 Figure 3.58: Rules for computing nullable and firstpos
 
-Example 3.34 : Of all the nodes in Fig. 3.56 only the star-node is nullable. We note from the table of Fig. 3.58 that none of the leaves are nullable, because they each correspond to non-ε operands. The or-node is not nullable, because neither of its children is. The star-node is nullable, because every star-node is nullable. Finally, each of the cat-nodes, having at least one non null able child, is not nullable.
+**Example 3.34:** Of all the nodes in Fig. 3.56 only the star-node is nullable. We note from the table of Fig. 3.58 that none of the leaves are nullable, because they each correspond to non-ε operands. The or-node is not nullable, because neither of its children is. The star-node is nullable, because every star-node is nullable. Finally, each of the cat-nodes, having at least one non null able child, is not nullable.
 
 The computation of firstpos and lastpos for each of the nodes is shown in Fig. 3.59, with firstpos(n) to the left of node n, and lastpos(n) to its right. Each of the leaves has only itself for firstpos and lastpos, as required by the rule for non-ε leaves in Fig. 3.58. For the or-node, we take the union of firstpos at the children and do the same for lastpos. The rule for the star-node says that we take the value of firstpos or lastpos at the one child of that node. 
 
@@ -581,7 +621,7 @@ Finally, we need to see how to compute followpos. There are only two ways that a
 
 2. If n is a star-node, and i is a position in lastpos(n), then all positions in firstpos( n) are in followpos( i).
 
-Example 3.35 : Let us continue with our running example; recall that firstpos and lastpos were computed in Fig. 3.59. Rule 1 for followpos requires that we look at each cat-node, and put each position in firstpos of its right child in followpos for each position in lastpos of its left child. For the lowest cat-node in Fig. 3.59, that rule says position 3 is in followpos(1) and followpos(2). The next cat-node above says that 4 is in followpos(3) , and the remaining two cat-nodes give us 5 in followpos(4) and 6 in followpos(5). 
+**Example 3.35:** Let us continue with our running example; recall that firstpos and lastpos were computed in Fig. 3.59. Rule 1 for followpos requires that we look at each cat-node, and put each position in firstpos of its right child in followpos for each position in lastpos of its left child. For the lowest cat-node in Fig. 3.59, that rule says position 3 is in followpos(1) and followpos(2). The next cat-node above says that 4 is in followpos(3) , and the remaining two cat-nodes give us 5 in followpos(4) and 6 in followpos(5). 
 
 Figure 3.59: firstpos and lastpos for nodes in the syntax tree for (a/b)*abb#
 
@@ -603,11 +643,11 @@ It should come as no surprise that the graph for followpos is almost an NFA with
 
 ### 3.9.5 Converting a Regular Expression Directly to a DFA
 
-Algorithm 3.36 : Construction of a DFA from a regular expression r.
+**Algorithm 3.36:** Construction of a DFA from a regular expression r.
 
-INPUT: A regular expression r.
+**INPUT:** A regular expression r.
 
-OUTPUT: A DFA D that recognizes L(r).
+**OUTPUT:** A DFA D that recognizes L(r).
 
 METHOD:
 
@@ -615,17 +655,17 @@ METHOD:
 
 2. Compute nullable, firstpos, lastpos, and followpos for T, using the methods of Sections 3.9.3 and 3.9.4.
 
-3. Construct Dstates, the set of states of DFA D, and Dtran, the transition function for D, by the procedure of Fig. 3.62. The states of D are sets of positions in T. Initially, each state is "unmarked," and a state becomes "marked" just before we consider its out-transitions. The start state of D is firstpos(n_0_), where node n_0_ is the root of T. The accepting states are those containing the position for the endmarker symbol #.
+3. Construct Dstates, the set of states of DFA D, and Dtran, the transition function for D, by the procedure of Fig. 3.62. The states of D are sets of positions in T. Initially, each state is "unmarked," and a state becomes "marked" just before we consider its out-transitions. The start state of D is firstpos(n~0~), where node n~0~ is the root of T. The accepting states are those containing the position for the endmarker symbol #.
 
 □
 
-Example 3.37 : We can now put together the steps of our running example to construct a DFA for the regular expression r = (a\b)*abb. The syntax tree for (r)# appeared in Fig. 3.56. We observed that for this tree, nullable is true only for the star-node, and we exhibited firstpos and lastpos in Fig. 3.59. The values of followpos appear in Fig. 3.60.
+**Example 3.37:** We can now put together the steps of our running example to construct a DFA for the regular expression r = (a\b)*abb. The syntax tree for (r)# appeared in Fig. 3.56. We observed that for this tree, nullable is true only for the star-node, and we exhibited firstpos and lastpos in Fig. 3.59. The values of followpos appear in Fig. 3.60.
 
 The value of firstpos for the root of the tree is {1, 2, 3}, so this set is the start state of D. Call this set of states A. We must compute Dtran[A, a ] and Dtran[A, b]. Among the positions of A, 1 and 3 correspond to a, while 2 corresponds to b. Thus, Dtran[A, a] = followpos(1) ∪ followpos(3) = {1, 2, 3, 4}, and Dtran[A, b] = followpos(2) = {1, 2, 3}. The latter is state A, and so does not have to be added to Dstates, but the former, B = {1, 2, 3, 4}, is new, so we add it to Dstates and proceed to compute its transitions. The complete DFA is shown in Fig. 3.63. □
 
 ```
-initialize Dstates to contain only the unmarked state firstpos( n_0_ ) , 
-where n_0_ is the root of syntax tree T for (r) #; 
+initialize Dstates to contain only the unmarked state firstpos( n~0~ ) , 
+where n~0~ is the root of syntax tree T for (r) #; 
 while ( there is an unmarked state S in Dstates )  {
     mark S; 
     for ( each input symbol a ) { 
@@ -652,7 +692,7 @@ It turns out that there is always a unique (up to state names ) minimum state DF
 
 In order to understand the algorithm for creating the partition of states that converts any DFA into its minimum-state equivalent DFA, we need to see how input strings distinguish states from one another. We say that string x distinguishes state s from state t if exactly one of the states reached from s and t by following the path with label x is an accepting state. State s is distinguishable from state t if there is some string that distinguishes them.
 
-Example 3.38 : The empty string distinguishes any accepting state from any non accepting state. In Fig. 3.36, the string bb distinguishes state A from state B, since bb takes A to a non accepting state C, but takes B to accepting state E. □
+**Example 3.38:** The empty string distinguishes any accepting state from any non accepting state. In Fig. 3.36, the string bb distinguishes state A from state B, since bb takes A to a non accepting state C, but takes B to accepting state E. □
 
 The state-minimization algorithm works by partitioning the states of a DFA into groups of states that cannot be distinguished. Each group of states is then merged into a single state of the minimum-state DFA. The algorithm works by maintaining a partition, whose groups are sets of states that have not yet been distinguished, while any two states from different groups are known to be distinguishable. When the partition cannot be refined further by breaking any group into smaller groups, we have the minimum-state DFA.
 
@@ -666,13 +706,13 @@ The second is an induction on i that if states s and t are placed in different g
 
 ---
 
-Initially, the partition consists of two groups: the accepting states and the nonaccepting states. The fundamental step is to take some group of the current partition, say A = {s1 , s2 , ... , s_k }, and some input symbol a, and see whether a can be used to distinguish between any states in group A. We examine the transitions from each of s1 , s2 , ... , s_k on input a, and if the states reached fall into two or more groups of the current partition, we split A into a collection of groups, so that s_i and s_j are in the same group if and only if they go to the same group on input a. We repeat this process of splitting groups, until for no group, and for no input symbol, can the group be split further. The idea is formalized in the next algorithm.
+Initially, the partition consists of two groups: the accepting states and the nonaccepting states. The fundamental step is to take some group of the current partition, say A = {s1 , s2 , ... , s~k~ }, and some input symbol a, and see whether a can be used to distinguish between any states in group A. We examine the transitions from each of s1 , s2 , ... , s~k~ on input a, and if the states reached fall into two or more groups of the current partition, we split A into a collection of groups, so that s~i~ and s~j~ are in the same group if and only if they go to the same group on input a. We repeat this process of splitting groups, until for no group, and for no input symbol, can the group be split further. The idea is formalized in the next algorithm.
 
-Algorithm 3.39 : Minimizing the number of states of a DFA.
+**Algorithm 3.39:** Minimizing the number of states of a DFA.
 
-INPUT: A DFA D with set of states S, input alphabet ∑ , state state s0 , and set of accepting states F.
+**INPUT:** A DFA D with set of states S, input alphabet ∑ , state state s0 , and set of accepting states F.
 
-OUTPUT: A DFA D' accepting the same language as D and having as few states as possible. 
+**OUTPUT:** A DFA D' accepting the same language as D and having as few states as possible. 
 
 METHOD:
 
@@ -711,7 +751,7 @@ The minimization algorithm sometimes produces a DFA with one dead state one that
 
 (c) Let s be the representative of some group G of ∏final, and let the transition of D from s on input a be to state t. Let r be the representative of t's group H. Then in D', there is a transition from s to r on input a. Note that in D, every state in group G must go to some state of group H on input a, or else, group G would have been split according to Fig. 3.64.
 
-Example 3.40 : Let us reconsider the DFA of Fig. 3.36. The initial partition consists of the two groups {A, B, C, D}{E}, which are respectively the nonaccepting states and the accepting states. To construct ∏new, the procedure of Fig. 3.64 considers both groups and inputs a and b. The group {E} cannot be split, because it has only one state, so {E} will remain intact in ∏new.
+**Example 3.40:** Let us reconsider the DFA of Fig. 3.36. The initial partition consists of the two groups {A, B, C, D}{E}, which are respectively the nonaccepting states and the accepting states. To construct ∏new, the procedure of Fig. 3.64 considers both groups and inputs a and b. The group {E} cannot be split, because it has only one state, so {E} will remain intact in ∏new.
 
 The other group {A, B, C, D} can be split, so we must consider the effect of each input symbol. On input a, each of these states goes to state B, so there is no way to distinguish these states using strings that begin with a. On input b, states A, B, and C go to members of group {A, B, C, D}, while state D goes to E, a member of another group. Thus, in ∏new, group {A, B, C, D} is split into {A, B, C}{D}, and ∏new for this round is {A, B, C}{D}{E}. 
 
@@ -725,7 +765,7 @@ Figure 3.65: Transition table of minimum-state DFA
 
 To apply the state minimization procedure to the DFA's generated in Section 3.8.3, we must begin Algorithm 3.39 with the partition that groups together all states that recognize a particular token, and also places in one group all those states that do not indicate any token. An example should make the extension clear.
 
-Example 3.41 : For the DFA of Fig. 3.54, the initial partition is
+**Example 3.41:** For the DFA of Fig. 3.54, the initial partition is
 
 {0137, 7}{247}{8, 58}{7}{68}{Ø}
 
@@ -758,7 +798,7 @@ The intended use of the structure of Fig. 3.66 is to make the next-check arrays 
 
 While we may not be able to choose base values so that no next-check entries remain unused, experience has shown that the simple strategy of assigning base values to states in turn, and assigning each base[s] value the lowest integer so that the special entries for state s are not previously occupied utilizes little more space than the minimum possible. 
 
-## 3.10 Summary o f Chapter 3
+## 3.10 Summary of Chapter 3
 
 + Tokens. The lexical analyzer scans the source program and produces as output a sequence of tokens, which are normally passed, one at a time to the parser. Some tokens may consist only of a token name while others may also have an associated lexical value that gives information about the particular instance of the token that has been found on the input.
 

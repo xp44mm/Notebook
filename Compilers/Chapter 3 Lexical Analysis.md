@@ -40,7 +40,7 @@ When discussing lexical analysis, we use three related but distinct terms:
 
 * A *lexeme* is a sequence of characters in the source program that matches the pattern for a token and is identified by the lexical analyzer as an instance of that token.
 
-Example 3.1 : Figure 3.2 gives Some typical tokens, their informally described patterns, and some sample lexemes. To see how these concepts are used in practice, in the C statement
+**Example 3.1:** Figure 3.2 gives Some typical tokens, their informally described patterns, and some sample lexemes. To see how these concepts are used in practice, in the C statement
 
 ```C
 printf ( "Total = %d\ri" , score) ;
@@ -88,7 +88,7 @@ in which the first lexeme is the keyword `DO`.
 
 ---
 
-Example 3.2 : The token names and associated attribute values for the Fortran statement 
+**Example 3.2:** The token names and associated attribute values for the Fortran statement 
 
 ```Fortran
 E  =  M  *  C  **  2 
@@ -219,18 +219,18 @@ If we think of concatenation as a product, we can define the "exponentiation" of
 
 ### 3.3.2 Operations on Languages
 
-In lexical analysis, the most important operations on languages are union, concatenation, and closure, which are defined formally in Fig. 3.6. Union is the familiar operation on sets. The concatenation of languages is all strings formed by taking a string from the first language and a string from the second language, in all possible ways, and concatenating them. The (Kleene) closure of a language L, denoted L*, is the set of strings you get by concatenating L zero or more times. Note that L^0^, the "concatenation of L zero times," is defined to be $\{\epsilon\}$, and inductively, L^i^ is L^i-1^L. Finally, the positive closure, denoted L^+^, is the same as the Kleene closure, but without the term L^O^. That is, ε will not be in L^+^ unless it is in L itself. 
+In lexical analysis, the most important operations on languages are union, concatenation, and closure, which are defined formally in Fig. 3.6. Union is the familiar operation on sets. The concatenation of languages is all strings formed by taking a string from the first language and a string from the second language, in all possible ways, and concatenating them. The (Kleene) closure of a language L, denoted L*, is the set of strings you get by concatenating L zero or more times. Note that L^0^, the "concatenation of L zero times," is defined to be {ε}, and inductively, L^i^ is L^i-1^L. Finally, the positive closure, denoted L^+^, is the same as the Kleene closure, but without the term L^0^. That is, ε will not be in L^+^ unless it is in L itself. 
 
-| OPERATION                | DEFINITION  AND  NOTATION                              |
-| ------------------------ | ------------------------------------------------------ |
-| Union of L and M         | $L \cup M = \{ s |\ \text{ s is in L or s is in M}\}$  |
-| Concatenation of L and M | $LM = \{st |\ \text{ s is in L and t is in M}\}$       |
-| Kleene closure of L      | $L^* = \cup_{i=0}^\infty L^i$                          |
-| Positive closure of L    | $L^+ = \cup_{i=1}^\infty L^i$                          |
+| OPERATION                | DEFINITION  AND  NOTATION                   |
+| ------------------------ | ------------------------------------------- |
+| Union of L and M         | L ∪ M = \{ s where s is in L or s is in M }​ |
+| Concatenation of L and M | L M = \{st where s is in L and t is in M }  |
+| Kleene closure of L      | L* = $\cup_{i=0}^\infty L^i$                |
+| Positive closure of L    | L+ = $\cup_{i=1}^\infty L^i$                |
 
 Figure 3.6: Definitions of operations on languages
 
-Example 3.3 : Let L be the set of letters {A, B, ... , Z, a, b, ... , z} and let D be the set of digits {0, 1, ... 9}. We may think of L and D in two, essentially equivalent, ways. One way is that L ?> nd D are, respectively, the alphabets of uppercase and lowercase letters and of digits. The second way is that L and D are languages, all of whose strings happen to be of length one. Here are some other languages that can be constructed from languages L and D, using the operators of Fig. 3.6:
+**Example 3.3:** Let L be the set of letters {A, B, ... , Z, a, b, ... , z} and let D be the set of digits {0, 1, ... 9}. We may think of L and D in two, essentially equivalent, ways. One way is that L and D are, respectively, the alphabets of uppercase and lowercase letters and of digits. The second way is that L and D are languages, all of whose strings happen to be of length one. Here are some other languages that can be constructed from languages L and D, using the operators of Fig. 3.6:
 
 1. L ∪ D is the set of letters and digits strictly speaking the language with 62 strings of length one, each of which strings is either one letter or one digit.
 
@@ -250,17 +250,17 @@ Example 3.3 : Let L be the set of letters {A, B, ... , Z, a, b, ... , z} and let
 
 Suppose we wanted to describe the set of valid C identifiers. It is almost exactly the language described in item (5) above; the only difference is that the underscore is included among the letters.
 
-In Example 3.3, we were able to describe identifiers by giving names to sets of letters and digits and using the language operators union, concatenation, and closure. This process is so useful that a notation called regular expressions has come into common use for describing all the languages that can be built from these operators applied to the symbols of some alphabet. In this notation, if letter_ is established to stand for any letter or the underscore, and digit is established to stand for any digit, then we could describe the language of C identifiers by:
+In Example 3.3, we were able to describe identifiers by giving names to sets of letters and digits and using the language operators union, concatenation, and closure. This process is so useful that a notation called *regular expressions* has come into common use for describing all the languages that can be built from these operators applied to the symbols of some alphabet. In this notation, if `letter_` is established to stand for any letter or the underscore, and `digit` is established to stand for any digit, then we could describe the language of C identifiers by:
 
 ```
 letter_ ( letter_ | digit ) *
 ```
 
-The vertical bar above means union, the parentheses are used to group subexpressions, the star means "zero or more occurrences of," and the juxtaposition of letter_ with the remainder of the expression signifies concatenation.
+The vertical bar above means union, the parentheses are used to group subexpressions, the star means "zero or more occurrences of," and the juxtaposition of `letter_` with the remainder of the expression signifies concatenation.
 
 The regular expressions are built recursively out of smaller regular expressions, using the rules described below. Each regular expression r denotes a language L(r), which is also defined recursively from the languages denoted by r's subexpressions. Here are the rules that define the regular expressions over some alphabet ∑ and the languages that those expressions denote.
 
-BASIS: There are two rules that form the basis:
+**BASIS: **There are two rules that form the basis:
 
 1. ε is a regular expression, and L(ε) is {ε}, that is, the language whose sole member is the empty string.
 
@@ -268,7 +268,7 @@ BASIS: There are two rules that form the basis:
 
 [^1]: However, when talking about specific characters from the ASCII character set, we shall generally use teletype font for both the character and its regular expression.
 
-INDUCTION: There are four parts to the induction whereby larger regular expressions are built from smaller ones. Suppose r and s are regular expressions denoting languages L(r) and L(s), respectively.
+**INDUCTION: **There are four parts to the induction whereby larger regular expressions are built from smaller ones. Suppose r and s are regular expressions denoting languages L(r) and L(s), respectively.
 
 1. (r)|(s) is a regular expression denoting the language L(r) ∪ L(s).
 
@@ -288,9 +288,9 @@ c) | has lowest precedence and is left associative.
 
 Under these conventions, for example, we may replace the regular expression `(a)|((b)*(c))` by `a|b*c`. Both expressions denote the set of strings that are either a single a or are zero or more b's followed by one c.
 
-Example 3.4 : Let ∑ = {a, b}.
+**Example 3.4:** Let ∑ = {a, b}.
 
-1. The regular expression `a|b` delOtes the language {a, b}.
+1. The regular expression `a|b` denotes the language {a, b}.
 
 2. `(a|b)(a|b)` denotes {aa, ab, ba, bb}, the language of all strings of length two over the alphabet ∑ . Another regular expression for the same language is `aa|ab|ba|bb`.
 
@@ -329,13 +329,13 @@ dn -> rn
 
 where:
 
-1. Each di is a new symbol, not in ∑ and not the same as any other of the d's, and
+1. Each d~i~ is a new symbol, not in ∑ and not the same as any other of the d's, and
 
-2. Each ri is a regular expression over the alphabet ∑ U {d1, d2, ... , d_{i-1}}·
+2. Each r~i~ is a regular expression over the alphabet ∑ ∪ {d1, d2, ... , d_{i-1}}·
 
-By restricting ri to ∑ and the previously defined d's, we avoid recursive definitions, and we can construct a regular expression over ∑ alone, for each ri. We do so by first replacing uses of d1 in r2 (which cannot use any of the d's except for d1, then replacing uses of d1 and d2 in r3 by r1 and (the substituted) r2, and so on. Finally, in rn we replace each di, for i = 1, 2, ... , n-1, by the substituted version of ri, each of which has only symbols of ∑.
+By restricting r~i~ to ∑ and the previously defined d's, we avoid recursive definitions, and we can construct a regular expression over ∑ alone, for each r_i. We do so by first replacing uses of d1 in r2 (which cannot use any of the d's except for d1, then replacing uses of d1 and d2 in r3 by r1 and (the substituted) r2, and so on. Finally, in r_n we replace each d_i, for i = 1, 2, ... , n-1, by the substituted version of r_i, each of which has only symbols of ∑.
 
-Example 3.5 : C identifiers are strings of letters, digits, and underscores. Here is a regular definition for the language of C identifiers. We shall conventionally use italics for the symbols defined in regular definitions. 
+**Example 3.5:** C identifiers are strings of letters, digits, and underscores. Here is a regular definition for the language of C identifiers. We shall conventionally use italics for the symbols defined in regular definitions. 
 
 ```
 letter_ -> A | B | ... | Z | a | b | ... | z | _
@@ -345,7 +345,7 @@ id -> letter_ ( letter_ | digit ) *
 
 □
 
-Example 3.6 : Unsigned numbers (integer or floating point) are strings such as 5280, 0.01234, 6.336E4, or 1.89E-4. The regular definition 
+**Example 3.6:** Unsigned numbers (integer or floating point) are strings such as 5280, 0.01234, 6.336E4, or 1.89E-4. The regular definition 
 
 ```
 digit -> 0 | 1 | ... | 9  
@@ -367,9 +367,9 @@ Since Kleene introduced regular expressions with the basic operators for union, 
 
 2. Zero or one instance. The unary postfix operator ? means "zero or one occurrence." That is, r? is equivalent to `r | ε`, or put another way, `L(r?) = L(r) U {ε}`. The ? operator has the same precedence and associativity as * and +.
 
-3. Character classes. A regular expression `a1 | a2 | ... | an`, where the ai's are each symbols of the alphabet, can be replaced by the shorthand [a1 a2 ... an]. More importantly, when a1 , a2, ... , an form a logical sequence, e.g., consecutive uppercase letters, lowercase letters, or digits, we can replace them by a1-an, that is, just the first and last separated by a hyphen. Thus, [abc] is shorthand for `a|b|c`, and [a-z] is shorthand for `a|b| ... |z`.
+3. Character classes. A regular expression `a1 | a2 | ... | an`, where the a_i's are each symbols of the alphabet, can be replaced by the shorthand [a1 a2 ... an]. More importantly, when a1 , a2, ... , an form a logical sequence, e.g., consecutive uppercase letters, lowercase letters, or digits, we can replace them by a1-an, that is, just the first and last separated by a hyphen. Thus, `[abc]` is shorthand for `a|b|c`, and `[a-z]` is shorthand for `a|b| ... |z`.
 
-Example 3.7 : Using these shorthands, we can rewrite the regular definition of Example 3.5 as: 
+**Example 3.7:** Using these shorthands, we can rewrite the regular definition of Example 3.5 as: 
 
 ```
 letter_ -> [A-Za-z_]
@@ -405,11 +405,11 @@ $$
 
 Figure 3.10: A grammar for branching statements
 
-Example 3.8 : The grammar fragment of Fig. 3.10 describes a simple form of branching statements and conditional expressions. This syntax is similar to that of the language Pascal, in that then appears explicitly after conditions. 
+**Example 3.8:** The grammar fragment of Fig. 3.10 describes a simple form of branching statements and conditional expressions. This syntax is similar to that of the language Pascal, in that `then` appears explicitly after conditions. 
 
 For **relop**, we use the comparison operators of languages like Pascal or SQL, where `=` is "equals" and `<>` is "not equals," because it presents an interesting structure of lexemes.
 
-The terminals of the grammar, which are **if**, **then**, **else**, **relop**, **id**, and **number**, are the names of tokens as far as the lexical analyzer is concerned. The patterns for these tokens are described using regular definitions, as in Fig. 3.11. The patterns for id and number are similar to what we saw in Example 3.7. 
+The terminals of the grammar, which are **if**, **then**, **else**, **relop**, **id**, and **number**, are the names of tokens as far as the lexical analyzer is concerned. The patterns for these tokens are described using regular definitions, as in Fig. 3.11. The patterns for **id** and **number** are similar to what we saw in Example 3.7. 
 
 ```
 digit -> [0-9]
@@ -435,7 +435,7 @@ ws -> ( blank | tab | newline ) +
 
 Here, blank, tab, and newline are abstract symbols that we use to express the ASCII characters of the same names. Token *ws* is different from the other tokens in that, when we recognize it, we do not return it to the parser, but rather restart the lexical analysis from the character that follows the whitespace. It is the following token that gets returned to the parser.
 
-Our goal for the lexical analyzer is summarized in Fig. 3.12. That table shows, for each lexeme or family of lexemes, which token name is returned to the parser and what attribute value, as discussed in Section 3.1.3, is returned. Note that for the six relational operators, symbolic constants LT, LE, and so on are used as the attribute value, in order to indicate which instance of the token relop we have found. The particular operator found will influence the code that is output from the compiler. □
+Our goal for the lexical analyzer is summarized in Fig. 3.12. That table shows, for each lexeme or family of lexemes, which token name is returned to the parser and what attribute value, as discussed in Section 3.1.3, is returned. Note that for the six relational operators, symbolic constants LT, LE, and so on are used as the attribute value, in order to indicate which instance of the token **relop** we have found. The particular operator found will influence the code that is output from the compiler. □
 
 | LEXEMES    | TOKEN  NAME | ATTRIBUTE  VALUE       |
 | ---------- | ----------- | ---------------------- |
@@ -458,23 +458,23 @@ Figure 3.12: Tokens, their patterns, and attribute values
 
 As an intermediate step in the construction of a lexical analyzer, we first convert patterns into stylized flowcharts, called "transition diagrams." In this section, we perform the conversion from regular-expression patterns to transition diagrams by hand, but in Section 3.6, we shall see that there is a mechanical way to construct these diagrams from collections of regular expressions.
 
-*Transition diagrams* have a collection of nodes or circles, called states. Each state represents a condition that could occur during the process of scanning the input looking for a lexeme that matches one of several patterns. We may think of a state as summarizing all we need to know about what characters we have seen between the lexemeBegin pointer and the forward pointer ( as in the situation of Fig. 3.3).
+*Transition diagrams* have a collection of nodes or circles, called *states*. Each state represents a condition that could occur during the process of scanning the input looking for a lexeme that matches one of several patterns. We may think of a state as summarizing all we need to know about what characters we have seen between the `lexemeBegin` pointer and the `forward` pointer ( as in the situation of Fig. 3.3).
 
-Edges are directed from one state of the transition diagram to another. Each edge is labeled by a symbol or set of symbols. If we are in some state s, and the next input symbol is a, we look for an edge out of state s labeled by a ( and perhaps by other symbols, as well ) . If we find such an edge, we advance the forward pointer and enter the state of the transition diagram to which that edge leads. We shall assume that all our transition diagrams are deterministic, meaning that there is never more than one edge out of a given state with a given symbol among its labels. Starting in Section 3.5, we shall relax the condition of determinism, making life much easier for the designer of a lexical analyzer, although trickier for the implementer. Some important conventions about transition diagrams are: 
+*Edges* are directed from one state of the transition diagram to another. Each edge is labeled by a symbol or set of symbols. If we are in some state s, and the next input symbol is a, we look for an edge out of state s labeled by a ( and perhaps by other symbols, as well ) . If we find such an edge, we advance the forward pointer and enter the state of the transition diagram to which that edge leads. We shall assume that all our transition diagrams are *deterministic*, meaning that there is never more than one edge out of a given state with a given symbol among its labels. Starting in Section 3.5, we shall relax the condition of determinism, making life much easier for the designer of a lexical analyzer, although trickier for the implementer. Some important conventions about transition diagrams are: 
 
 1. Certain states are said to be *accepting*, or *final*. These states indicate that a lexeme has been found, although the actual lexeme may not consist of all positions between the `lexemeBegin` and `forward` pointers. We always indicate an accepting state by a double circle, and if there is an action to be taken typically returning a token and an attribute value to the parser we shall attach that action to the accepting state.
 
-2. In addition, if it is necessary to retract the forward pointer one position ( i.e., the lexeme does not include the symbol that got us to the accepting state ) , then we shall additionally place a * near that accepting state. In our example, it is never necessary to retract forward by more than one position, but if it were, we could attach any number of *'s to the accepting state.
+2. In addition, if it is necessary to retract the `forward` pointer one position ( i.e., the lexeme does not include the symbol that got us to the accepting state ) , then we shall additionally place a * near that accepting state. In our example, it is never necessary to retract forward by more than one position, but if it were, we could attach any number of *'s to the accepting state.
 
 3. One state is designated the *start state*, or *initial state*; it is indicated by an edge, labeled "start," entering from nowhere. The transition diagram always begins in the start state before any input symbols have been read.
 
-Example 3.9 : Figure 3.13 is a transition diagram that recognizes the lexemes matching the token relop. We begin in state 0, the start state. If we see < as the first input symbol, then among the lexemes that match the pattern for relop we can only be looking at <, <>, or <=. We therefore go to state 1, and look at the next character. If it is =, then we recognize lexeme <=, enter state 2, and return the token relop with attribute LE, the symbolic constant representing this particular comparison operator. If in state 1 the next character is >, then instead we have lexeme <>, and enter state 3 to return an indication that the not-equals operator has been found. On any other character, the lexeme is <, and we enter state 4 to return that information. Note, however, that state 4 has a * to indicate that we must retract the input one position.
+**Example 3.9:** Figure 3.13 is a transition diagram that recognizes the lexemes matching the token relop. We begin in state 0, the start state. If we see < as the first input symbol, then among the lexemes that match the pattern for relop we can only be looking at <, <>, or <=. We therefore go to state 1, and look at the next character. If it is =, then we recognize lexeme <=, enter state 2, and return the token relop with attribute LE, the symbolic constant representing this particular comparison operator. If in state 1 the next character is >, then instead we have lexeme <>, and enter state 3 to return an indication that the not-equals operator has been found. On any other character, the lexeme is <, and we enter state 4 to return that information. Note, however, that state 4 has a * to indicate that we must retract the input one position.
+
+Figure 3.13: Transition diagram for relop
 
 On the other hand, if in state 0 the first character we see is =, then this one character must be the lexeme. We immediately return that fact from state 5. 
 
 The remaining possibility is that the first character is >. Then, we must enter state 6 and decide, on the basis of the next character, whether the lexeme is >= ( if we next see the = sign ) , or just > ( on any other character ) . Note that if, in state 0, we see any character besides <, =, or >, we can not possibly be seeing a relop lexeme, so this transition diagram will not be used. □
-
-Figure 3.13: Transition diagram for relop
 
 ### 3.4.2 Recognition of Reserved Words and Identifiers
 
@@ -482,7 +482,7 @@ Recognizing keywords and identifiers presents a problem. Usually, keywords like 
 
 Figure 3.14: A transition diagram for id's and keywords
 
-There are two ways that we can handle reserved words that look like identifiers :
+There are two ways that we can handle reserved words that look like identifiers:
 
 1. Install the reserved words in the symbol table initially. A field of the symbol-table entry indicates that these strings are never ordinary identifiers, and tells which token they represent. We have supposed that this method is in use in Fig. 3.14. When we find an identifier, a call to `installID` places it in the symbol table if it is not already there and returns a pointer to the symbol-table entry for the lexeme found. Of course, any identifier not in the symbol table during lexical analysis cannot be a reserved word, so its token is **id**. The function `getToken` examines the symbol table entry for the lexeme found, and returns whatever token name the symbol table says this lexeme represents - either id or one of the keyword tokens that was initially installed in the table.
 
@@ -500,19 +500,19 @@ If we instead see a dot in state 13, then we have an "optional fraction." State 
 
 Figure 3.16: A transition diagram for unsigned numbers
 
-The final transition diagram, shown in Fig. 3.17, is for whitespace. In that diagram, we look for one or more "whitespace" characters, represented by delim in that diagram typically these characters would be blank, tab, newline, and perhaps other characters that are not considered by the language design to be part of any token. 
+The final transition diagram, shown in Fig. 3.17, is for whitespace. In that diagram, we look for one or more "whitespace" characters, represented by **delim** in that diagram typically these characters would be blank, tab, newline, and perhaps other characters that are not considered by the language design to be part of any token. 
+
+Figure 3.17: A transition diagram for whitespace
 
 Note that in state 24, we have found a block of consecutive whitespace characters, followed by a nonwhitespace character. We retract the input to begin at the nonwhitespace, but we do not return to the parser. Rather, we must restart the process of lexical analysis after the whitespace.
 
-Figure 3. 17: A transition diagram for whitespace
-
 ### 3.4.4 Architecture of a Transition-Diagram-Based Lexical Analyzer
 
-There are several ways that a collection of transition diagrams can be used to build a lexical analyzer. Regardless of the overall strategy, each state is represented by a piece of code. We may imagine a variable `state` holding the number of the current state for a transition diagram. A switch based on the value of state takes us to code for each of the possible states, where we find the action of that state. Often, the code for a state is itself a switch statement or multi way branch that determines the next state by reading and examining the next input character.
+There are several ways that a collection of transition diagrams can be used to build a lexical analyzer. Regardless of the overall strategy, each state is represented by a piece of code. We may imagine a variable `state` holding the number of the current state for a transition diagram. A switch based on the value of state takes us to code for each of the possible states, where we find the action of that state. Often, the code for a state is itself a switch statement or multiway branch that determines the next state by reading and examining the next input character.
 
-Example 3.10: In Fig. 3.18 we see a sketch of `getRelop()` , a C++ function whose job is to simulate the transition diagram of Fig. 3.13 and return an object of type TOKEN, that is, a pair consisting of the token name (which must be relop in this case) and an attribute value (the code for one of the six comparison operators in this case). `getRelop()` first creates a new object `retToken` and initializes its first component to RELOP, the symbolic code for token relop.
+**Example 3.10:** In Fig. 3.18 we see a sketch of `getRelop()` , a C++ function whose job is to simulate the transition diagram of Fig. 3.13 and return an object of type TOKEN, that is, a pair consisting of the token name (which must be **relop** in this case) and an attribute value (the code for one of the six comparison operators in this case). `getRelop()` first creates a new object `retToken` and initializes its first component to `RELOP`, the symbolic code for token **relop**.
 
-We see the typical behavior of a state in case 0, the case where the current state is 0. A function next Char 0 obtains the next character from the input and assigns it to local variable c. We then check c for the three characters we expect to find , making the state transition dictated by the transition diagram of Fig. 3.13 in each case. For example, if the next input character is =, we go to state 5.
+We see the typical behavior of a state in case 0, the case where the current state is 0. A function `nextChar()` obtains the next character from the input and assigns it to local variable c. We then check c for the three characters we expect to find , making the state transition dictated by the transition diagram of Fig. 3.13 in each case. For example, if the next input character is =, we go to state 5.
 
 If the next input character is not one that can begin a comparison operator, then a function `fail()` is called. What `fail()` does depends on the global error-recovery strategy of the lexical analyzer. It should reset the `forward` pointer to `lexemeBegin`, in order to allow another transition diagram to be applied to the true beginning of the unprocessed input. It might then change the value of state to be the start state for another transition diagram, which will search for another token. Alternatively, if there is no other transition diagram that remains unused, `fail()` could initiate an error-correction phase that will try to repair the input and find a lexeme, as discussed in Section 3.1.4.
 
@@ -524,9 +524,9 @@ TOKEN getRelop ()
         switch (state)  { 
             case  0 :   
                 c  =  nextChar () ; 
-                if  (  c  ==  ' < '   )  state  =  1 ;  
-                else  if  (  c  ==  ' = '   )  state  =  5 ;  
-                else  if  (  c  ==  ' > '   )  state  =  6 ;  
+                if  (  c  ==  '<'   )  state  =  1 ;  
+                else  if  (  c  ==  '='   )  state  =  5 ;  
+                else  if  (  c  ==  '>'   )  state  =  6 ;  
                 else fail () ; /* lexeme is not a relop */ 
                 break ; 
             case  1 :  ...
@@ -536,7 +536,7 @@ TOKEN getRelop ()
             case  8 :   
                 retract ();
                 retToken . attribute  =  GT ;
-                return(retToken) ;
+                return retToken ;
         } 
     } 
 
