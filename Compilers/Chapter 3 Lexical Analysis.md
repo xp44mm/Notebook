@@ -260,7 +260,7 @@ The vertical bar above means union, the parentheses are used to group subexpress
 
 The regular expressions are built recursively out of smaller regular expressions, using the rules described below. Each regular expression r denotes a language L(r), which is also defined recursively from the languages denoted by r's subexpressions. Here are the rules that define the regular expressions over some alphabet ∑ and the languages that those expressions denote.
 
-**BASIS: **There are two rules that form the basis:
+**BASIS:** There are two rules that form the basis:
 
 1. ε is a regular expression, and L(ε) is {ε}, that is, the language whose sole member is the empty string.
 
@@ -268,7 +268,7 @@ The regular expressions are built recursively out of smaller regular expressions
 
 [^1]: However, when talking about specific characters from the ASCII character set, we shall generally use teletype font for both the character and its regular expression.
 
-**INDUCTION: **There are four parts to the induction whereby larger regular expressions are built from smaller ones. Suppose r and s are regular expressions denoting languages L(r) and L(s), respectively.
+**INDUCTION:** There are four parts to the induction whereby larger regular expressions are built from smaller ones. Suppose r and s are regular expressions denoting languages L(r) and L(s), respectively.
 
 1. (r)|(s) is a regular expression denoting the language L(r) ∪ L(s).
 

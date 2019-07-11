@@ -65,6 +65,7 @@ An NFA *accepts* input string x if and only if there is some path in the transit
 **Example 3.16:** The string aabb is accepted by the NFA of Fig. 3.24. The path labeled by aabb from state 0 to state 3 demonstrating this fact is:
 
 ```
+graph LR
 0--a-->0--a-->1--b-->2--b-->3
 ```
 
@@ -337,7 +338,7 @@ We now give an algorithm for converting any regular expression to an NFA that de
 
 **METHOD:** Begin by parsing r into its constituent subexpressions. The rules for constructing an NFA consist of basis rules for handling subexpressions with no operators, and inductive rules for constructing larger NFA's from the NFA's for the immediate subexpressions of a given expression.
 
-**BASIS: **For expression ε construct the NFA
+**BASIS:** For expression ε construct the NFA
 
 ```
 start->(i)--ε-->((ƒ))
@@ -353,21 +354,71 @@ start->(i)--a-->((ƒ))
 
 where again i and ƒ are new states,  the start and accepting states, respectively. Note that in both of the basis constructions, we construct a distinct NFA, with new states, for every occurrence of ε or some a as a subexpression of r.
 
-**INDUCTION: **Suppose N(s) and N(t) are NFA's for regular expressions s and t, respectively.
+**INDUCTION:** Suppose N(s) and N(t) are NFA's for regular expressions s and t, respectively.
 
-a) Suppose r = s|t. Then N(r), the NFA for r, is constructed as in Fig. 3.40. Here, i and f are new states, the start and accepting states of N(r), respectively. There are ε-transitions from i to the start states of N (s) and N (t), and each of their accepting states have ε-transitions to the accepting state f. Note that the accepting states of N (s) and N (t) are not accepting in N (r) . Since any path from i to f must pass through either N(s) or N(t) exclusively, and since the label of that path is not changed by the ε'S leaving i or entering f, we conclude that N(r) accepts L(s) ∪ L(t), which is the same as L(r). That is, Fig. 3.40 is a correct construction for the union operator.
+1. Suppose `r = s|t`. Then N(r), the NFA for r, is constructed as in Fig. 3.40. Here, i and f are new states, the start and accepting states of N(r), respectively. There are ε-transitions from i to the start states of N (s) and N (t), and each of their accepting states have ε-transitions to the accepting state f. Note that the accepting states of N (s) and N (t) are not accepting in N (r) . Since any path from i to f must pass through either N(s) or N(t) exclusively, and since the label of that path is not changed by the ε's leaving i or entering f, we conclude that N(r) accepts `L(s) ∪ L(t)`, which is the same as L(r). That is, Fig. 3.40 is a correct construction for the union operator.
 
-Figure 3.40: NFA for the union of two regular expressions
+   ```mermaid
+   graph LR
+   s0(start)
+   1["/"]
+   2["/"]
+   3["/"]
+   4["/"]
+   f(f)
+   s0 -->i
+   i --ε-->1
+   subgraph Ns
+   1-.-3
+   end
+   i--ε-->2
+   3--ε-->f
+   4--ε-->f
+   subgraph Nt
+   2-.-4
+   end
+   ```
 
-b) Suppose r = st. Then construct N(r) as in Fig. 3.41. The start state of N(s) becomes the start state of N(r), and the accepting state of N(t) is the only accepting state of N (r). The accepting state of N(s) and the start state of N(t) are merged into a single state, with all the transitions in or out of either state. A path from i to f in Fig. 3.41 must go first through N(s), and therefore its label will begin with some string in L(s). The path then continues through N(t), so the path's label finishes with a string in L(t). As we shall soon argue, accepting states never have edges out and start states never have edges in, so it is not possible for a path to re-enter N(s) after leaving it. Thus, N(r) accepts exactly L(s)L(t), arid is a correct NFA for r = st.
+   Figure 3.40: NFA for the union of two regular expressions
 
-Figure 3.41: NFA for the concatenation of two regular expressions
+2. Suppose `r = st`. Then construct N(r) as in Fig. 3.41. The start state of N(s) becomes the start state of N(r), and the accepting state of N(t) is the only accepting state of N(r). The accepting state of N(s) and the start state of N(t) are merged into a single state, with all the transitions in or out of either state. A path from i to f in Fig. 3.41 must go first through N(s), and therefore its label will begin with some string in L(s). The path then continues through N(t), so the path's label finishes with a string in L(t). As we shall soon argue, accepting states never have edges out and start states never have edges in, so it is not possible for a path to re-enter N(s) after leaving it. Thus, N(r) accepts exactly `L(s)L(t)`, and is a correct NFA for r = st.
 
-c) Suppose r = s* . Then for r we construct the NFA N(r) shown in Fig. 3.42. Here, i and f are new states, the start state and lone accepting state of N(r). To get from i to f, we can either follow the introduced path labeled ε, which takes care of the one string in L(s)^0^, or we can go to the start state of N(s), through that NFA, then from its accepting state back to its start state zero or more times. These options allow N(r) to accept all the strings in L(s)^1^, L(s)^2^, and so on, so the entire set of strings accepted by N(r) is L(s*) :
+   ```mermaid
+   graph LR
+   s0(start)
+   f(f)
+   j1(j)
+   j2(j)
+   s0 -->i
+   subgraph Ns
+   i-.-j1
+   end
+   j1 --same--- j2
+   subgraph Nt
+   j2-.-f
+   end
+   ```
 
-Figure 3.42: NFA for the closure of a regular expression
+   Figure 3.41: NFA for the concatenation of two regular expressions
 
-d) Finally, suppose r = (s). Then L(r) = L(s), and we can use the NFA N(s) as N(r).
+3. Suppose `r = s*` . Then for r we construct the NFA N(r) shown in Fig. 3.42. Here, i and f are new states, the start state and lone accepting state of N(r). To get from i to f, we can either follow the introduced path labeled ε, which takes care of the one string in L(s)^0^, or we can go to the start state of N(s), through that NFA, then from its accepting state back to its start state zero or more times. These options allow N(r) to accept all the strings in L(s)^1^, L(s)^2^, and so on, so the entire set of strings accepted by N(r) is L(s*) :
+
+   ```mermaid
+   graph LR
+   f(f)
+   0(start) -->i
+   i--ε-->j
+   i--ε-->f
+   subgraph Ns
+   j-.-k
+   k--ε-->j
+   end
+   k--ε-->f
+   ```
+   
+   Figure 3.42: NFA for the closure of a regular expression
+
+4. Finally, suppose r = (s). Then L(r) = L(s), and we can use the NFA N(s) as N(r).
 
 □
 
@@ -381,21 +432,105 @@ The method description in Algorithm 3.23 contains hints as to why the inductive 
 
 **Example 3.24:** Let us use Algorithm 3.23 to construct an NFA for `r = (a|b)*abb`. Figure 3.43 shows a parse tree for r that is analogous to the parse trees constructed for arithmetic expressions in Section 2.2.3. For subexpression r~1~, the first a, we construct the NFA:
 
+```mermaid
+graph TB
+lparen("(")
+rparen(")")
+vb("|")
+r11---r9
+r11---r10
+r9---r7
+r9---r8
+r10---b1(b)
+r7---r5
+r7---r6
+r8---b2(b)
+r5---r4
+r5---*
+r6---a1(a)
+r4---lparen
+r4---r3
+r4---rparen
+r3---r1
+r3---vb
+r3---r2
+r1---a
+r2---b
+```
+
 Figure 3.43: Parse tree for (a|b)*abb 
+
+```
+start->(2)-a->((3))
+```
 
 State numbers have been chosen for consistency with what follows. For r~2~ we construct:
 
+```
+start->(4)-b->((5))
+```
+
 We can now combine N(r~1~) and N(r~2~), using the construction of Fig. 3.40 to obtain the NFA for r~3~ = r~1~ | r~2~ ; this NFA is shown in Fig. 3.44.
+
+```mermaid
+graph LR
+
+start-->1
+1--ε-->2
+2--a-->3
+3--ε-->6
+1--ε-->4
+4--b-->5
+5--ε-->6
+```
 
 Figure 3.44: NFA for r~3~
 
 The NFA for r~4~ = (r~3~) is the same as that for r~3~ . The NFA for r~5~ = (r~3~ )* is then as shown in Fig. 3.45. We have used the construction in Fig. 3.42 to build this NFA from the NFA in Fig. 3.44. 
 
-Now, consider subexpression r~6~ , which is another a. We use the basis construction for a again, but we must use new states. It is not permissible to reuse the NFA we constructed for r~1~ , even though r~1~ and r~6~ are the same expression. The NFA for r~6~ is:
+```mermaid
+graph LR
+
+start-->0
+0--ε-->1
+1--ε-->2
+1--ε-->4
+2--a-->3
+3--ε-->6
+4--b-->5
+5--ε-->6
+6--ε-->7
+0--ε-->7
+6--ε-->1
+```
 
 Figure 3.45: NFA for r~5~ 
 
+Now, consider subexpression r~6~ , which is another a. We use the basis construction for a again, but we must use new states. It is not permissible to reuse the NFA we constructed for r~1~ , even though r~1~ and r~6~ are the same expression. The NFA for r~6~ is:
+
+```
+start->(7')-a->((8))
+```
+
 To obtain the NFA for r~7~ = r~5~ r~6~ , we apply the construction of Fig. 3.41. We merge states 7 and 7', yielding the NFA of Fig. 3.46. Continuing in this fashion with new NFA's for the two subexpressions b called r~8~ and r_10 , we eventually construct the NFA for (a|b)*abb that we first met in Fig. 3.34. □
+
+
+```mermaid
+graph LR
+
+start-->0
+0--ε-->1
+1--ε-->2
+1--ε-->4
+2--a-->3
+3--ε-->6
+4--b-->5
+5--ε-->6
+6--ε-->7
+0--ε-->7
+6--ε-->1
+7--a-->8
+```
 
 Figure 3.46: NFA for r~7~
 
@@ -405,7 +540,19 @@ We observed that Algorithm 3.18 processes a string x in time O(|x|) , while in S
 
 One issue that may favor an NFA is that the subset construction can, in the worst case, exponentiate the number of states. While in principle, the number of DFA states does not influence the running time of Algorithm 3.18, should the number of states become so large that the transition table does not fit in main memory, then the true running time would have to include disk I/O and therefore rise noticeably. 
 
-**Example 3.25:** Consider the family of languages described by regular expressions of the form Ln = (a|b)*a(a|b)^n-1^, that is, each language Ln consists of strings of a's and b's such that the nth character to the left of the right end holds a. An n + 1-state NFA is easy to construct. It stays in its initial state under any input, but also has the option, on input a, of going to state 1. From state 1, it goes to state 2 on any input, and so on, until in state n it accepts. Figure 3.47 suggests this NFA. 
+**Example 3.25:** Consider the family of languages described by regular expressions of the form `Ln = (a|b)*a(a|b){n-1}`, that is, each language Ln consists of strings of a's and b's such that the nth character to the left of the right end holds a. An n + 1-state NFA is easy to construct. It stays in its initial state under any input, but also has the option, on input a, of going to state 1. From state 1, it goes to state 2 on any input, and so on, until in state n it accepts. Figure 3.47 suggests this NFA. 
+
+```mermaid
+graph LR
+start-->0
+0--a-->0
+0--b-->0
+0--a-->1
+1--a,b-->2
+2--a,b-->3("...")
+3--a,b-->4(".")
+4--a,b-->n
+```
 
 Figure 3.47: An NFA that has many fewer states than the smallest equivalent DFA
 
@@ -423,11 +570,13 @@ Suppose we start with a regular expression r and convert it to an NFA. This NFA 
 
 In the common case where s is about |r|, the subset construction takes time O(|r|^3^). However, in the worst case, as in Example 3.25, this time is O(|r|^2^ 2^|r|^). Figure 3.48 summarizes the options when one is given a regular expression r and wants to produce a recognizer that will tell whether one or more strings x are in L(r). 
 
+```
 | AUTOMATON        | INITIAL              | PER STRING   |
 | ---------------- | -------------------- | -------------|
 | NFA              | O(|r|)               | O(|r| × |x|) |
 | DFA typical case | O(|r|^3^)            | O(|x|)       |
 | DFA worst case   | O(|r|^2^ 2^|r|^)     | O(|x|)       |
+```
 
 Figure 3.48: Initial cost and per-string-cost of various methods of recognizing the language of a regular expression
 
@@ -443,6 +592,18 @@ In this section we shall apply the techniques presented in Section 3.7 to see ho
 
 Figure 3.49 overviews the architecture of a lexical analyzer generated by Lex. The program that serves as the lexical analyzer includes a fixed program that simulates an automaton; at this point we leave open whether that automaton is deterministic or nondeterministic. The rest of the lexical analyzer consists of components that are created from the Lex program by Lex itself.
 
+```mermaid
+graph TB
+ib[input buffer:lexeme]
+
+p[Lex Program]-->c[Lex Compiler]
+c-->t[Transition table/actions]
+t-.->a[Automaton simulator]
+a-.->t
+a--lexemeBegin,forward-->ib
+
+```
+
 Figure 3.49: A Lex program is turned into a transition table and actions, which are used by a finite-automaton simulator
 
 These components are:
@@ -455,9 +616,16 @@ These components are:
 
 To construct the automaton, we begin by taking each regular-expression pattern in the Lex program and converting it, using Algorithm 3.23, to an NFA. We need a single automaton that will recognize lexemes matching any of the patterns in the program, so we combine all the NFA's into one by introducing a new start state with ε-transitions to each of the start states of the NFA's N~i~ for pattern p~i~. This construction is shown in Fig. 3.50.
 
-**Example 3.26:** We shall illustrate the ideas of this section with the following simple, abstract example: 
+```mermaid
+graph LR
+s0--ε-->1("() N(p1) (())")
+s0--ε-->2("() N(p2) (())")
+s0--ε-->n("() N(pn) (())")
+```
 
 Figure 3.50: An NFA constructed from a Lex program 
+
+**Example 3.26:** We shall illustrate the ideas of this section with the following simple, abstract example: 
 
 ```
 a    { action A1  for pattern P1  } 
@@ -465,25 +633,63 @@ abb  { action A2  for pattern P2  }
 a*b+ { action A3  for pattern P3  } 
 ```
 
-Note that these three patterns present some conflicts of the type discussed in Section 3.5.3. In particular, string abb matches both the second and third patterns, but we shall consider it a lexeme for pattern p~2~ , since that pattern is listed first in the above Lex program. Then, input strings such as aabbb ... have many prefixes that match the third pattern. The Lex rule is to take the longest, so we continue reading b's, until another a is met, whereupon we report the lexeme to be the initial a's followed by as many b's as there are.
+Note that these three patterns present some conflicts of the type discussed in Section 3.5.3. In particular, string `abb` matches both the second and third patterns, but we shall consider it a lexeme for pattern p~2~ , since that pattern is listed first in the above Lex program. Then, input strings such as `aabbb...` have many prefixes that match the third pattern. The Lex rule is to take the longest, so we continue reading b's, until another a is met, whereupon we report the lexeme to be the initial a's followed by as many b's as there are.
 
 Figure 3.51 shows three NFA's that recognize the three patterns. The third is a simplification of what would come out of Algorithm 3.23. Then, Fig. 3.52 shows these three NFA's combined into a single NFA by the addition of start state 0 and three ε-transitions. □
 
-### 3.8.2 Pattern Matching Based on NFA's
-
-If the lexical analyzer simulates an NFA such as that of Fig. 3.52, then it must read input beginning at the point on its input which we have referred to as lexemeBegin. As it moves the pointer called forward ahead in the input, it calculates the set of states it is in at each point, following Algorithm 3.22.
-
-Eventually, the NFA simulation reaches a point on the input where there are no next states. At that point, there is no hope that any longer prefix of the input would ever get the NFA to an accepting state; rather, the set of states will always be empty. Thus, we are ready to decide on the longest prefix that is a lexeme matching some pattern. 
+```mermaid
+graph LR
+s1(start)
+s3(start)
+s7(start)
+s1-->1
+1--a-->2
+s3-->3
+3--a-->4
+4--b-->5
+5--b-->6
+s7-->7
+7--a-->7
+7--b-->8
+8--b-->8
+```
 
 Figure 3.51: NFA's for a, abb, and a*b+
 
+```mermaid
+graph LR
+start-->0
+
+0--ε-->1
+1--a-->2
+0--ε-->3
+3--a-->4
+4--b-->5
+5--b-->6
+0--ε-->7
+7--a-->7
+7--b-->8
+8--b-->8
+```
+
 Figure 3.52: Combined NFA 
 
-Figure 3.53: Sequence of sets of states entered when processing input aaba 
+### 3.8.2 Pattern Matching Based on NFA's
+
+If the lexical analyzer simulates an NFA such as that of Fig. 3.52, then it must read input beginning at the point on its input which we have referred to as `lexemeBegin`. As it moves the pointer called forward ahead in the input, it calculates the set of states it is in at each point, following Algorithm 3.22.
+
+Eventually, the NFA simulation reaches a point on the input where there are no next states. At that point, there is no hope that any longer prefix of the input would ever get the NFA to an accepting state; rather, the set of states will always be empty. Thus, we are ready to decide on the longest prefix that is a lexeme matching some pattern. 
 
 We look backwards in the sequence of sets of states, until we find a set that includes one or more accepting states. If there are several accepting states in that set, pick the one associated with the earliest pattern p~i~ in the list from the Lex program. Move the forward pointer back to the end of the lexeme, and perform the action Ai associated with pattern p~i~.
 
-**Example 3.27:** Suppose we have the patterns of Example 3.26 and the input begins aaba. Figure 3.53 shows the sets of states of the NFA of Fig. 3.52 that we enter, starting with ε-closure of the initial state 0, which is {0, 1, 3, 7}, and proceeding from there. After reading the fourth input symbol, we are in an empty set of states, since in Fig. 3.52, there are no transitions out of state 8 on input a.
+**Example 3.27:** Suppose we have the patterns of Example 3.26 and the input begins `aaba`. Figure 3.53 shows the sets of states of the NFA of Fig. 3.52 that we enter, starting with ε-closure of the initial state 0, which is {0, 1, 3, 7}, and proceeding from there. After reading the fourth input symbol, we are in an empty set of states, since in Fig. 3.52, there are no transitions out of state 8 on input a.
+
+```
+{0,1,3,7} -a-> {2,4,7} -a-> {7} -b-> {8} -a-> none
+                 /a/                /a*b+/
+```
+
+Figure 3.53: Sequence of sets of states entered when processing input aaba 
 
 Thus, we need to back up, looking for a set of states that includes an accepting state. Notice that, as indicated in Fig. 3.53, after reading a we are in a set that includes state 2 and therefore indicates that the pattern a has been matched. However, after reading aab, we are in state 8, which indicates that `a*b+` has been matched; prefix aab is the longest prefix that gets us to an accepting state. We therefore select aab as the lexeme, and execute action A3, which should include a return to the parser indicating that the token whose pattern is `p3 = a*b+` has been found. □
 
