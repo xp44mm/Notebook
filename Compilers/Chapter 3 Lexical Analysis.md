@@ -405,22 +405,20 @@ $$
 
 Figure 3.10: A grammar for branching statements
 
-**Example 3.8:** The grammar fragment of Fig. 3.10 describes a simple form of branching statements and conditional expressions. This syntax is similar to that of the language Pascal, in that `then` appears explicitly after conditions. 
-
-For **relop**, we use the comparison operators of languages like Pascal or SQL, where `=` is "equals" and `<>` is "not equals," because it presents an interesting structure of lexemes.
+**Example 3.8:** The grammar fragment of Fig. 3.10 describes a simple form of branching statements and conditional expressions. This syntax is similar to that of the language Pascal, in that `then` appears explicitly after conditions. For **relop**, we use the comparison operators of languages like Pascal or SQL, where `=` is "equals" and `<>` is "not equals," because it presents an interesting structure of lexemes.
 
 The terminals of the grammar, which are **if**, **then**, **else**, **relop**, **id**, and **number**, are the names of tokens as far as the lexical analyzer is concerned. The patterns for these tokens are described using regular definitions, as in Fig. 3.11. The patterns for **id** and **number** are similar to what we saw in Example 3.7. 
 
 ```
-digit -> [0-9]
+digit  -> [0-9]
 digits -> digit+
 number -> digits ( . digits)? ( E [+-]? digits )?
 letter -> [A-Za-z]
-id -> letter ( letter | digit ) *
-if -> if
-then -> then
-else -> else
-relop -> < | > | <= | >= | = | <> 
+id     -> letter ( letter | digit ) *
+if     -> if
+then   -> then
+else   -> else
+relop  -> < | > | <= | >= | = | <>
 ```
 
 Figure 3.11: Patterns for tokens of Example 3.8 
@@ -460,33 +458,57 @@ As an intermediate step in the construction of a lexical analyzer, we first conv
 
 *Transition diagrams* have a collection of nodes or circles, called *states*. Each state represents a condition that could occur during the process of scanning the input looking for a lexeme that matches one of several patterns. We may think of a state as summarizing all we need to know about what characters we have seen between the `lexemeBegin` pointer and the `forward` pointer ( as in the situation of Fig. 3.3).
 
-*Edges* are directed from one state of the transition diagram to another. Each edge is labeled by a symbol or set of symbols. If we are in some state s, and the next input symbol is a, we look for an edge out of state s labeled by a ( and perhaps by other symbols, as well ) . If we find such an edge, we advance the forward pointer and enter the state of the transition diagram to which that edge leads. We shall assume that all our transition diagrams are *deterministic*, meaning that there is never more than one edge out of a given state with a given symbol among its labels. Starting in Section 3.5, we shall relax the condition of determinism, making life much easier for the designer of a lexical analyzer, although trickier for the implementer. Some important conventions about transition diagrams are: 
+*Edges* are directed from one state of the transition diagram to another. Each edge is *labeled* by a symbol or set of symbols. If we are in some state s, and the next input symbol is a, we look for an edge out of state s labeled by a ( and perhaps by other symbols, as well ) . If we find such an edge, we advance the forward pointer and enter the state of the transition diagram to which that edge leads. We shall assume that all our transition diagrams are *deterministic*, meaning that there is never more than one edge out of a given state with a given symbol among its labels. Starting in Section 3.5, we shall relax the condition of determinism, making life much easier for the designer of a lexical analyzer, although trickier for the implementer. Some important conventions about transition diagrams are: 
 
 1. Certain states are said to be *accepting*, or *final*. These states indicate that a lexeme has been found, although the actual lexeme may not consist of all positions between the `lexemeBegin` and `forward` pointers. We always indicate an accepting state by a double circle, and if there is an action to be taken typically returning a token and an attribute value to the parser we shall attach that action to the accepting state.
 
-2. In addition, if it is necessary to retract the `forward` pointer one position ( i.e., the lexeme does not include the symbol that got us to the accepting state ) , then we shall additionally place a * near that accepting state. In our example, it is never necessary to retract forward by more than one position, but if it were, we could attach any number of *'s to the accepting state.
+2. In addition, if it is necessary to retract the `forward` pointer one position ( i.e., the lexeme does not include the symbol that got us to the accepting state ) , then we shall additionally place a `*` near that accepting state. In our example, it is never necessary to retract forward by more than one position, but if it were, we could attach any number of *'s to the accepting state.
 
 3. One state is designated the *start state*, or *initial state*; it is indicated by an edge, labeled "start," entering from nowhere. The transition diagram always begins in the start state before any input symbols have been read.
 
 **Example 3.9:** Figure 3.13 is a transition diagram that recognizes the lexemes matching the token relop. We begin in state 0, the start state. If we see < as the first input symbol, then among the lexemes that match the pattern for relop we can only be looking at <, <>, or <=. We therefore go to state 1, and look at the next character. If it is =, then we recognize lexeme <=, enter state 2, and return the token relop with attribute LE, the symbolic constant representing this particular comparison operator. If in state 1 the next character is >, then instead we have lexeme <>, and enter state 3 to return an indication that the not-equals operator has been found. On any other character, the lexeme is <, and we enter state 4 to return that information. Note, however, that state 4 has a * to indicate that we must retract the input one position.
 
+```mermaid
+graph LR
+start-->0
+0--<-->1
+1--=-->2("(2) LE")
+1-->|>|3("(3) NE")
+1-->|other|4("(4)* LT")
+0--=-->5("(5) EQ")
+0-->|>|6
+6--=-->7("(7) GE")
+6-->|other|8("(8)* GT")
+```
+
+
+
 Figure 3.13: Transition diagram for relop
 
-On the other hand, if in state 0 the first character we see is =, then this one character must be the lexeme. We immediately return that fact from state 5. 
-
-The remaining possibility is that the first character is >. Then, we must enter state 6 and decide, on the basis of the next character, whether the lexeme is >= ( if we next see the = sign ) , or just > ( on any other character ) . Note that if, in state 0, we see any character besides <, =, or >, we can not possibly be seeing a relop lexeme, so this transition diagram will not be used. □
+On the other hand, if in state 0 the first character we see is `=`, then this one character must be the lexeme. We immediately return that fact from state 5. The remaining possibility is that the first character is >. Then, we must enter state 6 and decide, on the basis of the next character, whether the lexeme is >= ( if we next see the = sign ) , or just > ( on any other character ) . Note that if, in state 0, we see any character besides <, =, or >, we can not possibly be seeing a relop lexeme, so this transition diagram will not be used. □
 
 ### 3.4.2 Recognition of Reserved Words and Identifiers
 
 Recognizing keywords and identifiers presents a problem. Usually, keywords like if or then are reserved ( as they are in our running example ) , so they are not identifiers even though they look like identifiers. Thus, although we typically use a transition diagram like that of Fig. 3.14 to search for identifier lexemes, this diagram will also recognize the keywords if, then, and else of our running example.
+
+```mermaid
+graph LR
+start-->9
+9--letter-->10
+10--letter or digit-->10
+10-->|other|11("(11)* return(getToken(),installID())")
+```
 
 Figure 3.14: A transition diagram for id's and keywords
 
 There are two ways that we can handle reserved words that look like identifiers:
 
 1. Install the reserved words in the symbol table initially. A field of the symbol-table entry indicates that these strings are never ordinary identifiers, and tells which token they represent. We have supposed that this method is in use in Fig. 3.14. When we find an identifier, a call to `installID` places it in the symbol table if it is not already there and returns a pointer to the symbol-table entry for the lexeme found. Of course, any identifier not in the symbol table during lexical analysis cannot be a reserved word, so its token is **id**. The function `getToken` examines the symbol table entry for the lexeme found, and returns whatever token name the symbol table says this lexeme represents - either id or one of the keyword tokens that was initially installed in the table.
-
 2. Create separate transition diagrams for each keyword; an example for the keyword then is shown in Fig. 3.15. Note that such a transition diagram consists of states representing the situation after each successive letter of the keyword is seen, followed by a test for a "nonletter-or-digit," i.e., any character that cannot be the continuation of an identifier. It is necessary to check that the identifier has ended, or else we would return token then in situations where the correct token was id, with a lexeme like `thenextvalue` that has `then` as a proper prefix. If we adopt this approach, then we must prioritize the tokens so that the reserved-word tokens are recognized in preference to id, when the lexeme matches both patterns. We do not use this approach in our example, which is why the states in Fig. 3.15 are unnumbered. 
+
+```
+start->()-t->()-h->()-e->()-n->()-nonlet/dig->(())*
+```
 
 Figure 3.15: Hypothetical transition diagram for the keyword then
 
@@ -496,11 +518,38 @@ The transition diagram for id's that we saw in Fig. 3.14 has a simple structure.
 
 The transition diagram for token number is shown in Fig. 3.16, and is so far the most complex diagram we have seen. Beginning in state 12, if we see a digit, we go to state 13. In that state, we can read any number of additional digits. However, if we see anything but a digit or a dot, we have seen a number in the form of an integer; 123 is an example. That case is handled by entering state 20, where we return token number and a pointer to a table of constants where the found lexeme is entered. These mechanics are not shown on the diagram but are analogous to the way we handled identifiers. 
 
-If we instead see a dot in state 13, then we have an "optional fraction." State 14 is entered, and we look for one or more additional digits; state 15 is used for that purpose. If we see an E, then we have an "optional exponent," whose recognition is the job of states 16 through 19. Should we, in state 15, instead see anything but E or a digit, then we have come to the end of the fraction, there is no exponent, and we return the lexeme found, via state 21. 
+```mermaid
+graph LR
+start-->12
+12--digit-->13
+13--digit-->13
+13--dot-->14
+13--E-->16
+13-->|other|20("(20)*")
+14--digit-->15
+15--digit-->15
+15--E-->16
+15-->|other|21("(21)*")
+16-->|+ or -|17
+16--digit-->18
+17--digit-->18
+18--digit-->18
+18-->|other|19("(19)*")
+```
 
 Figure 3.16: A transition diagram for unsigned numbers
 
+If we instead see a dot in state 13, then we have an "optional fraction." State 14 is entered, and we look for one or more additional digits; state 15 is used for that purpose. If we see an E, then we have an "optional exponent," whose recognition is the job of states 16 through 19. Should we, in state 15, instead see anything but E or a digit, then we have come to the end of the fraction, there is no exponent, and we return the lexeme found, via state 21. 
+
 The final transition diagram, shown in Fig. 3.17, is for whitespace. In that diagram, we look for one or more "whitespace" characters, represented by **delim** in that diagram typically these characters would be blank, tab, newline, and perhaps other characters that are not considered by the language design to be part of any token. 
+
+```mermaid
+graph LR
+start-->22
+22--delim-->23
+23--delim-->23
+23-->|other|24("(24)*")
+```
 
 Figure 3.17: A transition diagram for whitespace
 
@@ -511,10 +560,6 @@ Note that in state 24, we have found a block of consecutive whitespace character
 There are several ways that a collection of transition diagrams can be used to build a lexical analyzer. Regardless of the overall strategy, each state is represented by a piece of code. We may imagine a variable `state` holding the number of the current state for a transition diagram. A switch based on the value of state takes us to code for each of the possible states, where we find the action of that state. Often, the code for a state is itself a switch statement or multiway branch that determines the next state by reading and examining the next input character.
 
 **Example 3.10:** In Fig. 3.18 we see a sketch of `getRelop()` , a C++ function whose job is to simulate the transition diagram of Fig. 3.13 and return an object of type TOKEN, that is, a pair consisting of the token name (which must be **relop** in this case) and an attribute value (the code for one of the six comparison operators in this case). `getRelop()` first creates a new object `retToken` and initializes its first component to `RELOP`, the symbolic code for token **relop**.
-
-We see the typical behavior of a state in case 0, the case where the current state is 0. A function `nextChar()` obtains the next character from the input and assigns it to local variable c. We then check c for the three characters we expect to find , making the state transition dictated by the transition diagram of Fig. 3.13 in each case. For example, if the next input character is =, we go to state 5.
-
-If the next input character is not one that can begin a comparison operator, then a function `fail()` is called. What `fail()` does depends on the global error-recovery strategy of the lexical analyzer. It should reset the `forward` pointer to `lexemeBegin`, in order to allow another transition diagram to be applied to the true beginning of the unprocessed input. It might then change the value of state to be the start state for another transition diagram, which will search for another token. Alternatively, if there is no other transition diagram that remains unused, `fail()` could initiate an error-correction phase that will try to repair the input and find a lexeme, as discussed in Section 3.1.4.
 
 ```C++
 TOKEN getRelop () 
@@ -545,12 +590,16 @@ TOKEN getRelop ()
 
 Figure 3.18: Sketch of implementation of relop transition diagram
 
+We see the typical behavior of a state in case 0, the case where the current state is 0. A function `nextChar()` obtains the next character from the input and assigns it to local variable c. We then check c for the three characters we expect to find , making the state transition dictated by the transition diagram of Fig. 3.13 in each case. For example, if the next input character is =, we go to state 5.
+
+If the next input character is not one that can begin a comparison operator, then a function `fail()` is called. What `fail()` does depends on the global error-recovery strategy of the lexical analyzer. It should reset the `forward` pointer to `lexemeBegin`, in order to allow another transition diagram to be applied to the true beginning of the unprocessed input. It might then change the value of state to be the start state for another transition diagram, which will search for another token. Alternatively, if there is no other transition diagram that remains unused, `fail()` could initiate an error-correction phase that will try to repair the input and find a lexeme, as discussed in Section 3.1.4.
+
 We also show the action for state 8 in Fig. 3.18. Because state 8 bears a * , we must retract the input pointer one position ( i.e., put c back on the input stream). That task is accomplished by the function `retract()` . Since state 8 represents the recognition of lexeme >, we set the second component of the returned object, which we suppose is named attribute, to GT, the code for this operator. □
 
 
 To place the simulation of one transition diagram in perspective, let us consider the ways code like Fig. 3.18 could fit into the entire lexical analyzer.
 
-1. We could arrange for the transition diagrams for each token to be tried sequentially. Then, the function `fail()` of Example 3.10 resets the pointer forward and starts the next transition diagram, each time it is called. This method allows us to use transition diagrams for the individual keywords, like the one suggested in Fig. 3.15. We have only to use these before we use the diagram for id, in order for the keywords to be reserved words. 
+1. We could arrange for the transition diagrams for each token to be tried sequentially. Then, the function `fail()` of Example 3.10 resets the pointer `forward` and starts the next transition diagram, each time it is called. This method allows us to use transition diagrams for the individual keywords, like the one suggested in Fig. 3.15. We have only to use these before we use the diagram for id, in order for the keywords to be reserved words. 
 
 2. We could run the various transition diagrams "in parallel," feeding the next input character to all of them and allowing each one to make whatever transitions it required. If we use this strategy, we must be careful to resolve the case where one diagram finds a lexeme that matches its pattern, while one or more other diagrams are still able to process input. The normal strategy is to take the longest prefix of the input that matches any pattern. That rule allows us to prefer identifier thenext to keyword then, or the operator -> to -, for example.
 
