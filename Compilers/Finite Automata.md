@@ -179,7 +179,7 @@ It is possible that the number of DFA states is exponential in the number of NFA
 
 **OUTPUT:** A DFA D accepting the same language as N.
 
-**METHOD:** Our algorithm constructs a transition table `Dtran` for D. Each state of D is a set of NFA states, and we construct `Dtran` so D will simulate "in parallel" all possible moves N can make on a given input string. Our first problem is to deal with ε-transitions of N properly. In Fig. 3.31 we see the definitions of several functions that describe basic computations on the states of N that are needed in the algorithm. Note that s is a single state of N, while T is a set of states of N. 
+**METHOD:** Our algorithm constructs a transition table `Dtran` for D. Each state of D is a set of NFA states, and we construct `Dtran` so D will simulate "in parallel" all possible `moves` N can make on a given input string. Our first problem is to deal with ε-transitions of N properly. In Fig. 3.31 we see the definitions of several functions that describe basic computations on the states of N that are needed in the algorithm. Note that s is a single state of N, while T is a set of states of N. 
 
 
 + ε-closure( s ) ：
@@ -210,7 +210,7 @@ while ( there is an unmarked state T in Dstates )  {
 
 Figure 3.32: The subset construction
 
-The start state of D is ε-closure( s~0~ ), and the accepting states of D are all those sets of N's states that include at least one accepting state of N. To complete our description of the subset construction, we need only to show how ε-closure(T) is computed for any set of NFA states T. This process, shown in Fig. 3.33, is a straightforward search in a graph from a set of states. In this case, imagine that only the ε-labeled edges are available in the graph. □
+The start state of D is ε-closure( s~0~ ), and the accepting states of D are all those sets of N's states that include at least one accepting state of N. To complete our description of the subset construction, we need only to show how `ε-closure(T)` is computed for any set of NFA states T. This process, shown in Fig. 3.33, is a straightforward search in a graph from a set of states. In this case, imagine that only the ε-labeled edges are available in the graph. □
 
 ```
 push all states of T onto stack;
@@ -326,10 +326,10 @@ A strategy that has been used in a number of text-editing programs is to constru
 **METHOD:** The algorithm keeps a set of current states S, those that are reached from s~0~ following a path labeled by the inputs read so far. If c is the next input character, read by the function `nextChar()`, then we first compute `move(S, c)` and then close that set using ε-closure(). The algorithm is sketched in Fig. 3.37. □
 
 ```C
-1)  S = ε-closure(s~0~) ;  
+1)  S = ε-closure(s0) ;  
 2)  c = nextChar(); 
-3)  while ( c  != eof )  { 
-4)      S = ε-closure( move(S, c)) ;
+3)  while ( c != eof )  { 
+4)      S = ε-closure(move(S, c)) ;
 5)      c = nextChar(); 
 6)  } 
 7)  if ( S ∩ F  != Ø ) return "yes" ;
@@ -381,14 +381,6 @@ We implement line (4) of Fig. 3.37 by looking at each state s on `oldStates`. We
 
 Figure 3.39: Implementation of step (4) of Fig. 3.37
 
-Now, suppose that the NFA N has n states and m transitions; i.e., m is the sum over all states of the number of symbols ( or ε) on which the state has a transition out. Not counting the call to `addState` at line (19) of Fig. 3.39, the time spent in the loop of lines (16) through (21) is O(n). That is, we can go around the loop at most n times, and each step of the loop requires constant work, except for the time spent in `addState`. The same is true of the loop of lines (22) through (26).
-
-During one execution of Fig. 3.39, i.e., of step (4) of Fig. 3.37, it is only possible to call `addState` on a given state once. The reason is that whenever we call `addState(s)`, we set `alreadyOn[s]` to TRUE at line (11) of Fig. 3.39. Once `alreadyOn[s]` is TRUE, the tests at line (13) of Fig. 3.38 and line (18 ) of Fig. 3.39 prevent another call.
-
-The time spent in one call to `addState`, exclusive of the time spent in recursive calls at line (14), is O(1) for lines (10) and (11). For lines (12) and (13), the time depends on how many ε-transitions there are out of state s. We do not know this number for a given state, but we know that there are at most m transitions in total, out of all states. As a result, the aggregate time spent in lines (11) over all calls to `addState` during one execution of the code of Fig. 3.39 is O(m). The aggregate for the rest of the steps of `addState` is O(n), since it is a constant per call, and there are at most n calls.
-
-We conclude that, implemented properly, the time to execute line (4) of Fig. 3.37 is O(n + m). The rest of the while-loop of lines (3) through (6) takes O(1) time per iteration. If the input x is of length k, then the total work in that loop is O(k(n + m)) . Line (1) of Fig. 3.37 can be executed in O(n + m) time, since it is essentially the steps of Fig. 3.39 with `oldStates` containing only the state s~0~. Lines (2), (7), and (8) each take O(1) time. Thus, the running time of Algorithm 3.22, properly implemented, is O((k(n + m)) . That is, the time taken is proportional to the length of the input times the size (nodes plus edges) of the transition graph.
-
 ---
 
 ##### Big-Oh Notation
@@ -396,6 +388,14 @@ We conclude that, implemented properly, the time to execute line (4) of Fig. 3.3
 An expression like O(n) is a shorthand for "at most some constant times n." Technically, we say a function ƒ(n), perhaps the running time of some step of an algorithm, is O(g(n)) if there are constants c and n~0~, such that whenever n ≥ n~0~, it is true that ƒ(n) ≤ cg(n). A useful idiom is "O(1)," Which means "some constant." The use of this big-oh notation enables us to avoid getting too far into the details of what we count as a unit of execution time, yet lets us express the rate at which the running time of an algorithm grows.
 
 ---
+
+Now, suppose that the NFA N has n states and m transitions; i.e., m is the sum over all states of the number of symbols ( or ε) on which the state has a transition out. Not counting the call to `addState` at line (19) of Fig. 3.39, the time spent in the loop of lines (16) through (21) is O(n). That is, we can go around the loop at most n times, and each step of the loop requires constant work, except for the time spent in `addState`. The same is true of the loop of lines (22) through (26).
+
+During one execution of Fig. 3.39, i.e., of step (4) of Fig. 3.37, it is only possible to call `addState` on a given state once. The reason is that whenever we call `addState(s)`, we set `alreadyOn[s]` to TRUE at line (11) of Fig. 3.39. Once `alreadyOn[s]` is TRUE, the tests at line (13) of Fig. 3.38 and line (18 ) of Fig. 3.39 prevent another call.
+
+The time spent in one call to `addState`, exclusive of the time spent in recursive calls at line (14), is O(1) for lines (10) and (11). For lines (12) and (13), the time depends on how many ε-transitions there are out of state s. We do not know this number for a given state, but we know that there are at most m transitions in total, out of all states. As a result, the aggregate time spent in lines (11) over all calls to `addState` during one execution of the code of Fig. 3.39 is O(m). The aggregate for the rest of the steps of `addState` is O(n), since it is a constant per call, and there are at most n calls.
+
+We conclude that, implemented properly, the time to execute line (4) of Fig. 3.37 is O(n + m). The rest of the while-loop of lines (3) through (6) takes O(1) time per iteration. If the input x is of length k, then the total work in that loop is O(k(n + m)) . Line (1) of Fig. 3.37 can be executed in O(n + m) time, since it is essentially the steps of Fig. 3.39 with `oldStates` containing only the state s~0~. Lines (2), (7), and (8) each take O(1) time. Thus, the running time of Algorithm 3.22, properly implemented, is O((k(n + m)) . That is, the time taken is proportional to the length of the input times the size (nodes plus edges) of the transition graph.
 
 ### 3.7.4 Construction of an NFA from a Regular Expression 
 
