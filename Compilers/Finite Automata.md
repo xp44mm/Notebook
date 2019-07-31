@@ -495,30 +495,17 @@ The method description in Algorithm 3.23 contains hints as to why the inductive 
 
 **Example 3.24:** Let us use Algorithm 3.23 to construct an NFA for `r = (a|b)*abb`. Figure 3.43 shows a parse tree for r that is analogous to the parse trees constructed for arithmetic expressions in Section 2.2.3. For subexpression r~1~, the first a, we construct the NFA:
 
-```mermaid
-graph TB
-lparen("(")
-rparen(")")
-vb("|")
-r11---r9
-r11---r10
-r9---r7
-r9---r8
-r10---b1(b)
-r7---r5
-r7---r6
-r8---b2(b)
-r5---r4
-r5---*
-r6---a1(a)
-r4---lparen
-r4---r3
-r4---rparen
-r3---r1
-r3---vb
-r3---r2
-r1---a
-r2---b
+```F#
+let r1 = Leaf 'a'
+let r2 = Leaf 'b'
+let r6 = Leaf 'a'
+let r8 = Leaf 'b'
+let r10 = Leaf 'b'
+let r3 = Union(r1,r2)
+let r5 = Star r3
+let r7 = Cat(r5,r6)
+let r9 = Cat(r7,r8)
+let r11 = Cat(r9,r10)
 ```
 
 Figure 3.43: Parse tree for `(a|b)*abb` 
@@ -851,20 +838,13 @@ The important states of the NFA correspond directly to the positions in the regu
 
 **Example 3.31:** Figure 3.56 shows the syntax tree for the regular expression of our running example. Cat-nodes are represented by circles. □
 
-```mermaid
-graph TB
-12[O]---11[O]
-12---6[#]
-11---10[O]
-11---5[b]
-10---9[O]
-10---4[b]
-9---8[*]
-9---3[a]
-8---7["|"]
-7---1[a]
-7---2[b]
-
+```F#
+let r1 = Union(Leaf(1, 'a'),Leaf(2, 'b'))
+let r2 = Star r1
+let r3 = Cat(r2, Leaf(3, 'a'))
+let r4 = Cat(r3, Leaf(4, 'b'))
+let r5 = Cat(r4, Leaf(5, 'b'))
+let r6 = Cat(r5, Leaf(6, '#'))
 ```
 
 Figure 3.56: Syntax tree for `(a|b)*abb#`
