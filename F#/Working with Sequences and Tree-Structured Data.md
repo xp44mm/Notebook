@@ -642,7 +642,7 @@ F# also has a more general “query-expression” syntax that includes support f
 
 ## Structure beyond Sequences: Domain Modeling
 
-In Chapters 5 and 6, you learned about some simple techniques to represent record and tree-structured data in F# using record types, union types, and object types. Together this constitutes domain modeling using types. Further, in Chapter 8, you learned how to move from an unstructured, textual representation such as XML to a domain model in the form of a structured representation. In the following sections, you will learn techniques for working with domain models.
+In Chapters 5 and 6, you learned about some simple techniques to represent record and tree-structured data in F# using record types, union types, and object types. Together this constitutes *domain modeling* using types. Further, in Chapter 8, you learned how to move from an unstructured, textual representation such as XML to a domain model in the form of a structured representation. In the following sections, you will learn techniques for working with domain models.
 
 Let’s look at the design of the type Scene from the previous chapter, in Listing 8-1, repeated below. The type Scene uses fewer kinds of nodes than the concrete XML representation from Chapter 8; the concrete XML has node kinds Circle, Square, Composite, and Ellipse, whereas Scene has just three (Rect, Ellipse, and Composite), with two derived constructors, Circle and Square, defined as static members of the Scene:
 
@@ -650,13 +650,14 @@ Let’s look at the design of the type Scene from the previous chapter, in Listi
 open System.Drawing
 
 type Scene =
-  | Ellipse of RectangleF
-  | Rect of RectangleF
-  | Composite of Scene list
-  static member Circle(center:PointF,radius) =
-    Ellipse(
-        RectangleF(
-            center.X-radius,center.Y-radius, radius*2.0f,radius*2.0f))
+    | Ellipse of RectangleF
+    | Rect of RectangleF
+    | Composite of Scene list
+
+    static member Circle(center:PointF,radius) =
+        Ellipse(
+            RectangleF(
+                center.X-radius,center.Y-radius,radius*2.0f,radius*2.0f))
     /// A derived constructor
     static member Square(left,top,side) =
         Rect(RectangleF(left,top,side,side))
@@ -681,7 +682,7 @@ let rec flatten scene =
             | Ellipse _ | Rect _ -> yield scene }
 ```
 
-Here, flatten is defined using sequence expressions that were introduced in Chapter 3. Its type is:
+Here, `flatten` is defined using sequence expressions that were introduced in Chapter 3. Its type is:
 
 ```F#
 val flatten : scene:Scene -> seq<Scene>
@@ -698,7 +699,7 @@ let rec flattenAux scene acc =
 let flatten2 scene = flattenAux scene [] |> Seq.ofList
 ```
 
-The following does an eager traversal using a local mutable instance of a ResizeArray as the accumulator and then returns the result as a sequence. This example uses a local function and ensures that the mutable state is locally encapsulated:
+The following does an eager traversal using a local mutable instance of a `ResizeArray` as the accumulator and then returns the result as a sequence. This example uses a local function and ensures that the mutable state is locally encapsulated:
 
 ```F#
 let flatten3 scene =
@@ -786,7 +787,7 @@ Sometimes it’s feasible to delay loading or processing some portions of a doma
 </Composite>
 ```
 
-It may be useful to delay loading these files. One general way to do this is to add a Delay node to the Scene type:
+It may be useful to delay loading these files. One general way to do this is to add a `Delay` node to the Scene type:
 
 ```F#
 type Scene =
@@ -796,7 +797,7 @@ type Scene =
     | Delay of Lazy<Scene>
 ```
 
-You can then extend the extractScene function of Listing 8-1 with the following code to handle this node:
+You can then extend the `extractScene` function of Listing 8-1 with the following code to handle this node:
 
 ```F#
 let rec extractScene (node : XmlNode) =
@@ -807,7 +808,7 @@ let rec extractScene (node : XmlNode) =
     ...
   | "File" ->
     let file = attribs.GetNamedItem("file").Value
-    let scene = lazy (let d = XmlDocument()
+    let scene = lazy (  let d = XmlDocument()
                         d.Load(file)
                         extractScene(d :> XmlNode))
     Scene.Delay scene
@@ -817,13 +818,12 @@ Code that analyzes domain models (for example, via pattern matching) must typica
 
 ```F#
 let rec getScene scene =
-  match scene with
-  | Delay d -> getScene (d.Force())
-  | _ -> scene
-
+    match scene with
+    | Delay d -> getScene (d.Force())
+    | _ -> scene
 ```
 
-Here is the function flatten2 from the “Processing Domain Models” section, but redefined to first eliminate delayed nodes:
+Here is the function `flatten2` from the “Structure beyond Sequences: Domain Modeling” section, but redefined to first eliminate delayed nodes:
 
 ```F#
 let rec flattenAux scene acc =
@@ -852,7 +852,7 @@ The shapes of ellipses and rectangles are lazy computations; each Composite node
 
 ##### Note 
 
-the Lazy<'T>type is defined in System and represents delayed computations. You access a lazy value via the Value property. F# includes the special keyword lazy for constructing values of this type. Chapter 8 also covered lazy computations.
+the `Lazy<'T>` type is defined in System and represents delayed computations. You access a lazy value via the Value property. F# includes the special keyword `lazy` for constructing values of this type. Chapter 8 also covered lazy computations.
 
 ---
 
@@ -866,9 +866,8 @@ type SceneWithCachedBoundingBox =
   | RectInfo of RectangleF
   | CompositeInfo of CompositeScene
 and CompositeScene =
-  { Scenes: SceneWithCachedBoundingBox list
-  mutable BoundingBoxCache : RectangleF option  }
-
+  {   Scenes: SceneWithCachedBoundingBox list
+      mutable BoundingBoxCache : RectangleF option  }
 ```
 
 This is useful for prototyping, although you should be careful to encapsulate the code that is responsible for maintaining this information. Listing 9-1 shows the full code for doing this.
@@ -877,25 +876,27 @@ Listing 9-1. Adding the cached computation of a local attribute to a domain mode
 
 ```F#
 type CompositeInfo =
-  { Scenes: SceneWithCachedBoundingBox list
-  mutable BoundingBoxCache : RectangleF option  }
+    {   Scenes: SceneWithCachedBoundingBox list
+        mutable BoundingBoxCache : RectangleF option  }
 and SceneWithCachedBoundingBox =
-  | EllipseInfo of RectangleF
-  | RectInfo of RectangleF
-  | CompositeInfo of CompositeInfo
-  member x.BoundingBox =
-match x with
-| EllipseInfo rect | RectInfo rect -> rect
-| CompositeInfo info ->
-match info.BoundingBoxCache with
-| Some v -> v
-| None ->
-let bbox =
-info.Scenes
-|> List.map (fun s -> s.BoundingBox)
-|> List.reduce (fun r1 r2 -> RectangleF.Union(r1, r2))
-info.BoundingBoxCache <- Some bbox
-bbox
+    | EllipseInfo of RectangleF
+    | RectInfo of RectangleF
+    | CompositeInfo of CompositeInfo
+
+    member x.BoundingBox =
+        match x with
+        | EllipseInfo rect | RectInfo rect -> rect
+        | CompositeInfo info ->
+            match info.BoundingBoxCache with
+            | Some v -> v
+            | None ->
+                let bbox =
+                    info.Scenes
+                    |> List.map (fun s -> s.BoundingBox)
+                    |> List.reduce (fun r1 r2 -> RectangleF.Union(r1, r2))
+                info.BoundingBoxCache <- Some bbox
+                bbox
+
   /// Create a Composite node with an initially empty cache
   static member Composite scenes = CompositeInfo { Scenes=scenes; BoundingBoxCache=None }
   static member Ellipse rect = EllipseInfo rect
@@ -906,7 +907,7 @@ Other attributes that are sometimes cached include the hash values of tree-struc
 
 ### Memoizing Construction of Domain Model Nodes
 
-In some cases, domain model nodes can end up consuming significant portions of the application’s memory budget. In this situation, it can be worth memoizing some or all of the nodes constructed in the model. You can even go as far as memoizing all equivalent nodes, ensuring that equivalence between nodes can be implemented by pointer equality, a technique often called hash-consing. Listing 9-2 shows a domain model for propositional logic terms that ensures that any two nodes that are syntactically identical are shared via a memoizing table. Propositional logic terms are terms constructed using P AND Q, P OR Q, NOT P, and variables a, b, and so on. A noncached version of the expressions is:
+In some cases, domain model nodes can end up consuming significant portions of the application’s memory budget. In this situation, it can be worth memoizing some or all of the nodes constructed in the model. You can even go as far as memoizing all equivalent nodes, ensuring that equivalence between nodes can be implemented by pointer equality, a technique often called *hash-consing*. Listing 9-2 shows a domain model for propositional logic terms that ensures that any two nodes that are syntactically identical are shared via a memoizing table. Propositional logic terms are terms constructed using P AND Q, P OR Q, NOT P, and variables a, b, and so on. A noncached version of the expressions is:
 
 ```F#
 type Prop =
@@ -922,7 +923,7 @@ Listing 9-2.  Memoizing the construction of domain model nodes
 ```F#
 
 type Prop =
-    | Prop of int
+    | Prop of unique:int
 and PropRepr =
     | AndRepr of Prop * Prop
     | OrRepr of Prop * Prop
@@ -935,18 +936,24 @@ open System.Collections.Generic
 module PropOps =
     let uniqStamp = ref 0
     type internal PropTable() =
-let fwdTable = new Dictionary<PropRepr, Prop>(HashIdentity.Structural)
-let bwdTable = new Dictionary<int, PropRepr>(HashIdentity.Structural)
-member t.ToUnique repr =
-if fwdTable.ContainsKey repr then fwdTable.[repr]
-else let stamp = incr uniqStamp; !uniqStamp
-let prop = Prop stamp
-fwdTable.Add (repr, prop)
-bwdTable.Add (stamp, repr)
-prop
-member t.FromUnique (Prop stamp) =
-bwdTable.[stamp]
- let internal table = PropTable ()
+        let fwdTable = new Dictionary<PropRepr, Prop>(HashIdentity.Structural)
+        let bwdTable = new Dictionary<int, PropRepr>(HashIdentity.Structural)
+        member t.ToUnique repr =
+            if fwdTable.ContainsKey repr then 
+                fwdTable.[repr]
+            else 
+                let stamp = 
+                    incr uniqStamp
+                    !uniqStamp
+                let prop = Prop stamp
+                fwdTable.Add (repr, prop)
+                bwdTable.Add (stamp, repr)
+                prop
+        member t.FromUnique (Prop stamp) =
+            bwdTable.[stamp]
+
+    let internal table = PropTable ()
+
     // Public construction functions
     let And (p1, p2) = table.ToUnique (AndRepr (p1, p2))
     let Not p = table.ToUnique (NotRepr p)
@@ -954,12 +961,12 @@ bwdTable.[stamp]
     let Var p = table.ToUnique (VarRepr p)
     let True = table.ToUnique TrueRepr
     let False = Not True
+
     // Deconstruction function
     let getRepr p = table.FromUnique p
 ```
 
-You construct terms using the operations in PropOps much as you would construct terms using the 
-nonmemoized representation:
+You construct terms using the operations in `PropOps` much as you would construct terms using the nonmemoized representation:
 
 ```F#
 
@@ -974,7 +981,516 @@ val repr : PropRepr = AndRepr (Prop 3, Prop 4)
 val prop2 : Prop = Prop 5
 ```
 
-
 In this example, when you create two trees using the same specification, And (Var "x",Var "y"), you get back the same Prop object with the same stamp 5. You can also use memoization techniques to implement interesting algorithms; in Chapter 12, you will see an important representation of propositional logic called a binary decision diagram (BDD) that is based on a memoization table similar to that in the previous example.
 
 The use of unique integer stamps and a lookaside table in the previous representation also has some drawbacks; it’s harder to pattern match on abstract syntax representations, and you may need to reclaim and recycle stamps and remove entries from the lookaside table if a large number of terms is created or if the overall set of stamps must remain compact. You can solve the first problem by using active patterns, which will be covered next. If necessary, you can solve the second problem by scoping stamps in an object that encloses the uniqStamp state, the lookaside table, and the construction functions. Alternatively, you can explicitly reclaim the stamps by using the IDisposable idiom described in Chapter 6, although this approach can be intrusive to your application.
+
+
+## Active Patterns: Views for Structured
+
+Pattern matching is a key technique provided in F# for decomposing domain models and other representations. So far in this book, all the examples of pattern matching have been directly over the core representations of data structures; for example, directly matching on the structure of lists, options, records, and discriminated unions. But pattern matching in F# is also extensible—that is, you can define new ways of matching over existing types. You do this through a mechanism called *active patterns*. 
+
+This book covers only the basics of active patterns. They can be indispensable, because they can let you continue to use pattern matching with your types even after you hide their representations. Active patterns also let you use pattern matching with .NET object types. The following section covers active patterns and how they work.
+
+### Converting the Same Data to Many Views
+
+In high-school math courses, you were probably taught that you can view complex numbers in two ways: as rectangular coordinates x + yi or as polar coordinates of a phase r and magnitude f. In most computer systems, complex numbers are stored in the first format, although often the second format is more useful. Wouldn’t it be nice if you could look at complex numbers through either lens? You could do this by explicitly converting from one form to another when needed, but it would be better to have your programming language look after the transformations needed to do this for you. Active patterns let you do exactly that. First, here is a standard definition of complex numbers:
+
+```F#
+[<Struct>]
+type Complex(r : float, i : float) =
+    static member Polar(mag, phase) = Complex(mag * cos phase, mag * sin phase)
+    member x.Magnitude = sqrt(r * r + i * i)
+    member x.Phase = atan2 i r
+    member x.RealPart = r
+    member x.ImaginaryPart = i
+
+```
+
+Here are active patterns that let you view complex numbers as rectangular coordinates and polar coordinates, respectively:
+
+```F#
+let (|Rect|) (x : Complex) = (x.RealPart, x.ImaginaryPart)
+let (|Polar|) (x : Complex) = (x.Magnitude, x.Phase)
+
+```
+
+
+The key thing to note is that these definitions let you use Rect and Polar as tags in pattern matching. For example, you can now write the following to define addition and multiplication over complex numbers:
+
+```F#
+
+```
+let addViaRect a b =
+    match a, b with
+    | Rect (ar, ai), Rect (br, bi) -> Complex (ar + br, ai + bi)
+
+let mulViaRect a b =
+    match a, b with
+    | Rect (ar, ai), Rect (br, bi) -> Complex (ar * br - ai * bi, ai * br + bi * ar)
+
+As it happens, multiplication on complex numbers is easier to express using polar coordinates, implemented as:
+
+```F#
+let mulViaPolar a b =
+    match a, b with
+    | Polar (m, p), Polar (n, q) -> Complex.Polar (m * n, p + q)
+
+```
+
+Here is an example of using the (|Rect|) and (|Polar|) active patterns directly on some complex numbers via the pattern tags Rect and Polar. You first make the complex number 3+4i:
+
+```F#
+
+> fsi.AddPrinter (fun (c : Complex) -> sprintf "%gr + %gi" c.RealPart c.ImaginaryPart)
+> let c = Complex (3.0, 4.0);;
+val c : Complex = 3r + 4i
+> c;;
+val it : Complex = 3r + 4i
+> match c with
+| Rect (x, y) -> printfn "x = %g, y = %g" x y;;
+x = 3, y = 4
+> match c with
+| Polar (x, y) -> printfn "x = %g, y = %g" x y;;
+x = 5, y = 0.927295
+> addViaRect c c;;
+val it : Complex = 6r + 8i
+> mulViaRect c c;;
+val it : Complex = -7r + 24i
+> mulViaPolar c c;;
+val it : Complex = -7r + 24i
+```
+
+As you may expect, you get the same results if you multiply via either rectangular or polar coordinates. The execution paths are quite different, however. Let’s look closely at the definition of mulViaRect:
+
+```F#
+let mulViaRect a b =
+    match a, b with
+    | Rect (ar, ai), Rect (br, bi) ->
+Complex (ar * br - ai * bi, ai * br + bi * ar)
+
+```
+
+When F# needs to match the values a and b against the patterns `Rect (ar, ai)` and `Rect (br, bi)`, it doesn’t look at the contents of a and b directly. Instead, it runs a function as part of pattern matching (which is why they’re called active patterns). In this case, the function executed is `(|Rect|)`, which produces a pair as its result. The elements of the pair are then bound to the variables ar and ai. Likewise, in the definition of mulViaPolar, the matching is performed partly by running the function `(|Polar|)`.
+
+The functions `(|Rect|)` and `(|Polar|)` are allowed to do anything, as long as each ultimately produces a pair of results. You should think of the names of these functions as including the `(|` and `|)`. Here are the types of `(|Rect|)` and `(|Polar|)`:
+
+```F#
+val (|Rect|) : x:Complex -> float * float
+val (|Polar|) : x:Complex -> float * float
+```
+
+These types are identical, but they implement completely different views of the same data. The definitions of addViaRect and mulViaPolar can also be written using pattern matching in argument position:
+
+```F#
+let add2 (Rect (ar, ai)) (Rect (br, bi)) = Complex (ar + br, ai + bi)
+let mul2 (Polar (r1, th1)) (Polar (r2, th2)) = Complex (r1 * r2, th1 + th2)
+```
+
+### Matching on .NET Object Types
+
+One useful thing about active patterns is that they let you use pattern matching with existing .NET object types. For example, the .NET object type System.Type is a runtime representation of types in .NET and F#. Here are the members found on this type:
+
+```F#
+type System.Type with
+    member IsGenericType : bool
+    member GetGenericTypeDefinition : unit -> Type
+    member GetGenericArguments : unit -> Type[]
+    member HasElementType : bool
+    member GetElementType : unit -> Type
+    member IsByRef : bool
+    member IsPointer : bool
+    member IsGenericParameter : bool
+    member GenericParameterPosition : int
+```
+
+
+This type looks very much like one you’d like to pattern match against. There are clearly three or four distinct cases here, and pattern matching helps you isolate them. You can define an active pattern to achieve this, as shown in Listing 9-3.
+
+Listing 9-3.  Defining an active pattern for matching on System.Type values
+
+```F#
+let (|Named|Array|Ptr|Param|) (typ : System.Type) =
+    if typ.IsGenericType
+    then Named(typ.GetGenericTypeDefinition(), typ.GetGenericArguments())
+    elif typ.IsGenericParameter then Param(typ.GenericParameterPosition)
+    elif not typ.HasElementType then Named(typ, [||])
+    elif typ.IsArray then Array(typ.GetElementType(), typ.GetArrayRank())
+    elif typ.IsByRef then Ptr(true, typ.GetElementType())
+    elif typ.IsPointer then Ptr(false, typ.GetElementType())
+    else failwith "MSDN says this can't happen"
+```
+
+This then lets you use pattern matching against a value of this type:
+
+```F#
+open System
+
+let rec formatType typ =
+    match typ with
+    | Named (con, [||]) -> sprintf "%s" con.Name
+    | Named (con, args) -> sprintf "%s<%s>" con.Name (formatTypes args)
+    | Array (arg, rank) -> sprintf "Array(%d,%s)" rank (formatType arg)
+    | Ptr(true, arg) -> sprintf "%s&" (formatType arg)
+    | Ptr(false, arg) -> sprintf "%s*" (formatType arg)
+    | Param(pos) -> sprintf "!%d" pos
+and formatTypes typs =
+    String.Join(",", Array.map formatType typs)
+
+```
+
+or collect the free generic type variables:
+
+```F#
+let rec freeVarsAcc typ acc =
+    match typ with
+    | Array (arg, rank) -> freeVarsAcc arg acc
+    | Ptr (_, arg) -> freeVarsAcc arg acc
+    | Param _ -> (typ :: acc)
+    | Named (con, args) -> Array.foldBack freeVarsAcc args acc
+let freeVars typ = freeVarsAcc typ []
+```
+
+### Defining Partial and Parameterized Active Patterns
+
+Active patterns can also be partial. You can recognize a partial pattern by a name such as (|MulThree|_|) and by the fact that it returns a value of type `'T option` for some `'T`. For example:
+
+```F#
+let (|MulThree|_|) inp = if inp % 3 = 0 then Some(inp / 3) else None
+let (|MulSeven|_|) inp = if inp % 7 = 0 then Some(inp / 7) else None
+```
+
+Finally, active patterns can also be parameterized. You can recognize a parameterized active pattern by the fact that it takes several arguments. For example:
+```F#
+let (|MulN|_|) n inp = if inp % n = 0 then Some(inp / n) else None
+
+```
+
+The F# quotation API `FSharp.Quotations` uses both parameterized and partial patterns extensively.
+
+### Hiding Representations with Active Patterns
+
+Earlier in this chapter, you saw the following type that defines an optimized representation of propositional logic terms using a unique stamp for each syntactically unique term:
+
+```F#
+type Prop = Prop of int
+and internal PropRepr =
+    | AndRepr of Prop * Prop
+    | OrRepr of Prop * Prop
+    | NotRepr of Prop
+    | VarRepr of string
+    | TrueRepr
+```
+
+
+What happens, however, if you want to pattern match against values of type `Prop`? Even if you exposed the representation, all you would get is an integer, which you would have to look up in an internal table. You can define an active pattern for restoring matching on that data structure, as shown in Listing 9-4.
+
+Listing 9-4. Extending Listing 9-2 with an active pattern for the optimized representation
+
+```F#
+module PropOps =
+    ...
+    let (|And|Or|Not|Var|True|) prop =
+        match table.FromUnique prop with
+        | AndRepr (x, y) -> And (x, y)
+        | OrRepr (x, y) -> Or (x, y)
+        | NotRepr x -> Not x
+        | VarRepr v -> Var v
+        | TrueRepr -> True
+```
+
+
+This code defines an active pattern in the auxiliary module PropOps that lets you pattern match against Prop values, despite the fact that they’re using optimized unique-integer references under the hood. For example, you can define a pretty-printer for Prop terms as follows, even though they’re using optimized representations:
+
+```F#
+open PropOps
+let rec showProp precedence prop =
+    let parenIfPrec lim s = if precedence  < lim then "(" + s + ")" else s
+    match prop with
+    | Or (p1, p2) -> parenIfPrec 4 (showProp 4 p1 + " || " + showProp 4 p2)
+    | And (p1, p2) -> parenIfPrec 3 (showProp 3 p1 + " && " + showProp 3 p2)
+    | Not p -> parenIfPrec 2 ("not " + showProp 1 p)
+    | Var v -> v
+    | True -> "T"
+```
+
+
+Likewise, you can define functions to place the representation in various normal forms. For example, the following function computes negation normal form (NNF), where all instances of NOT nodes have been pushed to the leaves of the representation:
+
+```F#
+let rec nnf sign prop =
+    match prop with
+    | And (p1, p2) ->
+        if sign then And (nnf sign p1, nnf sign p2)
+        else Or (nnf sign p1, nnf sign p2)
+    | Or (p1, p2) ->
+        if sign then Or (nnf sign p1, nnf sign p2)
+        else And (nnf sign p1, nnf sign p2)
+    | Not p ->
+        nnf (not sign) p
+    | Var _ | True ->
+        if sign then prop else Not prop
+
+let NNF prop = nnf true prop
+```
+
+
+The following demonstrates that two terms have equivalent NNF normal forms:
+
+```F#
+> let t1 = Not (And (Not (Var "x"), Not (Var "y")));;
+val t1 : Prop = Prop 8
+> fsi.AddPrinter(showProp 5);;
+> t1;;
+val it : Prop = not (not x && not y)
+> let t2 = Or(Not(Not(Var("x"))),Var("y"));;
+val t2 : Prop = not (not x) || y
+> (t1 = t2);;
+val it : bool = false
+> NNF t1;;
+val it : Prop = x || y
+> NNF t2;;
+val it : Prop = x || y
+> NNF t1 = NNF t2;;
+val it : bool = true
+```
+
+## Tail Calls and Recursive Programming
+
+In the previous section, you saw how to process nested, tree-structured domain models using recursive functions. In this section, you will learn about important topics associated with programming with recursive functions: stack usage and tail calls.
+
+When F# programs execute, two resources are managed automatically, stack- and heap-allocated memory. Stack space is needed every time you call an F# function and is reclaimed when the function returns or when it performs a tail call. It’s perhaps surprising that stack space is more limited than space in the garbage-collected heap. For example, on a 32-bit Windows machine, the default settings are such that each thread of a program can use up to 1 MB of stack space. Because stack is allocated every time a function call is made, a very deep series of nested function calls causes a `StackOverflowException` to be raised. For example, on a 32-bit Windows machine, the following program causes a stack overflow when n reaches about 79000:
+
+```F#
+let rec deepRecursion n =
+    if n = 1000000 then () else
+    if n % 100 = 0 then
+        printfn "--> deepRecursion, n = %d" n
+    deepRecursion (n+1)
+    printfn "<-- deepRecursion, n = %d" n
+```
+
+
+You can see this in F# Interactive:
+
+```F#
+> deepRecursion 0;;
+--> deepRecursion, n = 0
+...
+--> deepRecursion, n = 79100
+--> deepRecursion, n = 79200
+--> deepRecursion, n = 79300
+Process is terminated due to StackOverflowException
+Session termination detected. Press Enter to restart.
+```
+
+Stack overflows are extreme exceptions, because it’s often difficult to recover correctly from them. For this reason, it’s important to ensure that the amount of stack used by your program doesn’t grow in an unbounded fashion as your program proceeds, especially as you process large inputs. Furthermore, deep stacks can hurt in other ways; for example, the .NET garbage collector traverses the entire stack on every garbage collection. This can be expensive if your stacks are very deep.
+
+Because recursive functions are common in F# functional programming, this may seem to be a major problem. There is, however, one important case in which a function call recycles stack space eagerly: a *tail call*. A tail call is any call that is the last piece of work done by a function. For example, Listing 9-7 shows the same program with the last line deleted.
+
+Listing 9-7. A simple tail-recursive function
+
+```F#
+let rec tailCallRecursion n : unit =
+    if n = 1000000 then () else
+    if n % 100 = 0 then
+        printfn "--> tailCallRecursion, n = %d" n
+    tailCallRecursion (n+1)
+```
+
+The code now runs to completion without a problem:
+
+```F#
+> tailCallRecursion 0;;
+...
+--> tailCallRecursion, n = 999600
+--> tailCallRecursion, n = 999700
+--> tailCallRecursion, n = 999800
+--> tailCallRecursion, n = 999900
+```
+
+When a tail call is made, the F# execution machinery can drop the current stack frame before executing the target function, rather than waiting for the call to complete. Sometimes this optimization is performed by the F# compiler. If the n = 1000000 check were removed in the previous program, the program would run indefinitely. (As an aside, note that n would cycle around to the negative numbers, because arithmetic is unchecked for overflow unless you open the module `FSharp.Core.Operators.Checked`.)
+
+Functions such as `tailCallRecursion` are known as tail-recursive functions. When you write recursive functions, you should check either that they’re tail recursive or that they won’t be used with inputs that cause them to recurse to an excessive depth. The following sections will give some examples of techniques you can use to make your functions tail recursive.
+
+### Tail Recursion and List Processing
+
+Tail recursion is particularly important when you’re processing F# lists, because lists can be long, and recursion is the natural way to implement many list-processing functions. For example, here is a function to find the last element of a list (this must traverse the entire list, because F# lists are pointers to the head of the list):
+
+```F#
+let rec last l =
+    match l with
+    | [] -> invalidArg "l" "the input list should not be empty"
+    | [h] -> h
+    | h::t -> last t
+```
+
+This function is tail recursive, because no work happens after the recursive call last t. Many list functions are written most naturally in non-tail-recursive ways, however. Although it can be a little annoying to write these functions using tail recursion, it’s often better to use tail recursion than to leave the potential for stack overflow lying around your code. For example, the following function creates a list of length n in which every entry in the list is the value x:
+
+```F#
+let rec replicateNotTailRecursiveA n x =
+    if n <= 0 then []
+    else x :: replicateNotTailRecursiveA (n - 1) x
+```
+
+
+The problem with this function is that work is done after the recursive call. This becomes obvious when you write the function in this fashion:
+
+```F#
+let rec replicateNotTailRecursiveB n x =
+    if n <= 0 then []
+    else
+        let recursiveResult = replicateNotTailRecursiveB (n - 1) x
+        x :: recursiveResult
+```
+
+Clearly, a value is being constructed by the expression `x :: recursiveResult` after the recursive call `replicateNotTailRecursiveB (n - 1) x`. This means that the function isn’t tail recursive. The solution is to write the function using an accumulating parameter. This is often done by using an auxiliary function that accepts the accumulating parameter:
+
+```F#
+let rec replicateAux n x acc =
+    if n <= 0 then acc
+    else replicateAux (n - 1) x (x :: acc)
+let replicate n x = replicateAux n x []
+```
+
+Here, the recursive call to `replicateAux` is tail recursive. Sometimes the auxiliary functions are written as inner recursive functions:
+
+```F#
+let replicate n x =
+    let rec loop i acc =
+        if i >= n then acc
+        else loop (i + 1) (x :: acc)
+    loop 0 []
+```
+
+The F# compiler optimizes inner recursive functions such as these to produce an efficient pair of functions that pass extra arguments as necessary.
+
+When you’re processing lists, accumulating parameters often accumulate a list in reverse order. This means a call to `List.rev` may be required at the end of the recursion. For example, consider this implementation of `List.map`, which isn’t tail recursive:
+
+```F#
+let rec mapNotTailRecursive f inputList =
+    match inputList with
+    | [] -> []
+    | h :: t -> (f h) :: mapNotTailRecursive f t
+```
+
+Here is an implementation that neglects to reverse the accumulating parameter:
+
+```F#
+let rec mapIncorrectAcc f inputList acc =
+    match inputList with
+    | [] -> acc // whoops! Forgot to reverse the accumulator here!
+    | h :: t -> mapIncorrectAcc f t (f h :: acc)
+let mapIncorrect f inputList = mapIncorrectAcc f inputList []
+```
+
+This function executes as follows:
+
+```F#
+> mapIncorrect (fun x -> x * x) [1; 2; 3; 4];;
+val it : int list = [16; 9; 4; 1]
+```
+
+Here is a correct implementation:
+
+```F#
+let rec mapAcc f inputList acc =
+    match inputList with
+    | [] -> List.rev acc
+    | h::t -> mapAcc f t (f h :: acc)
+let mapCorrect f inputList = mapAcc f inputList []
+```
+
+```F#
+> mapCorrect (fun x -> x * x) [1; 2; 3; 4];;
+val it : int list = [1; 4; 9; 16]
+```
+
+### Tail Recursion and Object-Oriented Programming
+
+You may need to implement object members with a tail-recursive implementation. For example, consider this list-like data structure:
+
+```F#
+type Chain =
+    | ChainNode of int * string * Chain
+    | ChainEnd of string
+
+    member chain.LengthNotTailRecursive =
+        match chain with
+        | ChainNode(_, _, subChain) -> 1 + subChain.LengthNotTailRecursive
+        | ChainEnd _ -> 0
+```
+
+The implementation of `LengthNotTailRecursive` is not tail recursive, because the addition 1 + applies to the result of the recursive property invocation. One obvious tail-recursive implementation uses a local recursive function with an accumulating parameter, as shown in Listing 9-8.
+
+Listing 9-8. Making an object member tail recursive
+
+```F#
+type Chain =
+    | ChainNode of int * string * Chain
+    | ChainEnd of string
+
+    // The implementation of this property is tail recursive.
+    member chain.Length =
+        let rec loop c acc =
+            match c with
+            | ChainNode(_, _, subChain) -> loop subChain (acc + 1)
+            | ChainEnd _ -> acc
+        loop chain 0
+```
+
+---
+
+##### Note
+
+the list-processing functions in the F# library module FSharp.Collections.List are tail recursive, except where noted in the documentation. Some of them have implementations that are specially optimized to take advantage of the implementation of the list data structure.
+
+---
+
+### Tail Recursion and Processing Unbalanced Trees
+
+This section will consider tail-recursion problems that are much less common in practice but for which it’s important to know the techniques to apply if required. The techniques also illustrate some important aspects of functional programming—in particular, an advanced technique called continuation passing.
+
+Tree-structured data are generally more difficult to process in a tail-recursive way than list-structured data are. For example, consider this tree structure:
+
+```F#
+type Tree =
+    | Node of string * Tree * Tree
+    | Tip of string
+let rec sizeNotTailRecursive tree =
+    match tree with
+    | Tip _ -> 1
+    | Node(_, treeLeft, treeRight) ->
+        sizeNotTailRecursive treeLeft + sizeNotTailRecursive treeRight
+
+```
+
+The implementation of this function isn’t tail recursive. Luckily, this is rarely a problem, especially if you can assume that the trees are balanced. A tree is balanced when the depth of each subtree is roughly the same. In that case, a tree of depth 1,000 will have about 21,000 entries. Even for a balanced tree of this size, the recursive calls to compute the overall size of the tree won’t recurse to a depth greater than 1,000—not deep enough to cause stack overflow, except when the routine is being called by some other function already consuming inordinate amounts of stack. Many data structures based on trees are balanced by design; for example, the Set and Map data structures implemented in the F# library are based on balanced binary trees. Some trees can be unbalanced, however. For example, you can explicitly make a highly unbalanced tree:
+
+```F#
+let rec mkBigUnbalancedTree n tree =
+    if n = 0 then tree
+    else Node("node", Tip("tip"), mkBigUnbalancedTree (n - 1) tree)
+
+let tree1 = Tip("tip")
+let tree2 = mkBigUnbalancedTree 15000 tree1
+let tree3 = mkBigUnbalancedTree 15000 tree2
+let tree4 = mkBigUnbalancedTree 15000 tree3
+let tree5 = mkBigUnbalancedTree 15000 tree4
+let tree6 = mkBigUnbalancedTree 15000 tree5
+```
+
+Calling `sizeNotTailRecursive(tree6)` now risks a stack overflow (note that this may depend on the amount of memory available on a system; change the size of the tree to force the stack overflow). You can solve this in part by trying to predict whether the tree will be unbalanced to the left or the right and by using an accumulating parameter:
+
+```F#
+let rec sizeAcc acc tree =
+    match tree with
+    | Tip _ -> 1 + acc
+    | Node(_, treeLeft, treeRight) ->
+        let acc = sizeAcc acc treeLeft
+        sizeAcc acc treeRight
+let size tree = sizeAcc 0 tree
+```
+
+This algorithm works for tree6, because it’s biased toward accepting trees that are skewed to the right. The recursive call that processes the right branch is a tail call, while the call that processes the left branch isn’t. This may be okay if you have prior knowledge of the shape of your trees. This algorithm still risks a stack overflow, however, and you may have to change techniques. One way to do this is to use a much more general and important technique known as continuation passing.
+
