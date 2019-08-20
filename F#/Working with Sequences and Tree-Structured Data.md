@@ -776,7 +776,7 @@ let adjustAspectRatio scene =
     scene |> mapRects (fun r -> RectangleF.Inflate(r, 1.1f, 1.0f / 1.1f))
 ```
 
-## Using On-Demand Computation with Domain Models
+### Using On-Demand Computation with Domain Models
 
 Sometimes it’s feasible to delay loading or processing some portions of a domain model. For example, imagine that the XML for the small geometric language from the previous section included a construct such as the following, in which the File nodes represent entire subtrees defined in external files:
 
@@ -984,7 +984,6 @@ val prop2 : Prop = Prop 5
 In this example, when you create two trees using the same specification, And (Var "x",Var "y"), you get back the same Prop object with the same stamp 5. You can also use memoization techniques to implement interesting algorithms; in Chapter 12, you will see an important representation of propositional logic called a binary decision diagram (BDD) that is based on a memoization table similar to that in the previous example.
 
 The use of unique integer stamps and a lookaside table in the previous representation also has some drawbacks; it’s harder to pattern match on abstract syntax representations, and you may need to reclaim and recycle stamps and remove entries from the lookaside table if a large number of terms is created or if the overall set of stamps must remain compact. You can solve the first problem by using active patterns, which will be covered next. If necessary, you can solve the second problem by scoping stamps in an object that encloses the uniqStamp state, the lookaside table, and the construction functions. Alternatively, you can explicitly reclaim the stamps by using the IDisposable idiom described in Chapter 6, although this approach can be intrusive to your application.
-
 
 ## Active Patterns: Views for Structured
 
@@ -1255,6 +1254,243 @@ val it : Prop = x || y
 val it : bool = true
 ```
 
+## Equality, Hashing, and Comparison
+
+Many efficient algorithms over structured data are built on primitives that efficiently compare and hash representations of information. In Chapter 5, you saw a number of predefined generic operations, including generic comparison, equality, and hashing, accessed via functions such as:
+
+```F#
+val compare : 'T -> 'T -> int when 'T : comparison
+val (=) : 'T -> 'T -> bool when 'T : equality
+val (<) : 'T -> 'T -> bool when 'T : comparison
+val (<=) : 'T -> 'T -> bool when 'T : comparison
+val (>) : 'T -> 'T -> bool when 'T : comparison
+val (>=) : 'T -> 'T -> bool when 'T : comparison
+val min : 'T -> 'T -> 'T when 'T : comparison
+val max : 'T -> 'T -> 'T when 'T : comparison
+val hash : 'T -> int when 'T : equality
+```
+
+First, note that these are *generic* operations—they can be used on objects of many different types. This can be seen by the use of `'T` in the signatures of these operations. The operations take one or two parameters of the same type. For example, you can apply the `=` operator to two `Form` objects, or two `System.DateTime` objects, or two `System.Type` objects, and something reasonable happens. Some other important derived generic types, such as the immutable (persistent) `Set<_>` and `Map<_,_>` types in the F# library, also use generic comparison on their key type:
+
+```F#
+type Set<'T when 'T : comparison> = ...
+type Map<'Key, 'Value when 'Key : comparison> = ...
+```
+
+These operations and types are all *constrained*, in this case by the `equality` and/or `comparison` constraints. The purpose of constraints on type parameters is to make sure the operations are used only on a particular set of types. For example, consider equality and ordered comparison on a `System.Net.WebClient` object. Equality is permitted, because the default for nearly all .NET object types is reference equality:
+
+```F#
+let client1 = new System.Net.WebClient()
+let client2 = new System.Net.WebClient()
+client1 = client1 // true
+client1 = client2 // false
+```
+
+Ordered comparison isn't permitted, however:
+
+```F#
+> client1 <= client2;;
+error FS0001: The type 'System.Net.WebClient' does not support the 'comparison' constraint. For example, it does not support the 'System.IComparable' interface
+```
+
+That's good! There is no natural ordering for `WebClient` objects, or at least no ordering is provided by the .NET libraries.
+
+Equality and comparison can work over the structure of types. For example, you can use the equality operators on a tuple only if the constituent parts of the tuple also support equality. This means that using equality on a tuple of `WebClient` objects is permitted:
+
+```F#
+> (client1, client2) = (client1, client2);;
+val it : bool =  true
+> (client1, client2) = (client2, client1);;
+val it : bool = false
+```
+
+But using ordered comparison of a tuple isn't:
+
+```F#
+> (client1, "Data for client 1") <= (client2, " Data for client 2");;
+error FS0001: The type 'System.Net.WebClient' does not support the 'comparison' constraint. For example, it does not support the 'System.IComparable' interface
+```
+
+Again, that's good—this ordering would be a bug in your code. Now, let's take a closer look at when `equality` and `comparison` constraints are satisfied in F#.
+
+* The `equality` constraint is satisfied if the type definition doesn't have the `NoEquality` attribute, and any dependencies also satisfy the `equality` constraint.
+
+* The `comparison` constraint is satisfied if the type definition doesn't have the `NoComparison` attribute, the type definition implements `System.IComparable`, and any dependencies also satisfy the `comparison` constraint.
+
+An `equality` constraint is relatively weak, because nearly all CLI types satisfy it. A `comparison` constraint is a stronger constraint, because it usually implies that a type must implement `System.IComparable`.
+
+### Asserting Equality, Hashing, and Comparison Using Attributes
+
+These attributes control the comparison and equality semantics of type definitions:
+
+* `StructuralEquality` and `StructuralComparison`: Indicate that a structural type must support equality and comparison.
+
+* `NoComparison` and `NoEquality`: Indicate that a type doesn't support equality or comparison.
+
+* `CustomEquality` and `CustomComparison`: Indicate that a structural type supports custom equality and comparison.
+
+Let's look at examples of these. Sometimes you may want to assert that a structural type must support structural equality, and you want an error at the definition of the type if it doesn't. Do this by adding the `StructuralEquality` or `StructuralComparison` attributes to the type:
+
+```F#
+[<StructuralEquality; StructuralComparison>]
+type MiniIntegerContainer = MiniIntegerContainer of int
+```
+
+This adds extra checking. In the following example, the code gives an error at compile time—the type can't logically support automatic structural comparison, because one of the element types doesn't support ordered comparison:
+
+```F#
+[<StructuralEquality; StructuralComparison>]
+type MyData = MyData of int * string * string * System.Net.WebClient
+
+   error FS1177: The struct, record or union type 'MyData' has the 'StructuralComparison' attribute but the component type 'System.Net.WebClient' does not satisfy the 'comparison' constraint
+```
+
+### Fully Customizing Equality, Hashing, and Comparison on a Type
+
+Many types in the .NET libraries come with custom equality, hashing, and comparison implementations. For example, `System.DateTime` has custom implementations of these.
+
+F# also allows you to define custom equality, hashing, and comparison for new type definitions. For example, values of a type may carry a unique integer tag that can be used for this purpose. In such cases, we recommend that you take full control of your destiny and define custom comparison and equality operations on your type. For example, Listing 9-5 shows how to customize equality, hashing (using the predefined `hash` function), and comparison based on a unique `stamp` integer value. The type definition includes an implementation of `System.IComparable` and overrides of `Object.Equals` and `Object.GetHashCode`.
+
+##### Listing 9-5. Customizing equality, hashing, and comparison for a record type definition
+
+```F#
+/// A type abbreviation indicating we're using integers for unique stamps
+/// on objects
+type stamp = int
+
+/// A structural type containing a function that can't be compared for equality
+[<CustomEquality; CustomComparison>]
+type MyThing =
+    {Stamp : stamp; Behavior : int -> int}
+     
+    override x.Equals(yobj) =
+        match yobj with
+        | :? MyThing as y -> x.Stamp = y.Stamp
+        | _ -> false
+        
+    override x.GetHashCode() = hash x.Stamp
+    
+    interface System.IComparable with
+        member x.CompareTo yobj =
+            match yobj with
+            | :? MyThing as y -> compare x.Stamp y.Stamp
+            | _ -> invalidArg "yobj" "cannot compare values of different types"
+```
+
+The `System.IComparable` interface is defined in the .NET libraries:
+
+```F#
+namespace System
+
+type IComparable =
+    abstract CompareTo : obj -> int
+```
+
+Recursive calls to compare subexpressions are processed using the functions:
+
+```F#
+val hash : 'T -> int when 'T : equality
+val (=) : 'T -> 'T -> bool when 'T : equality
+val compare : 'T -> 'T -> int when 'T : comparison
+```
+
+Listing 9-6 shows the same for a union type, this time using some helper functions.
+
+##### Listing 9-6.  Customizing generic hashing and comparison on a union type
+
+```F#
+let inline equalsOn keyof x (yobj : obj) =
+    match yobj with
+    | :? 'T as y -> (keyof x = keyof y)
+    | _ -> false
+
+let inline hashOn keyof x =  hash (keyof x)
+
+let inline compareOn keyof x (yobj : obj) =
+    match yobj with
+    | :? 'T as y -> compare (keyof x) (keyof y)
+    | _ -> invalidArg "yobj" "cannot compare values of different types"
+
+//type stamp = int
+
+[<CustomEquality; CustomComparison>]
+type MyUnionType =
+    | MyUnionType of stamp * (int -> int)
+
+    static member Stamp (MyUnionType (s, _)) = s
+
+    override x.Equals y = equalsOn MyUnionType.Stamp x y
+    override x.GetHashCode() = hashOn MyUnionType.Stamp x
+    interface System.IComparable with
+        member x.CompareTo y = compareOn MyUnionType.Stamp x y
+```
+
+Listing 9-6 also shows how to implement the `System.Object` method `GetHashCode`. This follows the same pattern as generic equality. Finally, you can declare that a structural type should use reference equality:
+
+```F#
+[<ReferenceEquality>]
+type MyFormWrapper = MyFormWrapper of System.Windows.Forms.Form * (int -> int)
+```
+
+There is no such thing as reference comparison (the object pointers used by .NET move around, so the ordering would change). You can implement that by using a unique tag and custom comparison.
+
+### Suppressing Equality, Hashing, and Comparison on a Type
+
+You can suppress equality on an F# defined type by using the `NoEquality` attribute on the definition of the type. This means the type isn't considered to satisfy the equality constraint. Likewise, you can suppress comparison on an F# defined type by using the `NoComparison` attribute on the definition of the type:
+
+```F#
+[<NoEquality; NoComparison>]
+type MyProjections =
+    | MyProjections of (int * string) * (string -> int)
+```
+
+Adding these attributes to your library types makes client code safer, because it's less likely to inadvertently rely on equality and comparison over types for which these operations make no sense.
+
+### Customizing Generic Collection Types
+
+Programmers love defining new generic collection types. This is done less often in .NET and F# programming than in other languages, because the F# and .NET built-in collections are so good, but it's still important.
+
+Equality and comparison play a role here. For example, it's common to have collections in which some of the values can be indexed using hashing, compared for equality when searching, or compared using an ordering. For example, seeing a constraint on this signature on a library type would come as no surprise:
+
+```F#
+type Graph<'Node when 'Node : equality>() = ...
+```
+
+The presence of the constraint is somewhat reassuring, because the requirement on node types is made clearer. Sometimes it's also desirable to be able to compare entire containers; for example, to compare one set with another, one map with another, or one graph with another. Consider the simplest generic collection type of all, which holds only one element. You can define it easily in F#:
+
+```F#
+type MiniContainer<'T> = MiniContainer of 'T
+```
+
+In this case, this is a structural type definition, and F# infers that there is an equality and comparison dependency on `'T`. All done! You can use `MiniContainer<_>` with values of any type, and you can do equality and comparison on `MiniContainer` values only if the element type also supports equality and comparison. Perfect.
+
+If `MiniContainer` is a class type or has customized comparison and equality logic, however, then you need to be more explicit about dependencies. You can declare dependencies using the `EqualityConditionalOn` and `ComparisonConditionalOn` attributes on the type parameter. You should also use the operators `Unchecked.equals`, `Unchecked.hash`, and `Unchecked.compare` to process elements recursively. With these attributes, `MiniContainer<A>` satisfies the equality and comparison constraints if A itself satisfies these constraints. Here's a full example:
+
+```F#
+type MiniContainer<[<EqualityConditionalOn; ComparisonConditionalOn>]'T>(el : 'T) =
+    member x.Value = el
+    override x.Equals(yobj) =
+        match yobj with
+        | :? MiniContainer<'T> as y -> Unchecked.equals x.Value y.Value
+        | _ -> false
+
+    override x.GetHashCode() = Unchecked.hash x.Value
+
+    interface System.IComparable with
+        member x.CompareTo yobj =
+            match yobj with
+            | :? MiniContainer<'T> as y -> Unchecked.compare x.Value y.Value
+            | _ -> invalidArg "yobj" "cannot compare values of different types"
+```
+
+---
+
+##### Note  
+
+Be careful about using generic equality, hashing, and comparison on mutable data. Changing the value of a field may change the value of the hash or the results of the operation. it's normally better to use the operations on immutable data or on data with custom implementations.
+
+---
+
 ## Tail Calls and Recursive Programming
 
 In the previous section, you saw how to process nested, tree-structured domain models using recursive functions. In this section, you will learn about important topics associated with programming with recursive functions: stack usage and tail calls.
@@ -1311,7 +1547,7 @@ The code now runs to completion without a problem:
 
 When a tail call is made, the F# execution machinery can drop the current stack frame before executing the target function, rather than waiting for the call to complete. Sometimes this optimization is performed by the F# compiler. If the n = 1000000 check were removed in the previous program, the program would run indefinitely. (As an aside, note that n would cycle around to the negative numbers, because arithmetic is unchecked for overflow unless you open the module `FSharp.Core.Operators.Checked`.)
 
-Functions such as `tailCallRecursion` are known as tail-recursive functions. When you write recursive functions, you should check either that they’re tail recursive or that they won’t be used with inputs that cause them to recurse to an excessive depth. The following sections will give some examples of techniques you can use to make your functions tail recursive.
+Functions such as `tailCallRecursion` are known as *tail-recursive functions*. When you write recursive functions, you should check either that they’re tail recursive or that they won’t be used with inputs that cause them to recurse to an excessive depth. The following sections will give some examples of techniques you can use to make your functions tail recursive.
 
 ### Tail Recursion and List Processing
 
@@ -1344,7 +1580,7 @@ let rec replicateNotTailRecursiveB n x =
         x :: recursiveResult
 ```
 
-Clearly, a value is being constructed by the expression `x :: recursiveResult` after the recursive call `replicateNotTailRecursiveB (n - 1) x`. This means that the function isn’t tail recursive. The solution is to write the function using an accumulating parameter. This is often done by using an auxiliary function that accepts the accumulating parameter:
+Clearly, a value is being constructed by the expression `x :: recursiveResult` after the recursive call `replicateNotTailRecursiveB (n - 1) x`. This means that the function isn’t tail recursive. The solution is to write the function using an *accumulating parameter*. This is often done by using an auxiliary function that accepts the accumulating parameter:
 
 ```F#
 let rec replicateAux n x acc =
@@ -1443,13 +1679,13 @@ type Chain =
 
 ##### Note
 
-the list-processing functions in the F# library module FSharp.Collections.List are tail recursive, except where noted in the documentation. Some of them have implementations that are specially optimized to take advantage of the implementation of the list data structure.
+the list-processing functions in the F# library module `FSharp.Collections.List` are tail recursive, except where noted in the documentation. Some of them have implementations that are specially optimized to take advantage of the implementation of the list data structure.
 
 ---
 
 ### Tail Recursion and Processing Unbalanced Trees
 
-This section will consider tail-recursion problems that are much less common in practice but for which it’s important to know the techniques to apply if required. The techniques also illustrate some important aspects of functional programming—in particular, an advanced technique called continuation passing.
+This section will consider tail-recursion problems that are much less common in practice but for which it’s important to know the techniques to apply if required. The techniques also illustrate some important aspects of functional programming—in particular, an advanced technique called *continuation passing*.
 
 Tree-structured data are generally more difficult to process in a tail-recursive way than list-structured data are. For example, consider this tree structure:
 
@@ -1492,5 +1728,131 @@ let rec sizeAcc acc tree =
 let size tree = sizeAcc 0 tree
 ```
 
-This algorithm works for tree6, because it’s biased toward accepting trees that are skewed to the right. The recursive call that processes the right branch is a tail call, while the call that processes the left branch isn’t. This may be okay if you have prior knowledge of the shape of your trees. This algorithm still risks a stack overflow, however, and you may have to change techniques. One way to do this is to use a much more general and important technique known as continuation passing.
+This algorithm works for tree6, because it’s biased toward accepting trees that are skewed to the right. The recursive call that processes the right branch is a tail call, while the call that processes the left branch isn’t. This may be okay if you have prior knowledge of the shape of your trees. This algorithm still risks a stack overflow, however, and you may have to change techniques. One way to do this is to use a much more general and important technique known as *continuation passing*.
+
+### Using Continuations to Avoid Stack Overflows
+
+A continuation is a function that receives the result of an expression after it’s been computed. Listing 9-9 shows an example implementation of the previous algorithm that handles trees of arbitrary size.
+
+Listing 9-9. Making a function tail recursive via an explicit continuation
+
+```F#
+let rec sizeCont tree cont =
+    match tree with
+    | Tip _ -> cont 1
+    | Node(_, treeLeft, treeRight) ->
+        sizeCont treeLeft (fun leftSize -> 
+            sizeCont treeRight (fun rightSize -> cont (leftSize + rightSize)))
+let size tree = sizeCont tree (fun x -> x)
+```
+
+What’s going on here? Let’s look at the type of `sizeCont` and `size`:
+
+```F#
+val sizeCont : tree:Tree -> cont:(int -> 'T) -> 'T
+val size : tree:Tree -> int
+```
+
+The type of `sizeCont tree cont` can be read as “compute the size of the tree and call cont with that size.” If you look at the type of `sizeCont`, you can see that it will call the second parameter of type `int -> 'T` at some point—how else could the function produce the final result of type `'T`? When you look at the implementation of `sizeCont`, you can see that it does call `cont` on both branches of the match.
+
+Now, if you look at recursive calls in `sizeCont`, you can see that they’re both tail calls:
+
+```F#
+sizeCont treeLeft (fun leftSize -> sizeCont treeRight (fun rightSize -> cont (leftSize + rightSize)))
+```
+
+That is, the first call to `sizeCont` is a tail call with a new continuation, as is the second. The first continuation is called with the size of the left tree, and the second is called with the size of the right tree. Finally, you add the results and call the original continuation `cont`. Calling size on an unbalanced tree such as tree6 now succeeds:
+
+```F#
+> size tree6;;
+val it : int = 50001
+```
+
+How did you turn a tree walk into a tail-recursive algorithm? The answer lies in the fact that continuations are function objects, which are allocated on the garbage-collected heap. Effectively, you’ve generated a work list represented by objects, rather than keeping a work list via a stack of function invocations.
+
+As it happens, using a continuation for both the right and left trees is overkill, and you can use an accumulating parameter for one side. This leads to a more efficient implementation, because each continuation-function object is likely to involve one allocation (short-lived allocations such as continuation objects are very cheap but not as cheap as not allocating at all). For example, Listing 9-10 shows a more efficient implementation.
+
+Listing 9-10. Combining an accumulator with an explicit continuation
+
+```F#
+let rec sizeContAcc acc tree cont =
+    match tree with
+    | Tip _ -> cont (1 + acc)
+    | Node (_, treeLeft, treeRight) ->
+        sizeContAcc acc treeLeft (fun accLeftSize -> sizeContAcc accLeftSize treeRight cont)
+let size tree = sizeContAcc 0 tree (fun x -> x)
+```
+
+The behavior of this version of the algorithm is:
+
+1. You start with an accumulator acc of 0.
+
+2. You traverse the left spine of the tree until a Tip is found, building up a continuation for each node along the way.
+
+3. When a Tip is encountered, the continuation from the previous node is called, with accLeftSize increased by 1. The continuation makes a recursive call to sizeContAcc for its right tree, passing the continuation for the second-to-last node along the way.
+
+4. When all is done, all the left and right trees have been explored, and the final result is delivered to the (fun x -> x) continuation.
+
+As you can see from this example, continuation passing is a powerful control construct, although it’s used only occasionally in F# programming.
+
+### Another Example: Processing Syntax Trees
+
+One real-world example where trees may become unbalanced is syntax trees for parsed languages when the inputs are very large and machine generated. In this case, some language constructs may be repeated many times in an unbalanced way. For example, consider this data structure:
+
+```F#
+type Expr =
+    | Add of Expr * Expr
+    | Bind of string * Expr * Expr
+    | Var of string
+    | Num of int
+```
+
+This data structure would be suitable for representing arithmetic expressions of the forms var, `expr + expr`, and `bind var = expr in expr`. This chapter and Chapter 11 are dedicated to techniques for representing and processing languages of this kind. As with all tree structures, most traversal algorithms over this type of abstract syntax tree aren’t naturally tail recursive. For example, here is a simple evaluator:
+
+```F#
+type Env = Map<string, int>
+
+let rec eval (env : Env) expr =
+    match expr with
+    | Add (e1, e2) -> eval env e1 + eval env e2
+    | Bind (var, rhs, body) -> eval (env.Add(var, eval env rhs)) body
+    | Var var -> env.[var]
+    | Num n -> n
+```
+
+The recursive call `eval env rhs` isn’t tail recursive. For the vast majority of applications, you never need to worry about making this algorithm tail recursive. Stack overflow may be a problem; however, if bindings are nested to great depth, such as in `bind v1 = (bind v2 = ... (bind v1000000 = 1...)) in v1+v1`. If the syntax trees come from human-written programs, you can safely assume this won’t be the case. If you need to make the implementation tail recursive, however, you can use continuations, as shown in Listing 9-11.
+
+Listing 9-11. A tail-recursive expression evaluator using continuations
+
+```F#
+let rec evalCont (env : Env) expr cont =
+    match expr with
+    | Add (e1, e2) ->
+        evalCont env e1 (fun v1 ->
+        evalCont env e2 (fun v2 ->
+        cont (v1 + v2)))
+    | Bind (var, rhs, body) ->
+        evalCont env rhs (fun v1 ->
+        evalCont (env.Add(var, v1)) body cont)
+
+    | Num n ->
+        cont n
+    | Var var ->
+        cont (env.[var])
+let eval env expr = evalCont env expr (fun x -> x) 
+```
+
+---
+
+##### Note
+
+programming with continuations can be tricky, and you should use them only when necessary, or use the F# async type as a way of managing continuation-based code. Where possible, abstract the kind of transformation you’re doing on your tree structure (for example, a map, fold, or bottom-up reduction) so you can concentrate on getting the traversal right. in the previous examples, the continuations all effectively played the role of a work list. You can also reprogram your algorithms to use work lists explicitly and to use accumulating parameters for special cases. Sometimes this is necessary to gain maximum efficiency, because an array or a queue can be an optimal representation of a work list. When you make a work list explicit, the implementation of an algorithm becomes more verbose, but in some cases debugging can become simpler.
+
+---
+
+## Summary
+
+This chapter covered some of the techniques you’re likely to use in your day-to-day F# programming when working with sequences, domain models, and tree-structured data. Nearly all the remaining chapters use some of the techniques described in this chapter, and Chapter 12 goes deeper into symbolic programming based on structured-data programming techniques.
+
+In the next chapter, you’ll learn about programming with numeric data using structural and statistical methods.
 
