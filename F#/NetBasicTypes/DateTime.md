@@ -59,7 +59,7 @@ A note for the curious programmer: a `DateTime` value is stored as the number of
 
 ### Adding and Subtracting Dates
 
-The `DateTime` class exposes several instance methods that enable you to add and subtract a number of years, months, days, hours, minutes, or seconds to or from a Date value. The names of these methods leave no doubt about their function: `AddYears`, `AddMonths`, `AddDays`, `AddHours`, `AddMinutes`, `AddSeconds`, `AddMilliseconds`, `AddTicks`. You can add an integer value when you're using `AddYears` and `AddMonths` and a decimal value in all other cases. In all cases, you can pass a negative argument to subtract rather than add a value:
+The `DateTime` class exposes several instance methods that enable you to add and subtract a number of years, months, days, hours, minutes, or seconds to or from a `DateTime` value. The names of these methods leave no doubt about their function: `AddYears`, `AddMonths`, `AddDays`, `AddHours`, `AddMinutes`, `AddSeconds`, `AddMilliseconds`, `AddTicks`. You can add an integer value when you're using `AddYears` and `AddMonths` and a decimal value in all other cases. In all cases, you can pass a negative argument to subtract rather than add a value:
 
 ```FSharp
 // Tomorrow's date

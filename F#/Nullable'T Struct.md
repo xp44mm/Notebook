@@ -1,0 +1,21 @@
+# Nullable\<'T> Struct
+
+## Remarks
+
+A type is said to be nullable if it can be assigned a value or can be assigned `null`, which means the type has no value whatsoever. By default, all reference types, such as [String](https://docs.microsoft.com/en-us/dotnet/api/system.string?view=netframework-4.8), are nullable, but all value types, such as [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32?view=netframework-4.8), are not.
+
+In C# and Visual Basic, you mark a value type as nullable by using the `?` notation after the value type. For example, `int?` in C# or `Integer?` in Visual Basic declares an integer value type that can be assigned `null`.
+
+The [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) structure supports using only a value type as a nullable type because reference types are nullable by design.
+
+The [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable?view=netframework-4.8) class provides complementary support for the [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) structure. The [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable?view=netframework-4.8) class supports obtaining the underlying type of a nullable type, and comparison and equality operations on pairs of nullable types whose underlying value type does not support generic comparison and equality operations.
+
+### Fundamental Properties
+
+The two fundamental members of the [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) structure are the [HasValue](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.hasvalue?view=netframework-4.8) and [Value](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.value?view=netframework-4.8) properties. If the [HasValue](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.hasvalue?view=netframework-4.8) property for a [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) object is `true`, the value of the object can be accessed with the [Value](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.value?view=netframework-4.8) property. If the [HasValue](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.hasvalue?view=netframework-4.8) property is `false`, the value of the object is undefined and an attempt to access the [Value](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.value?view=netframework-4.8) property throws an [InvalidOperationException](https://docs.microsoft.com/en-us/dotnet/api/system.invalidoperationexception?view=netframework-4.8).
+
+### Boxing and Unboxing
+
+When a nullable type is boxed, the common language runtime automatically boxes the underlying value of the [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) object, not the [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) object itself. That is, if the [HasValue](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.hasvalue?view=netframework-4.8) property is `true`, the contents of the [Value](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1.value?view=netframework-4.8) property is boxed. When the underlying value of a nullable type is unboxed, the common language runtime creates a new [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) structure initialized to the underlying value.
+
+If the `HasValue` property of a nullable type is `false`, the result of a boxing operation is `null`. Consequently, if a boxed nullable type is passed to a method that expects an object argument, that method must be prepared to handle the case where the argument is `null`. When `null` is unboxed into a nullable type, the common language runtime creates a new [Nullable](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1?view=netframework-4.8) structure and initializes its `HasValue` property to `false`.

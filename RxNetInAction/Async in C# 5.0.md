@@ -2588,7 +2588,7 @@ foreach (var chunk in stream)
 F#
 
 ```F#
-task{
+task {
     let rndActor = ActorWrapper.WrapActor(new RndGenerator()) :> IRndGenerator
     let mutable nextTask = rndActor.GetNextNumber()
     for chunk in stream do

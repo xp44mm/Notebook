@@ -56,7 +56,7 @@ let de: obj = Enum.Parse(typeof<DataEntry>, "CharString")
 
 Two things are worth noticing in the preceding code. First, the `Parse` method takes a `Type` argument, so you typically use the `typeof<>` operator. Second, `Parse` is a static method and you must use `Enum` as a prefix; ~~Enum is a reserved Visual Basic word, so you must either enclose it in brackets or use its complete `System.Enum` name.~~
 
-Being inherited from the generic `Enum` class, the `Parse` method returns a generic object, so you have to set Option Strict to Off (as in the previous snippet) or use an explicit cast to assign it to a specific enumerated variable:
+Being inherited from the generic `Enum` class, the `Parse` method returns a generic object, so you have to ~~set Option Strict to Off (as in the previous snippet) or~~ use an explicit cast to assign it to a specific enumerated variable:
 
 ```FSharp
 // You can use the GetType method (inherited from System.Object)
@@ -64,7 +64,7 @@ Being inherited from the generic `Enum` class, the `Parse` method returns a gene
 let de = Enum.Parse(typeof<DataEntry>, "CharString") :?> DataEntry
 ```
 
-The `Parse` method throws an `ArgumentException` if the name doesn't correspond to a defined enumerated value. Names are compared in a case-sensitive way, but you can pass a `True` optional argument if you don't want to take the string case into account:
+The `Parse` method throws an `ArgumentException` if the name doesn't correspond to a defined enumerated value. Names are compared in a case-sensitive way, but you can pass a true optional argument if you don't want to take the string case into account:
 
 ```FSharp
 // *** This statement throws an exception.
@@ -136,7 +136,7 @@ type ValidDataEntry =
 | DateTime = 0b1000
 ```
 
-The `FlagAttribute` class doesn't expose any property, and its constructor takes no arguments: the presence of this attribute is sufficient to label this `Enum` type as bit-coded.
+The `FlagsAttribute` class doesn't expose any property, and its constructor takes no arguments: the presence of this attribute is sufficient to label this `Enum` type as bit-coded.
 
 Bit-coded enumerated types behave exactly like regular `Enum` values do except their `ToString` method recognizes the `Flags` attribute. When an enumerated type is composed of two or more flag values, this method returns the list of all the corresponding values, separated by commas:
 
@@ -166,9 +166,9 @@ let vde = Enum.Parse(vde.GetType(), "IntegerNumber, FloatingNumber") :?> ValidDa
 Console.WriteLine(int vde)        // => 3
 ```
 
-
-
 .NET enum types are simple integer-like value types associated with a particular name. They're typically used for specifying flags to `APIs`; for example, ``FileMode`` in the ``System.IO`` namespace is an enum type with values such as ``FileMode.Open`` and ``FileMode.Create``. .NET enum types are easy to use from F# and can be combined using bitwise AND, OR, and XOR operations using the `&&&`, `|||`, and `^^^` operators. Most commonly, the `|||` operator is used to combine multiple flags. On occasion, you may have to mask an attribute value using `&&&` and compare the result to enum 0. You will see how to define .NET-compatible enum types in F# at the end of Chapter 6.
+
+
 
 #### Bitwise Operators
 

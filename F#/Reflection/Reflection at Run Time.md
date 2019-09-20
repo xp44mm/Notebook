@@ -22,19 +22,19 @@ To call a constructor that takes one or more parameters, you must prepare an arr
 ``` F#
 // (We reuse the type variable from previous code…)
 // Use the constructor that takes two arguments.
-let args2: Object[] = [|"Joe", "Evans"|]
+let args: Object[] = [|"Joe", "Evans"|]
 // Call the constructor that matches the parameter signature.
-let o2: Object = Activator.CreateInstance(myType, args2)
+let o: Object = Activator.CreateInstance(myType, args)
 ```
 
 You can use `InvokeMember` to create an instance of the class and even pass arguments to its constructor, as in the following code:
 
 ``` F#
 // Prepare the array of parameters.
-let args3: Object[] = [|"Joe", "Evans"|]
+let args: Object[] = [|"Joe", "Evans"|]
 
 // Constructor methods have no name and take null in the second to last argument.
-let o3: Object = myType.InvokeMember("", BindingFlags.CreateInstance,  null, null, args3)
+let o: Object = myType.InvokeMember("", BindingFlags.CreateInstance,  null, null, args)
 ```
 
 Creating an object through its constructor method is a bit more convoluted, but I'll demonstrate the technique here for the sake of completeness:
@@ -46,9 +46,9 @@ let argTypes: Type[] = [|typeof<String>, typeof<String>|]
 let ci: ConstructorInfo = myType.GetConstructor(argTypes)
 
 // Prepare the parameters.
-let args4: Object[] = [|"Joe", "Evans"|]
+let args: Object[] = [|"Joe", "Evans"|]
 // Invoke the constructor and assign the result to a variable.
-let o4: Object = ci.Invoke(args4)
+let o: Object = ci.Invoke(args)
 ```
 
 Regardless of the technique you used to create an instance of the type, you usually assign the instance you've created to an `Object` variable, as opposed to a strongly typed variable. (If you knew the name of the type at compile time, you wouldn't need to use reflection in the first place.) There is only one relevant exception to this rule: when you know in advance that the type being instantiated derives from a specific base class (or implements a given interface), you can cast the `Object` variable to a variable typed after that base class (or interface) and access all the members that the object inherits from the base class (or interface).
@@ -79,13 +79,13 @@ In the most general case, after you've created an instance by using reflection, 
 
 ``` F#
 // Create a Person object and reflect on it.
-let myType: Type = Assembly.GetExecutingAssembly().GetType(@"MyApp.Person")
-
+let myType: Type = Assembly.GetExecutingAssembly().GetType("MyApp.Person")
 let args: Object[] = [|"Joe", "Evans"|]
 let o: Object = Activator.CreateInstance(myType, args)
 
 // Get a reference to its FirstName field.
 let fi: FieldInfo = myType.GetField("FirstName")
+
 // Display its current value, and then change it.
 Console.WriteLine(fi.GetValue(o))       // => Joe
 fi.SetValue(o, "Robert")
@@ -102,6 +102,7 @@ Like `FieldInfo`, the `PropertyInfo` type exposes the `GetValue` and `SetValue` 
 // This code assumes that the Person type exposes a 16-bit Age property.
 // Get a reference to the PropertyInfo object.
 let pi: PropertyInfo = myType.GetProperty("Age")
+
 // Note that the type of value must match exactly.
 // (Int32 constants must be converted to Short, in this case.)
 pi.SetValue(o, 35S, null)
@@ -119,11 +120,13 @@ type Person() =
         and  set i v = m_notes.[i] <- v
 
 // Get a reference to the PropertyInfo object.
-let pi2: PropertyInfo = myType.GetProperty("Notes")
+let pi: PropertyInfo = myType.GetProperty("Notes")
+
 // Prepare the array of parameters.
-let args2: Object[] = [|1|]
+let args: Object[] = [|1|]
+
 // Set the property.
-pi2.SetValue(o, "Tell John about the briefing", args2)
+pi2.SetValue(o, "Tell John about the briefing", args)
 // Read it back.
 Console.WriteLine(pi2.GetValue(o, args2))
 ```
@@ -141,6 +144,7 @@ type Person() =
 let mi: MethodInfo = myType.GetMethod("SendEmail")
 // Prepare an array for expected arguments.
 let arguments: Object[] = [|"This is a message", 3|]
+
 // Invoke the method.
 mi.Invoke(o, arguments) |> ignore
 ```
@@ -159,8 +163,11 @@ Alternatively, you can query the `DefaultValue` property of corresponding `Param
 
 ``` F#
 // …(Initial code as above)…
+
 // Retrieve the DefaultValue from the ParameterInfo object.
-let arguments:obj[] = [|"This is a message", mi.GetParameters().[1].DefaultValue|]
+let defaultValue = mi.GetParameters().[1].DefaultValue
+
+let arguments:obj[] = [|"This is a message", defaultValue|]
 mi.Invoke(o, arguments)
 ```
 
@@ -183,15 +190,15 @@ In some cases, you might find it easier to set properties dynamically and invoke
 ``` F#
 // Create an instance of the Person type using InvokeMember.
 let myType: Type = Assembly.GetExecutingAssembly().GetType("MyApp.Person")
-let arguments: Object[] = [|"John", "Evans"|]
-let obj: Object = myType.InvokeMember("", BindingFlags.CreateInstance, null, null, arguments)
+let arguments: obj[] = [|"John", "Evans"|]
+let obj: obj = myType.InvokeMember("", BindingFlags.CreateInstance, null, null, arguments)
 
 // Set the FirstName field.
-let args: Object[] = [|"Francesco"|]        // One argument
+let args: obj[] = [|"Francesco"|]        // One argument
 myType.InvokeMember("FirstName", BindingFlags.SetField, null, obj, args) |> ignore
 
 // Read the FirstName field. (Pass null for the argument array.)
-let value: Object = myType.InvokeMember("FirstName", BindingFlags.GetField, null, obj, null)
+let value: obj = myType.InvokeMember("FirstName", BindingFlags.GetField, null, obj, null)
 
 // Set the Age property, create the argument array on the fly.
 myType.InvokeMember("Age", BindingFlags.SetProperty, null, obj, [|35S|]) |> ignore
@@ -212,7 +219,7 @@ When you invoke a static member, you must pass `null` in the second to last argu
 
 The `InvokeMember` method does a case-sensitive search for the member with the specified name, but it's quite forgiving when it matches the type of the arguments because it will perform any necessary conversion for you if the types don't correspond exactly. You can change this default behavior by means of the `BindingFlags.IgnoreCase` (for case-insensitive searches) and the `BindingFlags.ExactBinding` (for exact type matches) values.
 
-`InvokeMember` works correctly if one or more arguments are passed by reference. For example, if the `SendEmail` method would take the priority in a `ByRef` argument, on return from the method call the `args2.[1]` element would contain the new value assigned to that argument.
+`InvokeMember` works correctly if one or more arguments are passed by reference. For example, if the `SendEmail` method would take the priority in a `byref<>` argument, on return from the method call the `args.[1]` element would contain the new value assigned to that argument.
 
 Even though `InvokeMember` can make your code more concise—because you don't have to get a reference to a specific `FieldInfo`, `PropertyInfo`, or `MethodInfo` object—it surely doesn't make your code faster. In fact, the `InvokeMember` method must perform two distinct operations internally: the discovery phase (looking for the member with the specified signature) and the execution phase. If you use `InvokeMember` to call the same method a hundred times, it will "rediscover" the same method a hundred times, which clearly adds overhead that you can avoid if you reflect on the member once and then access the member through a `FieldInfo`, `PropertyInfo`, or `MethodInfo` object. For this reason, you shouldn't use `InvokeMember` when repeatedly accessing the same member, especially in time-critical code.
 
