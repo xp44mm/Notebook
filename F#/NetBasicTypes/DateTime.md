@@ -1,5 +1,7 @@
 ## The DateTime Type
 
+使用DateTimeOffset代替
+
 `System.DateTime` is the main .NET class for working with date and time values. Not only does it offer a place to store data values, it also exposes many useful methods ~~that can replace all the Visual Basic—specific date and time functions. For backward compatibility with Visual Basic 6, Visual Basic 2005 lets you use the Date type as a synonym for the System.DateTime type. In this section, I use the Date class name most of the time, but keep in mind that you can always replace it with System.DateTime or just DateTime (because of the projectwide Imports System statement).~~
 
 You can initialize a `DateTime` value in a number of ways:
@@ -285,6 +287,8 @@ If you specify the `DateTimesStyles.AssumeUniversal` enumerated value ~~(new in 
 
 ### Working with Time Zones
 
+TimeZone已经被TimeZoneInfo完全取代。https://docs.microsoft.com/en-us/dotnet/api/system.timezoneinfo?view=netframework-4.8
+
 **Version 2005 of VB or Version 2.0 of .NET** `DateTime` values in version 1.1 of the .NET Framework have a serious limitation: they are always expected to store a local time, rather than a normalized UTC time. This assumption causes a few hard-to-solve issues, the most serious of which is a problem that manifests itself when a date value is serialized in one time zone and deserialized in a different zone, using either the `SoapFormatter` or the `XmlSerializer` object. These two objects, in fact, store information about the time zone together with the actual date value: when the object is deserialized in a different time zone, the time portion of the date is automatically adjusted to reflect the new geographical location.
 
 In most cases, this behavior is correct, but at times it causes the application to malfunction. Let's say that a person is born in Italy on January 1, 1970, at 2 A.M.; if this date value is serialized as XML and sent to a computer in New York—for example, by using a Web service or by saving the information in a file that is later transferred using FTP or HTTP—the person would appear to be born on December 31, 1969, at 8 P.M. As you can see, the issue with dates in .NET Framework 1.1 originates from the fact that you can't specify whether a value stored in a `DateTime` variable is to be considered relative to the current time zone or an absolute UTC value.
@@ -328,8 +332,6 @@ let newDate = DateTime.ParseExact(text, "o", CultureInfo.InvariantCulture, DateT
 ```
 
 ### The TimeZone Type
-
-TimeZone已经被TimeZoneInfo完全取代。https://docs.microsoft.com/en-us/dotnet/api/system.timezoneinfo?view=netframework-4.8
 
 The .NET Framework supports time zone information through the `System.TimeZoneInfo` object, which you can use to retrieve information about the time zone set in Windows regional settings:
 

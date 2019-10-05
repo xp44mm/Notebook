@@ -40,7 +40,7 @@ The argument must be the same type as the value to which you're applying the `Co
 
 ```FSharp
 // …(Another way to write the previous code snippet)…
-match sngValue.CompareTo(1.0!) with
+match sngValue.CompareTo(1.0f) with
 …
 ```
 
