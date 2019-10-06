@@ -629,6 +629,122 @@ _subscription =
         },
         ex => { /* code that handles errors */},                     
         () => {/* code that handles the observable completeness */});
-
-
 ```
+
+### 2.3.4 Cleaning resources
+
+If the user doesn’t want to receive any more notifications about drastic changes, you need to dispose of the subscription to the drasticChanges observable. When you subscribed to the observable, the subscription was returned to you, and you stored it in the _subscription class member.
+
+As before, the StockMonitor Dispose method (which is provided because you implemented the IDisposable interface) makes a perfect fit. The only thing you need to do in your Dispose method is to call to Dispose method of the subscription object:
+
+```C#
+public void Dispose()
+{
+    _subscription.Dispose();
+}
+```
+
+Notice that you don’t need to write anything about delegates involved in the processing of your query, and you don’t need to clean up any data structures related to the storage of the previous ticks data. All of those are kept in the Rx internal operators implementation, and when you dispose of the subscription, a chain of disposals happen, causing all the internal data structures to be disposed of as well.
+
+### 2.3.5 Dealing with concurrency
+
+In the traditional events version, you needed to add code to handle the critical section in your application. This critical section enabled two threads to reach the event handler simultaneously and read and modify your collection of past ticks at the same time, leading to an exception and miscalculation of the change ratio. You added a lock to synchronize the access to the critical section, which is one way to provide synchronization between threads.
+
+With Rx, adding synchronization to the execution flow is much more declarative. Add the Synchronize operator to where you want to start synchronizing, and Rx will take care of the rest. In this case, you can add synchronization from the beginning, so you add the Synchronize operator when creating the observable itself:
+
+```C#
+var ticks = Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
+    h => ticker.StockTick += h, 
+    h => ticker.StockTick -= h) 
+    .Select(tickEvent => tickEvent.EventArgs)
+    .Synchronize()
+```
+
+It doesn’t get any simpler than that, but as before, you need to remember that every time you add synchronization of any kind, you risk adding a probable deadlock. Rx doesn’t fix that, so developer caution is still needed. Rx only gives you tools to make the introduction of synchronization easier and more visible. When things are easy, explicit, and readable, chances increase that you’ll make it right, but making sure you do it correctly is still your job as a developer.
+
+### 2.3.6 Wrapping up
+
+Listing 2.9 shows the entire code of the Rx version. The main difference from the traditional events example is that the code tells the story about what you’re trying to achieve rather than how you’re trying to achieve it. This is the declarative programming model that Rx is based on.
+
+Listing 2.9 Locked version of OnStockTick
+
+```C#
+class RxStockMonitor : IDisposable
+{
+    private IDisposable _subscription;
+    public RxStockMonitor(StockTicker ticker)
+    {
+        const decimal maxChangeRatio = 0.1m;
+        var ticks = Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
+            h => ticker.StockTick += h,                
+            h => ticker.StockTick -= h)                
+            .Select(tickEvent => tickEvent.EventArgs)
+            .Synchronize();                            
+ 
+        var drasticChanges =                     
+            from tick in ticks                   
+            group tick by tick.QuoteSymbol       
+            into company                      
+            from tickPair in company.Buffer(2, 1) 
+            let changeRatio = Math.Abs((tickPair[1].Price - tickPair[0].Price)/tickPair[0].Price)      
+            where changeRatio > maxChangeRatio
+            select new                            
+            {                                     
+                Symbol = company.Key,             
+                ChangeRatio = changeRatio,       
+                OldPrice = tickPair[0].Price,     
+                NewPrice = tickPair[1].Price     
+            };                                    
+        _subscription =
+            drasticChanges.Subscribe(change =>
+                {
+                    Console.WriteLine($"Stock:{change.Symbol} has changed
+                                       with {change.ChangeRatio} ratio,
+                                       Old Price: {change.OldPrice}
+                                       New Price: {change.NewPrice}");
+                },
+                ex => { /* code that handles errors */},
+                () =>{/* code that handles the observable completeness */});
+    }
+    public void Dispose()
+    {
+        _subscription.Dispose();
+ }
+}
+```
+
+It’s now a good time to compare the Rx and events versions.
+
+**KEEPING THE CODE CLOSE**
+
+In the Rx example, all the code that relates to the logic of finding the drastic changes is close together, in the same place—from the event conversion to the observable to the subscription that displays the notifications onscreen. It’s all sitting in the same method, which makes navigating around the solution easier. This is a small example, and even though all the code sits together, it doesn’t create a huge method. In contrast, the traditional events version scattered the code and its data structures in the class.
+
+**PROVIDING BETTER AND LESS RESOURCE HANDLING**
+
+The Rx version is almost free of any resource handling, and those resources that you do want to free were freed explicitly by calling Dispose. You’re unaware of the real resources that the Rx pipeline creates because they were well encapsulated in the operators’ implementation. The fewer resources you need to manage, the better your code will be in managing resources. This is the opposite of the traditional events version, in which you needed to add every resource that was involved and had to manage its lifetime, making the code error prone.
+
+**USING COMPOSABLE OPERATORS**
+
+One of the hardest computer science problems is naming things—methods, classes, and so on. But when you give a good name to something, it makes the process of using it later easy and fluid. This is exactly what you get with the Rx operators. The Rx operators are a recurring named code pattern that reduces the repeatability in your code that otherwise you’d have to write by yourself—meaning now you can write less code and reuse existing code. With each step of building your query on the observable, you added a new operator on the previously built expression; this is composability at its best. Composability makes it easy to extend the query in the future and make adjustments while you’re building it. This is contrary to the traditional events version, in which no clear separation exists between the code fragments that handled each step when building the whole process to find the drastic change.
+
+**PERFORMING SYNCHRONIZATION**
+
+Rx has a few operators dedicated specifically to concurrency management. In this example, you used only the Synchronize operator that, as generally stated before about Rx operators, saved you from making the incorrect use of a lock by yourself. By default, Rx doesn’t perform any synchronization between threads—the same as regular events. But when the time calls for action, Rx makes it simple for the developer to add the synchronization and spares the use of the low-level synchronization primitives, which makes the code more attractive.
+
+2.4 Summary
+
+This chapter presented a simple yet powerful example of something you’ve probably done in the past (or might find yourself doing in the future) and solved it in two ways: the traditional events style and the Rx style of event-processing flow.
+
+  * Writing an event-driven application in .NET is very intuitive but holds caveats regarding resource cleanup and code readability.
+
+  * To use the Rx library, you need to install the Rx packages. Most often you’ll install the `System.Reactive` package.
+
+  * You can use Rx in any type of application WPF desktop client, an ASP.NET website, or a simple console application and others.
+
+  * Traditional .NET events can be converted into observables.
+
+  * Rx allows you to write query expression on top of the observable.
+
+  * Rx provides many query operators such as filtering with the Where operator, transformation with Select operator, and others.
+
+This doesn’t end here, of course. This is only the beginning of your journey. To use Rx correctly in your application and to use all the rich operators, you need to learn about them and techniques for putting them together, which is what this book is all about. In the next chapter, you’ll learn about the functional way of thinking that, together with the core concepts inside .NET, allowed Rx to evolve.

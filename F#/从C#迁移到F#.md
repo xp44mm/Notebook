@@ -1,4 +1,4 @@
-# F#的委托、事件与WPF
+# 从C#迁移到F#
 
 ### 委托的写法：
 
@@ -127,7 +127,7 @@ type StockMonitor(ticker:StockTicker) =
 ```
 
 
-### F# 自定义非标准event写法
+### 自定义非标准event写法
 
 C#中定义事件：
 
@@ -174,9 +174,43 @@ type ObservableConnection(chatConnection:IChatConnection) =
         )
 ```
 
+### 锁
+
+C#代码
+
+```C#
+lock (this._stockTickLocker)
+{
+}
+```
+
+F#代码：
+
+```F#
+lock _stockTickLocker (fun() -> ...)
+```
 
 
-### F#写WPF程序：
+
+### 从事件到可观察
+
+C#代码：
+
+```C#
+Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
+    h => ticker.StockTick += h,
+    h => ticker.StockTick -= h)
+.Select(tickEvent => tickEvent.EventArgs)
+```
+
+F#代码：
+```F#
+ticker.StockTick :> IObservable<_>
+```
+
+在F#中，不能从C#中直译代码，而是利用事实`IEvent<>`继承自`IObservable<>`接口，向上强制转换即可。
+
+### 写WPF程序，XAML
 
 新建控制台应用程序，.net framework的，
 
@@ -207,7 +241,7 @@ let a = new Application()
 do a.Run(w) |> ignore
 ```
 
-FromEventPattern
+FromEventPattern(可能不对)
 
 ```F#
 let clicks = 
