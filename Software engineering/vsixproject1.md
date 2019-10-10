@@ -45,7 +45,9 @@ public sealed class VSIXProject1Package : AsyncPackage
 
 ### 添加命令
 
-为项目添加新建项，选择C#、vspackage，custom command，当为项目添加自定义命令时，模板会为项目自动新建三个文件，形如`command1.cs`，`VSIXProject1Package.vsct`，还会添加一个文件夹`Resources`，里面包括定义命令界面所需要的图片。第一个是命令类。第二个命令表文件(vs command table)。命令类用于定义命令本身。命令表描述扩展包的所有命令在VS界面中的布局。文件夹资源是用于命令表的。除了添加了文件，模板还会修改扩展包的启动文件，向其初始化方法中添加初始化语句：
+为项目添加新建项，选择C#、vspackage，custom command，当为项目首次添加自定义命令时，模板会为项目自动新建三个文件，形如`command1.cs`，`VSIXProject1Package.vsct`，还会添加一个文件夹`Resources`，里面包括定义命令界面所需要的图片。第一个是命令类。第二个命令表文件(vs command table)。命令类用于定义命令本身。命令表描述扩展包的所有命令在VS界面中的布局。文件夹资源是用于命令表的。
+
+除了添加了文件，模板还会修改扩展包的`VSIXProject1Package.cs`启动文件，向其初始化方法中添加初始化语句：
 
 ```C#
 public sealed class VSIXProject1Package : AsyncPackage
@@ -64,7 +66,7 @@ public sealed class VSIXProject1Package : AsyncPackage
 }
 ```
 
-命令类需要修改的就只是`Execute`方法，位于类的末尾：
+命令类`command1.cs`需要修改的就只是`Execute`方法，位于类的末尾：
 
 ```C#
 internal sealed class Command1
@@ -78,7 +80,7 @@ internal sealed class Command1
 }
 ```
 
-命令表需要修改的部分如下：
+命令表`VSIXProject1Package.vsct`需要修改的部分如下：
 
 ```xml
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -123,13 +125,13 @@ internal sealed class Command1
 
 ```
 
-每个按钮对应一个命令。看符号部分，第一个符号是包guid，第二个符号是菜单命令符号，菜单和所有的命令共用这个符号。第三个符号对应一张图片，每张图片一个符号。
+每个按钮对应一个命令。看符号`<Symbols/>`部分，第一个符号`<GuidSymbol/>`是包guid，第二个符号是菜单命令符号，菜单和所有的命令共用这个符号。第三个符号对应一张图片，每张图片一个符号。
 
 
 
-用模板添加第二个命令时，会新建命令文件，添加一张图片到`Resources`文件夹。
+用模板添加第二个命令时，会新建命令`Command2.cs`类文件，添加一张图片`Command2.png`到`Resources`文件夹。
 
-添加命令初始化代码：
+向`VSIXProject1Package.cs`启动文件，添加命令初始化代码：
 
 ```C#
 protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
@@ -146,7 +148,9 @@ protected override async Task InitializeAsync(CancellationToken cancellationToke
 }
 ```
 
-并修改命令表文件。修改了三部分buttons,bitmaps,symbols
+浏览到相应位置，查看确认一下即可，初始化代码是模板自动添加的。
+
+下一步是修改命令表`VSIXProject1Package.vsct`文件。修改了三部分`<Buttons/>`,`<Bitmaps/>`,`<Symbols/>`
 
 ```xml
     <Buttons>
@@ -205,7 +209,7 @@ protected override async Task InitializeAsync(CancellationToken cancellationToke
 
 ```
 
-图片使用一个即可，所以删除bitmpas,和guidImages2对应的GuidSymbol，要删除的行行首是减号。修改命令2的Icon。最终命令表代码如下：
+第二个`<GuidSymbol/>`符号是表示菜单命令的，每个`<IDSymbol/>`代表一个命令。这个条目是自动添加的，查看确认一下即可，无需手动修改。图片使用一个即可，所以删除bitmpas,和guidImages2对应的GuidSymbol，要删除的行行首是减号。修改命令2的Icon。最终命令表代码如下：
 
 ```xml
 <Buttons>
@@ -252,7 +256,7 @@ protected override async Task InitializeAsync(CancellationToken cancellationToke
 </Symbols>
 ```
 
-
+配置好命令以后，就可以先运行一下，确认修改正确。可以先使用模板自动生成的执行方法，暂时不用修改命令的执行方法。
 
 ### 程序集的创建
 

@@ -127,9 +127,9 @@ type StockMonitor(ticker:StockTicker) =
 ```
 
 
-### 自定义非标准event写法
+### 委托event写法
 
-C#中定义事件：
+C#中定义事件的接口类型：
 
 ```c#
 public interface IChatConnection
@@ -151,7 +151,103 @@ type IChatConnection =
     abstract Disconnect:unit -> unit
 ```
 
-添加或移除处理器的代码：
+实现C#代码：
+
+```C#
+public class ChatConnection : IChatConnection
+{
+    public event Action<string> Received = delegate { };
+
+    public event Action Closed = delegate { };
+
+    public event Action<Exception> Error = delegate { };
+
+    public void NotifyRecieved(string msg)
+    {
+        Received(msg);
+    }
+
+    public void NotifyClosed()
+    {
+        Closed();
+    }
+
+    public void NotifyError()
+    {
+        Error(new OutOfMemoryException());
+    }
+
+    public void Disconnect()
+    {
+        Console.WriteLine("Disconnect");
+    }
+}
+```
+
+等价的F#代码：
+
+```F#
+type ChatConnection() =
+    let received = DelegateEvent<Action<string>>()
+    let closed = DelegateEvent<Action>()
+    let error = DelegateEvent<Action<Exception>>()
+
+    interface IChatConnection with
+        override _.Received = received.Publish
+        override _.Closed = closed.Publish
+        override _.Error = error.Publish
+
+        override _.Disconnect() =
+            Console.WriteLine("Disconnect")
+
+    member _.NotifyRecieved(msg:string) = received.Trigger [|msg|]
+
+    member _.NotifyClosed() = closed.Trigger [||]
+
+    member _.NotifyError() = error.Trigger[|OutOfMemoryException()|]
+```
+
+添加或移除处理器的C#代码：
+
+```C#
+public class ObservableConnection : ObservableBase<string>
+{
+    private readonly IChatConnection _chatConnection;
+
+    public ObservableConnection(IChatConnection chatConnection)
+    {
+        this._chatConnection = chatConnection;
+    }
+
+    protected override IDisposable SubscribeCore(IObserver<string> observer)
+    {
+        Action<string> received = message => {
+            observer.OnNext(message);
+        };
+
+        Action closed = () => {
+            observer.OnCompleted();
+        };
+
+        Action<Exception> error = ex => {
+            observer.OnError(ex);
+        };
+
+        this._chatConnection.Received += received;
+        this._chatConnection.Closed += closed;
+        this._chatConnection.Error += error;
+
+        return Disposable.Create(() => {
+            this._chatConnection.Received -= received;
+            this._chatConnection.Closed -= closed;
+            this._chatConnection.Error -= error;
+            this._chatConnection.Disconnect();
+        });
+    }
+}
+```
+
+F#代码：
 
 ```F#
 type ObservableConnection(chatConnection:IChatConnection) =
@@ -174,6 +270,21 @@ type ObservableConnection(chatConnection:IChatConnection) =
         )
 ```
 
+测试代码，仅列出F#代码：
+
+```F#
+let chatConnection = ChatConnection() 
+let observableConnection = ObservableConnection (chatConnection:> IChatConnection )
+let subscription =
+    observableConnection.Subscribe(ConsoleObserver "receiver")
+
+chatConnection.NotifyRecieved("Hello")
+chatConnection.NotifyClosed()
+subscription.Dispose()
+```
+
+
+
 ### 锁
 
 C#代码
@@ -194,7 +305,7 @@ lock _stockTickLocker (fun() -> ...)
 
 ### 从事件到可观察
 
-C#代码：
+标准事件模式，C#代码：
 
 ```C#
 Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
@@ -209,6 +320,10 @@ ticker.StockTick :> IObservable<_>
 ```
 
 在F#中，不能从C#中直译代码，而是利用事实`IEvent<>`继承自`IObservable<>`接口，向上强制转换即可。
+
+委托事件转化为Observable，详见  rx.net in action第4章，非标准事件。
+
+
 
 ### 写WPF程序，XAML
 
