@@ -925,7 +925,7 @@ class Account {
 
 1. The `_id` field is used to tell PouchDB's `put()` method to use your provided ID instead of generating a new one. You can use PouchDB's `get()` method to query by this ID.
 
-Similarly, you’ll create a few different types of accounts for your user Emmet Brown—
+Similarly, you'll create a few different types of accounts for your user Emmet Brown—
 
 ```js
 const accounts = [

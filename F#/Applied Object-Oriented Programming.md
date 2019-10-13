@@ -1,6 +1,6 @@
 # CHAPTER 8 Applied Object-Oriented Programming
 
-This chapter could also be called “being functional in an object-oriented world.” By now you’ve mastered the F# syntax and style, but there is still plenty to be said about using F# in the object-oriented landscape of the .NET platform.
+This chapter could also be called “being functional in an object-oriented world.” By now you've mastered the F# syntax and style, but there is still plenty to be said about using F# in the object-oriented landscape of the .NET platform.
 
 In this chapter, you learn how to create F# types that integrate better with other object- oriented languages like C#. For example, with operator overloading, you can allow your types to be used with symbolic code. Also, events enable your classes to notify consumers to receive notifications when certain actions occur. This not only enables you to be more expressive in your F# code, but also reduces the friction with non-F# developers when sharing your code.
 
@@ -16,11 +16,11 @@ Operator overloading is a term used for adding new meaning to an existing operat
 
 ##### Warning
 
-Be sure to use an operator that makes sense. For example, overloading `+` for a custom type shouldn’t subtract values or remove items from a collection.
+Be sure to use an operator that makes sense. For example, overloading `+` for a custom type shouldn't subtract values or remove items from a collection.
 
 ---
 
-When you overload an operator, the operator’s name must be in parentheses. For ex ample, `(+)` overloads the plus operator. To overload a unary operator, simply prefix the operator with a tilde (~).
+When you overload an operator, the operator's name must be in parentheses. For ex ample, `(+)` overloads the plus operator. To overload a unary operator, simply prefix the operator with a tilde (~).
 
 Example 8-1 overloads the `+` and `−` operators to represent operators on a bottle. Note the `~−` operator allows for unary negation.
 
@@ -42,7 +42,7 @@ type Bottle(capacity : float<ml>) =
         sprintf "Bottle(%.1fml)" (float capacity)
 ```
 
-Once the proper operators have been added, then you can intuitively use the class using the standard symbolic operators you would expect (well, a bottle really can’t have a negative volume, but you get the idea):
+Once the proper operators have been added, then you can intuitively use the class using the standard symbolic operators you would expect (well, a bottle really can't have a negative volume, but you get the idea):
 
 ``` F#
 > let half = new Bottle(500.0<ml>);;
@@ -166,7 +166,7 @@ val randomDay : DateTime = 4/7/2007 12:00:00 AM
 val it : int * int * DayOfWeek = (4, 7, Saturday)
 ```
 
-The read-only indexers you’ve seen so far aren’t ideal for every situation. What if you wanted to provide a read/write indexer to not only access elements but to also update their values? To make a read/write indexer, simply add an explicit getter and setter to the Item property.
+The read-only indexers you've seen so far aren't ideal for every situation. What if you wanted to provide a read/write indexer to not only access elements but to also update their values? To make a read/write indexer, simply add an explicit getter and setter to the Item property.
 
 Example 8-4 defines a type `WordBuilder` that allows you to access and update letters of a word at a given index.
 
@@ -498,7 +498,7 @@ Abstractly, we can describe the `CoffeeCup` class as a pattern enabling consumer
 
 Fortunately, the .NET framework has rich support for this pattern through the use of delegates and events. A delegate is very similar to F#’s function values. An event is simply the mechanism for calling the functions provided by all interested parties.
 
-When used together, delegates and events form a contract. The first class publishes an event, which enables other classes to subscribe to that event. When the class’s event is fired, the delegates provided by all subscribers are executed.
+When used together, delegates and events form a contract. The first class publishes an event, which enables other classes to subscribe to that event. When the class's event is fired, the delegates provided by all subscribers are executed.
 
 Delegates can be thought of as an alternate form of function values. They represent a function pointer to a method and can be passed around as parameters or called directly, just like function values. Delegates, however, offer a couple of advantages over the F# functions you are used to, as we see shortly.
 
@@ -591,17 +591,17 @@ Logging to file: [some important message]...
 val it : unit = ()
 ```
 
-The second main difference between delegate types and function values is that you can invoke a delegate asynchronously, so the delegate’s execution will happen on a separate thread and your program will continue as normal. To invoke a delegate asynchronously, call the `BeginInvoke` and `EndInvoke` methods.
+The second main difference between delegate types and function values is that you can invoke a delegate asynchronously, so the delegate's execution will happen on a separate thread and your program will continue as normal. To invoke a delegate asynchronously, call the `BeginInvoke` and `EndInvoke` methods.
 
 Unfortunately, delegates created in F# do not have the `BeginInvoke` and `EndInvoke` methods, so to create delegates that can be invoked asynchronously you must define them in VB.NET or C#. In Chapter 11, we look at parallel and asynchronously programming in F# and simple ways to work around this.
 
 ## Events
 
-Now that you understand delegates, let’s look at how to take advantage of them to create events. Events are just syntactic sugar for properties on classes that are delegates. So when an event is raised, it is really just invoking the combined delegates associated with the event.
+Now that you understand delegates, let's look at how to take advantage of them to create events. Events are just syntactic sugar for properties on classes that are delegates. So when an event is raised, it is really just invoking the combined delegates associated with the event.
 
 ### Creating Events
 
-Let’s start with a simple example and work backward from that. Unlike C# or VB.NET, there is no event keyword in F#.
+Let's start with a simple example and work backward from that. Unlike C# or VB.NET, there is no event keyword in F#.
 
 Example 8-11 creates a `NoisySet` type that fires events whenever items are added or removed from the set. Rather than keeping track of event subscribers manually, it uses the `Event<'Del, 'Arg>` type, which is discussed shortly.
 
@@ -640,7 +640,7 @@ type NoisySet<'a when 'a : comparison>() =
 
 #### Delegates for events
 
-The first thing to point out in the example is the delegate used for the event. In .NET, the idiomatic way to declare events is to have the delegate return unit and take two parameters. The first parameter is the source, or object raising the event, the second parameter is the delegate’s arguments passed in an object derived from `System.EventArgs`.
+The first thing to point out in the example is the delegate used for the event. In .NET, the idiomatic way to declare events is to have the delegate return unit and take two parameters. The first parameter is the source, or object raising the event, the second parameter is the delegate's arguments passed in an object derived from `System.EventArgs`.
 
 In the example, the `SetOperationEventArgs` type stores all relevant information for the event, such as the value of the item being added or removed. Many events, however, are raised without needing to send any additional information, in which case the `EventArgs` class is not inherited from.
 
@@ -662,7 +662,7 @@ m_itemAdded.Trigger(this, new SetOperationEventArgs<_>(x, Added))
 
 #### Subscribing to events
 
-Finally, to subscribe to a class’s events, use the `AddHandler` method on the event property. From then on, whenever the event is raised, the delegate you passed to `AddHandler` will be called.
+Finally, to subscribe to a class's events, use the `AddHandler` method on the event property. From then on, whenever the event is raised, the delegate you passed to `AddHandler` will be called.
 
 If you no longer want your event handler to be called, you can call the `RemoveHandler` method.
 
@@ -702,9 +702,9 @@ As you can see from Example 8-12, all the work of combining delegates and eventu
 
 ### The Event<_,_> Class
 
-The `Event<'Del, 'Arg>` type keeps track of the delegates associated with the event, and makes it easier to fire and publish an event. The type takes two generic parameters. The first is the type of delegate associated with the event, which in the previous example was `SetOperationDelegate`. The second generic parameter is the type of the delegate’s argument, which was `SetOperationEventArgs`. (Note that this ignores the delegate’s actual first parameter, the `sender` object.) 
+The `Event<'Del, 'Arg>` type keeps track of the delegates associated with the event, and makes it easier to fire and publish an event. The type takes two generic parameters. The first is the type of delegate associated with the event, which in the previous example was `SetOperationDelegate`. The second generic parameter is the type of the delegate's argument, which was `SetOperationEventArgs`. (Note that this ignores the delegate's actual first parameter, the `sender` object.) 
 
-If your events don’t follow this pattern where the first parameter is the `sender` object, then you should use the `DelegateEvent<'Del>` type instead. It is used the same way, except that its arguments are passed in as an obj array.
+If your events don't follow this pattern where the first parameter is the `sender` object, then you should use the `DelegateEvent<'Del>` type instead. It is used the same way, except that its arguments are passed in as an obj array.
 
 Example 8-13 defines a clock type with a single event that gets fired every second, notifying subscribers of the current hour, minute, and second. Note that in order to trigger an event with type `DelegateEvent<_>` you must pass in an obj array for all of its parameters. As a reminder, the `box` function converts its parameter to type `obj`.
 
@@ -749,7 +749,7 @@ Started...
 
 ### The Observable Module
 
-Using events as a way to make class types proactive and notify others when particular events occur is helpful. However, events in F# don’t have to be associated with a particular class, much like functions in F# don’t have to be members of a particular class.
+Using events as a way to make class types proactive and notify others when particular events occur is helpful. However, events in F# don't have to be associated with a particular class, much like functions in F# don't have to be members of a particular class.
 
 The `Observable` module defines a series of functions for creating instances of the `IObservable<_>` interface, which allows you to treat events like first-class citizens much like objects and functions. This way you can use functional programming techniques like composition and data transformation on events.
 
@@ -855,7 +855,7 @@ form.ShowDialog()
 val merge: IObservable<'a> -> IObservable<'a> -> IObservable<'a>
 ```
 
-This is useful for when trying to combine and simplify events. For example, in the previous example, if a consumer didn’t care about specifically dancing to slow or fast songs, both the song events could be combined into a single `justDance` event:
+This is useful for when trying to combine and simplify events. For example, in the previous example, if a consumer didn't care about specifically dancing to slow or fast songs, both the song events could be combined into a single `justDance` event:
 
 ``` F#
 > // Combine two song events

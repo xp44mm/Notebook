@@ -37,7 +37,7 @@ val it : seq<float> = seq [-100.0; -99.0; -98.0; -97.0; ...]
 
 ```
 
-By default, F# Interactive shows the value of a sequence only to a limited depth; `seq<'T>` values are lazy in the sense that they compute and return the successive elements on demand. This means you can create sequences representing very large ranges, and the elements of the sequence are computed only if they’re required by a subsequent computation. In the next example, you don’t actually create a concrete data structure containing one trillion elements, but rather you create a sequence value that has the potential to yield this number of elements on demand. The default printing performed by F# Interactive forces this computation up to depth 4:
+By default, F# Interactive shows the value of a sequence only to a limited depth; `seq<'T>` values are lazy in the sense that they compute and return the successive elements on demand. This means you can create sequences representing very large ranges, and the elements of the sequence are computed only if they're required by a subsequent computation. In the next example, you don't actually create a concrete data structure containing one trillion elements, but rather you create a sequence value that has the potential to yield this number of elements on demand. The default printing performed by F# Interactive forces this computation up to depth 4:
 
 ```F#
 > seq {1 .. 10000000 };;
@@ -53,7 +53,7 @@ val it : seq<int> = seq [1; 3; 5]
 val it : seq<int> = seq [1; -1; -3; -5]
 ```
 
-If the skip causes the final element to be overshot, then the final element isn’t included in the result:
+If the skip causes the final element to be overshot, then the final element isn't included in the result:
 
 ```F#
 > seq {0 .. 2 .. 5};;
@@ -77,7 +77,7 @@ i = 4
 i = 6
 ```
 
-This construct forces the iteration of the entire seq. Use it with care when you’re working with sequences that may yield a large number of elements.
+This construct forces the iteration of the entire seq. Use it with care when you're working with sequences that may yield a large number of elements.
 
 ### Transforming Sequences with Functions
 
@@ -122,7 +122,7 @@ Most other operators in the Seq module return one or more `seq<type>` values and
 
 ### Which Types Can Be Used as Sequences?
 
-Table 9-1 includes many uses of types such as `seq<'T>`. When a type appears as the type of an argument, the function accepts any value that’s compatible with this type. Chapter 5 explained the notions of subtyping and compatibility in more detail; the concept should be familiar to OO programmers, because it’s the same as that used by languages such as C#. In practice, you can easily discover which types are compatible with which others by using F# Interactive and tools such as Visual Studio: when you hover over a type name, the compatible types are shown. You can also refer to the online documentation for the F# libraries and the .NET Framework, which you can easily obtain using the major search engines.
+Table 9-1 includes many uses of types such as `seq<'T>`. When a type appears as the type of an argument, the function accepts any value that's compatible with this type. Chapter 5 explained the notions of subtyping and compatibility in more detail; the concept should be familiar to OO programmers, because it's the same as that used by languages such as C#. In practice, you can easily discover which types are compatible with which others by using F# Interactive and tools such as Visual Studio: when you hover over a type name, the compatible types are shown. You can also refer to the online documentation for the F# libraries and the .NET Framework, which you can easily obtain using the major search engines.
 
 Here are some of the types compatible with `seq<'T>`:
 
@@ -134,7 +134,7 @@ Here are some of the types compatible with `seq<'T>`:
 
 ### Using Lazy Sequences from External Sources
 
-Sequences are frequently used to represent the process of streaming data from an external source, such as from a database query or from a computer’s file system. For example, the following recursive function constructs a `seq<string>` that represents the process of recursively reading the names of all the files under a given path. The return types of `Directory.GetFiles` and `Directory.GetDirectories` are `string[]`; and, as noted earlier, this type is always compatible with `seq<string>`:
+Sequences are frequently used to represent the process of streaming data from an external source, such as from a database query or from a computer's file system. For example, the following recursive function constructs a `seq<string>` that represents the process of recursively reading the names of all the files under a given path. The return types of `Directory.GetFiles` and `Directory.GetDirectories` are `string[]`; and, as noted earlier, this type is always compatible with `seq<string>`:
 
 ```F#
 open System 
@@ -173,19 +173,19 @@ The `allFiles` function is interesting, partly because it shows many aspects of 
 
 - NET interoperability: The `System.IO.Directory` operations provide intuitive primitives, which can then be incorporated in powerful ways using succinct F# programs.
 
-- Laziness where needed: The function `Seq.map` applies the argument function lazily (on demand), which means subdirectories aren’t read until required.
+- Laziness where needed: The function `Seq.map` applies the argument function lazily (on demand), which means subdirectories aren't read until required.
 
-One subtlety with programming with on-demand or lazy values such as sequences is that side effects like reading and writing from an external store shouldn’t generally happen until the lazy sequence value is consumed. For example, the previous `allFiles` function reads the system directory as soon as `allFiles` is applied to its argument. This may not be appropriate if the contents of the system directory are changing. You can delay the computation of the sequence by using the library function `Seq.delay` or by using a sequence expression, covered in the next section, in which delays are inserted automatically by the F# compiler.
+One subtlety with programming with on-demand or lazy values such as sequences is that side effects like reading and writing from an external store shouldn't generally happen until the lazy sequence value is consumed. For example, the previous `allFiles` function reads the system directory as soon as `allFiles` is applied to its argument. This may not be appropriate if the contents of the system directory are changing. You can delay the computation of the sequence by using the library function `Seq.delay` or by using a sequence expression, covered in the next section, in which delays are inserted automatically by the F# compiler.
 
 ### Using Sequence Expressions
 
-Functions are a powerful way of working with `seq<type>` values. However, F# also provides a convenient and compact syntax called *sequence expressions* for specifying sequence values that can be built using operations such as `choose`, `map`, `filter`, and `concat`. You can also use sequence expressions to specify the shapes of lists and arrays. It’s valuable to learn how to use sequence expressions for the following reasons:
+Functions are a powerful way of working with `seq<type>` values. However, F# also provides a convenient and compact syntax called *sequence expressions* for specifying sequence values that can be built using operations such as `choose`, `map`, `filter`, and `concat`. You can also use sequence expressions to specify the shapes of lists and arrays. It's valuable to learn how to use sequence expressions for the following reasons:
 
-- They’re a compact way of specifying interesting data and generative processes.
+- They're a compact way of specifying interesting data and generative processes.
 
-- They’re used to specify database queries when using data-access layers such as Microsoft’s Language Integrated Queries (LINQ). See Chapter 15 for examples of using sequence expressions this way.
+- They're used to specify database queries when using data-access layers such as Microsoft's Language Integrated Queries (LINQ). See Chapter 15 for examples of using sequence expressions this way.
 
-- They’re one particular use of *computation expressions*, a more general concept that has several uses in F# programming. This chapter discusses computation expressions, and we will show how to use them for asynchronous and parallel programming in Chapter 13.
+- They're one particular use of *computation expressions*, a more general concept that has several uses in F# programming. This chapter discusses computation expressions, and we will show how to use them for asynchronous and parallel programming in Chapter 13.
 
 The simplest form of a sequence expression is `seq { for value in expr .. expr -> expr }`. Here, `->` should be read as “yield.” This is a shorthand way of writing `Seq.map` over a range expression. For example, you can generate an enumeration of numbers and their squares as follows:
 
@@ -218,7 +218,7 @@ A sequence expression often begins with `for ... in ...`, but you can use additi
 
 - Yielding a value: `yield expression`
 
-Secondary iterations generate additional sequences, all of which are collected and concatenated together. Filters let you skip elements that don’t satisfy a given predicate. To show both of these in action, the following computes a checkerboard set of coordinates for a rectangular grid:
+Secondary iterations generate additional sequences, all of which are collected and concatenated together. Filters let you skip elements that don't satisfy a given predicate. To show both of these in action, the following computes a checkerboard set of coordinates for a rectangular grid:
 
 ```F#
 let checkerboardCoordinates n =
@@ -565,13 +565,13 @@ The F# library also includes more direct accumulation functions, such as `Seq.su
 
 ##### Caution 
 
-Folding operators are very powerful and can help you avoid many explicit uses of recursion or loops in your code. they’re sometimes overused in functional programming, however, and they can be hard for novice users to read and understand. take the time to document uses of these operators, or consider using them to build simpler operators that apply a particular accumulation function.
+Folding operators are very powerful and can help you avoid many explicit uses of recursion or loops in your code. they're sometimes overused in functional programming, however, and they can be hard for novice users to read and understand. take the time to document uses of these operators, or consider using them to build simpler operators that apply a particular accumulation function.
 
 ---
 
 ### Cleaning Up in Sequence Expressions
 
-It’s common to implement sequence computations that access external resources such as databases but that return their results on demand. This raises a difficulty: How do you manage the lifetime of the resources for the underlying operating-system connections? One elegant solution is via use bindings in sequence expressions:
+It's common to implement sequence computations that access external resources such as databases but that return their results on demand. This raises a difficulty: How do you manage the lifetime of the resources for the underlying operating-system connections? One elegant solution is via use bindings in sequence expressions:
 
 - When a `use` binding occurs in a sequence expression, the resource is initialized each time a client enumerates the sequence.
 
@@ -588,7 +588,7 @@ let firstTwoLines file =
             yield s.ReadLine() }
 ```
 
-Let’s now create a file and a sequence that reads the first two lines of the file on demand:
+Let's now create a file and a sequence that reads the first two lines of the file on demand:
 
 ```F#
 > File.WriteAllLines("test1.txt", [|"Es kommt ein Schiff";
@@ -598,7 +598,7 @@ val twolines : unit -> seq<string>
 
 ```
 
-At this point, the file hasn’t yet been opened, and no lines have been read from the file. If you now iterate the sequence expression, the file is opened, the first two lines are read, and the results are consumed from the sequence and printed. Most important, the file has now also been closed, because the `Seq.iter` function is careful to dispose of the underlying enumerator it uses for the sequence, which in turn disposes of the file handle generated by `File.OpenText`:
+At this point, the file hasn't yet been opened, and no lines have been read from the file. If you now iterate the sequence expression, the file is opened, the first two lines are read, and the results are consumed from the sequence and printed. Most important, the file has now also been closed, because the `Seq.iter` function is careful to dispose of the underlying enumerator it uses for the sequence, which in turn disposes of the file handle generated by `File.OpenText`:
 
 ```F#
 > twolines() |> Seq.iter (printfn "line = '%s'")
@@ -624,7 +624,7 @@ let evenPositions =
 
 The output in each case is the same. In many cases, rewriting to use generative sequence expressions results in considerably clearer code. There are pros and cons to using sequence-expression syntax for some parts of queries:
 
-- Sequence expressions are very good for the subset of queries expressed using iteration (for), filtering (if/then), and mapping (yield). They’re particularly good for queries containing multiple nested for statements.
+- Sequence expressions are very good for the subset of queries expressed using iteration (for), filtering (if/then), and mapping (yield). They're particularly good for queries containing multiple nested for statements.
 
 - Other query constructs, such as ordering, truncating, grouping, and aggregating, must be expressed directly using aggregate operators, such as `Seq.sortBy` and `Seq.groupBy`, or by using the more general notion of “query expressions” (see Chapter 14).
 
@@ -644,7 +644,7 @@ F# also has a more general “query-expression” syntax that includes support f
 
 In Chapters 5 and 6, you learned about some simple techniques to represent record and tree-structured data in F# using record types, union types, and object types. Together this constitutes *domain modeling* using types. Further, in Chapter 8, you learned how to move from an unstructured, textual representation such as XML to a domain model in the form of a structured representation. In the following sections, you will learn techniques for working with domain models.
 
-Let’s look at the design of the type Scene from the previous chapter, in Listing 8-1, repeated below. The type Scene uses fewer kinds of nodes than the concrete XML representation from Chapter 8; the concrete XML has node kinds Circle, Square, Composite, and Ellipse, whereas Scene has just three (Rect, Ellipse, and Composite), with two derived constructors, Circle and Square, defined as static members of the Scene:
+Let's look at the design of the type Scene from the previous chapter, in Listing 8-1, repeated below. The type Scene uses fewer kinds of nodes than the concrete XML representation from Chapter 8; the concrete XML has node kinds Circle, Square, Composite, and Ellipse, whereas Scene has just three (Rect, Ellipse, and Composite), with two derived constructors, Circle and Square, defined as static members of the Scene:
 
 ```F#
 open System.Drawing
@@ -669,11 +669,11 @@ This is a common step when building a domain model; details are dropped and unif
 
 - You must be careful not to eliminate truly valuable information from a domain model. For some applications, it may really matter if the user specified a Square or a Rectangle in the original input; for example, an editor for this data may provide different options for editing these objects.
 
-The domain model uses the types PointF and RectangleF from the System.Drawing namespace. This simplification is a design decision that should be assessed: PointF and RectangleF use 32-bit, low-precision, floating-point numbers, which may not be appropriate if you’re eventually rendering on high-precision display devices. You should be wary of deciding on domain models on the basis of convenience alone, although of course this is useful during prototyping.
+The domain model uses the types PointF and RectangleF from the System.Drawing namespace. This simplification is a design decision that should be assessed: PointF and RectangleF use 32-bit, low-precision, floating-point numbers, which may not be appropriate if you're eventually rendering on high-precision display devices. You should be wary of deciding on domain models on the basis of convenience alone, although of course this is useful during prototyping.
 
 The lesson here is that you should look carefully at your domain models, trimming out unnecessary nodes and unifying constructs where possible, but only so long as doing so helps you achieve your ultimate goals.
 
-Common operations on domain models include traversals that collect information and transformations that generate new models from old ones. For example, the domain model from Listing 8-1 has the property that, for nearly all purposes, the Composite nodes are irrelevant (this wouldn’t be the case if you added an extra construct, such as an Intersect node). This means you can flatten to a sequence of Ellipse and Rectangle nodes:
+Common operations on domain models include traversals that collect information and transformations that generate new models from old ones. For example, the domain model from Listing 8-1 has the property that, for nearly all purposes, the Composite nodes are irrelevant (this wouldn't be the case if you added an extra construct, such as an Intersect node). This means you can flatten to a sequence of Ellipse and Rectangle nodes:
 
 ```F#
 let rec flatten scene =
@@ -688,7 +688,7 @@ Here, `flatten` is defined using sequence expressions that were introduced in Ch
 val flatten : scene:Scene -> seq<Scene>
 ```
 
-Let’s look at this more closely. Recall that sequences are on-demand (lazy) computations. Using functions that recursively generate `seq<'T>` objects can lead to inefficiencies in your code if your domain model is deep. It’s often better to traverse the entire tree in an eager way (eager traversals run to completion immediately). For example, it’s typically faster to use an accumulating parameter to collect a list of results. Here’s an example:
+Let's look at this more closely. Recall that sequences are on-demand (lazy) computations. Using functions that recursively generate `seq<'T>` objects can lead to inefficiencies in your code if your domain model is deep. It's often better to traverse the entire tree in an eager way (eager traversals run to completion immediately). For example, it's typically faster to use an accumulating parameter to collect a list of results. Here's an example:
 
 ```F#
 let rec flattenAux scene acc =
@@ -733,7 +733,7 @@ domain modeling with F# types is a rich topic. the F# expert Scott Wlaschin and 
 
 ### Transforming Domain Models
 
-In the previous section, you saw examples of accumulating traversals over a domain model. It’s common to traverse domain models in other ways:
+In the previous section, you saw examples of accumulating traversals over a domain model. It's common to traverse domain models in other ways:
 
 - Leaf rewriting (mapping): Translating some leaf nodes of the representation but leaving the overall shape of the model unchanged
 
@@ -778,7 +778,7 @@ let adjustAspectRatio scene =
 
 ### Using On-Demand Computation with Domain Models
 
-Sometimes it’s feasible to delay loading or processing some portions of a domain model. For example, imagine that the XML for the small geometric language from the previous section included a construct such as the following, in which the File nodes represent entire subtrees defined in external files:
+Sometimes it's feasible to delay loading or processing some portions of a domain model. For example, imagine that the XML for the small geometric language from the previous section included a construct such as the following, in which the File nodes represent entire subtrees defined in external files:
 
 ```xml
 <Composite>
@@ -835,7 +835,7 @@ let flatten2 scene = flattenAux scene []
 
 ```
 
-It’s generally advisable to have a single representation of laziness within a single domain model design. For example, the following abstract syntax design uses laziness in too many ways:
+It's generally advisable to have a single representation of laziness within a single domain model design. For example, the following abstract syntax design uses laziness in too many ways:
 
 ```F#
 type SceneVeryLazy =
@@ -858,7 +858,7 @@ the `Lazy<'T>` type is defined in System and represents delayed computations. Yo
 
 ### Caching Properties in Domain Models
 
-For high-performance applications of domain models, it can occasionally be useful to cache computations of some derived attributes within the model itself. For example, let’s say you want to compute bounding boxes for the geometric language described in Listing 9-1. It’s potentially valuable to cache this computation at Composite nodes. You can use a type such as the following to hold a cache:
+For high-performance applications of domain models, it can occasionally be useful to cache computations of some derived attributes within the model itself. For example, let's say you want to compute bounding boxes for the geometric language described in Listing 9-1. It's potentially valuable to cache this computation at Composite nodes. You can use a type such as the following to hold a cache:
 
 ```F#
 type SceneWithCachedBoundingBox =
@@ -907,7 +907,7 @@ Other attributes that are sometimes cached include the hash values of tree-struc
 
 ### Memoizing Construction of Domain Model Nodes
 
-In some cases, domain model nodes can end up consuming significant portions of the application’s memory budget. In this situation, it can be worth memoizing some or all of the nodes constructed in the model. You can even go as far as memoizing all equivalent nodes, ensuring that equivalence between nodes can be implemented by pointer equality, a technique often called *hash-consing*. Listing 9-2 shows a domain model for propositional logic terms that ensures that any two nodes that are syntactically identical are shared via a memoizing table. Propositional logic terms are terms constructed using P AND Q, P OR Q, NOT P, and variables a, b, and so on. A noncached version of the expressions is:
+In some cases, domain model nodes can end up consuming significant portions of the application's memory budget. In this situation, it can be worth memoizing some or all of the nodes constructed in the model. You can even go as far as memoizing all equivalent nodes, ensuring that equivalence between nodes can be implemented by pointer equality, a technique often called *hash-consing*. Listing 9-2 shows a domain model for propositional logic terms that ensures that any two nodes that are syntactically identical are shared via a memoizing table. Propositional logic terms are terms constructed using P AND Q, P OR Q, NOT P, and variables a, b, and so on. A noncached version of the expressions is:
 
 ```F#
 type Prop =
@@ -983,7 +983,7 @@ val prop2 : Prop = Prop 5
 
 In this example, when you create two trees using the same specification, And (Var "x",Var "y"), you get back the same Prop object with the same stamp 5. You can also use memoization techniques to implement interesting algorithms; in Chapter 12, you will see an important representation of propositional logic called a binary decision diagram (BDD) that is based on a memoization table similar to that in the previous example.
 
-The use of unique integer stamps and a lookaside table in the previous representation also has some drawbacks; it’s harder to pattern match on abstract syntax representations, and you may need to reclaim and recycle stamps and remove entries from the lookaside table if a large number of terms is created or if the overall set of stamps must remain compact. You can solve the first problem by using active patterns, which will be covered next. If necessary, you can solve the second problem by scoping stamps in an object that encloses the uniqStamp state, the lookaside table, and the construction functions. Alternatively, you can explicitly reclaim the stamps by using the IDisposable idiom described in Chapter 6, although this approach can be intrusive to your application.
+The use of unique integer stamps and a lookaside table in the previous representation also has some drawbacks; it's harder to pattern match on abstract syntax representations, and you may need to reclaim and recycle stamps and remove entries from the lookaside table if a large number of terms is created or if the overall set of stamps must remain compact. You can solve the first problem by using active patterns, which will be covered next. If necessary, you can solve the second problem by scoping stamps in an object that encloses the uniqStamp state, the lookaside table, and the construction functions. Alternatively, you can explicitly reclaim the stamps by using the IDisposable idiom described in Chapter 6, although this approach can be intrusive to your application.
 
 ## Active Patterns: Views for Structured
 
@@ -993,7 +993,7 @@ This book covers only the basics of active patterns. They can be indispensable, 
 
 ### Converting the Same Data to Many Views
 
-In high-school math courses, you were probably taught that you can view complex numbers in two ways: as rectangular coordinates x + yi or as polar coordinates of a phase r and magnitude f. In most computer systems, complex numbers are stored in the first format, although often the second format is more useful. Wouldn’t it be nice if you could look at complex numbers through either lens? You could do this by explicitly converting from one form to another when needed, but it would be better to have your programming language look after the transformations needed to do this for you. Active patterns let you do exactly that. First, here is a standard definition of complex numbers:
+In high-school math courses, you were probably taught that you can view complex numbers in two ways: as rectangular coordinates x + yi or as polar coordinates of a phase r and magnitude f. In most computer systems, complex numbers are stored in the first format, although often the second format is more useful. Wouldn't it be nice if you could look at complex numbers through either lens? You could do this by explicitly converting from one form to another when needed, but it would be better to have your programming language look after the transformations needed to do this for you. Active patterns let you do exactly that. First, here is a standard definition of complex numbers:
 
 ```F#
 [<Struct>]
@@ -1060,7 +1060,7 @@ val it : Complex = -7r + 24i
 val it : Complex = -7r + 24i
 ```
 
-As you may expect, you get the same results if you multiply via either rectangular or polar coordinates. The execution paths are quite different, however. Let’s look closely at the definition of mulViaRect:
+As you may expect, you get the same results if you multiply via either rectangular or polar coordinates. The execution paths are quite different, however. Let's look closely at the definition of mulViaRect:
 
 ```F#
 let mulViaRect a b =
@@ -1070,7 +1070,7 @@ Complex (ar * br - ai * bi, ai * br + bi * ar)
 
 ```
 
-When F# needs to match the values a and b against the patterns `Rect (ar, ai)` and `Rect (br, bi)`, it doesn’t look at the contents of a and b directly. Instead, it runs a function as part of pattern matching (which is why they’re called active patterns). In this case, the function executed is `(|Rect|)`, which produces a pair as its result. The elements of the pair are then bound to the variables ar and ai. Likewise, in the definition of mulViaPolar, the matching is performed partly by running the function `(|Polar|)`.
+When F# needs to match the values a and b against the patterns `Rect (ar, ai)` and `Rect (br, bi)`, it doesn't look at the contents of a and b directly. Instead, it runs a function as part of pattern matching (which is why they're called active patterns). In this case, the function executed is `(|Rect|)`, which produces a pair as its result. The elements of the pair are then bound to the variables ar and ai. Likewise, in the definition of mulViaPolar, the matching is performed partly by running the function `(|Polar|)`.
 
 The functions `(|Rect|)` and `(|Polar|)` are allowed to do anything, as long as each ultimately produces a pair of results. You should think of the names of these functions as including the `(|` and `|)`. Here are the types of `(|Rect|)` and `(|Polar|)`:
 
@@ -1104,7 +1104,7 @@ type System.Type with
 ```
 
 
-This type looks very much like one you’d like to pattern match against. There are clearly three or four distinct cases here, and pattern matching helps you isolate them. You can define an active pattern to achieve this, as shown in Listing 9-3.
+This type looks very much like one you'd like to pattern match against. There are clearly three or four distinct cases here, and pattern matching helps you isolate them. You can define an active pattern to achieve this, as shown in Listing 9-3.
 
 Listing 9-3.  Defining an active pattern for matching on System.Type values
 
@@ -1199,7 +1199,7 @@ module PropOps =
 ```
 
 
-This code defines an active pattern in the auxiliary module PropOps that lets you pattern match against Prop values, despite the fact that they’re using optimized unique-integer references under the hood. For example, you can define a pretty-printer for Prop terms as follows, even though they’re using optimized representations:
+This code defines an active pattern in the auxiliary module PropOps that lets you pattern match against Prop values, despite the fact that they're using optimized unique-integer references under the hood. For example, you can define a pretty-printer for Prop terms as follows, even though they're using optimized representations:
 
 ```F#
 open PropOps
@@ -1495,7 +1495,7 @@ Be careful about using generic equality, hashing, and comparison on mutable data
 
 In the previous section, you saw how to process nested, tree-structured domain models using recursive functions. In this section, you will learn about important topics associated with programming with recursive functions: stack usage and tail calls.
 
-When F# programs execute, two resources are managed automatically, stack- and heap-allocated memory. Stack space is needed every time you call an F# function and is reclaimed when the function returns or when it performs a tail call. It’s perhaps surprising that stack space is more limited than space in the garbage-collected heap. For example, on a 32-bit Windows machine, the default settings are such that each thread of a program can use up to 1 MB of stack space. Because stack is allocated every time a function call is made, a very deep series of nested function calls causes a `StackOverflowException` to be raised. For example, on a 32-bit Windows machine, the following program causes a stack overflow when n reaches about 79000:
+When F# programs execute, two resources are managed automatically, stack- and heap-allocated memory. Stack space is needed every time you call an F# function and is reclaimed when the function returns or when it performs a tail call. It's perhaps surprising that stack space is more limited than space in the garbage-collected heap. For example, on a 32-bit Windows machine, the default settings are such that each thread of a program can use up to 1 MB of stack space. Because stack is allocated every time a function call is made, a very deep series of nested function calls causes a `StackOverflowException` to be raised. For example, on a 32-bit Windows machine, the following program causes a stack overflow when n reaches about 79000:
 
 ```F#
 let rec deepRecursion n =
@@ -1520,7 +1520,7 @@ Process is terminated due to StackOverflowException
 Session termination detected. Press Enter to restart.
 ```
 
-Stack overflows are extreme exceptions, because it’s often difficult to recover correctly from them. For this reason, it’s important to ensure that the amount of stack used by your program doesn’t grow in an unbounded fashion as your program proceeds, especially as you process large inputs. Furthermore, deep stacks can hurt in other ways; for example, the .NET garbage collector traverses the entire stack on every garbage collection. This can be expensive if your stacks are very deep.
+Stack overflows are extreme exceptions, because it's often difficult to recover correctly from them. For this reason, it's important to ensure that the amount of stack used by your program doesn't grow in an unbounded fashion as your program proceeds, especially as you process large inputs. Furthermore, deep stacks can hurt in other ways; for example, the .NET garbage collector traverses the entire stack on every garbage collection. This can be expensive if your stacks are very deep.
 
 Because recursive functions are common in F# functional programming, this may seem to be a major problem. There is, however, one important case in which a function call recycles stack space eagerly: a *tail call*. A tail call is any call that is the last piece of work done by a function. For example, Listing 9-7 shows the same program with the last line deleted.
 
@@ -1547,11 +1547,11 @@ The code now runs to completion without a problem:
 
 When a tail call is made, the F# execution machinery can drop the current stack frame before executing the target function, rather than waiting for the call to complete. Sometimes this optimization is performed by the F# compiler. If the n = 1000000 check were removed in the previous program, the program would run indefinitely. (As an aside, note that n would cycle around to the negative numbers, because arithmetic is unchecked for overflow unless you open the module `FSharp.Core.Operators.Checked`.)
 
-Functions such as `tailCallRecursion` are known as *tail-recursive functions*. When you write recursive functions, you should check either that they’re tail recursive or that they won’t be used with inputs that cause them to recurse to an excessive depth. The following sections will give some examples of techniques you can use to make your functions tail recursive.
+Functions such as `tailCallRecursion` are known as *tail-recursive functions*. When you write recursive functions, you should check either that they're tail recursive or that they won't be used with inputs that cause them to recurse to an excessive depth. The following sections will give some examples of techniques you can use to make your functions tail recursive.
 
 ### Tail Recursion and List Processing
 
-Tail recursion is particularly important when you’re processing F# lists, because lists can be long, and recursion is the natural way to implement many list-processing functions. For example, here is a function to find the last element of a list (this must traverse the entire list, because F# lists are pointers to the head of the list):
+Tail recursion is particularly important when you're processing F# lists, because lists can be long, and recursion is the natural way to implement many list-processing functions. For example, here is a function to find the last element of a list (this must traverse the entire list, because F# lists are pointers to the head of the list):
 
 ```F#
 let rec last l =
@@ -1561,7 +1561,7 @@ let rec last l =
     | h::t -> last t
 ```
 
-This function is tail recursive, because no work happens after the recursive call last t. Many list functions are written most naturally in non-tail-recursive ways, however. Although it can be a little annoying to write these functions using tail recursion, it’s often better to use tail recursion than to leave the potential for stack overflow lying around your code. For example, the following function creates a list of length n in which every entry in the list is the value x:
+This function is tail recursive, because no work happens after the recursive call last t. Many list functions are written most naturally in non-tail-recursive ways, however. Although it can be a little annoying to write these functions using tail recursion, it's often better to use tail recursion than to leave the potential for stack overflow lying around your code. For example, the following function creates a list of length n in which every entry in the list is the value x:
 
 ```F#
 let rec replicateNotTailRecursiveA n x =
@@ -1580,7 +1580,7 @@ let rec replicateNotTailRecursiveB n x =
         x :: recursiveResult
 ```
 
-Clearly, a value is being constructed by the expression `x :: recursiveResult` after the recursive call `replicateNotTailRecursiveB (n - 1) x`. This means that the function isn’t tail recursive. The solution is to write the function using an *accumulating parameter*. This is often done by using an auxiliary function that accepts the accumulating parameter:
+Clearly, a value is being constructed by the expression `x :: recursiveResult` after the recursive call `replicateNotTailRecursiveB (n - 1) x`. This means that the function isn't tail recursive. The solution is to write the function using an *accumulating parameter*. This is often done by using an auxiliary function that accepts the accumulating parameter:
 
 ```F#
 let rec replicateAux n x acc =
@@ -1601,7 +1601,7 @@ let replicate n x =
 
 The F# compiler optimizes inner recursive functions such as these to produce an efficient pair of functions that pass extra arguments as necessary.
 
-When you’re processing lists, accumulating parameters often accumulate a list in reverse order. This means a call to `List.rev` may be required at the end of the recursion. For example, consider this implementation of `List.map`, which isn’t tail recursive:
+When you're processing lists, accumulating parameters often accumulate a list in reverse order. This means a call to `List.rev` may be required at the end of the recursion. For example, consider this implementation of `List.map`, which isn't tail recursive:
 
 ```F#
 let rec mapNotTailRecursive f inputList =
@@ -1685,7 +1685,7 @@ the list-processing functions in the F# library module `FSharp.Collections.List`
 
 ### Tail Recursion and Processing Unbalanced Trees
 
-This section will consider tail-recursion problems that are much less common in practice but for which it’s important to know the techniques to apply if required. The techniques also illustrate some important aspects of functional programming—in particular, an advanced technique called *continuation passing*.
+This section will consider tail-recursion problems that are much less common in practice but for which it's important to know the techniques to apply if required. The techniques also illustrate some important aspects of functional programming—in particular, an advanced technique called *continuation passing*.
 
 Tree-structured data are generally more difficult to process in a tail-recursive way than list-structured data are. For example, consider this tree structure:
 
@@ -1701,7 +1701,7 @@ let rec sizeNotTailRecursive tree =
 
 ```
 
-The implementation of this function isn’t tail recursive. Luckily, this is rarely a problem, especially if you can assume that the trees are balanced. A tree is balanced when the depth of each subtree is roughly the same. In that case, a tree of depth 1,000 will have about 21,000 entries. Even for a balanced tree of this size, the recursive calls to compute the overall size of the tree won’t recurse to a depth greater than 1,000—not deep enough to cause stack overflow, except when the routine is being called by some other function already consuming inordinate amounts of stack. Many data structures based on trees are balanced by design; for example, the Set and Map data structures implemented in the F# library are based on balanced binary trees. Some trees can be unbalanced, however. For example, you can explicitly make a highly unbalanced tree:
+The implementation of this function isn't tail recursive. Luckily, this is rarely a problem, especially if you can assume that the trees are balanced. A tree is balanced when the depth of each subtree is roughly the same. In that case, a tree of depth 1,000 will have about 21,000 entries. Even for a balanced tree of this size, the recursive calls to compute the overall size of the tree won't recurse to a depth greater than 1,000—not deep enough to cause stack overflow, except when the routine is being called by some other function already consuming inordinate amounts of stack. Many data structures based on trees are balanced by design; for example, the Set and Map data structures implemented in the F# library are based on balanced binary trees. Some trees can be unbalanced, however. For example, you can explicitly make a highly unbalanced tree:
 
 ```F#
 let rec mkBigUnbalancedTree n tree =
@@ -1728,11 +1728,11 @@ let rec sizeAcc acc tree =
 let size tree = sizeAcc 0 tree
 ```
 
-This algorithm works for tree6, because it’s biased toward accepting trees that are skewed to the right. The recursive call that processes the right branch is a tail call, while the call that processes the left branch isn’t. This may be okay if you have prior knowledge of the shape of your trees. This algorithm still risks a stack overflow, however, and you may have to change techniques. One way to do this is to use a much more general and important technique known as *continuation passing*.
+This algorithm works for tree6, because it's biased toward accepting trees that are skewed to the right. The recursive call that processes the right branch is a tail call, while the call that processes the left branch isn't. This may be okay if you have prior knowledge of the shape of your trees. This algorithm still risks a stack overflow, however, and you may have to change techniques. One way to do this is to use a much more general and important technique known as *continuation passing*.
 
 ### Using Continuations to Avoid Stack Overflows
 
-A continuation is a function that receives the result of an expression after it’s been computed. Listing 9-9 shows an example implementation of the previous algorithm that handles trees of arbitrary size.
+A continuation is a function that receives the result of an expression after it's been computed. Listing 9-9 shows an example implementation of the previous algorithm that handles trees of arbitrary size.
 
 Listing 9-9. Making a function tail recursive via an explicit continuation
 
@@ -1746,7 +1746,7 @@ let rec sizeCont tree cont =
 let size tree = sizeCont tree (fun x -> x)
 ```
 
-What’s going on here? Let’s look at the type of `sizeCont` and `size`:
+What's going on here? Let's look at the type of `sizeCont` and `size`:
 
 ```F#
 val sizeCont : tree:Tree -> cont:(int -> 'T) -> 'T
@@ -1755,7 +1755,7 @@ val size : tree:Tree -> int
 
 The type of `sizeCont tree cont` can be read as “compute the size of the tree and call cont with that size.” If you look at the type of `sizeCont`, you can see that it will call the second parameter of type `int -> 'T` at some point—how else could the function produce the final result of type `'T`? When you look at the implementation of `sizeCont`, you can see that it does call `cont` on both branches of the match.
 
-Now, if you look at recursive calls in `sizeCont`, you can see that they’re both tail calls:
+Now, if you look at recursive calls in `sizeCont`, you can see that they're both tail calls:
 
 ```F#
 sizeCont treeLeft (fun leftSize -> sizeCont treeRight (fun rightSize -> cont (leftSize + rightSize)))
@@ -1768,7 +1768,7 @@ That is, the first call to `sizeCont` is a tail call with a new continuation, as
 val it : int = 50001
 ```
 
-How did you turn a tree walk into a tail-recursive algorithm? The answer lies in the fact that continuations are function objects, which are allocated on the garbage-collected heap. Effectively, you’ve generated a work list represented by objects, rather than keeping a work list via a stack of function invocations.
+How did you turn a tree walk into a tail-recursive algorithm? The answer lies in the fact that continuations are function objects, which are allocated on the garbage-collected heap. Effectively, you've generated a work list represented by objects, rather than keeping a work list via a stack of function invocations.
 
 As it happens, using a continuation for both the right and left trees is overkill, and you can use an accumulating parameter for one side. This leads to a more efficient implementation, because each continuation-function object is likely to involve one allocation (short-lived allocations such as continuation objects are very cheap but not as cheap as not allocating at all). For example, Listing 9-10 shows a more efficient implementation.
 
@@ -1793,7 +1793,7 @@ The behavior of this version of the algorithm is:
 
 4. When all is done, all the left and right trees have been explored, and the final result is delivered to the (fun x -> x) continuation.
 
-As you can see from this example, continuation passing is a powerful control construct, although it’s used only occasionally in F# programming.
+As you can see from this example, continuation passing is a powerful control construct, although it's used only occasionally in F# programming.
 
 ### Another Example: Processing Syntax Trees
 
@@ -1807,7 +1807,7 @@ type Expr =
     | Num of int
 ```
 
-This data structure would be suitable for representing arithmetic expressions of the forms var, `expr + expr`, and `bind var = expr in expr`. This chapter and Chapter 11 are dedicated to techniques for representing and processing languages of this kind. As with all tree structures, most traversal algorithms over this type of abstract syntax tree aren’t naturally tail recursive. For example, here is a simple evaluator:
+This data structure would be suitable for representing arithmetic expressions of the forms var, `expr + expr`, and `bind var = expr in expr`. This chapter and Chapter 11 are dedicated to techniques for representing and processing languages of this kind. As with all tree structures, most traversal algorithms over this type of abstract syntax tree aren't naturally tail recursive. For example, here is a simple evaluator:
 
 ```F#
 type Env = Map<string, int>
@@ -1820,7 +1820,7 @@ let rec eval (env : Env) expr =
     | Num n -> n
 ```
 
-The recursive call `eval env rhs` isn’t tail recursive. For the vast majority of applications, you never need to worry about making this algorithm tail recursive. Stack overflow may be a problem; however, if bindings are nested to great depth, such as in `bind v1 = (bind v2 = ... (bind v1000000 = 1...)) in v1+v1`. If the syntax trees come from human-written programs, you can safely assume this won’t be the case. If you need to make the implementation tail recursive, however, you can use continuations, as shown in Listing 9-11.
+The recursive call `eval env rhs` isn't tail recursive. For the vast majority of applications, you never need to worry about making this algorithm tail recursive. Stack overflow may be a problem; however, if bindings are nested to great depth, such as in `bind v1 = (bind v2 = ... (bind v1000000 = 1...)) in v1+v1`. If the syntax trees come from human-written programs, you can safely assume this won't be the case. If you need to make the implementation tail recursive, however, you can use continuations, as shown in Listing 9-11.
 
 Listing 9-11. A tail-recursive expression evaluator using continuations
 
@@ -1846,13 +1846,13 @@ let eval env expr = evalCont env expr (fun x -> x)
 
 ##### Note
 
-programming with continuations can be tricky, and you should use them only when necessary, or use the F# async type as a way of managing continuation-based code. Where possible, abstract the kind of transformation you’re doing on your tree structure (for example, a map, fold, or bottom-up reduction) so you can concentrate on getting the traversal right. in the previous examples, the continuations all effectively played the role of a work list. You can also reprogram your algorithms to use work lists explicitly and to use accumulating parameters for special cases. Sometimes this is necessary to gain maximum efficiency, because an array or a queue can be an optimal representation of a work list. When you make a work list explicit, the implementation of an algorithm becomes more verbose, but in some cases debugging can become simpler.
+programming with continuations can be tricky, and you should use them only when necessary, or use the F# async type as a way of managing continuation-based code. Where possible, abstract the kind of transformation you're doing on your tree structure (for example, a map, fold, or bottom-up reduction) so you can concentrate on getting the traversal right. in the previous examples, the continuations all effectively played the role of a work list. You can also reprogram your algorithms to use work lists explicitly and to use accumulating parameters for special cases. Sometimes this is necessary to gain maximum efficiency, because an array or a queue can be an optimal representation of a work list. When you make a work list explicit, the implementation of an algorithm becomes more verbose, but in some cases debugging can become simpler.
 
 ---
 
 ## Summary
 
-This chapter covered some of the techniques you’re likely to use in your day-to-day F# programming when working with sequences, domain models, and tree-structured data. Nearly all the remaining chapters use some of the techniques described in this chapter, and Chapter 12 goes deeper into symbolic programming based on structured-data programming techniques.
+This chapter covered some of the techniques you're likely to use in your day-to-day F# programming when working with sequences, domain models, and tree-structured data. Nearly all the remaining chapters use some of the techniques described in this chapter, and Chapter 12 goes deeper into symbolic programming based on structured-data programming techniques.
 
-In the next chapter, you’ll learn about programming with numeric data using structural and statistical methods.
+In the next chapter, you'll learn about programming with numeric data using structural and statistical methods.
 

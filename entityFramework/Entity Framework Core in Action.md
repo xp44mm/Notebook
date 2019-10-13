@@ -12,7 +12,7 @@ Creating a .net Core Console application
 
 安装NuGet程序包`Microsoft.EntityFrameworkCore.SqlServer`
 
-### 1.8.2  The application’s DbContext
+### 1.8.2  The application's DbContext
 
 ```C#
 public class AppDbContext : DbContext
@@ -110,7 +110,7 @@ let main argv =
 
 顺便提一下，MyFirstEfCoreApp包含`ILoggerProvider`的示例代码。
 
-### 2.2.2  Creating an instance of the application’s DbContext
+### 2.2.2  Creating an instance of the application's DbContext
 
 数据库上下文的构造函数：
 
@@ -138,7 +138,7 @@ let buildOptions<'t when 't:> DbContext> (connection:string) =
     optionsBuilder.Options
 ```
 
-Creating an instance of the application’s `DbContext` to access the database
+Creating an instance of the application's `DbContext` to access the database
 
 源代码位于@EfCoreInAction\Test\UnitTests\DataLayer\Ch02_CreateDbContext.cs
 

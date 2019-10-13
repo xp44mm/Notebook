@@ -2,7 +2,7 @@
 
 This section will cover the foundational building block of F# functional programming: function values. We will begin with a simple and well-known example: using function values to transform one list into another.
 
-One of the primary uses of F# lists is as a general-purpose, concrete data structure for storing ordered input lists and ordered results. Input lists are often transformed into output lists using collection functions that transform, select, filter, and categorize elements of the list according to a range of criteria. These collection functions provide an excellent introduction to how to use function values. Let’s take a closer look at this in the following code sample, which continues from the definition of http from Listing 2-2 in Chapter 2:
+One of the primary uses of F# lists is as a general-purpose, concrete data structure for storing ordered input lists and ordered results. Input lists are often transformed into output lists using collection functions that transform, select, filter, and categorize elements of the list according to a range of criteria. These collection functions provide an excellent introduction to how to use function values. Let's take a closer look at this in the following code sample, which continues from the definition of http from Listing 2-2 in Chapter 2:
 
 ```F#
 > let sites = ["http://www.bing.com"; "http://www.google.com"];;
@@ -21,7 +21,7 @@ val it : (string * string) list =
 
 The first interaction defines sites as a literal list of URLs, and the second defines the function `fetch`. The third calls the collection function `List.map`. This accepts the function value `fetch` as the first argument and the list sites as the second argument. The function applies `fetch` to each element of the list and collects the results in a new list.
 
-Types are one useful way to help learn what a function does. Here’s the type of `List.map`:
+Types are one useful way to help learn what a function does. Here's the type of `List.map`:
 
 ```F#
 val map : mapping: ('T -> 'U) -> list: 'T list -> 'U list
@@ -33,13 +33,13 @@ This says `List.map` accepts a function value as the first argument and a list a
 
 ##### Tip
 
-You can often deduce the behavior of a function from its type, especially if its type involves type parameters. For example, look at the type of `List.map`. using type parameters, you can observe that the type `'T list` of the input list is related to the type `'T` accepted by the function passed as the first parameter. Similarly, the type `'U` returned by this function is related to the type `'U` list of the value returned by `List.map`. From this, it’s reasonable to conclude that `List.map` calls the function parameter for items in the list and constructs its result using the values returned.
+You can often deduce the behavior of a function from its type, especially if its type involves type parameters. For example, look at the type of `List.map`. using type parameters, you can observe that the type `'T list` of the input list is related to the type `'T` accepted by the function passed as the first parameter. Similarly, the type `'U` returned by this function is related to the type `'U` list of the value returned by `List.map`. From this, it's reasonable to conclude that `List.map` calls the function parameter for items in the list and constructs its result using the values returned.
 
 ---
 
 ### Using Function Values
 
-Function values are so common in F# programming that it’s convenient to define them without giving them names. Here is a simple example:
+Function values are so common in F# programming that it's convenient to define them without giving them names. Here is a simple example:
 
 ```F#
 > let primes = [2; 3; 5; 7];;
@@ -65,11 +65,11 @@ Here you see two things:
 
 - The argument of the anonymous function is a tuple pattern. Using a tuple pattern automatically extracts the second element from each tuple and gives it the name p within the body of the anonymous function.
 
-- Part of the tuple pattern is a wildcard pattern, indicated by an underscore. This indicates that you don’t care what the first part of the tuple is; you’re interested only in extracting the length from the second part of the pair.
+- Part of the tuple pattern is a wildcard pattern, indicated by an underscore. This indicates that you don't care what the first part of the tuple is; you're interested only in extracting the length from the second part of the pair.
 
 ### Computing with Collection Functions
 
-Functions such as `List.map` are called combinators or collection functions, and they’re powerful constructs, especially when combined with the other features of F#. Here is a longer example that uses the collection functions `Array.filter` and `List.map` to count the number of URL links in an HTML page and then collects stats on a group of pages (this sample uses the function http defined in Chapter 2):
+Functions such as `List.map` are called combinators or collection functions, and they're powerful constructs, especially when combined with the other features of F#. Here is a longer example that uses the collection functions `Array.filter` and `List.map` to count the number of URL links in an HTML page and then collects stats on a group of pages (this sample uses the function http defined in Chapter 2):
 
 ```F#
 let delimiters = [| ' '; '\n'; '\t'; '<'; '>'; '=' |]
@@ -164,7 +164,7 @@ In a sense, |> is function application in reverse. however, using |> has distinc
 
 - Clarity: When used in conjunction with functions such as `List.map`, the |> operator allows you to perform the data transformations and iterations in a forward-chaining, pipelined style.
 
-- Type inference: using the |> operator lets type information flow from input objects to the functions manipulating those objects. F# uses information collected from type inference to resolve some language constructs, such as property accesses and method overloading. this relies on information being propagated left to right through the text of a program. In particular, typing information to the right of a position isn’t taken into account when resolving property access and overloads.
+- Type inference: using the |> operator lets type information flow from input objects to the functions manipulating those objects. F# uses information collected from type inference to resolve some language constructs, such as property accesses and method overloading. this relies on information being propagated left to right through the text of a program. In particular, typing information to the right of a position isn't taken into account when resolving property access and overloads.
 
 For completeness, here is the type of the operator:
 
@@ -176,7 +176,7 @@ val (|>) : 'T -> ('T -> 'U) -> 'U
 
 ### Composing Functions with >>
 
-You saw earlier how to use the |> forward pipe operator to pipe values through a number of functions. This was a small example of the process of computing with functions, an essential and powerful programming technique in F#. This section will cover ways to compute new function values from existing ones using compositional techniques. First, let’s look at function composition. For example, consider the following code:
+You saw earlier how to use the |> forward pipe operator to pipe values through a number of functions. This was a small example of the process of computing with functions, an essential and powerful programming technique in F#. This section will cover ways to compute new function values from existing ones using compositional techniques. First, let's look at function composition. For example, consider the following code:
 
 ```F#
 let google = http "http://www.google.com"
@@ -203,7 +203,7 @@ F# is good at optimizing basic constructions of pipelines and composition sequen
 
 ### Building Functions with Partial Application
 
-Composing functions is just one way to compute interesting new functions. Another useful way is to use partial application. Here’s an example, with x and y in Cartesian coordinates:
+Composing functions is just one way to compute interesting new functions. Another useful way is to use partial application. Here's an example, with x and y in Cartesian coordinates:
 
 ```F#
 let shift (dx, dy) (px, py) = (px + dx, py + dy)
@@ -235,7 +235,7 @@ In the second example, the function `shift` takes two pairs as arguments. You bi
 
 ### Using Local Functions
 
-Partial application is one way in which functions can be computed rather than simply defined. This technique becomes very powerful when combined with additional local definitions. Here’s a simple and practical example, representing an idea common in graphics programming:
+Partial application is one way in which functions can be computed rather than simply defined. This technique becomes very powerful when combined with additional local definitions. Here's a simple and practical example, representing an idea common in graphics programming:
 
 ```F#
 open System.Drawing
@@ -271,7 +271,7 @@ val it : PointF = {X=200, Y=200}
 
 ```
 
-The intermediate values `scalex` and `scaley` are computed only once, despite the fact that you’ve called the resulting function `mapp` three times.
+The intermediate values `scalex` and `scaley` are computed only once, despite the fact that you've called the resulting function `mapp` three times.
 
 In the previous example, `mapx`, `mapy`, and `mapp` are local functions—functions defined locally as part of the implementation of `remap`. Local functions can be context dependent; in other words, they can be defined in terms of any values and parameters that happen to be in scope. Local functions are said to capture the values they depend on. Here, `mapx` is defined in terms of `scalex`, `scaley`, `r1`, and `r2` and captures all of these values.
 
@@ -279,13 +279,13 @@ In the previous example, `mapx`, `mapy`, and `mapp` are local functions—functi
 
 ##### Note
 
-local and partially applied functions are, if necessary, implemented by taking the closure of the variables they depend on and storing them away until needed. In optimized F# code, the F# compiler often avoids this and instead passes extra arguments to the function implementations. Closure is a powerful technique that is used frequently in this book. It’s often used in conjunction with functions, as in this chapter, but it is also used with object expressions, sequence expressions, and class definitions.
+local and partially applied functions are, if necessary, implemented by taking the closure of the variables they depend on and storing them away until needed. In optimized F# code, the F# compiler often avoids this and instead passes extra arguments to the function implementations. Closure is a powerful technique that is used frequently in this book. It's often used in conjunction with functions, as in this chapter, but it is also used with object expressions, sequence expressions, and class definitions.
 
 ---
 
 ### Iterating with Functions
 
-It’s common to use data to drive control. In functional programming, the distinction between data and control is often blurred: function values can be used as data, and data can influence control flow. One example is using a function such as `List.iter` to iterate over a list:
+It's common to use data to drive control. In functional programming, the distinction between data and control is often blurred: function values can be used as data, and data can influence control flow. One example is using a function such as `List.iter` to iterate over a list:
 
 ```F#
 let sites = ["http://www.bing.com"; "http://www.google.com"; "http://search.yahoo.com"]
@@ -296,7 +296,7 @@ The function `List.iter` simply calls the given function (here an anonymous func
 
 ### Abstracting Control with Functions
 
-As a second example of how you can abstract control using functions, let’s consider the common pattern of timing the execution of an operation (measured in wall-clock time). First, let’s explore how to use `System.DateTime.Now` to get the wall-clock time:
+As a second example of how you can abstract control using functions, let's consider the common pattern of timing the execution of an operation (measured in wall-clock time). First, let's explore how to use `System.DateTime.Now` to get the wall-clock time:
 
 ```F#
 > open System;;
@@ -369,7 +369,7 @@ val f : (string -> unit)
 
 ### Some Common Uses of Function Values
 
-The function `remap` from the previous section generates values of type `PointF -> PointF`, representing “transformations for points.” You haven’t needed to define a new type for “transformations”—you just use functions as a way of modeling transformations. Many useful concepts can be modeled using function types and values. For example:
+The function `remap` from the previous section generates values of type `PointF -> PointF`, representing “transformations for points.” You haven't needed to define a new type for “transformations”—you just use functions as a way of modeling transformations. Many useful concepts can be modeled using function types and values. For example:
 
 - Actions. The type `unit -> unit` can be used to model actions—operations that run and perform some unspecified side effect. For example, consider the expression (`fun () -> printfn "Hello World"`).
 

@@ -4,7 +4,7 @@ All experienced programmers are familiar with the concept of precomputation, in 
 
 ### Precomputation and Partial Application
 
-Let’s say you’re given a large input list of words, and you want to compute a function that checks whether a word is in this list. You would do this:
+Let's say you're given a large input list of words, and you want to compute a function that checks whether a word is in this list. You would do this:
 
 ```F#
 let isWord (words : string list) =
@@ -50,7 +50,7 @@ let isCapitalSlow3 word = isWordSlow3 ["London"; "Paris"; "Warsaw"; "Tokyo"] wor
 
 The first uses an inappropriate data structure for the lookup (an F# list, which has O(n) lookup time), and the second attempts to build a better intermediate data structure (an F# set, which has O(log n) lookup time), but does so on every invocation.
 
-There are often trade-offs among different intermediate data structures, or when deciding whether to use them at all. For example, in the previous example you could just as well use a `HashSet` as the internal data structure. This approach, in general, gives better lookup times (constant time), but it requires slightly more care to use, because a `HashSet` is a mutable data structure. In this case, you don’t mutate the data structure after you create it, and you don’t reveal it to the outside world, so it’s entirely safe:
+There are often trade-offs among different intermediate data structures, or when deciding whether to use them at all. For example, in the previous example you could just as well use a `HashSet` as the internal data structure. This approach, in general, gives better lookup times (constant time), but it requires slightly more care to use, because a `HashSet` is a mutable data structure. In this case, you don't mutate the data structure after you create it, and you don't reveal it to the outside world, so it's entirely safe:
 
 ```F#
 let isWord (words : string list) =
@@ -60,9 +60,9 @@ let isWord (words : string list) =
 
 ### Precomputation and Objects
 
-The examples of precomputation given thus far are variations on the theme of computing functions, introduced in Chapter 3. The functions, when computed, capture the precomputed intermediate data structures. It’s clear, however, that precomputing via partial applications and functions can be subtle, because it matters when you apply the first argument of a function (triggering the construction of intermediate data structures) and when you apply the subsequent arguments (triggering the real computation that uses the intermediate data structures).
+The examples of precomputation given thus far are variations on the theme of computing functions, introduced in Chapter 3. The functions, when computed, capture the precomputed intermediate data structures. It's clear, however, that precomputing via partial applications and functions can be subtle, because it matters when you apply the first argument of a function (triggering the construction of intermediate data structures) and when you apply the subsequent arguments (triggering the real computation that uses the intermediate data structures).
 
-Luckily, functions don’t just have to compute functions; they can also return more sophisticated values, such as objects. This can help make it clear when precomputation is being performed. It also allows you to build richer services based on precomputed results. For example, Listing 4-1 shows how to use precomputation as part of building a name-lookup service. The returned object includes both a Contains method and a ClosestPrefixMatch method.
+Luckily, functions don't just have to compute functions; they can also return more sophisticated values, such as objects. This can help make it clear when precomputation is being performed. It also allows you to build richer services based on precomputed results. For example, Listing 4-1 shows how to use precomputation as part of building a name-lookup service. The returned object includes both a Contains method and a ClosestPrefixMatch method.
 
 ##### Listing 4-1. Precomputing a eord table before creating an object
 
@@ -139,7 +139,7 @@ val it : int * string = (832040, "0.066100 ms")
 val it : int * string = (832040, "0.077400 ms")
 ```
 
-On one of our laptops, with n = 30, there’s an order of magnitude speed up from the first to second run. Listing 4-2 shows how to write a generic function that encapsulates the memoization technique.
+On one of our laptops, with n = 30, there's an order of magnitude speed up from the first to second run. Listing 4-2 shows how to write a generic function that encapsulates the memoization technique.
 
 ##### Listing 4-2. A generic memoization function
 
@@ -166,14 +166,14 @@ val memoize : f:('T -> 'U) -> ('T -> 'U) when 'T : equality
 val fibFast : (int -> int)
 ```
 
-In the definition of fibFast, you use let rec because fibFast is self-referential—that is, used as part of its own definition. You can think of fibFast as a computed, recursive function. Such a function generates an informational warning when used in F# code, because it’s important to understand when this feature of F# is being used; you then suppress the warning with `#nowarn "40"`. As with the examples of computed functions from the previous section, omit the extra argument from the application of memoize, because including it would lead to a fresh memoization table being allocated each time the function fibNotFast was called:
+In the definition of fibFast, you use let rec because fibFast is self-referential—that is, used as part of its own definition. You can think of fibFast as a computed, recursive function. Such a function generates an informational warning when used in F# code, because it's important to understand when this feature of F# is being used; you then suppress the warning with `#nowarn "40"`. As with the examples of computed functions from the previous section, omit the extra argument from the application of memoize, because including it would lead to a fresh memoization table being allocated each time the function fibNotFast was called:
 
 ```F#
 let rec fibNotFast n =
     memoize (fun n -> if n <= 2 then 1 else fibNotFast (n - 1) + fibNotFast (n - 2)) n
 ```
 
-Due to this subtlety, it’s often a good idea to define your memoization strategies to generate objects other than functions (think of functions as very simple kinds of objects). For example, Listing 4-3 shows how to define a new variation on memoize that returns a Table object that supports both a lookup and a Discard method.
+Due to this subtlety, it's often a good idea to define your memoization strategies to generate objects other than functions (think of functions as very simple kinds of objects). For example, Listing 4-3 shows how to define a new variation on memoize that returns a Table object that supports both a lookup and a Discard method.
 
 ##### Listing 4-3. A generic memoization service
 
@@ -242,7 +242,7 @@ val it : int = 5
 
 ##### Note  
 
-memoization relies on the memoized function being stable and idempotent. In other words, it always returns the same results, and no additional interesting side effects are caused by further invocations of the function. In addition, memoization strategies rely on mutable internal tables. the implementation of memoize shown in this chapter isn’t thread safe, because it doesn’t lock this table during reading or writing. this is fine if the computed function is used only from at most one thread at a time, but in a multithreaded application, use memoization strategies that utilize internal tables protected by locks, such as a .net ReaderWriterLock. Chapter 11 will further discuss thread synchronization and mutable state.
+memoization relies on the memoized function being stable and idempotent. In other words, it always returns the same results, and no additional interesting side effects are caused by further invocations of the function. In addition, memoization strategies rely on mutable internal tables. the implementation of memoize shown in this chapter isn't thread safe, because it doesn't lock this table during reading or writing. this is fine if the computed function is used only from at most one thread at a time, but in a multithreaded application, use memoization strategies that utilize internal tables protected by locks, such as a .net ReaderWriterLock. Chapter 11 will further discuss thread synchronization and mutable state.
 
 ---
 
@@ -274,11 +274,11 @@ Lazy values are implemented by a simple data structure containing a mutable refe
 
 ### Other Variations on Caching and Memoization
 
-You can apply many different caching and memoization techniques in advanced programming, and this chapter can’t cover them all. Some common variations are:
+You can apply many different caching and memoization techniques in advanced programming, and this chapter can't cover them all. Some common variations are:
 
 * Using an internal data structure that records only the last invocation of a function and basing the lookup on a very cheap test on the input.
 
-* Using an internal data structure that contains both a fixed-size queue of input keys and a dictionary of results. Entries are added to both the table and the queue as they’re computed. When the queue is full, the input keys for the oldest computed results are dequeued, and the computed results are discarded from the dictionary.
+* Using an internal data structure that contains both a fixed-size queue of input keys and a dictionary of results. Entries are added to both the table and the queue as they're computed. When the queue is full, the input keys for the oldest computed results are dequeued, and the computed results are discarded from the dictionary.
 
 * Some of these techniques are encapsulated in the .NET type `System.Runtime.Caching.MemoryCache` that is found in the system library System.Runtime.Caching.dll.
 
@@ -315,5 +315,5 @@ let (:=) r v = r.contents <- v
 let ref v = {contents = v}
 ```
 
-When using F# 4.0 you don’t need to use ref cells as much as with previous versions of F#, as a single ¡°let mutable¡± can usually be used as an alternative.
+When using F# 4.0 you don't need to use ref cells as much as with previous versions of F#, as a single ¡°let mutable¡± can usually be used as an alternative.
 

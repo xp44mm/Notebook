@@ -34,9 +34,9 @@ You'll explore each component of the Rx layers as well as their interactions thr
 
 ### 1.2.2 Rx on the client and server
 
-Rx is a good fit with event-driven applications. This makes sense because events (as you saw earlier) are the imperative way to create time-variant values. Historically, event-driven programming was seen mainly in client-side technologies because of the user interaction that was implemented as events. For example, you may have worked with OnMouseMove or OnKeyPressed events. For that reason, it’s no wonder that you see many client applications using Rx. Furthermore, some client frameworks are based on Rx, such as ReactiveUI (http://reactiveui.net). 
+Rx is a good fit with event-driven applications. This makes sense because events (as you saw earlier) are the imperative way to create time-variant values. Historically, event-driven programming was seen mainly in client-side technologies because of the user interaction that was implemented as events. For example, you may have worked with OnMouseMove or OnKeyPressed events. For that reason, it's no wonder that you see many client applications using Rx. Furthermore, some client frameworks are based on Rx, such as ReactiveUI (http://reactiveui.net). 
 
-But let me assure you that Rx isn’t client-side-only technology. On the contrary, many scenarios exist for server-side code that Rx will fit perfectly. In addition, as I said before, Rx is used for large applications such as Microsoft Cortana, Netflix, and complex event processing (CEP) using Microsoft StreamInsight. Rx is an excellent library for dealing with messages that the application receives, and it doesn’t matter whether it’s running on a service layer or a client layer. 
+But let me assure you that Rx isn't client-side-only technology. On the contrary, many scenarios exist for server-side code that Rx will fit perfectly. In addition, as I said before, Rx is used for large applications such as Microsoft Cortana, Netflix, and complex event processing (CEP) using Microsoft StreamInsight. Rx is an excellent library for dealing with messages that the application receives, and it doesn't matter whether it's running on a service layer or a client layer. 
 
 ### 1.2.3 Observables
 
@@ -150,19 +150,19 @@ Because you can add operators to the pipeline not only when the observable is cr
 
 ### 1.2.6 Marble diagrams
 
-A picture is worth a thousand words. That’s why, when explaining reactive programming and Rx in particular, it’s important to show the execution pipeline of the observable sequences. In this book, I use marble diagrams to help you understand the operations and their relationships.
+A picture is worth a thousand words. That's why, when explaining reactive programming and Rx in particular, it's important to show the execution pipeline of the observable sequences. In this book, I use marble diagrams to help you understand the operations and their relationships.
 
-Marble diagrams use a horizontal axis to represent the observable sequence. Each notification that’s carried on the observable is marked with a symbol, usually a circle (although other symbols are used from time to time), to distinguish between values. The value of the notification is written inside the symbol or as a note above it, as shown in figure 1.9.
+Marble diagrams use a horizontal axis to represent the observable sequence. Each notification that's carried on the observable is marked with a symbol, usually a circle (although other symbols are used from time to time), to distinguish between values. The value of the notification is written inside the symbol or as a note above it, as shown in figure 1.9.
 
 Figure 1.9 Marble diagram with two observable sequences 
 
-In the marble diagram, time goes from left to right, and the distance between the symbols shows the amount of time that has passed between the two events. The longer the distance, the more time has passed, but only in a relative way. There’s no way to know whether the time is in seconds, hours, or another measurement unit. If this information is important, it’ll be written as a note.
+In the marble diagram, time goes from left to right, and the distance between the symbols shows the amount of time that has passed between the two events. The longer the distance, the more time has passed, but only in a relative way. There's no way to know whether the time is in seconds, hours, or another measurement unit. If this information is important, it'll be written as a note.
 
 To show that the observable has completed, you use the | symbol. To show that an error occurred (which also ends the observable), you use X. Figure 1.10 shows examples.
 
 Figure 1.10 An observable can end because it has completed or because an error occurred.
 
-To show the output of an operator (or multiple operators) on an observable, you can use an arrow that indicates the relationship between the source event and the result. Remember that each operator (at least the vast majority of operators) returns observables of its own, so in the diagram I’m writing the operator that’s part of the pipeline on the left side and the line that represents the observable returned from it on the right side. Figure 1.11 shows a marble diagram for the previous example of an observable sequence of strings that shows only the strings that begin with A and transforms them to uppercase.
+To show the output of an operator (or multiple operators) on an observable, you can use an arrow that indicates the relationship between the source event and the result. Remember that each operator (at least the vast majority of operators) returns observables of its own, so in the diagram I'm writing the operator that's part of the pipeline on the left side and the line that represents the observable returned from it on the right side. Figure 1.11 shows a marble diagram for the previous example of an observable sequence of strings that shows only the strings that begin with A and transforms them to uppercase.
 
 Figure 1.11 Marble diagram that shows the output of various operators on the observable
 
@@ -216,30 +216,30 @@ In either case, if the time that it takes the system to respond is reasonable, y
 
 ### 1.3.2 Resiliency
 
-Every once in a while, your system might face failures. Networks disconnect, hard drives fail, electricity shuts down, or an inner component experiences an exceptional situation. A resilient system is one that stays responsive in the case of a failure. In other words, when you write your application, you want to handle failures in a way that doesn’t prevent the user from getting a response.
+Every once in a while, your system might face failures. Networks disconnect, hard drives fail, electricity shuts down, or an inner component experiences an exceptional situation. A resilient system is one that stays responsive in the case of a failure. In other words, when you write your application, you want to handle failures in a way that doesn't prevent the user from getting a response.
 
 The way you add resiliency to an application is different from one application to another. One application might catch an exception and return the application to a consistent state. Another application might add more servers so that if one server crashes, another one will compensate and handle the request. A good principle you should follow to increase the resiliency of your system is to avoid a single point of failure. This can be done by making each part of your application isolated from the other parts; you might separate parts into different AppDomains, different processes, different containers, or different machines. By isolating the parts, you reduce the risk that the system will be unavailable as a whole.
 
 ### 1.3.3 Elasticity
 
-The application that you’re writing will be used by a number of users—hopefully, a large number of users. Each user will make requests to your system that may result in a high load that your system will need to deal with. Each component in your system has a limit on the load level it can deal with, and when the load goes above that limit, requests will start failing and the component itself may crash. This situation of increasing load can also be caused by a distributed denial of service (DDoS) attack that your system is experiencing.
+The application that you're writing will be used by a number of users—hopefully, a large number of users. Each user will make requests to your system that may result in a high load that your system will need to deal with. Each component in your system has a limit on the load level it can deal with, and when the load goes above that limit, requests will start failing and the component itself may crash. This situation of increasing load can also be caused by a distributed denial of service (DDoS) attack that your system is experiencing.
 
 To overcome the causes of overload, your system needs to be elastic: it needs to span instances as the load increases and remove instances as the load decreases. This kind of automatic behavior has been much more apparent since the cloud entered our lives. When running on the cloud, you get the illusion of infinite resources; with a few simple configurations, you can set your application to scale up or down, depending on the threshold you define. You need to remember only that a cost is associated with running extra servers.
 
 
 ### 1.3.4 Message driven
 
-At this point, you can say that responsiveness is your goal, resiliency is the way to ensure that you keep being responsive, and elasticity is one method for being resilient. The missing piece of the puzzle of reactive systems is the way that the parts of a system communicate with each other to allow for the type of reactiveness we’ve explored.
+At this point, you can say that responsiveness is your goal, resiliency is the way to ensure that you keep being responsive, and elasticity is one method for being resilient. The missing piece of the puzzle of reactive systems is the way that the parts of a system communicate with each other to allow for the type of reactiveness we've explored.
 
-Asynchronous message passing is the communication process that best suits our needs, because it allows us to control the load level on each component without limiting producers—normally with an intermediate channel such as a queue or service bus. It allows routing of messages to the right destination and resending of failing messages in case a component crashes. It also adds transparency to the inner system components, because users don’t need to know the internal system structure except the type of messages it can handle. Being message driven is what makes all the other reactive concepts possible. Figure 1.12 shows how the message-driven approach using a message queue helps level the rate of message processing in the system and enables resiliency and elasticity.
+Asynchronous message passing is the communication process that best suits our needs, because it allows us to control the load level on each component without limiting producers—normally with an intermediate channel such as a queue or service bus. It allows routing of messages to the right destination and resending of failing messages in case a component crashes. It also adds transparency to the inner system components, because users don't need to know the internal system structure except the type of messages it can handle. Being message driven is what makes all the other reactive concepts possible. Figure 1.12 shows how the message-driven approach using a message queue helps level the rate of message processing in the system and enables resiliency and elasticity.
 
-Figure 1.12 The relationship of a message-driven approach to load leveling and elasticity. On the left, messages are arriving at a high frequency, but system processing is leveled to a constant rate, and the queue is filling faster than it’s emptied. On the right, even if the processing worker role has crashed, users can still fill the queue; and when the system recovers and adds a new worker, the processing continues.
+Figure 1.12 The relationship of a message-driven approach to load leveling and elasticity. On the left, messages are arriving at a high frequency, but system processing is leveled to a constant rate, and the queue is filling faster than it's emptied. On the right, even if the processing worker role has crashed, users can still fill the queue; and when the system recovers and adds a new worker, the processing continues.
 
-In the figure, the participants are communicating in a message-driven approach through the message queue. The client sends a message that’s later retrieved by the server. This asynchronous communication model provides greater control over the processing in the system—controlling the rate and dealing with failures. Many implementations for message queuing exist, with different feature sets. Some allow the persistence of the messages, which provides durability, and some also give a “transactional” delivery mode that locks the message until the consumer signals that the processing completed successfully. No matter which message queue (or message-driven platform) you choose, you’ll need to somehow get ahold of the messages that were sent and start processing them. This is where Rx fits in.
+In the figure, the participants are communicating in a message-driven approach through the message queue. The client sends a message that's later retrieved by the server. This asynchronous communication model provides greater control over the processing in the system—controlling the rate and dealing with failures. Many implementations for message queuing exist, with different feature sets. Some allow the persistence of the messages, which provides durability, and some also give a “transactional” delivery mode that locks the message until the consumer signals that the processing completed successfully. No matter which message queue (or message-driven platform) you choose, you'll need to somehow get ahold of the messages that were sent and start processing them. This is where Rx fits in.
 
 ### 1.3.5 Where is Rx?
 
-The Reactive Extensions library comes into play inside the applications that compose a reactive system, and it relates to the message-driven concept. Rx isn’t the mechanism to move messages between applications or servers, but rather it’s the mechanism that’s responsible for handling the messages when they arrive and passing them along the chain of execution inside the application. It’s important to state that working with Rx is something you can do even if you’re not developing a full system with many components. Even a single application can find Rx useful for reacting to events and the types of messages that the application may want to process. The relationships between all the Reactive Manifesto concepts and Rx are captured in figure 1.13.
+The Reactive Extensions library comes into play inside the applications that compose a reactive system, and it relates to the message-driven concept. Rx isn't the mechanism to move messages between applications or servers, but rather it's the mechanism that's responsible for handling the messages when they arrive and passing them along the chain of execution inside the application. It's important to state that working with Rx is something you can do even if you're not developing a full system with many components. Even a single application can find Rx useful for reacting to events and the types of messages that the application may want to process. The relationships between all the Reactive Manifesto concepts and Rx are captured in figure 1.13.
 
 ```
 Message driven + Rx
@@ -257,7 +257,7 @@ Resilience -> Elastic
 
 Figure 1.13 The relationships between the Reactive Manifesto core concepts. Rx is positioned inside the message-driven concept, because Rx provides abstractions to handle messages as they enter the application.
 
-To get a fully reactive system, all the concepts in the diagram must exist. Each one can be implemented differently in different systems. Rx is one way to allow easier consumption of messages, so it’s shown as part of the message-driven block. Rx was introduced as a way to handle asynchronous and event-based programs, as in the case of messages, so it’s important that I explain what it means to be asynchronous and why it’s important.
+To get a fully reactive system, all the concepts in the diagram must exist. Each one can be implemented differently in different systems. Rx is one way to allow easier consumption of messages, so it's shown as part of the message-driven block. Rx was introduced as a way to handle asynchronous and event-based programs, as in the case of messages, so it's important that I explain what it means to be asynchronous and why it's important.
 
 ## 1.4 Understanding asynchrony
 
@@ -269,7 +269,7 @@ Asynchronous message passing is a key trait of a reactive system. But what exact
 
 This type of sequence feels like a waste of time (or, better said, a waste of resources), so imagine how your applications feel when you do the same for them. The next section demonstrates this. 
 
-### 1.4.1 It’s all about resource use
+### 1.4.1 It's all about resource use
 
 Imagine what your life would be like if you had to wait for every single operation to complete before you could do something else. Think of the resources that would be waiting and used at that time. The same issues are also relevant in computer science: 
 
@@ -279,7 +279,7 @@ response = LongWebRequest();
 entities = LongDatabaseQuery();
 ```
 
-In this synchronous code fragment, LongDatabaseQuery won’t start execution until LongWebRequest and LongDiskWrite complete. During the time that each method is executed, the calling thread is blocked and the resources it holds are practically wasted and can’t be used to serve other requests or handle other events. If this were happening on the UI thread, the application would look frozen until the execution finishes. If this were happening on a server application, at some point you might run out of free threads and requests would start being rejected. In both cases, the application stops being responsive.
+In this synchronous code fragment, LongDatabaseQuery won't start execution until LongWebRequest and LongDiskWrite complete. During the time that each method is executed, the calling thread is blocked and the resources it holds are practically wasted and can't be used to serve other requests or handle other events. If this were happening on the UI thread, the application would look frozen until the execution finishes. If this were happening on a server application, at some point you might run out of free threads and requests would start being rejected. In both cases, the application stops being responsive.
 
 The total time it takes to run the preceding code fragment is as follows: 
 
@@ -287,9 +287,9 @@ total_time = LongDiskWrite_time + LongWebRequest_time + LongDatabaseQuery_time
 
 The total completion time is the sum of the completion time of its components. If you could start an operation without waiting for a previous operation to complete, you could use your resources much better. This is what asynchronous execution is for.
 
-Asynchronous execution means that an operation is started, but its execution is happening in the background and the caller isn’t blocked. Instead, the caller is notified when the operation is completed. In that time, the caller can continue to do useful work.
+Asynchronous execution means that an operation is started, but its execution is happening in the background and the caller isn't blocked. Instead, the caller is notified when the operation is completed. In that time, the caller can continue to do useful work.
 
-In the food-ordering example, an asynchronous approach would be similar to sitting at the table and being served by a waiter. First, you sit at the table, and the waiter comes to hand you the menu and leaves. While you’re deciding what to order, the waiter is still available to other customers. When you’ve decided what meal you want, the waiter comes back and takes your order. While the food is being prepared, you’re free to chat, use your phone, or enjoy the view. You’re not blocked (and neither is the waiter). When the food is ready, the waiter brings it to your table and goes back to serve other customers until you request the bill and pay.
+In the food-ordering example, an asynchronous approach would be similar to sitting at the table and being served by a waiter. First, you sit at the table, and the waiter comes to hand you the menu and leaves. While you're deciding what to order, the waiter is still available to other customers. When you've decided what meal you want, the waiter comes back and takes your order. While the food is being prepared, you're free to chat, use your phone, or enjoy the view. You're not blocked (and neither is the waiter). When the food is ready, the waiter brings it to your table and goes back to serve other customers until you request the bill and pay.
 
 This model is asynchronous: tasks are executed concurrently, and the time of execution is different from the time of the request. This way, the resources (such as the waiter) are free to handle more requests.
 
@@ -307,7 +307,7 @@ In both cases, the calling thread is free to execute other tasks and handle othe
 
 ---
 
-There’s more than one way to run code asynchronously, and it depends on the language that’s used. Appendix A shows the ways this can be done in C# and dives deeper into bits and bytes of each one. For now, let’s look at one example of doing asynchronous work by using the .NET implementation of futures—the `Task` class:
+There's more than one way to run code asynchronously, and it depends on the language that's used. Appendix A shows the ways this can be done in C# and dives deeper into bits and bytes of each one. For now, let's look at one example of doing asynchronous work by using the .NET implementation of futures—the `Task` class:
 
 The asynchronous version of the preceding code fragment looks like the following:
 
@@ -318,7 +318,7 @@ var taskC = LongDatabaseQueryAsync();
 Task.WaitAll(taskA, taskB, taskC);
 ```
 
-In this version, each method returns `Task<T>`. This class represents an operation that’s being executed in the background. When each method is called, the calling thread isn’t blocked, and the method returns immediately. Then the next method is called while the previous method is still executing. When all the methods are called, you wait for their completion by using the `Task.WaitAll` method that gets a collection of tasks and blocks until all of them are completed. Another way to write this is as follows:
+In this version, each method returns `Task<T>`. This class represents an operation that's being executed in the background. When each method is called, the calling thread isn't blocked, and the method returns immediately. Then the next method is called while the previous method is still executing. When all the methods are called, you wait for their completion by using the `Task.WaitAll` method that gets a collection of tasks and blocks until all of them are completed. Another way to write this is as follows:
 
 ```C#
 taskA = LongDiskWriteAsync();
@@ -329,7 +329,7 @@ taskB.Wait();
 taskC.Wait();
 ```
 
-This way, you get the same result; you wait for each task to complete (while they’re still running in the background). If a task is already completed when you call the Wait method, it will return immediately.
+This way, you get the same result; you wait for each task to complete (while they're still running in the background). If a task is already completed when you call the Wait method, it will return immediately.
 
 The total time it takes to run the asynchronous version of the code fragment is as follows:
 
@@ -339,7 +339,7 @@ Because all of the methods are running concurrently (and maybe even in parallel)
 
 ### 1.4.2 Asynchronicity and Rx
 
-Asynchronous execution isn’t limited to being handled only by using `Task<T>`. In appendix A, you’ll be introduced to other patterns used inside the .NET Framework to provide asynchronous execution.
+Asynchronous execution isn't limited to being handled only by using `Task<T>`. In appendix A, you'll be introduced to other patterns used inside the .NET Framework to provide asynchronous execution.
 
 Looking back at `IObservable<T>`, the Rx representation of a time-variant variable, you can use it to represent any asynchronous pattern, so when the asynchronous execution completes (successfully or with an error), the chain of execution will run and the dependencies will be evaluated. Rx provides methods for transforming the various types of asynchronous execution (such as `Task<T>`) to `IObservable<T>`.
 
@@ -359,14 +359,14 @@ private Task<IEnumerable<Discount>> GetDiscounts()
 }
 ```
 
-In this example, you’re reacting to the connectivity changes that are carried on the myConnectivity observable. Each time a change in connectivity occurs, you check to see whether it’s because you’re online, and if so, you call the asynchronous GetDiscounts method. When the method execution is complete, you select the result that was returned. This result is what will be pushed to the observers of the newDiscounts observable that was created from your code.
+In this example, you're reacting to the connectivity changes that are carried on the myConnectivity observable. Each time a change in connectivity occurs, you check to see whether it's because you're online, and if so, you call the asynchronous GetDiscounts method. When the method execution is complete, you select the result that was returned. This result is what will be pushed to the observers of the newDiscounts observable that was created from your code.
 
 
 ## 1.5 Understanding events and streams
 
-In a software system, an event is a type of message that’s used to indicate that something has happened. The event might represent a technical occurrence—for example, in a GUI application you might see events on each key that was pressed or each mouse movement. The event can also represent a business occurrence, such as a money transaction that was completed in a financial system.
+In a software system, an event is a type of message that's used to indicate that something has happened. The event might represent a technical occurrence—for example, in a GUI application you might see events on each key that was pressed or each mouse movement. The event can also represent a business occurrence, such as a money transaction that was completed in a financial system.
 
-An event is raised by an event source and consumed by an event handler. As you’ve seen, events are one way to represent time-variant values. And in Rx, the event source can be represented by the observable, and an event handler can be represented by the observer. But what about the simple data that our application is using, such as data sitting in a database or fetched from a web server. Does it have a place in the reactive world?
+An event is raised by an event source and consumed by an event handler. As you've seen, events are one way to represent time-variant values. And in Rx, the event source can be represented by the observable, and an event handler can be represented by the observer. But what about the simple data that our application is using, such as data sitting in a database or fetched from a web server. Does it have a place in the reactive world?
 
 ### 1.5.1 Everything is a stream
 
@@ -384,11 +384,11 @@ Data stream -> Inner module
 
 Figure 1.15 Data in motion and data at rest as one data stream. The connection points from the outside environment are a perfect fit for creating observables. Those observables can be merged easily with Rx to create a merged observable that the inner module can subscribe to without knowing the exact source of a data element.
 
-No matter what type of data you use in your application, it’s time to understand that everything can be observed as a stream, even data at rest and data that looks static to your application. For example, configuration data is perceived as static, but even configuration changes at some point, either after a long time or short time. From your application’s perspective, it doesn’t matter; you want to be reactive and handle those changes as they happen. When you look at the data at rest as another data stream, you can more easily combine both types of data. For your application, it doesn’t matter where the data came from.
+No matter what type of data you use in your application, it's time to understand that everything can be observed as a stream, even data at rest and data that looks static to your application. For example, configuration data is perceived as static, but even configuration changes at some point, either after a long time or short time. From your application's perspective, it doesn't matter; you want to be reactive and handle those changes as they happen. When you look at the data at rest as another data stream, you can more easily combine both types of data. For your application, it doesn't matter where the data came from.
 
 For example, application startup usually loads data from its persisted storage to restore its state (the one that was saved before the application was closed). This state can, of course, change during the application run. The inner parts of your application that care about the state can look at the data stream that carries it. When the application starts, the stream will deliver the data that was loaded, and when the state changes, the stream will carry the updates.
 
-A nice analogy I like to use for explaining streams is a water hose, but this hose has data packets going through it, just like the one you see in figure 1.16. When using a water hose, you can do many things with it. You can put filters at the end. You can add different hose heads that give different functionality. You can add pressure monitors to help you regulate the flow. You can do the same things with your data stream. You’ll want to build a pipeline that lets the information flow through it, to eventually give an end result that suits your logic; this includes filtering, transformations, grouping, merging, and so on.
+A nice analogy I like to use for explaining streams is a water hose, but this hose has data packets going through it, just like the one you see in figure 1.16. When using a water hose, you can do many things with it. You can put filters at the end. You can add different hose heads that give different functionality. You can add pressure monitors to help you regulate the flow. You can do the same things with your data stream. You'll want to build a pipeline that lets the information flow through it, to eventually give an end result that suits your logic; this includes filtering, transformations, grouping, merging, and so on.
 
 The data and event streams are a perfect fit for Rx observables. Abstracting them with an IObservable enables you to make a composition of the operators and create a complex pipeline of execution. This is similar to what you did with the Shoppy example, where a call to a server obtained the discounts as part of a more complex pipeline of execution that also used filtering (on the connectivity) and eventually refreshed the view (like a sprinkler splashing water).
 
@@ -420,7 +420,7 @@ This chapter covered what being reactive means and how you can use Rx to impleme
 
   * After an observable notifies an observer on its completions or about an error, no more notifications will be emitted.
 
-  * Observables don’t always complete; they can be providers of potentially unbounded notifications.
+  * Observables don't always complete; they can be providers of potentially unbounded notifications.
 
   * Observables can be “quiet,” meaning they have never pushed any element and never will.
 
@@ -434,6 +434,6 @@ This chapter covered what being reactive means and how you can use Rx to impleme
 
   * Asynchronicity is one of the most important parts of being reactive, because it allows you to better use your resources and thus makes the application more responsive.
 
-  * “Everything is a stream” explains why Rx makes it easy to work with any source, even if it’s a data source such as a database.
+  * “Everything is a stream” explains why Rx makes it easy to work with any source, even if it's a data source such as a database.
 
-In the next chapter, you’ll get the chance to build your first Rx application, and you’ll compare it with writing the same application in the traditional event-handling way. You’ll see for yourself how awesome Rx is. 
+In the next chapter, you'll get the chance to build your first Rx application, and you'll compare it with writing the same application in the traditional event-handling way. You'll see for yourself how awesome Rx is. 

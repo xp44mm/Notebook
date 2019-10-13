@@ -2,7 +2,7 @@
 
 A classic application of symbolic programming is working with algebraic expressions like the kind you find in high school mathematics. In this section you will learn how to do this kind of programming in F#.
 
-Let’s take it easy at first and assume you’re dealing with simple algebraic expressions that can consist only of numbers, a single variable (it doesn’t matter what it is, but let’s assume it’s $x$), sums, and products. Listing 12-5 shows the implementation of symbolic differentiation over this simple expression type.
+Let's take it easy at first and assume you're dealing with simple algebraic expressions that can consist only of numbers, a single variable (it doesn't matter what it is, but let's assume it's $x$), sums, and products. Listing 12-5 shows the implementation of symbolic differentiation over this simple expression type.
 
 ##### Listing 12-5.  Symbolic differentiation over a simple expression type
 
@@ -29,7 +29,7 @@ The type of the deriv function is as follows:
 val deriv : expr:Expr -> Expr
 ```
 
-Now, let’s find the derivative of a simple expression, say `1+2x`:
+Now, let's find the derivative of a simple expression, say `1+2x`:
 
 ```F#
 > let e1 = Sum (Num 1, Prod (Num 2, Var));;
@@ -38,7 +38,7 @@ val e1 : Expr = Sum (Num 1,Prod (Num 2,Var))
 val it : Expr = Sum (Num 0,Sum (Prod (Num 2,Num 1),Prod (Var,Num 0)))
 ```
 
-The resulting expression is a symbolic representation of `0+(2*1+x*0)`, which indeed is 2—so it’s right. You should do a couple of things next. First, install a custom printer so that F# Interactive responds using expressions that you’re more used to using. Before you apply brute force and put parentheses around the expressions in each sum and product, let’s contemplate it a bit. Parentheses are usually needed to give precedence to operations that would otherwise be applied later in the sequence of calculations. For instance, `2+3*4` is calculated as `2+(3*4)` because the product has a higher precedence; if you wanted to find `(2+3)*4`, you would need to use parentheses to designate the new order of calculation. Taking this argument further, you can formulate the rule for using parentheses: they’re needed in places where an operator has lower precedence than the one surrounding it. You can apply this reasoning to the expression printer by passing a context-precedence parameter:
+The resulting expression is a symbolic representation of `0+(2*1+x*0)`, which indeed is 2—so it's right. You should do a couple of things next. First, install a custom printer so that F# Interactive responds using expressions that you're more used to using. Before you apply brute force and put parentheses around the expressions in each sum and product, let's contemplate it a bit. Parentheses are usually needed to give precedence to operations that would otherwise be applied later in the sequence of calculations. For instance, `2+3*4` is calculated as `2+(3*4)` because the product has a higher precedence; if you wanted to find `(2+3)*4`, you would need to use parentheses to designate the new order of calculation. Taking this argument further, you can formulate the rule for using parentheses: they're needed in places where an operator has lower precedence than the one surrounding it. You can apply this reasoning to the expression printer by passing a context-precedence parameter:
 
 ```F#
 let precSum = 10
@@ -67,11 +67,11 @@ val e3 : Expr = x*x*2
 val it : Expr = x*(x*0+2*1)+x*2*1
 ```
 
-Parentheses are omitted only when a sum is participating in an expression that has a higher precedence, which in this simplified example means products. If you didn’t add precedence to the pretty-printer, you’d get `x*x*0+2*1+x*2*1` for the last expression, which is incorrect.
+Parentheses are omitted only when a sum is participating in an expression that has a higher precedence, which in this simplified example means products. If you didn't add precedence to the pretty-printer, you'd get `x*x*0+2*1+x*2*1` for the last expression, which is incorrect.
 
 ## Implementing Local Simplifications
 
-The next thing to do is to get your symbolic manipulator to simplify expressions so you don’t have to do so. One easy modification is to replace the use of the `Sum` and `Prod` constructors in `deriv` with local functions that perform local simplifications, such as removing identity operations, performing arithmetic, bringing forward constants, and simplifying across two operations. Listing 12-6 shows how to do this.
+The next thing to do is to get your symbolic manipulator to simplify expressions so you don't have to do so. One easy modification is to replace the use of the `Sum` and `Prod` constructors in `deriv` with local functions that perform local simplifications, such as removing identity operations, performing arithmetic, bringing forward constants, and simplifying across two operations. Listing 12-6 shows how to do this.
 
 ##### Listing 12-6. Symbolic differentiation with local simplifications
 
@@ -99,14 +99,14 @@ let rec simpDeriv e =
                                 simpProd (e2, simpDeriv e1))
 ```
 
-These measures produce a significant improvement over the previous naive approach, but they don’t place the result in a normal form, as the following shows:
+These measures produce a significant improvement over the previous naive approach, but they don't place the result in a normal form, as the following shows:
 
 ```F#
 > simpDeriv e3;;
 val it : Expr = x*2+x*2
 ```
 
-However, you can’t implement all simplifications using local rules; for example, collecting like terms across a polynomial involves looking at every term of the polynomial.
+However, you can't implement all simplifications using local rules; for example, collecting like terms across a polynomial involves looking at every term of the polynomial.
 
 ## A Richer Language of Algebraic Expressions
 
@@ -116,7 +116,7 @@ The main `Expr` type that represents algebraic expressions is contained in `Expr
 
 Listing 12-7 shows the definition of the abstract syntax representation of expressions using a single `Expr` type. Expressions contain numbers, variables, negation, sums, differences, products, fractions, exponents, basic trigonometric functions ($\sin x$, $\cos x$), and $e^x$.
 
-Let’s look at this abstract syntax design more closely. In Chapter 9, you saw that choosing an abstract syntax often involves design choices, and that these choices often relate to the roles the abstract syntax representation should serve. In this case, you use the abstract syntax to compute symbolic derivatives and simplifications (using techniques similar to those seen earlier in this chapter) and also to graphically visualize the resulting expressions in a way that is pleasant for the human user. For this reason, you don’t use an entirely minimalistic abstract syntax (for example, by replacing quotients with an inverse node), because it’s helpful to maintain some additional structure in the input.
+Let's look at this abstract syntax design more closely. In Chapter 9, you saw that choosing an abstract syntax often involves design choices, and that these choices often relate to the roles the abstract syntax representation should serve. In this case, you use the abstract syntax to compute symbolic derivatives and simplifications (using techniques similar to those seen earlier in this chapter) and also to graphically visualize the resulting expressions in a way that is pleasant for the human user. For this reason, you don't use an entirely minimalistic abstract syntax (for example, by replacing quotients with an inverse node), because it's helpful to maintain some additional structure in the input.
 
 Here, you represent sums and differences not as binary terms (as you do for products and quotients) but instead as a list of expression terms. The `Sub` term also carries the *minuend*, the term that is to be reduced, separately. As a result, you have to apply different strategies when simplifying them.
 
@@ -162,7 +162,7 @@ type Expr =
         | exp -> Neg exp
 ```
 
-Listing 12-7 also shows the definition of some miscellaneous augmentations on the expression type, mostly related to visual layout and presentation. The `StarNeeded` member is used internally to determine whether the multiplication operator (the star symbol, or asterisk) is needed in the product of two expressions, `e1` and `e2`. You may want to extend this simple rule: any product whose right side is a number requires the explicit operator, and all other cases don’t. Thus, expressions such as `2(x+1)` and `2x` are rendered without the asterisk.
+Listing 12-7 also shows the definition of some miscellaneous augmentations on the expression type, mostly related to visual layout and presentation. The `StarNeeded` member is used internally to determine whether the multiplication operator (the star symbol, or asterisk) is needed in the product of two expressions, `e1` and `e2`. You may want to extend this simple rule: any product whose right side is a number requires the explicit operator, and all other cases don't. Thus, expressions such as `2(x+1)` and `2x` are rendered without the asterisk.
 
 The `IsNumber` member returns true if the expression at hand is numeric and is used in conjunction with `NumOf`, which returns this numeric component. Similarly, the `IsNegative` and `Negate` members determine whether you have an expression that starts with a negative sign, and they negate it on demand.
 
@@ -383,7 +383,7 @@ The main simplification algorithm works as follows:
 
 ## Symbolic Differentiation of Algebraic Expressions
 
-Applying symbolic differentiation is a straightforward translation of the mathematical rules of differentiation into code. You could use local functions that act as constructors and perform local simplifications, but with the simplification function described earlier, this isn’t needed. Listing 12-11 shows the implementation of symbolic differentiation for the `Expr` type. Note how beautifully and succinctly the code follows the math behind it: the essence of the symbolic processing is merely 20 lines of code!
+Applying symbolic differentiation is a straightforward translation of the mathematical rules of differentiation into code. You could use local functions that act as constructors and perform local simplifications, but with the simplification function described earlier, this isn't needed. Listing 12-11 shows the implementation of symbolic differentiation for the `Expr` type. Note how beautifully and succinctly the code follows the math behind it: the essence of the symbolic processing is merely 20 lines of code!
 
 ##### Listing 12-11. ExprUtil.fs (continued): symbolic fifferentiation for algebraic expressions
 
@@ -514,7 +514,7 @@ performs both differentiation and simplification, returning
 { "result": "Num 4M" }
 ```
 
-We leave it as an exercise for the reader to format the expression result as more idiomatic JSON content. To recap, in this example you’ve seen the following:
+We leave it as an exercise for the reader to format the expression result as more idiomatic JSON content. To recap, in this example you've seen the following:
 
 * Two abstract syntax representations for different classes of algebraic expressions: one simple, and one more realistic
 

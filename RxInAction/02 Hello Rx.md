@@ -1,18 +1,18 @@
 ﻿# 2 Hello, Rx
 
-The goal of Rx is to coordinate and orchestrate event-based and asynchronous computations that come from various sources, such as social networks, sensors, UI events, and others. For instance, security cameras around a building, together with movement sensors that trigger when someone might be near the building, send us photos from the closest camera. Rx can also count tweets that contain the names of election candidates to estimate a candidate’s popularity. This is done by calling an external web service in an asynchronous way. For those scenarios and other similar ones, the orchestrations tend to lead to complex programs, and Rx definitely eases that effort, as you’ll see.
+The goal of Rx is to coordinate and orchestrate event-based and asynchronous computations that come from various sources, such as social networks, sensors, UI events, and others. For instance, security cameras around a building, together with movement sensors that trigger when someone might be near the building, send us photos from the closest camera. Rx can also count tweets that contain the names of election candidates to estimate a candidate's popularity. This is done by calling an external web service in an asynchronous way. For those scenarios and other similar ones, the orchestrations tend to lead to complex programs, and Rx definitely eases that effort, as you'll see.
 
-In this chapter, you’ll look at an example to see how working with and without Rx makes a difference in how the application is structured, how readable it is, and how easy it is to extend and evolve. Imagine you receive a letter from Mr. Penny, the well-known chief technology officer of the Stocks R Us company. Stocks R Us is a stock-trading company that advises its clients where to invest their money and collect interest from earnings. This is why it’s important to the company to react quickly to changes in the stock market. Recently, Stocks R Us found out that it can save money by using a system that provides alerts about stocks that have experienced—as Mr. Penny calls it—a drastic change. Mr. Penny’s definition of a drastic change is a price change of more than 10%. When these changes happen, Stocks R Us wants to know as fast as possible so it can react by selling or buying the stock.
+In this chapter, you'll look at an example to see how working with and without Rx makes a difference in how the application is structured, how readable it is, and how easy it is to extend and evolve. Imagine you receive a letter from Mr. Penny, the well-known chief technology officer of the Stocks R Us company. Stocks R Us is a stock-trading company that advises its clients where to invest their money and collect interest from earnings. This is why it's important to the company to react quickly to changes in the stock market. Recently, Stocks R Us found out that it can save money by using a system that provides alerts about stocks that have experienced—as Mr. Penny calls it—a drastic change. Mr. Penny's definition of a drastic change is a price change of more than 10%. When these changes happen, Stocks R Us wants to know as fast as possible so it can react by selling or buying the stock.
 
 Mr. Penny comes to you because he knows he can count on you to deliver a high-quality application quickly. Your job (and the target of this chapter) is to create an application that notifies users about stocks that experience a drastic change. A drastic change occurs when the value of the stock increases or decreases by a certain threshold (10% in this case) between two readings. When this happens, you want to notify users by sending a push notification to their mobile phones or displaying an alert on the screen of an application, showing a red flashing bar, for example.
 
-In the first part of the chapter, you’ll explore the steps that usually occur when creating an application with the traditional .NET events approach. We’ll then analyze the solution and discuss its weaknesses.
+In the first part of the chapter, you'll explore the steps that usually occur when creating an application with the traditional .NET events approach. We'll then analyze the solution and discuss its weaknesses.
 
-The second part of this chapter introduces Rx into your application. You’ll first add the libraries to the project and then work step by step to make the application for Stocks R Us in the Rx style.
+The second part of this chapter introduces Rx into your application. You'll first add the libraries to the project and then work step by step to make the application for Stocks R Us in the Rx style.
 
 ## 2.1 Working with traditional .NET events
 
-Stock information comes from a stock-trading source, and many services provide this information. Each has its own API and data formats, and several of those sources are free, such as Yahoo Finance (http://finance.yahoo.com) and Google Finance (www.google.com/finance). For your application, the most important properties are the stock’s quote symbol and price. The stock’s quote symbol is a series of characters that uniquely identifies traded shares or stock (for example, MSFT is the Microsoft stock symbol).
+Stock information comes from a stock-trading source, and many services provide this information. Each has its own API and data formats, and several of those sources are free, such as Yahoo Finance (http://finance.yahoo.com) and Google Finance (www.google.com/finance). For your application, the most important properties are the stock's quote symbol and price. The stock's quote symbol is a series of characters that uniquely identifies traded shares or stock (for example, MSFT is the Microsoft stock symbol).
 
 The flowchart in figure 2.1 describes the logical flow of the application.
 
@@ -20,9 +20,9 @@ Figure 2.1 Flowchart of the Stock R Us application logic. We notify the user of 
 
 For each piece of stock information the application receives, it calculates the price difference of the stock as a change ratio between the new price and the previous price. Say you receive an update that the price of MSFT has changed from \$50 to \$40, a change of 20%. This is considered a drastic change and causes an alert to be shown in the application.
 
-In real life, the ticks arrive at a variable rate. For now, to keep from confusing you, you can assume that the ticks arrive at a constant rate; you’ll deal with time aspects later. 
+In real life, the ticks arrive at a variable rate. For now, to keep from confusing you, you can assume that the ticks arrive at a constant rate; you'll deal with time aspects later. 
 
-To keep the source of the stock information abstract, it’s exposed through the class StockTicker. The class exposes only an event about a StockTick that’s raised every time new information about a stock is available.
+To keep the source of the stock information abstract, it's exposed through the class StockTicker. The class exposes only an event about a StockTick that's raised every time new information about a stock is available.
 
 Listing 2.1 StockTicker class
 
@@ -47,7 +47,7 @@ class StockTick
 }
 ```
 
-You’ll usually see traditional .NET events in these types of scenarios. When notifications need to be provided to an application, .NET is a standard way of delivering data into an application. To work with the stock ticks, you’ll create a StockMonitor class that will listen to stock changes by hooking up to the StockTick event via the +=operator.
+You'll usually see traditional .NET events in these types of scenarios. When notifications need to be provided to an application, .NET is a standard way of delivering data into an application. To work with the stock ticks, you'll create a StockMonitor class that will listen to stock changes by hooking up to the StockTick event via the +=operator.
 
 Listing 2.3 StockMonitor class
 
@@ -63,7 +63,7 @@ class StockMonitor
 }
 ```
 
-The core of the example is in the OnStockTick method. This is where you’ll check for each stock tick if you already have its previous tick so that you can compare the new price with the old price. For this, you need a container to hold all the information about previous ticks. Because each tick contains the QuoteSymbol, it makes sense to use a dictionary to hold that information, with QuoteSymbol as the key. To hold the information about the previous ticks, you define a new class with the name StockInfo (listing 2.4), and then you can declare the dictionary member in your StockMonitor class (listing 2.5).  
+The core of the example is in the OnStockTick method. This is where you'll check for each stock tick if you already have its previous tick so that you can compare the new price with the old price. For this, you need a container to hold all the information about previous ticks. Because each tick contains the QuoteSymbol, it makes sense to use a dictionary to hold that information, with QuoteSymbol as the key. To hold the information about the previous ticks, you define a new class with the name StockInfo (listing 2.4), and then you can declare the dictionary member in your StockMonitor class (listing 2.5).  
 
 Listing 2.4 StockInfo class
 
@@ -80,7 +80,7 @@ class StockInfo
 }
 ```
 
-Every time OnStockTick is called with a new tick, the application needs to check whether an old price has already been saved to the dictionary. You use the TryGetValue method that returns true if the key you’re looking for exists in the dictionary, and then you set the out parameter with the value stored under that key.
+Every time OnStockTick is called with a new tick, the application needs to check whether an old price has already been saved to the dictionary. You use the TryGetValue method that returns true if the key you're looking for exists in the dictionary, and then you set the out parameter with the value stored under that key.
 
 Listing 2.5 OnStockTick event handler checking the existence of a stock
 
@@ -95,7 +95,7 @@ void OnStockTick(object sender, StockTick stockTick)
 }
 ```
 
-If the stock info exists, you can check the stock’s current and previous prices, as shown in the following listing, to see whether the change was bigger than the threshold defining a drastic change.
+If the stock info exists, you can check the stock's current and previous prices, as shown in the following listing, to see whether the change was bigger than the threshold defining a drastic change.
 
 Listing 2.6 OnStockTick event handler handling drastic price change
 
@@ -122,7 +122,7 @@ if (stockInfoExists)
 }
 ```
 
-If the stock info isn’t in the dictionary (because this is the first time you got a tick about it), you need to add it to the dictionary with
+If the stock info isn't in the dictionary (because this is the first time you got a tick about it), you need to add it to the dictionary with
 
 ```C#
 _stockInfos[quoteSymbol] = new StockInfo(quoteSymbol,stockTick.Price);
@@ -213,11 +213,11 @@ After the source change, you start to receive complaints on crashes and other bu
 
 ### 2.1.1 Dealing with concurrency
 
-It may not seem obvious, but the code hides a problem: concurrency. Nothing in the StockTicker interface promises anything about the thread in which the tick event will be raised, and nothing guarantees that a tick won’t be raised while another one is processed by your StockMonitor, as shown in figure 2.2.
+It may not seem obvious, but the code hides a problem: concurrency. Nothing in the StockTicker interface promises anything about the thread in which the tick event will be raised, and nothing guarantees that a tick won't be raised while another one is processed by your StockMonitor, as shown in figure 2.2.
 
 Figure 2.2 Multiple threads executing the event-handler code at the same time. Each box represents the execution time of a stock. While the first thread is running the code for MSFT, the second thread starts executing for the GOOG stock. Then the third thread starts for the same stock symbol as the first thread.
 
-The StockMonitor class you wrote uses a dictionary to keep the information about the stocks, but the dictionary you’re using isn’t thread-safe.
+The StockMonitor class you wrote uses a dictionary to keep the information about the stocks, but the dictionary you're using isn't thread-safe.
 
 ---
 
@@ -229,7 +229,7 @@ A class is called thread-safe if any one of its methods is thread-safe, even if 
 
 ---
 
-The dictionary you’re using does support multiple readers at the same time, but if the dictionary is read while it’s being modified, an exception is thrown. This situation is illustrated in table 2.1. Thread1 (on the left) reaches the marked code, where it tries to get the StockInfo for a stock with the symbol symbol1. At the same time, Thread2 (on the right) reaches the line of code that adds a new StockInfo (with a symbol2 symbol) to the dictionary. Both the reading and the mutating of the dictionary is happening at the same time and leads to an exception.
+The dictionary you're using does support multiple readers at the same time, but if the dictionary is read while it's being modified, an exception is thrown. This situation is illustrated in table 2.1. Thread1 (on the left) reaches the marked code, where it tries to get the StockInfo for a stock with the symbol symbol1. At the same time, Thread2 (on the right) reaches the line of code that adds a new StockInfo (with a symbol2 symbol) to the dictionary. Both the reading and the mutating of the dictionary is happening at the same time and leads to an exception.
 
 
 Table 2.1 Reading and modifying the dictionary at the same time from two threads 
@@ -267,7 +267,7 @@ else
 
 You can overcome this problem by using the .NET ConcurrentDictionary. This lock-free collection internally synchronizes the readers and writers so no exception will be thrown.
 
-Unfortunately, ConcurrentDictionary isn’t enough, because the ticks aren’t synchronized by StockTicker. If you handle two (or more) ticks of the same stock at the same time, what’s the value of the PrevPrice property? There’s a nondeterministic answer to that question: the last one wins. But the last one isn’t necessarily the last tick that was raised, because the order in which the threads are running is determined by the OS and isn’t deterministic. This makes your code unreliable, because the end user could be notified on an incorrect conclusion that your code makes. The OnStockTick event handler holds a critical section, and the way to protect it is by using a lock.
+Unfortunately, ConcurrentDictionary isn't enough, because the ticks aren't synchronized by StockTicker. If you handle two (or more) ticks of the same stock at the same time, what's the value of the PrevPrice property? There's a nondeterministic answer to that question: the last one wins. But the last one isn't necessarily the last tick that was raised, because the order in which the threads are running is determined by the OS and isn't deterministic. This makes your code unreliable, because the end user could be notified on an incorrect conclusion that your code makes. The OnStockTick event handler holds a critical section, and the way to protect it is by using a lock.
 
 Listing 2.8 Locked version of OnStockTick
 
@@ -313,15 +313,15 @@ Figure 2.3 A deadlock: Thread 1 is holding the resource R1 and waiting for the r
 
 Working with multithreaded applications is difficult, and no magic solution exists. The only reasonable thing to do is to make the code that will run multithreaded easier to understand, and make going into the trap of working with concurrent code more difficult.
 
-Rx provides operators to run concurrent code, as you’ll see later in this chapter. For now, let’s step back, look at what you’ve created, and analyze it to see whether you can do better.
+Rx provides operators to run concurrent code, as you'll see later in this chapter. For now, let's step back, look at what you've created, and analyze it to see whether you can do better.
 
 ### 2.1.2 Retrospective on the solution and looking at the future
 
-Thus far, our code gives a solution to the requirements Mr. Penny described at the beginning of the chapter. Functionally, the code does everything it needs to do. But what’s your feeling about it? Is it readable? Does it seem to be maintainable? Is it easy to extend? I’d like to point your attention to a few things. 
+Thus far, our code gives a solution to the requirements Mr. Penny described at the beginning of the chapter. Functionally, the code does everything it needs to do. But what's your feeling about it? Is it readable? Does it seem to be maintainable? Is it easy to extend? I'd like to point your attention to a few things. 
 
 **CODE SCATTERING**
 
-Let’s start with the scattering of the code. It’s a well-known fact that scattered code makes a program harder to maintain, review, and test. In our example, the main logic of the program is in the OnStockTick event handler that’s “far” from the registration of the event:
+Let's start with the scattering of the code. It's a well-known fact that scattered code makes a program harder to maintain, review, and test. In our example, the main logic of the program is in the OnStockTick event handler that's “far” from the registration of the event:
 
 ```C#
 class StockMonitor
@@ -339,7 +339,7 @@ class StockMonitor
 }
 ```
 
-It’s common to see classes that handle more than one event (or even many more), with each one in its own event handler, and you can start to lose sight of what’s related to what: 
+It's common to see classes that handle more than one event (or even many more), with each one in its own event handler, and you can start to lose sight of what's related to what: 
 
 ```C#
 class SomeClass
@@ -394,11 +394,11 @@ This looks unclean, so now you need to save the eventHandler as a member if you 
 
 **RESOURCE HANDLING**
 
-The unregistration from the event and the rest of the resources cleanup that you added to support your code (such as the dictionary) took place in the Dispose method. This is a well-used pattern, but more frequently than not, developers forget to free the resources that their code uses. Even though C# and .NET as a whole are managed and use garbage collection, many times you’ll still need to properly free resources to avoid memory leaks and other types of bugs. Events are often left registered, which is one of the main causes of memory leaks. The reason (at least for some) is that the way we unregister doesn’t feel natural for many developers, and deciding the correct place and time to unregister isn’t always straightforward—especially because many developers prefer to use the lambda style of registering events, as I stated previously. Beside the event itself, you added code and state management (such as our dictionary) to support your logic. Many more types of applications handle the same scenarios, such as filtering, grouping, buffering, and, of course, the cleaning of what they bring. This brings us to the next point.
+The unregistration from the event and the rest of the resources cleanup that you added to support your code (such as the dictionary) took place in the Dispose method. This is a well-used pattern, but more frequently than not, developers forget to free the resources that their code uses. Even though C# and .NET as a whole are managed and use garbage collection, many times you'll still need to properly free resources to avoid memory leaks and other types of bugs. Events are often left registered, which is one of the main causes of memory leaks. The reason (at least for some) is that the way we unregister doesn't feel natural for many developers, and deciding the correct place and time to unregister isn't always straightforward—especially because many developers prefer to use the lambda style of registering events, as I stated previously. Beside the event itself, you added code and state management (such as our dictionary) to support your logic. Many more types of applications handle the same scenarios, such as filtering, grouping, buffering, and, of course, the cleaning of what they bring. This brings us to the next point.
 
 **REPEATABILITY AND COMPOSABILITY**
 
-To me, our logic also feels repeatable. I swear I wrote this code (or similar code) in a past application, saving a previous state by a key and updating it each time an update comes in, and I bet you feel the same. Moreover, I also feel that this code isn’t composable, and the more conditions you have, the more inner if statements you’ll see and the less readable your code will be. It’s common to see this kind of code in an application, and with its arrowhead-like structure, it’s becoming harder to understand and follow what it does:
+To me, our logic also feels repeatable. I swear I wrote this code (or similar code) in a past application, saving a previous state by a key and updating it each time an update comes in, and I bet you feel the same. Moreover, I also feel that this code isn't composable, and the more conditions you have, the more inner if statements you'll see and the less readable your code will be. It's common to see this kind of code in an application, and with its arrowhead-like structure, it's becoming harder to understand and follow what it does:
 
 ```C#
 if (some condition)
@@ -445,17 +445,19 @@ If you were given new requirements to your code, such as calculating the change 
 
 Synchronization is another thing that developers tend to forget, resulting in the same problems that we had: unreliable code due to improperly calculated values, and crashes that might occur when working with non-thread-safe classes. Synchronization is all about making sure that if multiple threads reach the same code at the same time (virtually, not necessarily in parallel, because a context switch might be involved), then only one thread will get access. Locks are one way to implement synchronization, but other ways exist and do require knowledge and care.
 
-It’s easy to write code that isn’t thread-safe, but it’s even easier to write code with locks that lead to deadlocks or starvation. The main issue with those types of bugs is that they’re hard to find. Your code could run for ages (literally), until you run into a crash or other error.
+It's easy to write code that isn't thread-safe, but it's even easier to write code with locks that lead to deadlocks or starvation. The main issue with those types of bugs is that they're hard to find. Your code could run for ages (literally), until you run into a crash or other error.
 
-With so many points from such a small program, it’s no wonder people say that programming is hard. It’s time to see the greatness of Rx and how it makes the issues we’ve discussed easier to overcome. Let’s see the Rx way and start adding Rx to your application.
+With so many points from such a small program, it's no wonder people say that programming is hard. It's time to see the greatness of Rx and how it makes the issues we've discussed easier to overcome. Let's see the Rx way and start adding Rx to your application.
 
 ## 2.2 Creating your first Rx application
 
-In this section, the Rx example uses the same StockTicker that you saw in the previous section, but this time you won’t work with the traditional standard .NET event. Instead you’ll use `IObservable<T>`, which you’ll create, and then write your event-processing flow around it. You’ll go slowly and add layer after layer to the solution until you have a fully running application that’s easier to read and extend.
+In this section, the Rx example uses the same StockTicker that you saw in the previous section, but this time you won't work with the traditional standard .NET event. Instead you'll use `IObservable<T>`, which you'll create, and then write your event-processing flow around it. You'll go slowly and add layer after layer to the solution until you have a fully running application that's easier to read and extend.
 
-Every journey starts with the first step. You’ll begin this journey by creating a new project (a console application will do) and adding the Rx libraries.
+Every journey starts with the first step. You'll begin this journey by creating a new project (a console application will do) and adding the Rx libraries.
 
 ### 2.2.1 Selecting Rx packages
+
+The `System.Reactive` package 在最新版本(v4.2)整合了本节(2.2.1)所述的所有子名字空间的内容，本节内容已经过时。
 
 The first step in working with Reactive Extensions is adding the library to your project. No matter whether you write a Windows Presentation Foundation (WPF) application, ASP.NET website, Windows Communication Foundation (WCF) service, or a simple console application, Rx can be used inside your code to benefit you. But you do need to select the correct libraries to reference from your project.
 
@@ -466,7 +468,6 @@ System.Reactive.Linq            : LINQ query providers
 System.Reactive.Core            : Scheduler infrastructure, common types, and base classes
 System.Reactive.Interfaces      : Additional interface; e.g., IScheduler
 System.Reactive.PlatformServices: Platform enlightenments and extra schedulers
-
 ```
 
 Figure 2.4 Rx assemblies are a set of portable class libraries (middle and bottom) and platform-specific libraries (top left). The PlatformServices assembly holds the platform enlightments that are the glue between the two.
@@ -474,7 +475,6 @@ Figure 2.4 Rx assemblies are a set of portable class libraries (middle and botto
 To add the necessary references to your project, you need to select the appropriate packages from NuGet, a .NET package manager from which you can easily search and install packages (which usually contain libraries). Table 2.2 describes the Rx packages you can choose from at the time of this writing and figure 2.5 shows the NuGet package manager.
 
 Figure 2.5 Reactive Extensions NuGet packages. Many packages add things on top of Rx to identify the Rx.NET-specific libraries. Look for a package ID with the prefix System.Reactive and make sure the publisher is Microsoft.
-
 
 ---
 
@@ -484,7 +484,7 @@ Figure 2.5 Reactive Extensions NuGet packages. Many packages add things on top o
 
 Table 2.2 Rx packages (obsoleted)
 
-Most of the time, you’ll add the System.Reactive package to your project because it contains the types that are most used. When you’re writing to a specific platform or technology, you’ll add the complementary package.
+Most of the time, you'll add the `System.Reactive` package to your project because it contains the types that are most used. When you're writing to a specific platform or technology, you'll add the complementary package.
 
 ### 2.2.2 Installing from NuGet
 
@@ -500,7 +500,7 @@ Another option for installing the packages is through the Package Manager dialog
 
 Figure 2.7 NuGet Package Manager from VS 2015. Search for the package you want by typing its name (1) and then select the package and click Install (2). 
 
-After the NuGet package is installed, you can write the Rx version of StockMonitor. You can find the entire code at the book’s source code in the GitHub repository.
+After the NuGet package is installed, you can write the Rx version of StockMonitor. You can find the entire code at the book's source code in the GitHub repository.
 
 ## 2.3 Writing the event-processing flow
 
@@ -508,13 +508,13 @@ After you install the Rx package that adds the needed references to the Rx libra
 
 To recap, the `IObservable<T>` interface defines the single method `Subscribe` that allows observers to subscribe to notifications. Observers implement the IObserver interface that defines the methods that will be called by the observable when there are notifications.
 
-Rx provides all kinds of tools to convert various types of sources to `IObservable<T>`, and the most fundamental tool that’s included is the one that converts a standard .NET event into an observable.
+Rx provides all kinds of tools to convert various types of sources to `IObservable<T>`, and the most fundamental tool that's included is the one that converts a standard .NET event into an observable.
 
-In our example of creating an application that provides notifications of drastic stock changes, you’ll continue to work with the StockTick event. You’ll see how to make it into an observable that you can use to do magic.
+In our example of creating an application that provides notifications of drastic stock changes, you'll continue to work with the StockTick event. You'll see how to make it into an observable that you can use to do magic.
 
 ### 2.3.1 Subscribing to the event
 
-StockTicker exposes the event StockTick that’s raised each time an update occurs on a stock. But to work with Rx, you need to convert this event into an observable. Luckily, Rx provides the FromEventPattern method that enables you to do just that:
+StockTicker exposes the event StockTick that's raised each time an update occurs on a stock. But to work with Rx, you need to convert this event into an observable. Luckily, Rx provides the FromEventPattern method that enables you to do just that:
 
 ```C#
 IObservable<EventPattern<StockTick>> ticks =
@@ -529,7 +529,7 @@ FromEventPattern<TDelegate, TEventArgs>(Action<TDelegate> addHandler,
 
 Figure 2.8 FromEventPattern method signature
 
-The FromEventPattern method has a couple of overloads. The one you’re using here takes two generic parameters and two method parameters. Figure 2.8 shows the method signature explanation.
+The FromEventPattern method has a couple of overloads. The one you're using here takes two generic parameters and two method parameters. Figure 2.8 shows the method signature explanation.
 
 The addHandler and removeHandler parameters register and unregister the Rx handler to the event; the Rx handler will be called by the event and then will call the OnNext method of the observers.
 
@@ -557,7 +557,7 @@ Figure 2.9 A simple grouping of the stock ticks by the quote symbol
 
 This expression creates an observable that provides the groups. Each group represents a company and is an observable that will push only the ticks of that group. Each tick from the ticks source observable is routed to the correct observable group by its symbol. This is shown in figure 2.10.
 
-Figure 2.10 The ticks observable is grouped into two company groups, each one for a different symbol. As the notifications are pushed on the ticks observable, they’re routed to their group observable. If it’s the first time the symbol appears, a new observable is created for the group. This grouping is written with a query expression. Query expressions are written in a declarative query syntax but are a sugar syntax that the compiler turns into a real chain of method calls. This is the same expression written in a method syntax:
+Figure 2.10 The ticks observable is grouped into two company groups, each one for a different symbol. As the notifications are pushed on the ticks observable, they're routed to their group observable. If it's the first time the symbol appears, a new observable is created for the group. This grouping is written with a query expression. Query expressions are written in a declarative query syntax but are a sugar syntax that the compiler turns into a real chain of method calls. This is the same expression written in a method syntax:
 
 ```C#
 ticks.GroupBy(tick => tick.QuoteSymbol);
@@ -575,7 +575,7 @@ To create batches on an observable sequence, you use the Buffer operator. Buffer
 company.Buffer(2, 1)
 ```
 
-The Buffer method outputs an array that holds the two consecutive ticks, as shown in figure 2.12. This enables you to calculate the difference between the two ticks to see whether it’s in the allowed threshold.
+The Buffer method outputs an array that holds the two consecutive ticks, as shown in figure 2.12. This enables you to calculate the difference between the two ticks to see whether it's in the allowed threshold.
 
 Figure 2.12 After applying the Buffer() method on each group, you a get new type of notification that holds an array of the two consecutive ticks.
 
@@ -594,7 +594,7 @@ You then introduce the changeRatio variable that holds the ratio of change betwe
 
 Figure 2.13 From each pair of consecutive ticks per company group, you calculate the ratio of difference.
 
-Now that you know the change ratio, all that’s left is filtering out all the notifications that aren’t interesting (not a drastic change) and keeping only those that are above your wanted ratio by applying the Where(…) operator:
+Now that you know the change ratio, all that's left is filtering out all the notifications that aren't interesting (not a drastic change) and keeping only those that are above your wanted ratio by applying the Where(…) operator:
 
 ```C#
 var drasticChanges =
@@ -613,7 +613,7 @@ var drasticChanges =
     }; 
 ```
 
-The drasticChanges variable is an observable that pushes notifications only for ticks that represent a change in a stock price that’s higher than maxChangeRatio. In figure 2.14, the maximum change ratio is 10%.
+The drasticChanges variable is an observable that pushes notifications only for ticks that represent a change in a stock price that's higher than maxChangeRatio. In figure 2.14, the maximum change ratio is 10%.
 
 Figure 2.14 After filtering the notifications with the Where operator, you find that only one notification is a drastic change.
 
@@ -633,7 +633,7 @@ _subscription =
 
 ### 2.3.4 Cleaning resources
 
-If the user doesn’t want to receive any more notifications about drastic changes, you need to dispose of the subscription to the drasticChanges observable. When you subscribed to the observable, the subscription was returned to you, and you stored it in the _subscription class member.
+If the user doesn't want to receive any more notifications about drastic changes, you need to dispose of the subscription to the drasticChanges observable. When you subscribed to the observable, the subscription was returned to you, and you stored it in the _subscription class member.
 
 As before, the StockMonitor Dispose method (which is provided because you implemented the IDisposable interface) makes a perfect fit. The only thing you need to do in your Dispose method is to call to Dispose method of the subscription object:
 
@@ -644,7 +644,7 @@ public void Dispose()
 }
 ```
 
-Notice that you don’t need to write anything about delegates involved in the processing of your query, and you don’t need to clean up any data structures related to the storage of the previous ticks data. All of those are kept in the Rx internal operators implementation, and when you dispose of the subscription, a chain of disposals happen, causing all the internal data structures to be disposed of as well.
+Notice that you don't need to write anything about delegates involved in the processing of your query, and you don't need to clean up any data structures related to the storage of the previous ticks data. All of those are kept in the Rx internal operators implementation, and when you dispose of the subscription, a chain of disposals happen, causing all the internal data structures to be disposed of as well.
 
 ### 2.3.5 Dealing with concurrency
 
@@ -660,11 +660,11 @@ var ticks = Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
     .Synchronize()
 ```
 
-It doesn’t get any simpler than that, but as before, you need to remember that every time you add synchronization of any kind, you risk adding a probable deadlock. Rx doesn’t fix that, so developer caution is still needed. Rx only gives you tools to make the introduction of synchronization easier and more visible. When things are easy, explicit, and readable, chances increase that you’ll make it right, but making sure you do it correctly is still your job as a developer.
+It doesn't get any simpler than that, but as before, you need to remember that every time you add synchronization of any kind, you risk adding a probable deadlock. Rx doesn't fix that, so developer caution is still needed. Rx only gives you tools to make the introduction of synchronization easier and more visible. When things are easy, explicit, and readable, chances increase that you'll make it right, but making sure you do it correctly is still your job as a developer.
 
 ### 2.3.6 Wrapping up
 
-Listing 2.9 shows the entire code of the Rx version. The main difference from the traditional events example is that the code tells the story about what you’re trying to achieve rather than how you’re trying to achieve it. This is the declarative programming model that Rx is based on.
+Listing 2.9 shows the entire code of the Rx version. The main difference from the traditional events example is that the code tells the story about what you're trying to achieve rather than how you're trying to achieve it. This is the declarative programming model that Rx is based on.
 
 Listing 2.9 Locked version of OnStockTick
 
@@ -713,31 +713,31 @@ class RxStockMonitor : IDisposable
 }
 ```
 
-It’s now a good time to compare the Rx and events versions.
+It's now a good time to compare the Rx and events versions.
 
 **KEEPING THE CODE CLOSE**
 
-In the Rx example, all the code that relates to the logic of finding the drastic changes is close together, in the same place—from the event conversion to the observable to the subscription that displays the notifications onscreen. It’s all sitting in the same method, which makes navigating around the solution easier. This is a small example, and even though all the code sits together, it doesn’t create a huge method. In contrast, the traditional events version scattered the code and its data structures in the class.
+In the Rx example, all the code that relates to the logic of finding the drastic changes is close together, in the same place—from the event conversion to the observable to the subscription that displays the notifications onscreen. It's all sitting in the same method, which makes navigating around the solution easier. This is a small example, and even though all the code sits together, it doesn't create a huge method. In contrast, the traditional events version scattered the code and its data structures in the class.
 
 **PROVIDING BETTER AND LESS RESOURCE HANDLING**
 
-The Rx version is almost free of any resource handling, and those resources that you do want to free were freed explicitly by calling Dispose. You’re unaware of the real resources that the Rx pipeline creates because they were well encapsulated in the operators’ implementation. The fewer resources you need to manage, the better your code will be in managing resources. This is the opposite of the traditional events version, in which you needed to add every resource that was involved and had to manage its lifetime, making the code error prone.
+The Rx version is almost free of any resource handling, and those resources that you do want to free were freed explicitly by calling Dispose. You're unaware of the real resources that the Rx pipeline creates because they were well encapsulated in the operators’ implementation. The fewer resources you need to manage, the better your code will be in managing resources. This is the opposite of the traditional events version, in which you needed to add every resource that was involved and had to manage its lifetime, making the code error prone.
 
 **USING COMPOSABLE OPERATORS**
 
-One of the hardest computer science problems is naming things—methods, classes, and so on. But when you give a good name to something, it makes the process of using it later easy and fluid. This is exactly what you get with the Rx operators. The Rx operators are a recurring named code pattern that reduces the repeatability in your code that otherwise you’d have to write by yourself—meaning now you can write less code and reuse existing code. With each step of building your query on the observable, you added a new operator on the previously built expression; this is composability at its best. Composability makes it easy to extend the query in the future and make adjustments while you’re building it. This is contrary to the traditional events version, in which no clear separation exists between the code fragments that handled each step when building the whole process to find the drastic change.
+One of the hardest computer science problems is naming things—methods, classes, and so on. But when you give a good name to something, it makes the process of using it later easy and fluid. This is exactly what you get with the Rx operators. The Rx operators are a recurring named code pattern that reduces the repeatability in your code that otherwise you'd have to write by yourself—meaning now you can write less code and reuse existing code. With each step of building your query on the observable, you added a new operator on the previously built expression; this is composability at its best. Composability makes it easy to extend the query in the future and make adjustments while you're building it. This is contrary to the traditional events version, in which no clear separation exists between the code fragments that handled each step when building the whole process to find the drastic change.
 
 **PERFORMING SYNCHRONIZATION**
 
-Rx has a few operators dedicated specifically to concurrency management. In this example, you used only the Synchronize operator that, as generally stated before about Rx operators, saved you from making the incorrect use of a lock by yourself. By default, Rx doesn’t perform any synchronization between threads—the same as regular events. But when the time calls for action, Rx makes it simple for the developer to add the synchronization and spares the use of the low-level synchronization primitives, which makes the code more attractive.
+Rx has a few operators dedicated specifically to concurrency management. In this example, you used only the Synchronize operator that, as generally stated before about Rx operators, saved you from making the incorrect use of a lock by yourself. By default, Rx doesn't perform any synchronization between threads—the same as regular events. But when the time calls for action, Rx makes it simple for the developer to add the synchronization and spares the use of the low-level synchronization primitives, which makes the code more attractive.
 
 2.4 Summary
 
-This chapter presented a simple yet powerful example of something you’ve probably done in the past (or might find yourself doing in the future) and solved it in two ways: the traditional events style and the Rx style of event-processing flow.
+This chapter presented a simple yet powerful example of something you've probably done in the past (or might find yourself doing in the future) and solved it in two ways: the traditional events style and the Rx style of event-processing flow.
 
   * Writing an event-driven application in .NET is very intuitive but holds caveats regarding resource cleanup and code readability.
 
-  * To use the Rx library, you need to install the Rx packages. Most often you’ll install the `System.Reactive` package.
+  * To use the Rx library, you need to install the Rx packages. Most often you'll install the `System.Reactive` package.
 
   * You can use Rx in any type of application WPF desktop client, an ASP.NET website, or a simple console application and others.
 
@@ -747,4 +747,4 @@ This chapter presented a simple yet powerful example of something you’ve proba
 
   * Rx provides many query operators such as filtering with the Where operator, transformation with Select operator, and others.
 
-This doesn’t end here, of course. This is only the beginning of your journey. To use Rx correctly in your application and to use all the rich operators, you need to learn about them and techniques for putting them together, which is what this book is all about. In the next chapter, you’ll learn about the functional way of thinking that, together with the core concepts inside .NET, allowed Rx to evolve.
+This doesn't end here, of course. This is only the beginning of your journey. To use Rx correctly in your application and to use all the rich operators, you need to learn about them and techniques for putting them together, which is what this book is all about. In the next chapter, you'll learn about the functional way of thinking that, together with the core concepts inside .NET, allowed Rx to evolve.

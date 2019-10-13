@@ -410,7 +410,7 @@ Rx.Observable.fromEvent(document, 'mouseup')
 
 Figure 3.9 A self-contained pipeline is one where all of its operations are side effect-free and work 
 strictly on the data coming from previous operators. Operators might be any of `map`, `filter`, 
-`reduce`, and others you’ll learn about in this book.
+`reduce`, and others you'll learn about in this book.
 
 This code is an example of poorly designed scope management in which the state variable `sinceLast` is allowed to live outside the observable's context. The result is that the observable is no longer stateless, and the lifecycles of the state and the observable are now dependent on each other.
 

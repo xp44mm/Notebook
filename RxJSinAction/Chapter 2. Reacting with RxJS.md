@@ -3,7 +3,7 @@
 This chapter covers
 
 * Looking at streams as the main unit of work
-* Understanding functional programming’s influence on RxJS
+* Understanding functional programming's influence on RxJS
 * Identifying different types of data sources and how to handle them
 * Modeling data sources as RxJS observables
 * Consuming observables with observers

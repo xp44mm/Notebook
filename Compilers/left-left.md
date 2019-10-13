@@ -26,7 +26,7 @@ In our compiler model, the parser obtains a string of tokens from the lexical an
 
 Figure 4.1: Position of parser in compiler model
 
-There are three general types of parsers for grammars: universal, top-down, and bottom-up. Universal parsing methods such as the Cocke-Younger-Kasami algorithm and Earley’s algorithm can parse any grammar (see the bibliographic notes). These general methods are, however, to off inefficient to use in production compilers.
+There are three general types of parsers for grammars: universal, top-down, and bottom-up. Universal parsing methods such as the Cocke-Younger-Kasami algorithm and Earley's algorithm can parse any grammar (see the bibliographic notes). These general methods are, however, to off inefficient to use in production compilers.
 
 The methods commonly used in compilers can be classified as being either top-down or bottom-up. As implied by their names, top-down methods build parse trees from the top (root) to the bottom (leaves), while bottom-up methods start from the leaves and work their way up to the root. In either case, the input to the parser is scanned from left to right, one symbol at a time.
 
@@ -74,7 +74,7 @@ Here, E represents expressions of all types. Grammar (4.3) permits more than one
 
 The remainder of this section considers the nature of syntactic errors and general strategies for error recovery. Two of these strategies, called panic-mode and phrase-level recovery, are discussed in more detail in connection with specific parsing methods.
 
-If a compiler had to process only correct programs, its design and implementation would be simplified greatly. However, a compiler is expected to assist the programmer in locating and tracking down errors that inevitably creep into programs, despite the programmer’s best efforts. Strikingly, few languages have been designed with error handling in mind, even though errors are so common-place. Our civilization would be radically different if spoken languages had the same requirements for syntactic accuracy as computer languages. Most programming language specifications do not describe how a compiler should respond to errors; error handling is left to the compiler designer. Planning the error handling right from the start can both simplify the structure of a compiler and improve its handling of errors.
+If a compiler had to process only correct programs, its design and implementation would be simplified greatly. However, a compiler is expected to assist the programmer in locating and tracking down errors that inevitably creep into programs, despite the programmer's best efforts. Strikingly, few languages have been designed with error handling in mind, even though errors are so common-place. Our civilization would be radically different if spoken languages had the same requirements for syntactic accuracy as computer languages. Most programming language specifications do not describe how a compiler should respond to errors; error handling is left to the compiler designer. Planning the error handling right from the start can both simplify the structure of a compiler and improve its handling of errors.
 
 Common programming errors can occur at many different levels.
 
@@ -84,7 +84,7 @@ Common programming errors can occur at many different levels.
 
 -   *Semantic* errors include type mismatches between operators and operands, e.g., the return of a value in a Java method with result type void.
 
--   *Logical* errors can be anything from incorrect reasoning on the part of the programmer to the use in a C program of the assignment operator = instead of the comparison operator ==. The program containing = may be well formed; however, it may not reflect the programmer’s intent.
+-   *Logical* errors can be anything from incorrect reasoning on the part of the programmer to the use in a C program of the assignment operator = instead of the comparison operator ==. The program containing = may be well formed; however, it may not reflect the programmer's intent.
 
 The precision of parsing methods allows syntactic errors to be detected very efficiently. Several parsing methods, such as the LL and LR methods, detect an error as soon as possible; that is, when the stream of tokens from the lexical analyzer cannot be parsed further according to the grammar for the language. More precisely, they have the *viable-prefix property*, meaning that they detect that an error has occurred as soon as they see a prefix of the input that cannot be completed to form a string in the language.
 
@@ -437,7 +437,7 @@ As we observed in Section 4.2.7, everything that can be described by a regular e
 
 4.  More efficient lexical analyzers can be constructed automatically from regular expressions than from arbitrary grammars.
 
-There are no firm guidelines as to what to put into the lexical rules, as opposed to the syntactic rules. Regular expressions are most useful for describing the structure of constructs such as identifiers, constants, keywords, and white space. Grammars, on the other hand, are most useful for describing nested structures such as balanced parentheses, matching begin-end’s, corresponding if-then-else’s, and soon. These nested structures cannot be described by regular expressions.
+There are no firm guidelines as to what to put into the lexical rules, as opposed to the syntactic rules. Regular expressions are most useful for describing the structure of constructs such as identifiers, constants, keywords, and white space. Grammars, on the other hand, are most useful for describing nested structures such as balanced parentheses, matching begin-end's, corresponding if-then-else's, and soon. These nested structures cannot be described by regular expressions.
 
 ### 4.3.2 Eliminating Ambiguity
 
@@ -945,7 +945,7 @@ let $X$ be the top stack symbol;
 
 Figure 4.20: Predictive parsing algorithm
 
-**Example 4.35:** Consider grammar (4.28); we have already seen it’s the parsing table in Fig. 4.17. On input $\textbf{id} + \textbf{id}*\textbf{id}$, the nonrecursive predictive parser of Algorithm 4.34 makes the sequence of moves in Fig. 4.21. These moves correspond to a leftmost derivation (see Fig. 4.12 for the full derivation):
+**Example 4.35:** Consider grammar (4.28); we have already seen it's the parsing table in Fig. 4.17. On input $\textbf{id} + \textbf{id}*\textbf{id}$, the nonrecursive predictive parser of Algorithm 4.34 makes the sequence of moves in Fig. 4.21. These moves correspond to a leftmost derivation (see Fig. 4.12 for the full derivation):
 
 $$
 E \underset{lm}\implies T E' \underset{lm}\implies F T'E' \underset{lm}\implies \textbf{id} T'E'\underset{lm}\implies \textbf{id} E'\underset{lm}\implies \textbf{id} + T E' \underset{lm}\implies \dots

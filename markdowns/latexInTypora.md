@@ -18,7 +18,7 @@ $$
 
 This is a reference to.
 
-It’s wrong to say
+It's wrong to say
 $$
 \begin{equation}
 1 + 1 = 3 \tag{dumb}
@@ -94,7 +94,7 @@ $\sqrt{x} \Leftrightarrow x^{1/2}\quad \sqrt[3]{2}\quad \sqrt{x^{2} + \sqrt{y}}$
 
 
 
-Pascal’s rule is
+Pascal's rule is
 $$
 \binom{n}{k} =\binom{n-1}{k}+ \binom{n-1}{k-1}
 $$
@@ -412,7 +412,7 @@ $$
 
 $$
 \begin{law} \label{law:box}
-Don’t hide in the witness box
+Don't hide in the witness box
 \end{law}
 \begin{jury}[The Twelve]
 It could be you! So beware and
@@ -432,7 +432,7 @@ For simplicity, we use
 \[
 E=mc^2
 \]
-That’s it.
+That's it.
 \end{proof}
 $$
 

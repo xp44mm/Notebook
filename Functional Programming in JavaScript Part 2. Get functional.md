@@ -2,7 +2,7 @@
 
 # Chapter 3. Few data structures, many operations
 
-## 3.1. Understanding your application’s control flow
+## 3.1. Understanding your application's control flow
 
 The path a program takes to arrive at a solution is known as its *control flow*.
 
@@ -53,7 +53,7 @@ Recursion is a technique designed to solve problems by decomposing them into sma
 
 ### 3.5.3. Recursively defined data structures
 
-A *node* is an object that contains a value, a reference to its parent, and an array of children. If a node has no parent, it’s considered the root. Here’s the definition of the `Node` type.
+A *node* is an object that contains a value, a reference to its parent, and an array of children. If a node has no parent, it's considered the root. Here's the definition of the `Node` type.
 
 ```typescript
 class Knob {
@@ -110,13 +110,13 @@ Functional programming removes the limitations present in *method chaining* and 
 
 Formally speaking, two functions `f` and `g` are *type-compatible* if the output of `f` has a type equivalent to the set of inputs of `g`.
 
-*Arity* can be defined as the number of arguments a function accepts; it’s also referred to as the function’s *length*.
+*Arity* can be defined as the number of arguments a function accepts; it's also referred to as the function's *length*.
 
 函数参数的长度反映了函数的复杂性。越长的元数代表更高的复杂性。
 
-*Partial application* is an operation that initializes a subset of a nonvariadic function’s parameters to fixed values, creating a function of smaller arity.
+*Partial application* is an operation that initializes a subset of a nonvariadic function's parameters to fixed values, creating a function of smaller arity.
 
-separating a function’s description from its evaluation.
+separating a function's description from its evaluation.
 
 programming to interfaces
 
@@ -131,7 +131,7 @@ programming to interfaces
 
 Using `compose` (or `pipe`) means never having to declare arguments (known as the *points* of a function), making your code declarative and more succinct or *point-free*.
 
-Combinators are higher-order functions that can combine primitive artifacts like other functions (or other combinators) and behave as control logic. Combinators typically don’t declare any variables of their own or contain any business logic; they’re meant to orchestrate the flow of a functional program.
+Combinators are higher-order functions that can combine primitive artifacts like other functions (or other combinators) and behave as control logic. Combinators typically don't declare any variables of their own or contain any business logic; they're meant to orchestrate the flow of a functional program.
 
 相关、独立的操作序列
 

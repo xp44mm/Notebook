@@ -28,13 +28,13 @@ Since both of these APIs are available in UWP, the biggest question for HTTP dev
 
 ## Object Model
 
-Now that we understand the motivation behind creating these two similar APIs and the rationale for choosing between the two, let’s look closer at the object model for each of these.
+Now that we understand the motivation behind creating these two similar APIs and the rationale for choosing between the two, let's look closer at the object model for each of these.
 
 ### System.Net.Http
 
 The topmost abstraction layer is the `HttpClient` object, which represents the client entity in the client-server model of the HTTP protocol. This client can issue multiple requests (represented by `HttpRequestMessage`) to the server and receive the corresponding responses (represented by `HttpResponseMessage`). The entity body and content headers of each HTTP request or response is represented by the `HttpContent` base class, and derived classes such as `StreamContent`, `MultipartContent` and `StringContent`. They provide different representations of the HTTP entity body. Each of these classes provide a set of `ReadAs*` methods to read out the entity body of a request or response as a string, byte array or a stream.
 
-Each `HttpClient` object has a handler object underneath that represents all the HTTP-related settings of that client. Conceptually, you can think of the handler as representing the HTTP stack underneath the client. It is responsible for sending the client’s HTTP requests to the server and conveying the response back to the client.
+Each `HttpClient` object has a handler object underneath that represents all the HTTP-related settings of that client. Conceptually, you can think of the handler as representing the HTTP stack underneath the client. It is responsible for sending the client's HTTP requests to the server and conveying the response back to the client.
 
 The default handler class used in the `System.Net.Http` API is `HttpClientHandler`. When you create a new instance of an `HttpClient` object—for example, call `new HttpClient()`—an `HttpClientHandler` object is automatically created for you with the default HTTP stack settings. If you want to modify any of the default settings such as caching behavior, automatic compression, credentials or proxy, you can create your own instance of an `HttpClientHandler` directly, modify its properties and then pass it into the constructor of `HttpClient`, as follows:
 
@@ -44,7 +44,7 @@ The default handler class used in the `System.Net.Http` API is `HttpClientHandle
 
 #### Chaining of Handlers
 
-One of the key advantages of the `System.Net.Http.HttpClient` API design is the ability to insert custom handlers and create a chain of handler objects underneath an `HttpClient` object. For example, let’s say you are building an app that queries a web service for some data. You have custom logic to handle HTTP 4xx (client error) and 5xx (server error) responses from the server and want to take specific retry steps, such as trying a different endpoint or adding user credentials. You would ideally want to separate this HTTP-related work from the rest of your business logic which just cares about the data returned from the web service.
+One of the key advantages of the `System.Net.Http.HttpClient` API design is the ability to insert custom handlers and create a chain of handler objects underneath an `HttpClient` object. For example, let's say you are building an app that queries a web service for some data. You have custom logic to handle HTTP 4xx (client error) and 5xx (server error) responses from the server and want to take specific retry steps, such as trying a different endpoint or adding user credentials. You would ideally want to separate this HTTP-related work from the rest of your business logic which just cares about the data returned from the web service.
 
 This can be achieved by creating a new handler class that derives from the `DelegatingHandler` class (e.g. CustomHandler1), then create a new instance of it and pass that in to the `HttpClient` constructor. The `InnerHandler` property of the `DelegatingHandler` class is used to specify the next handler in the chain – for example, you could add another custom handler (e.g. CustomHandler2) to the chain. For the last handler, you can set the inner handler to an `HttpClientHandler` instance – this will pass the request on to the HTTP stack of the OS. Here's how this looks conceptually:
 
@@ -221,7 +221,7 @@ myFilter.ServerCredential = new PasswordCredential(“fooBar”, myUsername, myP
 
 **System.Net.Http:**
 
-In order to protect the user’s credential information, this API does not send any client certificates to the server by default. To use client certificates for authentication, use:
+In order to protect the user's credential information, this API does not send any client certificates to the server by default. To use client certificates for authentication, use:
 
 ```C#
 var myClientHandler = new HttpClientHandler();
@@ -240,7 +240,7 @@ myFilter.ClientCertificate = myCertificate;
 
 **Notes:**
 
-1. In order to use a client cert with either API, you must first add it to the app’s certificate store by following [these instructions](http://blogs.msdn.com/b/wsdevsol/archive/2014/07/31/programmatically-create-and-configure-a-client-certificate-for-use-in-your-windows-runtime-based-app.aspx). Apps with enterprise capability can also use existing client certificates in the user’s ‘My’ store.
+1. In order to use a client cert with either API, you must first add it to the app's certificate store by following [these instructions](http://blogs.msdn.com/b/wsdevsol/archive/2014/07/31/programmatically-create-and-configure-a-client-certificate-for-use-in-your-windows-runtime-based-app.aspx). Apps with enterprise capability can also use existing client certificates in the user's ‘My’ store.
 2. For `HttpClientHandler.ClientCertificateOptions` , there are two allowed values: `Automatic` and `Manual`. Setting it to `Automatic` will choose the best matching client certificate from the app certificate store and use that for authentication. Setting it to `Manual` will ensure that no client certificate is sent even if the server requests it.
 
 ### Proxy Settings

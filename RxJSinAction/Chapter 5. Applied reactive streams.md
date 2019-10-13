@@ -536,7 +536,7 @@ const fetchDataInterval$ = symbol => twoSecond$
 .mergeMap(() => requestQuote$(symbol)); 
 ```
 
-All that’s left to do now is call this function with any stock symbol, in this case FB:
+All that's left to do now is call this function with any stock symbol, in this case FB:
 
 ```js
 fetchDataInterval$('FB')

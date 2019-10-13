@@ -4,7 +4,7 @@ An *expression* is a phrase of JavaScript that a JavaScript interpreter can *eva
 
 The most common way to build a complex expression out of simpler expressions is with an *operator*. An operator combines the values of its *operands* (usually two of them) in some way and evaluates to a new value. The multiplication operator `*` is a simple example. The expression `x * y` evaluates to the product of the values of the expressions `x` and `y`. For simplicity, we sometimes say that an operator returns a value rather than “evaluates to” a value.
 
-This chapter documents all of JavaScript’s operators, and it also explains expressions (such as array indexing and function invocation) that do not use operators. If you already know another programming language that uses C-style syntax, you’ll find that the syntax of most of JavaScript’s expressions and operators is already familiar to you.
+This chapter documents all of JavaScript's operators, and it also explains expressions (such as array indexing and function invocation) that do not use operators. If you already know another programming language that uses C-style syntax, you'll find that the syntax of most of JavaScript's expressions and operators is already familiar to you.
 
 ## 4.1 Primary Expressions
 
@@ -20,7 +20,7 @@ Literals are constant values that are embedded directly in your program. They lo
 
 JavaScript syntax for number literals was covered in §3.1. String literals were documented in §3.2. The regular expression literal syntax was introduced in §3.2.4 and will be documented in detail in Chapter 10.
 
-Some of JavaScript’s reserved words are primary expressions:
+Some of JavaScript's reserved words are primary expressions:
 
 ```js
 true      // Evalutes to the boolean true value
@@ -43,7 +43,7 @@ When any identifier appears by itself in a program, JavaScript assumes it is a v
 
 ## 4.2 Object and Array Initializers
 
-Object and array *initializers* are expressions whose value is a newly created object or array. These initializer expressions are sometimes called “object literals” and “array literals.” Unlike true literals, however, they are not primary expressions, because they include a number of subexpressions that specify property and element values. Array initializers have a slightly simpler syntax, and we’ll begin with those.
+Object and array *initializers* are expressions whose value is a newly created object or array. These initializer expressions are sometimes called “object literals” and “array literals.” Unlike true literals, however, they are not primary expressions, because they include a number of subexpressions that specify property and element values. Array initializers have a slightly simpler syntax, and we'll begin with those.
 
 An array initializer is a comma-separated list of expressions contained within square brackets. The value of an array initializer is a newly created array. The elements of this new array are initialized to the values of the comma-separated expressions:
 
@@ -91,7 +91,7 @@ var square = { "upperLeft":  { x: p.x, y: p.y },
                'lowerRight': { x: p.x + side, y: p.y + side}};
 ```
 
-We’ll see object and array initializers again in Chapters 6 and 7.
+We'll see object and array initializers again in Chapters 6 and 7.
 
 ## 4.3 Function Definition Expressions
 
@@ -134,7 +134,7 @@ Objects and their properties are covered in detail in Chapter 6, and arrays and 
 
 4.5 Invocation Expressions
 
-An *invocation expression* is JavaScript’s syntax for calling (or executing) a function or method. It starts with a function expression that identifies the function to be called. The function expression is followed by an open parenthesis, a comma-separated list of zero or more argument expressions, and a close parenthesis. Some examples:
+An *invocation expression* is JavaScript's syntax for calling (or executing) a function or method. It starts with a function expression that identifies the function to be called. The function expression is followed by an open parenthesis, a comma-separated list of zero or more argument expressions, and a close parenthesis. Some examples:
 
 ```js
 f(0)            // f is the function expression; 0 is the argument expression.
@@ -170,7 +170,7 @@ Constructors are explained in more detail in Chapter 9.
 
 ## 4.7 Operator Overview
 
-Operators are used for JavaScript’s arithmetic expressions, comparison expressions, logical expressions, assignment expressions, and more. Table 4-1 summarizes the operators and serves as a convenient reference.
+Operators are used for JavaScript's arithmetic expressions, comparison expressions, logical expressions, assignment expressions, and more. Table 4-1 summarizes the operators and serves as a convenient reference.
 
 Note that most operators are represented by punctuation characters such as `+` and `=`. Some, however, are represented by keywords such as `delete` and `instanceof`. Keyword operators are regular operators, just like those expressed with punctuation; they simply have a less succinct syntax.
 
@@ -305,7 +305,7 @@ Order of evaluation only makes a difference if any of the expressions being eval
 
 This section covers the operators that perform arithmetic or other numerical manipulations on their operands. The multiplication, division, and subtraction operators are straightforward and are covered first. The addition operator gets a subsection of its own because it can also perform string concatenation and has some unusual type conversion rules. The unary operators and the bitwise operators are also covered in subsections of their own.
 
-The basic arithmetic operators are `*` (multiplication), `/` (division), `%` (modulo: remainder after division), `+` (addition), and `-` (subtraction). As noted, we’ll discuss the `+` operator in a section of its own. The other basic four operators simply evaluate their operands, convert the values to numbers if necessary, and then compute the product, quotient, remainder, or difference between the values. Non-numeric operands that cannot convert to numbers convert to the `NaN` value. If either operand is (or converts to) `NaN`, the result of the operation is also `NaN`.
+The basic arithmetic operators are `*` (multiplication), `/` (division), `%` (modulo: remainder after division), `+` (addition), and `-` (subtraction). As noted, we'll discuss the `+` operator in a section of its own. The other basic four operators simply evaluate their operands, convert the values to numbers if necessary, and then compute the product, quotient, remainder, or difference between the values. Non-numeric operands that cannot convert to numbers convert to the `NaN` value. If either operand is (or converts to) `NaN`, the result of the operation is also `NaN`.
 
 The `/` operator divides its first operand by its second. If you are used to programming languages that distinguish between integer and floating-point numbers, you might expect to get an integer result when you divide one integer by another. In JavaScript, however, all numbers are floating-point, so all division operations have floating-point results: 5/2 evaluates to 2.5, not 2. Division by zero yields positive or negative infinity, while 0/0 evaluates to `NaN`: neither of these cases raises an error.
 
@@ -364,7 +364,7 @@ Unary plus (+)
 
 The unary plus operator converts its operand to a number (or to NaN) and returns
 that converted value. When used with an operand that is already a number, it
-doesn’t do anything.
+doesn't do anything.
 
 Unary minus (-)
 
@@ -383,7 +383,7 @@ var i = 1, j = i++;    // i is 2, j is 1
 
 Note that the expression `++x` is not always the same as `x=x+1`. The ++ operator never performs string concatenation: it always converts its operand to a number and increments it. If x is the string “1”, ++x is the number 2, but x+1 is the string “11”.
 
-Also note that, because of JavaScript’s automatic semicolon insertion, you cannot insert a line break between the post-increment operator and the operand that precedes it. If you do so, JavaScript will treat the operand as a complete statement by itself and insert a semicolon before it.
+Also note that, because of JavaScript's automatic semicolon insertion, you cannot insert a line break between the post-increment operator and the operand that precedes it. If you do so, JavaScript will treat the operand as a complete statement by itself and insert a semicolon before it.
 
 This operator, in both its pre- and post-increment forms, is most commonly used to increment a counter that controls a for loop (§5.5.3).
 
@@ -407,7 +407,7 @@ The `|` operator performs a Boolean OR operation on each bit of its integer argu
 
 Bitwise XOR (^)
 
-The ^ operator performs a Boolean exclusive OR operation on each bit of its integer arguments. Exclusive OR means that either operand one is true or operand two is true, but not both. A bit is set in this operation’s result if a corresponding bit is set in one (but not both) of the two operands. For example, `0xFF00 ^ 0xF0F0` evaluates to `0x0FF0`.
+The ^ operator performs a Boolean exclusive OR operation on each bit of its integer arguments. Exclusive OR means that either operand one is true or operand two is true, but not both. A bit is set in this operation's result if a corresponding bit is set in one (but not both) of the two operands. For example, `0xFF00 ^ 0xF0F0` evaluates to `0x0FF0`.
 
 Bitwise NOT (~)
 
@@ -427,7 +427,7 @@ The `>>>` operator is just like the `>>` operator, except that the bits shifted 
 
 ## 4.9 Relational Expressions
 
-This section describes JavaScript’s relational operators. These operators test for a relationship (such as “equals,” “less than,” or “property of”) between two values and return `true` or `false` depending on whether that relationship exists. Relational expressions always evaluate to a boolean value, and that value is often used to control the flow of program execution in `if`, `while`, and `for` statements (see Chapter 5). The subsections that follow document the equality and inequality operators, the comparison operators, and JavaScript’s other two relational operators, `in` and `instanceof`.
+This section describes JavaScript's relational operators. These operators test for a relationship (such as “equals,” “less than,” or “property of”) between two values and return `true` or `false` depending on whether that relationship exists. Relational expressions always evaluate to a boolean value, and that value is often used to control the flow of program execution in `if`, `while`, and `for` statements (see Chapter 5). The subsections that follow document the equality and inequality operators, the comparison operators, and JavaScript's other two relational operators, `in` and `instanceof`.
 
 ### 4.9.1 Equality and Inequality Operators
 
@@ -435,7 +435,7 @@ The `==` and `===` operators check whether two values are the same, using two di
 
 JavaScript supports `=`, `==`, and `===` operators. Be sure you understand the differences between these assignment, equality, and strict equality operators, and be careful to use the correct one when coding! Although it is tempting to read all three operators “equals,” it may help to reduce confusion if you read “gets or is assigned” for `=`, “is equal to” for `==`, and “is strictly equal to” for `===`.
 
-The `!=` and `!==` operators test for the exact opposite of the `==` and `===` operators. The `!=` inequality operator returns `false` if two values are equal to each other according to `==` and returns `true` otherwise. The `!==` operator returns `false` if two values are strictly equal to each other and returns `true` otherwise. As you’ll see in §4.10, the `!` operator computes the Boolean NOT operation. This makes it easy to remember that `!=` and `!==` stand for “not equal to” and “not strictly equal to.”
+The `!=` and `!==` operators test for the exact opposite of the `==` and `===` operators. The `!=` inequality operator returns `false` if two values are equal to each other according to `==` and returns `true` otherwise. The `!==` operator returns `false` if two values are strictly equal to each other and returns `true` otherwise. As you'll see in §4.10, the `!` operator computes the Boolean NOT operation. This makes it easy to remember that `!=` and `!==` stand for “not equal to” and “not strictly equal to.”
 
 As mentioned in §3.7, JavaScript objects are compared by reference, not by value. An object is equal to itself, but not to any other object. If two distinct objects have the same number of properties, with the same names and values, they are still not equal. Two arrays that have the same elements in the same order are not equal to each other.
 
@@ -557,7 +557,7 @@ a instanceof RegExp; // Evaluates to false; arrays are not regular expressions
 
 Note that all objects are instances of Object. `instanceof` considers the “superclasses” when deciding whether an object is an instance of a class. If the left-side operand of instanceof is not an object, instanceof returns false. If the right-hand side is not a function, it throws a `TypeError`.
 
-In order to understand how the `instanceof` operator works, you must understand the “prototype chain.” This is JavaScript’s inheritance mechanism, and it is described in §6.2.2. To evaluate the expression `o instanceof f`, JavaScript evaluates `f.prototype`, and then looks for that value in the prototype chain of `o`. If it finds it, then `o` is an instance of `f` (or of a superclass of `f`) and the operator returns true. If `f.prototype` is not one of the values in the prototype chain of `o`, then `o` is not an instance of `f` and instanceof returns `false`.
+In order to understand how the `instanceof` operator works, you must understand the “prototype chain.” This is JavaScript's inheritance mechanism, and it is described in §6.2.2. To evaluate the expression `o instanceof f`, JavaScript evaluates `f.prototype`, and then looks for that value in the prototype chain of `o`. If it finds it, then `o` is an instance of `f` (or of a superclass of `f`) and the operator returns true. If `f.prototype` is not one of the values in the prototype chain of `o`, then `o` is not an instance of `f` and instanceof returns `false`.
 
 ## 4.10 Logical Expressions
 

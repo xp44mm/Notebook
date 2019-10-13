@@ -161,7 +161,7 @@ Sometimes there is duplication in functionality between dot-notation members and
 
 Record and union types are symmetric; the values used to construct an object are the same as those stored in the object, which are a subset of those published by the object. This symmetry makes record and union types succinct and clear, and it helps give them other properties; for example, the F# compiler automatically derives generic equality, comparison, and hashing routines for these types.
 
-However, more advanced object programming often needs to break these symmetries. For example, let’s say you want to precompute and store the length of a vector in each vector value. It’s clear you don’t want everyone who creates a vector to have to perform this computation for you. Instead, you precompute the length as part of the construction sequence for the type. You can’t do this using a record, except by using a helper function, so it’s convenient to switch to a more general notation for class types. Listing 6-2 shows the Vector2D example using a class type.
+However, more advanced object programming often needs to break these symmetries. For example, let's say you want to precompute and store the length of a vector in each vector value. It's clear you don't want everyone who creates a vector to have to perform this computation for you. Instead, you precompute the length as part of the construction sequence for the type. You can't do this using a record, except by using a helper function, so it's convenient to switch to a more general notation for class types. Listing 6-2 shows the Vector2D example using a class type.
 
 #### Listing 6-2. A Vector2D type with length precomputation via a class type
 
@@ -203,7 +203,7 @@ val it : float = 5.0
 val it : float = 10.0
 ```
 
-Once again, it’s helpful to look at the inferred type signature for the Vector2D type definition of Listing 6-2:
+Once again, it's helpful to look at the inferred type signature for the Vector2D type definition of Listing 6-2:
 
 ```F#
 type Vector2D =
@@ -220,7 +220,7 @@ type Vector2D =
     static member Zero : Vector2D
 ```
 
-The signature of the type is almost the same as that for Listing 6-1. The primary difference is in the construction syntax. Let’s look at what’s going on here. The first line says you’re defining a type Vector2D with a *primary constructor*. This is sometimes called an *implicit constructor*. The constructor takes two arguments, dx and dy. The variables dx and dy are in scope throughout the (nonstatic) members of the type definition.
+The signature of the type is almost the same as that for Listing 6-1. The primary difference is in the construction syntax. Let's look at what's going on here. The first line says you're defining a type Vector2D with a *primary constructor*. This is sometimes called an *implicit constructor*. The constructor takes two arguments, dx and dy. The variables dx and dy are in scope throughout the (nonstatic) members of the type definition.
 
 The second line is part of the computation performed each time an object of this type is constructed:
 
@@ -263,7 +263,7 @@ type UnitVector2D(dx,dy) =
     new() = UnitVector2D (1.0,0.0)
 ```
 
-This example shows something else: sometimes it’s convenient for a class to have multiple constructors. You do this by adding extra explicit constructors using a member named new. These must ultimately construct an instance of the object via the primary constructor. The inferred signature for this type contains two constructors: 
+This example shows something else: sometimes it's convenient for a class to have multiple constructors. You do this by adding extra explicit constructors using a member named new. These must ultimately construct an instance of the object via the primary constructor. The inferred signature for this type contains two constructors: 
 
 ```F#
 type UnitVector2D =
@@ -291,7 +291,7 @@ type Vector2D(dx : float, dy : float) =
     static member OneY = oney
 ```
 
-Static bindings in classes are initialized once, along with other module and static bindings in the file. If the class type is generic, it’s initialized once per concrete type generic instantiation.
+Static bindings in classes are initialized once, along with other module and static bindings in the file. If the class type is generic, it's initialized once per concrete type generic instantiation.
 
 ## Adding Further Object Notation to Your Types
 
@@ -349,7 +349,7 @@ val it : Vector2DWithOperators = {DX = 6.0; DY = 8.0;}
 val it : Vector2DWithOperators = {DX = 6.0; DY = 8.0;}
 ```
 
-If you add overloaded operators to your type, you may also have to customize how generic equality, hashing, and comparison are performed. In particular, the behavior of generic operators such as `hash`, `<`, `>`, `<=`, `>=`, `compare`, `min`, and `max` isn’t specified by defining new static members with these names, but rather by the techniques that will be described in Chapter 9. 
+If you add overloaded operators to your type, you may also have to customize how generic equality, hashing, and comparison are performed. In particular, the behavior of generic operators such as `hash`, `<`, `>`, `<=`, `>=`, `compare`, `min`, and `max` isn't specified by defining new static members with these names, but rather by the techniques that will be described in Chapter 9. 
 
 
 ---
@@ -364,13 +364,13 @@ let inline (+) x y = ((^a or ^b): (static member (+) : ^a * ^b -> ^c) (x, y))
 
 this defines the infix function (+) and is implemented using a special kind of expression that says “implement x + y by calling a static member (+) on the type of the left or right operand.” the function is marked inline to ensure that F# can always check for the existence of this member and call it efficiently. when you name a static member (+), then that is really shorthand for the name op_Addition, which is the .net standard encoded name for addition operators.
 
-You can define your own operators if you want, but they aren’t automatically overloaded in the same way as F# library definitions like the one shown previously are. For example, the following defines a new infix operator that appends a single element to the end of a list:
+You can define your own operators if you want, but they aren't automatically overloaded in the same way as F# library definitions like the one shown previously are. For example, the following defines a new infix operator that appends a single element to the end of a list:
 
 ```F#
 let (++) x y = List.append x [y]
 ```
 
-this operator isn’t overloaded; it’s a single fixed function. Defining non-overloaded operators can help make some implementation code more succinct, and you will use this technique in the symbolic programming examples in Chapter 12. 
+this operator isn't overloaded; it's a single fixed function. Defining non-overloaded operators can help make some implementation code more succinct, and you will use this technique in the symbolic programming examples in Chapter 12. 
 
 in principle, you can define new operators that are truly overloaded in the same way as the definition of (+) in the F# library, mapping the operator across to particular static members. however, code is generally much clearer if you stick to the standard overloaded operators.
 
@@ -419,7 +419,7 @@ text = "Imagine");;
 val it : LabelInfo =  LabelInfo  {Font = [Font: Name=Courier New, Size=36, ...];
 ```
 
-Optional arguments must always appear last in the set of arguments accepted by a method. They’re usually used as named arguments by callers. At the call site, this is done using the syntax `argument-name = argument-value`. If the argument has type `'T option`, then argument-value must have type `'T`. 
+Optional arguments must always appear last in the set of arguments accepted by a method. They're usually used as named arguments by callers. At the call site, this is done using the syntax `argument-name = argument-value`. If the argument has type `'T option`, then argument-value must have type `'T`. 
 
 ```F#
 type LabelInfo ... =
@@ -440,7 +440,7 @@ val defaultArg : 'T option -> 'T-> 'T
 
 #### Note  
 
-the second argument given to the `defaultArg` function is evaluated before the function is called. this means you should take care that this argument isn’t expensive to compute and doesn’t need to be disposed of. the previous example uses a match expression to specify the default for the font argument for this reason. 
+the second argument given to the `defaultArg` function is evaluated before the function is called. this means you should take care that this argument isn't expensive to compute and doesn't need to be disposed of. the previous example uses a match expression to specify the default for the font argument for this reason. 
 
 ---
 
@@ -485,11 +485,11 @@ type Point =
         { X = p.X - v.DX; Y = p.Y - v.DY }
 ```
 
-Overloads must be unique by signature, and you should take care to make sure your overload set isn’t too ambiguous—the more overloads you use, the more type annotations users of your types will need to add. 
+Overloads must be unique by signature, and you should take care to make sure your overload set isn't too ambiguous—the more overloads you use, the more type annotations users of your types will need to add. 
 
 ## Defining Object Types with Mutable State
 
-All the types you’ve seen so far in this chapter have been immutable. For example, the values of the Vector2D types shown in Listing 6-1 and Listing 6-2 can’t be modified after they’re created. Sometimes you may need to define mutable objects, particularly because object programming is a generally useful technique for encapsulating a mutable and evolving state. Listing 6-4 shows the definition of a mutable representation of a 2D vector. 
+All the types you've seen so far in this chapter have been immutable. For example, the values of the Vector2D types shown in Listing 6-1 and Listing 6-2 can't be modified after they're created. Sometimes you may need to define mutable objects, particularly because object programming is a generally useful technique for encapsulating a mutable and evolving state. Listing 6-4 shows the definition of a mutable representation of a 2D vector. 
 
 #### Listing 6-4. An Object Type with State
 
@@ -575,7 +575,7 @@ object programming was originally developed as a technique for controlling the c
 
 ### Using Optional Property Settings
 
-Throughout this book, you’ve used a second technique to specify configuration parameters when creating objects: initial property settings for objects. For example, in Chapter 2, you used the following code:
+Throughout this book, you've used a second technique to specify configuration parameters when creating objects: initial property settings for objects. For example, in Chapter 2, you used the following code:
 
 ```F#
 open System.Windows.Forms
@@ -596,7 +596,7 @@ let form =
 
 The F# compiler interprets unused named arguments as calls that set properties of the returned object. This technique is widely used for mutable objects that evolve over time, such as graphical components, because it greatly reduces the number of optional arguments that need to be plumbed around.
 
-Here’s how to define a version of the LabelInfo type used earlier that is configurable by optional property settings:
+Here's how to define a version of the LabelInfo type used earlier that is configurable by optional property settings:
 
 ```F#
 open System.Drawing
@@ -627,15 +627,15 @@ Note that the initializer for an auto-property is executed once per object, when
 
 ## Getting Started with Object Interface Types
 
-So far in this chapter, you’ve seen only how to define concrete object types. One of the key advances in both functional and object-oriented programming has been the move toward using abstract types for large portions of modern software. These values are typically accessed via interfaces, and we will now look at defining new object interface types.
+So far in this chapter, you've seen only how to define concrete object types. One of the key advances in both functional and object-oriented programming has been the move toward using abstract types for large portions of modern software. These values are typically accessed via interfaces, and we will now look at defining new object interface types.
 
-The notion of an object interface type can sound a little daunting at first, but the concept is actually simple; object interface types are ones whose member implementations can vary from value to value. As it happens, you’ve already met one important family of types whose implementations also vary from value to value: F# function types! 
+The notion of an object interface type can sound a little daunting at first, but the concept is actually simple; object interface types are ones whose member implementations can vary from value to value. As it happens, you've already met one important family of types whose implementations also vary from value to value: F# function types! 
 
 * In Chapter 3, you saw how functions can be used to model a range of concepts such as comparison functions, aggregation functions, and transformation functions. 
 
 * In Chapter 5, you saw how records of function values can be used for the parameters needed to make an algorithm generic. 
 
-You’ve also already met some other important object interface types, such as `System.Collections.Generic.IEnumerable<'T>` and `System.IDisposable`. .NET object interface types always begin with the letter I by convention. 
+You've also already met some other important object interface types, such as `System.Collections.Generic.IEnumerable<'T>` and `System.IDisposable`. .NET object interface types always begin with the letter I by convention. 
 
 Definitions of object interface types do not specify the implementation of objects. Listing 6-5 shows an object interface type IShape and a number of implementations of it. This section walks through the definitions in this code piece by piece, because they illustrate the key concepts behind object interface types and how they can be implemented.
 
@@ -696,7 +696,7 @@ type IShape =
     abstract BoundingBox : Rectangle
 ```
 
-Here you use the keyword abstract to define the member signatures for this type, indicating that the implementation of the member may vary from value to value. Also note that IShape isn’t concrete; it’s neither a record nor a discriminated union or class type. It doesn’t have any constructors and doesn’t accept any arguments. This is how F# infers that it’s an object interface type. 
+Here you use the keyword abstract to define the member signatures for this type, indicating that the implementation of the member may vary from value to value. Also note that IShape isn't concrete; it's neither a record nor a discriminated union or class type. It doesn't have any constructors and doesn't accept any arguments. This is how F# infers that it's an object interface type. 
 
 ### Implementing Object Interface Types Using Object Expressions
 
@@ -721,7 +721,7 @@ The type of the function circle is as follows:
 val circle : center:Point * radius:int -> IShape
 ```
 
-The construct in the braces, `{ new IShape with ... }`, is the object expression. This is a new expression form that you haven’t encountered previously in this book, because it’s generally used only when implementing object interface types. An object expression must give implementations for all the members of an object interface type. The general form of this kind of expression is simple: 
+The construct in the braces, `{ new IShape with ... }`, is the object expression. This is a new expression form that you haven't encountered previously in this book, because it's generally used only when implementing object interface types. An object expression must give implementations for all the members of an object interface type. The general form of this kind of expression is simple: 
 
 ```F#
 { new Type optional-arguments with
@@ -765,7 +765,7 @@ In object-oriented languages, implementing types in multiple ways is commonly ca
 
 ### Implementing Object Interface Types Using Concrete Types
 
-It’s common to have concrete types that both implement one or more object interface types and provide additional services of their own. Collections are a primary example, because they always implement `IEnumerable<'T>`. To give another example, in Listing 6-5 the type MutableCircle is defined as follows: 
+It's common to have concrete types that both implement one or more object interface types and provide additional services of their own. Collections are a primary example, because they always implement `IEnumerable<'T>`. To give another example, in Listing 6-5 the type MutableCircle is defined as follows: 
 
 ```F#
 type MutableCircle() =
@@ -816,9 +816,9 @@ type AutofacCollection() =
 
 ### Using Common Object Interface Types from the .NET Libraries
 
-Like other constructs discussed in this chapter, object interface types are often encountered when using .NET libraries. Some object interface types such as `IEnumerable<'T>` (called `seq<'T>` in F# coding) are also used throughout F# programming. It’s a .NET convention to prefix the name of all object interface types with I. However, using object interface types is very common in F# object programming, and this convention doesn’t have to be followed.
+Like other constructs discussed in this chapter, object interface types are often encountered when using .NET libraries. Some object interface types such as `IEnumerable<'T>` (called `seq<'T>` in F# coding) are also used throughout F# programming. It's a .NET convention to prefix the name of all object interface types with I. However, using object interface types is very common in F# object programming, and this convention doesn't have to be followed.
 
-Here’s the essence of the definition of the `System.Collections.Generic.IEnumerable<'T>` type and the related type `IEnumerator` using F# notation: 
+Here's the essence of the definition of the `System.Collections.Generic.IEnumerable<'T>` type and the related type `IEnumerator` using F# notation: 
 
 ```F#
 type IEnumerator<'T> =
@@ -835,7 +835,7 @@ The `IEnumerable<'T>` type is implemented by most concrete collection types. It 
 
 #### Note  
 
-the `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .net language. this section uses the corresponding F# syntax. in reality, `IEnumerator<'T>` also inherits from the nongeneric interfaces `System.Collections.IEnumerator` and `System.IDisposable`, and `IEnumerable<'T>` also inherits from the nongeneric interface `System.Collections.IEnumerable`. For clarity, we’ve ignored this. see the F# library documentation for full example implementations of these types.
+the `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .net language. this section uses the corresponding F# syntax. in reality, `IEnumerator<'T>` also inherits from the nongeneric interfaces `System.Collections.IEnumerator` and `System.IDisposable`, and `IEnumerable<'T>` also inherits from the nongeneric interface `System.Collections.IEnumerable`. For clarity, we've ignored this. see the F# library documentation for full example implementations of these types.
 
 ---
 
@@ -872,7 +872,7 @@ When you implement an interface that inherits from another interface, you must e
 
 #### Caution  
 
-although hierarchical modeling is useful, you must use it with care: poorly designed hierarchies often have to be abandoned late in the software development life cycle, leading to major disruptions. For many applications, it’s adequate to use existing classification hierarchies in conjunction with some new nonhierarchical interface types.
+although hierarchical modeling is useful, you must use it with care: poorly designed hierarchies often have to be abandoned late in the software development life cycle, leading to major disruptions. For many applications, it's adequate to use existing classification hierarchies in conjunction with some new nonhierarchical interface types.
 
 ---
 
@@ -925,7 +925,7 @@ val c : ITextOutputSink
 val it : string = "Incy Wincy Spider"
 ```
 
-Object expressions must give definitions for all unimplemented abstract members and can’t add other members.
+Object expressions must give definitions for all unimplemented abstract members and can't add other members.
 
 One powerful technique implements some or all abstract members in terms of function parameters. As you saw in Chapter 3, function parameters can represent a wide range of concepts. For example, here is type CountingOutputSink that performs the same role as the earlier function simpleOutputSink, except that the number of characters written to the sink is recorded and published as a property:
 
@@ -949,7 +949,7 @@ Qualifying object implementations by function parameters can be seen as a simple
 
 ### Defining Partially Implemented Class Types
 
-In this chapter, you’ve seen how to define concrete types, such as Vector2D in Listings 6-2 and 6-3, and you’ve seen how to define object interface types, such as IShape in Listing 6-5. Sometimes it’s useful to define types that are halfway between these types: partially concrete types. Partially implemented types are class types that also have abstract members, some of which may be unimplemented and some of which may have default implementations. For example, consider the following class: 
+In this chapter, you've seen how to define concrete types, such as Vector2D in Listings 6-2 and 6-3, and you've seen how to define object interface types, such as IShape in Listing 6-5. Sometimes it's useful to define types that are halfway between these types: partially concrete types. Partially implemented types are class types that also have abstract members, some of which may be unimplemented and some of which may have default implementations. For example, consider the following class: 
 
 ```F#
 /// A type whose members are partially implemented
@@ -960,7 +960,7 @@ type TextOutputSink() =
     default x.WriteString s = s |> String.iter x.WriteChar
 ```
 
-This class defines two abstract members, WriteChar and WriteString, but gives a default implementation for WriteString in terms of WriteChar. (In C# terminology, WriteString is virtual and WriteChar is abstract). Because WriteChar isn’t yet implemented, you can’t create an instance of this type directly; unlike other concrete types, partially implemented types still need to be implemented. One way to do this is to complete the implementation via an object expression. For example: 
+This class defines two abstract members, WriteChar and WriteString, but gives a default implementation for WriteString in terms of WriteChar. (In C# terminology, WriteString is virtual and WriteChar is abstract). Because WriteChar isn't yet implemented, you can't create an instance of this type directly; unlike other concrete types, partially implemented types still need to be implemented. One way to do this is to complete the implementation via an object expression. For example: 
 
 ```F#
 { new TextOutputSink() with
@@ -994,7 +994,7 @@ Another technique that uses partially implemented types is called implementation
 
 * Implementation hierarchies tend to leak across API boundaries, revealing how objects are implemented rather than how they can be used and composed. 
 
-* Implementation hierarchies are often fragile in response to minor changes in program specification. There is pressure on developers to put too much functionality in base classes, anticipating the needs of all derivations. There’s also pressure to go back and change the base class as new needs arise. This gives rise to the “fragile base class” problem, a major curse of object-oriented programming. 
+* Implementation hierarchies are often fragile in response to minor changes in program specification. There is pressure on developers to put too much functionality in base classes, anticipating the needs of all derivations. There's also pressure to go back and change the base class as new needs arise. This gives rise to the “fragile base class” problem, a major curse of object-oriented programming. 
 
 If implementation inheritance is used, you should in many cases consider making all implementing classes private or hiding all implementing classes behind a signature. For example, the `FSharp.Collections.Seq` module provides many implementations of the `seq<'T>` interface but exposes no implementation inheritance.
 
@@ -1013,7 +1013,7 @@ type CountingOutputSinkByInheritance() =
         System.Console.Write c
 ```
 
-The keywords override and default can be used interchangeably; both indicate that an implementation is being given for an abstract member. By convention, override is used when giving implementations for abstract members in inherited types that already have implementations, and default is used for implementations of abstract members that didn’t previously have implementations. 
+The keywords override and default can be used interchangeably; both indicate that an implementation is being given for an abstract member. By convention, override is used when giving implementations for abstract members in inherited types that already have implementations, and default is used for implementations of abstract members that didn't previously have implementations. 
 
 Implementations are also free to override and modify default implementations such as the implementation of WriteString provided by TextOutputSink. Here is an example: 
 
@@ -1070,9 +1070,9 @@ Both forms ensure that the underlying stream is closed deterministically and the
 
 #### Note  
 
-if you don’t use a `use` binding, or otherwise explicitly close the stream, the stream is closed when the
-stream object is finalized by the .net garbage collector. it’s generally bad practice to rely on finalization to clean
-up resources this way, because finalization isn’t guaranteed to happen in a deterministic, timely fashion.
+if you don't use a `use` binding, or otherwise explicitly close the stream, the stream is closed when the
+stream object is finalized by the .net garbage collector. it's generally bad practice to rely on finalization to clean
+up resources this way, because finalization isn't guaranteed to happen in a deterministic, timely fashion.
 
 ---
 
@@ -1096,9 +1096,9 @@ All programming involves the use of real resources on the host machine(s) and op
 
 All resources are necessarily finite. In .NET programming, some resources such as memory are fully managed, in the sense that you almost never need to consider when to clean up memory. This is done automatically through a process called garbage collection. Chapter 18 will look at garbage collection in more detail. Other resources must be reclaimed and/or recycled. 
 
-When prototyping, you can generally assume that resources are unbounded, although it’s good practice when you’re using a resource to be aware of how much of the resource you’re using and roughly what your budget for the resource is. For example: 
+When prototyping, you can generally assume that resources are unbounded, although it's good practice when you're using a resource to be aware of how much of the resource you're using and roughly what your budget for the resource is. For example: 
 
-* On a modern 32-bit desktop machine, 10,000 tuple values occupy only a small fragment of a machine’s memory, roughly 160 KB, but 10,000 open file handles is an extreme number and will stress the operating system. Ten thousand simultaneous web requests may stress your network administrator. 
+* On a modern 32-bit desktop machine, 10,000 tuple values occupy only a small fragment of a machine's memory, roughly 160 KB, but 10,000 open file handles is an extreme number and will stress the operating system. Ten thousand simultaneous web requests may stress your network administrator. 
 
 * In some cases, even memory should be explicitly and carefully reclaimed. For example, on a modern 64-bit machine, the largest single array you can allocate in a .NET 2.0 program is 2 GB. If your machine has, say, 4 GB of real memory, you may be able to have only a handful of these objects and should strongly consider moving to a regime in which you explicitly recycle these objects and think carefully before allocating them. 
 
@@ -1158,30 +1158,30 @@ IDEs can help you determine when a type has implemented `IDisposable`. when you 
 
 #### When will the runtime clean up for you?
 
-People often ask if the .net Common Language runtime automatically cleans up resources such as file handles the same way it cleans up memory. while when an object gets garbage collected, it may be finalized, if the object is well implemented, this results in it deallocating any unmanaged resources, closing any outstanding file connections, and releasing any operating system resources. although it’s appropriate to rely on finalization when prototyping, never rely on finalization in code where you’re hitting resource limits. 
+People often ask if the .net Common Language runtime automatically cleans up resources such as file handles the same way it cleans up memory. while when an object gets garbage collected, it may be finalized, if the object is well implemented, this results in it deallocating any unmanaged resources, closing any outstanding file connections, and releasing any operating system resources. although it's appropriate to rely on finalization when prototyping, never rely on finalization in code where you're hitting resource limits. 
 
-For example, let’s say you have a loop where you open files using `System.IO.File.OpenRead`. if you forget to close the file handles, you may quickly allocate thousands of them. if you’re lucky, the garbage collector may finalize these before you run out of OS resources, but if not, one of your `File.OpenRead` calls will fail with an exception, even if the file exists on disk. 
+For example, let's say you have a loop where you open files using `System.IO.File.OpenRead`. if you forget to close the file handles, you may quickly allocate thousands of them. if you're lucky, the garbage collector may finalize these before you run out of OS resources, but if not, one of your `File.OpenRead` calls will fail with an exception, even if the file exists on disk. 
 
-Also, be aware of the potential for memory stickiness. this occurs when the .net Common Language runtime is unable to garbage-collect memory even though objects have become unreachable. this happens especially when long-running computations and inactive callbacks hold on to object handles related to the earlier phases of execution of a program. memory stickiness can also lead to objects never being finalized, reinforcing that you shouldn’t rely on finalization to release nonmemory resources. memory profiling tools such as `CLRProfiler` are indispensable when you’re tracking down memory leaks in production code or long-running applications. 
+Also, be aware of the potential for memory stickiness. this occurs when the .net Common Language runtime is unable to garbage-collect memory even though objects have become unreachable. this happens especially when long-running computations and inactive callbacks hold on to object handles related to the earlier phases of execution of a program. memory stickiness can also lead to objects never being finalized, reinforcing that you shouldn't rely on finalization to release nonmemory resources. memory profiling tools such as `CLRProfiler` are indispensable when you're tracking down memory leaks in production code or long-running applications. 
 
 ---
 
 ### Managing Resources with More-Complex Lifetimes
 
-Sometimes, the lifetime of a resource isn’t simple in the sense that it doesn’t follow a stack discipline. In these cases, you should almost always adopt one of two techniques: 
+Sometimes, the lifetime of a resource isn't simple in the sense that it doesn't follow a stack discipline. In these cases, you should almost always adopt one of two techniques: 
 
 * Design objects that can own one or more resources and that are responsible for cleaning them up. Make sure that these objects implement `System.IDisposable`. 
 
-* Use control constructs that help you capture the kind of computation you’re performing. For example, when generating sequences of data (such as from a database connection), you should strongly consider using sequence expressions, as discussed in Chapter 3. These may have internal use bindings, and the resources are disposed of when each sequence iteration finishes. Likewise, when using asynchronous I/O, it may be helpful to write your computation as an asynchronous workflow. Chapter 11 and the following sections will provide examples. 
+* Use control constructs that help you capture the kind of computation you're performing. For example, when generating sequences of data (such as from a database connection), you should strongly consider using sequence expressions, as discussed in Chapter 3. These may have internal use bindings, and the resources are disposed of when each sequence iteration finishes. Likewise, when using asynchronous I/O, it may be helpful to write your computation as an asynchronous workflow. Chapter 11 and the following sections will provide examples. 
 
 
 Consider implementing the `IDisposable` interface on objects and types in situations such as: 
 
 * When you build an object that uses one or more `IDisposable` objects internally. 
 
-* When you’re writing a wrapper for an operating system resource or some resource allocated and managed in a native (C or C++) DLL. In this case, implement a finalizer by overriding the `Object.Finalize` method. 
+* When you're writing a wrapper for an operating system resource or some resource allocated and managed in a native (C or C++) DLL. In this case, implement a finalizer by overriding the `Object.Finalize` method. 
 
-* When you implement the `System.Collections.Generic.IEnumerable<'T>` (that is, sequence) interface on a collection. The `IEnumerable` interface isn’t `IDisposable`, but it must generate `System.Collection.Generic.IEnumerator<'T>` values, and this interface inherits from `IDisposable`. For nearly all collection types, the disposal action returns without doing anything. 
+* When you implement the `System.Collections.Generic.IEnumerable<'T>` (that is, sequence) interface on a collection. The `IEnumerable` interface isn't `IDisposable`, but it must generate `System.Collection.Generic.IEnumerator<'T>` values, and this interface inherits from `IDisposable`. For nearly all collection types, the disposal action returns without doing anything. 
 
 The following sections give some examples of these. 
 
@@ -1231,11 +1231,11 @@ val it : string = "I'm a little teapot"
 Error: System.ObjectDisposedException: Cannot read from a closed TextReader.
 ```
 
-Disposal should leave an object in an unusable state, as shown in the last line of the previous example. It’s also common for objects to implement a member with a more intuitive name that does precisely the same thing as its implementation of `IDisposable.Dispose`, which is CloseAll in Listing 6-6. 
+Disposal should leave an object in an unusable state, as shown in the last line of the previous example. It's also common for objects to implement a member with a more intuitive name that does precisely the same thing as its implementation of `IDisposable.Dispose`, which is CloseAll in Listing 6-6. 
 
 ### Cleaning Up Unmanaged Objects
 
-If you’re writing a component that explicitly wraps some kind of unmanaged resource, then implementing `IDisposable` is a little trickier. Listing 6-7 shows the pattern that is used for this type of cleanup. Here, you mimic an external resource via a data structure that generates fresh, reclaimable integer tickets. The idea is that each customer is given an integer ticket, but this is kept internal to the customer, and customers return their tickets to the pool when they leave (that is, are disposed of). 
+If you're writing a component that explicitly wraps some kind of unmanaged resource, then implementing `IDisposable` is a little trickier. Listing 6-7 shows the pattern that is used for this type of cleanup. Here, you mimic an external resource via a data structure that generates fresh, reclaimable integer tickets. The idea is that each customer is given an integer ticket, but this is kept internal to the customer, and customers return their tickets to the pool when they leave (that is, are disposed of). 
 
 #### Listing 6-7. Reclaiming unmanaged tickets with IDisposable
 
@@ -1268,7 +1268,7 @@ type Customer() =
         member x.Dispose() = cleanup(); GC.SuppressFinalize(x)
 ```
 
-Note that you override the `Object.Finalize` method. This makes sure cleanup occurs if the object isn’t disposed of but is still garbage-collected. If the object is explicitly disposed of, you call `GC.SuppressFinalize()` to ensure that the object isn’t later finalized. The finalizer shouldn’t call the `Dispose()` of other managed objects, because they have their own finalizers if needed. The following example session generates some customers, and tickets used by some of the customers are automatically reclaimed as they exit their scopes: 
+Note that you override the `Object.Finalize` method. This makes sure cleanup occurs if the object isn't disposed of but is still garbage-collected. If the object is explicitly disposed of, you call `GC.SuppressFinalize()` to ensure that the object isn't later finalized. The finalizer shouldn't call the `Dispose()` of other managed objects, because they have their own finalizers if needed. The following example session generates some customers, and tickets used by some of the customers are automatically reclaimed as they exit their scopes: 
 
 ```F#
 > let bill = new Customer();;
@@ -1283,7 +1283,7 @@ jane.Ticket = 2
 returning ticket 2
 ```
 
-In the example, Joe and Jane get the same ticket. Joe’s ticket is returned at the end of the scope where the joe variable is declared as a result of the IDisposable cleanup implicit in the use binding. 
+In the example, Joe and Jane get the same ticket. Joe's ticket is returned at the end of the scope where the joe variable is declared as a result of the IDisposable cleanup implicit in the use binding. 
 
 ## Extending Existing Types and Modules
 
@@ -1314,7 +1314,7 @@ val it : bool = true
 val it : (int * int) option = Some (1218743, 5)
 ```
 
-These type extensions are called F#-style extension members. Since F# 3.1, an additional kind of extension member is supported called a C#-style extension member. These can be declared in other .NET languages and then accessed by opening a namespace. They can also be declared in F# code. C#-style extension members can only be instance methods; i.e., they can’t be static and can’t be properties. 
+These type extensions are called F#-style extension members. Since F# 3.1, an additional kind of extension member is supported called a C#-style extension member. These can be declared in other .NET languages and then accessed by opening a namespace. They can also be declared in F# code. C#-style extension members can only be instance methods; i.e., they can't be static and can't be properties. 
 
 ```F#
 module CSharpStyleExtensions =
@@ -1365,7 +1365,7 @@ val it : bool = true
 val it : (int * int) option = Some (1218743, 5)
 ```
 
-Despite the limitations of C#-style extension members, they have an important advantage that is useful for some F# API designs: for generic types, C#-style extension methods can constrain the generic type parameters to either a particular instantiation or some other generic constraint. For example, in the code just reviewed, the Product method constrains the type of the input ResizeArray to be int. Likewise, GenericProduct constrains the ResizeArray to be a type `'T`, which support zero and multiplication (see Chapter 5 for more discussion on generic constraints). Normal F# extensions can’t operate on constrained types like this, which sometimes makes a mix of F# and C# extensions useful when designing “Fluent” APIs. For example, see the F# community library `FSharp.Core.Fluent` on GitHub, which uses exactly such a mix. 
+Despite the limitations of C#-style extension members, they have an important advantage that is useful for some F# API designs: for generic types, C#-style extension methods can constrain the generic type parameters to either a particular instantiation or some other generic constraint. For example, in the code just reviewed, the Product method constrains the type of the input ResizeArray to be int. Likewise, GenericProduct constrains the ResizeArray to be a type `'T`, which support zero and multiplication (see Chapter 5 for more discussion on generic constraints). Normal F# extensions can't operate on constrained types like this, which sometimes makes a mix of F# and C# extensions useful when designing “Fluent” APIs. For example, see the F# community library `FSharp.Core.Fluent` on GitHub, which uses exactly such a mix. 
 
 ```F#
 > open System.Collections.Generic;;
@@ -1402,7 +1402,7 @@ val it : (int * int) list = [(1,2); (2,3);  (3,4)]
 
 #### Note   
 
-type extensions are a good technique for equipping simple type definitions with extra functionality. however, don’t fall into the trap of adding too much functionality to an existing type via this route. instead, it’s often simpler to use additional modules and types. For example, the module `FSharp.Collections.List` contains extra functionality associated with the F# list type. 
+type extensions are a good technique for equipping simple type definitions with extra functionality. however, don't fall into the trap of adding too much functionality to an existing type via this route. instead, it's often simpler to use additional modules and types. For example, the module `FSharp.Collections.List` contains extra functionality associated with the F# list type. 
 
 ---
 
@@ -1424,7 +1424,7 @@ You often have to choose whether to use modules or object types to organize your
 
 * avoid relying on or revealing complex type hierarchies. in particular, avoid relying on implementation inheritance, except as an internal implementation technique or when doing gUi programming or authoring very large objects. 
 
-* avoid nesting modules or types inside other modules or types, especially in public apis. nested modules and types are useful implementation details, but they’re rarely made public in apis. Deep hierarchical organization can be confusing; when you’re designing a library, you should place nearly all public modules and types immediately inside a well-named namespace. 
+* avoid nesting modules or types inside other modules or types, especially in public apis. nested modules and types are useful implementation details, but they're rarely made public in apis. Deep hierarchical organization can be confusing; when you're designing a library, you should place nearly all public modules and types immediately inside a well-named namespace. 
 
 ---
 
@@ -1459,7 +1459,7 @@ type Vector2D(dx : float, dy : float) =
     member v.Length = len
 ```
 
-You see this in F# code samples on the Internet and in other books. However, we have found that this tends to make types harder to understand, so we’ve omitted class/end and Class attributes throughout this book. You can also delimit object interface types by interface/end: 
+You see this in F# code samples on the Internet and in other books. However, we have found that this tends to make types harder to understand, so we've omitted class/end and Class attributes throughout this book. You can also delimit object interface types by interface/end: 
 
 ```F#
 type IShape =
@@ -1482,7 +1482,7 @@ Again, we omit these attributes in this book.
 
 ### Structs
 
-It’s occasionally useful to direct the F# compiler to use a .NET struct (value type) representation for small, generally immutable objects. You can do this by adding a Struct attribute to a class type and adding type annotations to all arguments of the primary constructor: 
+It's occasionally useful to direct the F# compiler to use a .NET struct (value type) representation for small, generally immutable objects. You can do this by adding a Struct attribute to a class type and adding type annotations to all arguments of the primary constructor: 
 
 ```F#
 [<Struct>]
@@ -1504,7 +1504,7 @@ type Vector2DStructUsingExplicitVals =
     member v.Length = sqrt (v.dx * v.dx + v.dy * v.dy)
 ```
 
-Structs are often more efficient, but you should use them with care because the full contents of struct values are frequently copied. The performance characteristics of structs can also change depending on whether you’re running on a 32-bit or 64-bit machine. 
+Structs are often more efficient, but you should use them with care because the full contents of struct values are frequently copied. The performance characteristics of structs can also change depending on whether you're running on a 32-bit or 64-bit machine. 
 
 ### Delegates
 
@@ -1514,7 +1514,7 @@ Occasionally, you need to define a new .NET delegate type in F#:
 type ControlEventHandler = delegate of int -> bool
 ```
 
-This is usually required only when using C code from F#, because some magic performed by the .NET Common Language Runtime lets you marshal a delegate value as a C function pointer. Chapter 18 will look at interoperating with C and COM. For example, here’s how you add a new handler to the Win32 Ctrl+C–handling API: 
+This is usually required only when using C code from F#, because some magic performed by the .NET Common Language Runtime lets you marshal a delegate value as a C function pointer. Chapter 18 will look at interoperating with C and COM. For example, here's how you add a new handler to the Win32 Ctrl+C–handling API: 
 
 ```F#
 open System.Runtime.InteropServices
@@ -1544,14 +1544,14 @@ This type is compiled as a .NET enum whose underlying bit representation is a si
 
 ### Working with null Values
 
-The keyword `null` is used in programming languages as a special, distinguished value of a type that represents an uninitialized value or some other kind of special condition. In general, null isn’t used in conjunction with types defined in F# code, although it’s common to simulate null with a value of the `option` type. For example: 
+The keyword `null` is used in programming languages as a special, distinguished value of a type that represents an uninitialized value or some other kind of special condition. In general, null isn't used in conjunction with types defined in F# code, although it's common to simulate null with a value of the `option` type. For example: 
 
 ```F#
 > let parents = [("Adam", None); ("Cain", Some("Adam", "Eve"))];;
 val parents : (string * (string * string) option) list = ...
 ```
 
-Reference types defined in other .NET languages do support null, however; when using .NET APIs, you may have to explicitly pass null values to the API and also, where appropriate, test return values for null. The .NET framework documentation specifies when null may be returned from an API. It’s recommended that you test for this condition using null value tests. For example: 
+Reference types defined in other .NET languages do support null, however; when using .NET APIs, you may have to explicitly pass null values to the API and also, where appropriate, test return values for null. The .NET framework documentation specifies when null may be returned from an API. It's recommended that you test for this condition using null value tests. For example: 
 
 ```F#
 match System.Environment.GetEnvironmentVariable("PATH") with
@@ -1571,13 +1571,13 @@ let switchOnType (a : obj) =
     | _  -> printf "Some other kind of object\n"
 ```
 
-There are other important sources of null values. For example, the semi-safe function `Array.zeroCreate` creates an array whose values are initially null or, in the case of value types, an array in which each entry is the zero-bit pattern. This function is included with F# primarily because there is no other technique for initializing and creating the array values used as building blocks of larger, more sophisticated data structures, such as queues and hash tables. Of course, you must use this function with care, and in general you should hide the array behind an encapsulation boundary and be sure the values of the array aren’t referenced before they’re initialized. 
+There are other important sources of null values. For example, the semi-safe function `Array.zeroCreate` creates an array whose values are initially null or, in the case of value types, an array in which each entry is the zero-bit pattern. This function is included with F# primarily because there is no other technique for initializing and creating the array values used as building blocks of larger, more sophisticated data structures, such as queues and hash tables. Of course, you must use this function with care, and in general you should hide the array behind an encapsulation boundary and be sure the values of the array aren't referenced before they're initialized. 
 
 ---
 
 #### Note  
 
-although F# generally enables you to code in a null-free style, F# isn’t totally immune to the potential existence of null values: they can come from the .NET APIs, and it’s also possible to use `Array.zeroCreate` and other back-door techniques to generate null values for F# types. if necessary, APIs can check for this condition by first converting F# values to the obj type by calling box and then testing for null (see the F# informal Language specification for full details). in practice, this isn’t required by the vast majority of F# programs; for most purposes, the existence of null values can be ignored. 
+although F# generally enables you to code in a null-free style, F# isn't totally immune to the potential existence of null values: they can come from the .NET APIs, and it's also possible to use `Array.zeroCreate` and other back-door techniques to generate null values for F# types. if necessary, APIs can check for this condition by first converting F# values to the obj type by calling box and then testing for null (see the F# informal Language specification for full details). in practice, this isn't required by the vast majority of F# programs; for most purposes, the existence of null values can be ignored. 
 
 ---
 
