@@ -46,7 +46,6 @@ var speed = new Subject<int>();
 speed.CombineLatest(heartRate,
                     (s, h) => String.Format("Heart:{0} Speed:{1}", h, s))
     .SubscribeConsole("Metrics");
-
 ```
 
 
@@ -181,7 +180,6 @@ IObservable<TSource> Concat<TSource>(
     this IObservable<IObservable<TSource>> sources)
 IObservable<TSource> Merge<TSource>(
     this IObservable<IObservable<TSource>> sources)
-
 ```
 
 
@@ -196,7 +194,6 @@ texts
     .Select(txt => Observable.Return(txt + "-Result"))
     .Merge()
     .SubscribeConsole("Merging from observable");
-
 ```
 
 
@@ -206,7 +203,6 @@ Running the example yields this output:
 Merging from observable - OnNext(Hello-Result)
 Merging from observable - OnNext(World-Result)
 Merging from observable - OnCompleted()
-
 ```
 
 
@@ -259,17 +255,17 @@ Consider the preceding example in which for every text change, you make a call t
 
 Now imagine that while waiting for the search results to arrive from the back end, another search is executed (the text has changed again). In this case, you'd unsubscribe from the previous asynchronous search operation and start a new search to which you'd now be subscribed.
 
-To accomplish the task of switching to a new observable when it's available, you need to use the Switch operator, depicted in figure 9.5.
+To accomplish the task of switching to a new observable when it's available, you need to use the `Switch` operator, depicted in figure 9.5.
 
-Figure 9.5 The Switch operator takes an observable that emits observables and creates a single observable that emits the notifications from the most recent observable.
+Figure 9.5 The `Switch` operator takes an observable that emits observables and creates a single observable that emits the notifications from the most recent observable.
 
-Here's a simple program that simulates the text changes shown in the marble diagram. You use the Delay operator to add a little delay to R1 emissions so the system will switch to the R2 observable before the R results are available.
+Here's a simple program that simulates the text changes shown in the marble diagram. You use the `Delay` operator to add a little delay to R1 emissions so the system will switch to the R2 observable before the R results are available.
 
 Listing 9.1 Switching to the most recent search results with the Switch operator
 
 ```C#
 var textsSubject = new Subject<string>();
-IObservable<string> texts = textsSubject.AsObservable();
+var texts = textsSubject.AsObservable() as IObservable<string>;
 texts
     .Select(txt => Observable.Return(txt + "-Result")
                   .Delay(TimeSpan.FromMilliseconds(txt == "R1" ? 10 : 0)))
@@ -280,16 +276,15 @@ textsSubject.OnNext("R1");
 textsSubject.OnNext("R2");
 Thread.Sleep(20);
 textsSubject.OnNext("R3");
-
 ```
 
 #### SWITCHING TO THE FIRST OBSERVABLE TO EMIT
 
 Imagine you have multiple observables that represent options to receive the same sequence of notifications (for example, multiple service representatives in real life), but you need to select only one of them—the one that's the fastest (the first to emit).
 
-This can be a selection between servers or a selection between a computed result and a cached one. Switch won't help here because it'll bind to the first observable to emit and then switch to the slower one.
+This can be a selection between servers or a selection between a computed result and a cached one. `Switch` won't help here because it'll bind to the first observable to emit and then switch to the slower one.
 
-The Amb (short for ambiguity) operator works similarly to the Switch operator, but instead of switching to a new observable each time a new one is emitted, Amb switches only to the first observable to emit. Think of it this way: if all the observables are considered equally fit as the source, you want them to duel, and the first one to shoot wins.
+The `Amb` (short for ambiguity) operator works similarly to the `Switch` operator, but instead of switching to a new observable each time a new one is emitted, `Amb` switches only to the first observable to emit. Think of it this way: if all the observables are considered equally fit as the source, you want them to duel, and the first one to shoot wins.
 
 Here's an example:
 
@@ -312,7 +307,7 @@ In this case, the server2 observable emits first, so you'll see only the values 
 TIP You can also write the example like this:
 
 ```C#
-server1.Amb(server2).Take(3).SubscribeConsole("Amb");.
+server1.Amb(server2).Take(3).SubscribeConsole("Amb");
 ```
 
 So far, you've learned how to combine and pair observables. Next, you'll get to know techniques for breaking an observable into subobservables.
@@ -321,22 +316,20 @@ So far, you've learned how to combine and pair observables. Next, you'll get to 
 
 The elements that observables emit can be grouped based on a particular condition. Unlike collections or datasets, grouping elements from observables creates a group with an unfixed size, in which the number of elements is unknown and can be infinite. This is because you can't predict what elements will be emitted by the observable in the future.
 
-To group elements from an observable, you need to generate the group as an observable by itself; that is, an observable that emits a notification for every element that's part of the group. For example, using the GroupBy operator, you can split an information stream of people into a group of males and a group of females (figure 9.6).
+To group elements from an observable, you need to generate the group as an observable by itself; that is, an observable that emits a notification for every element that's part of the group. For example, using the `GroupBy` operator, you can split an information stream of people into a group of males and a group of females (figure 9.6).
 
-Figure 9.6 The GroupBy operator groups the elements of an observable sequence according to a specified key selector function (for example, splitting a stream of people into a group of males and a group of females). Each group is an observable of the group elements.
+Figure 9.6 The `GroupBy` operator groups the elements of an observable sequence according to a specified key selector function (for example, splitting a stream of people into a group of males and a group of females). Each group is an observable of the group elements.
 
-The basic GroupBy signature looks like this:
+The basic `GroupBy` signature looks like this:
 
 ```C#
-IObservable<IGroupedObservable<TKey, TSource>> GroupBy<TSource, TKey>(
-    this IObservable<TSource> source,
+IObservable<IGroupedObservable<TKey, TSource>> GroupBy<TSource, TKey>(this IObservable<TSource> source,
     Func<TSource, TKey> keySelector)
-
 ```
 
-Note that the return type is an observable of grouped observables. The grouped observable is itself an observable that also includes the property Key, which holds the key that describes each element it emits.
+Note that the return type is an observable of grouped observables. The grouped observable is itself an observable that also includes the property `Key`, which holds the key that describes each element it emits.
 
-GroupBy also includes overloads that let you pass an elementSelector (to decide how each element will be transformed before being emitted by the grouped observable) and a capacity (to control the maximum number of groups that can live concurrently).
+`GroupBy` also includes overloads that let you pass an elementSelector (to decide how each element will be transformed before being emitted by the grouped observable) and a capacity (to control the maximum number of groups that can live concurrently).
 
 By separating the elements into different observables, you can create separate queries for each group. For example, you can now get the average age for females and for males:
 
@@ -350,7 +343,7 @@ genderAge.SubscribeConsole("Gender Age");
 
 ```
 
-You can also use the GroupBy query syntax clause for the preceding example:
+You can also use the `GroupBy` query syntax clause for the preceding example:
 
 ```C#
 var genderAge =
@@ -359,7 +352,6 @@ var genderAge =
     into gender
     from avg in gender.Average(p => p.Age)
     select new { Gender = gender.Key, AvgAge = avg };
-
 ```
 
 Next, you'll look at another concept that's clear in the world of collections but is a little tricky in the world of observables: joins.
@@ -378,17 +370,15 @@ Let's start with an example of how joining observables works. Suppose you're run
 
 Figure 9.7 The Join operator combines items emitted by two observables when an item from one observable is emitted during a time frame of an emitted item from the other observable.
 
-To create joins between observables, you use the Join operator, which correlates the elements of two sequences based on overlapping durations. The signature for Join is complex and requires some explanation:
+To create joins between observables, you use the `Join` operator, which correlates the elements of two sequences based on overlapping durations. The signature for `Join` is complex and requires some explanation:
 
 ```C#
-IObservable<TResult> Join<TLeft, TRight,
-TLeftDuration, TRightDuration,TResult>(
+IObservable<TResult> Join<TLeft, TRight,TLeftDuration, TRightDuration,TResult>(
      IObservable<TLeft>left,
      IObservable<TRight> right,
-     Func<TLeft, IObservable<TLeftDuration>>leftDurationSelector ,
+     Func<TLeft, IObservable<TLeftDuration>>leftDurationSelector,
      Func<TRight, IObservable<TRightDuration>> rightDurationSelector,
      Func<TLeft, TRight, TResult> resultSelector);
-
 ```
 
 
@@ -397,26 +387,26 @@ The tricky part of the method signature is the duration selector functions. Thos
 Suppose you have a sensor, coded as a hot observable of DoorEvent objects, that monitors people who enter and exit a room. You want to emit all the males and females that are in the same room at the same time:
 
 ```C#
-IObservable<DoorOpened> doorOpened = doorOpenedSubject.AsObservable();
+var doorOpened = doorOpenedSubject.AsObservable() as IObservable<DoorOpened>;
+```
 
 DoorEvent is defined as follows:
+
+```C#
 class DoorOpened
 {
      public string Name { get; set; }
      public OpenDirection Direction { get; set; }
      public Gender Gender { get; set; }
 }
-
 ```
 
 You can extract the observable of the males entering the room and the females entering the room like this:
 
 ```C#
-var entrances = doorOpened.Where(o => o.Direction ==
-    OpenDirection.Entering);
+var entrances = doorOpened.Where(o => o.Direction == OpenDirection.Entering);
 var maleEntering = entrances.Where(x => x.Gender == Gender.Male);
 var femaleEntering = entrances.Where(x => x.Gender == Gender.Female);
-
 ```
 
 
@@ -426,7 +416,6 @@ In the same way, you can extract the observable of those leaving:
 var exits = doorOpened.Where(o => o.Direction == OpenDirection.Leaving);
 var maleExiting = exits.Where(x => x.Gender == Gender.Male);
 var femaleExiting = exits.Where(x => x.Gender == Gender.Female);
-
 ```
 
 Now, you'll want to join the occurrence of males in the room with the occurrence of females in the room. For that you need to define for each notification (male or female entering) the time frame that marks the existence in the room. With the reactive approach, defining the time frame means defining an observable that emits (or completes) when the time frame closes. Here's how you bring that into action:
@@ -438,7 +427,6 @@ maleEntering
         female => femaleExiting.Where(exit => female.Name == exit.Name),
         (m, f) => new {Male = m.Name, Female = f.Name})
     .SubscribeConsole("Together At Room");
-
 ```
 
 TIP An interesting type of a time-frame observable is one that uses the same observable that emits the elements as the one that defines the time frame. By doing this, you're expressing that the time frame for an element is the time until the next element is emitted.
@@ -449,7 +437,6 @@ To test your code, you'll create a subject that acts as the back end of your obs
 doorOpenedSubject.OnNext(
     new DoorOpened("Bob", Gender.Male, OpenDirection.Entering));
 doorOpenedSubject.OnNext(
-
     new DoorOpened("Sara", Gender.Female, OpenDirection.Entering));
 doorOpenedSubject.OnNext(
     new DoorOpened("John", Gender.Male, OpenDirection.Entering));
@@ -469,7 +456,6 @@ doorOpenedSubject.OnNext(
     new DoorOpened("Dan", Gender.Male, OpenDirection.Leaving));
 
 // Rest of code that simulates participants leaving the room
-
 ```
 
 Running this procedure produces the following output:
@@ -480,7 +466,6 @@ Together At Room - OnNext({ Male = John, Female = Sara })
 Together At Room - OnNext({ Male = Bob, Female = Fibi })
 Together At Room - OnNext({ Male = John, Female = Fibi })
 Together At Room - OnNext({ Male = Dan, Female = Fibi })
-
 ```
 
 #### WRITING JOINS WITH QUERY SYNTAX
@@ -491,7 +476,6 @@ The C# compiler lets you write joins with a LINQ query. The join clause is shown
 from [left] in [leftObservable]
 join [right] in [rightObservable] on [leftDuration] equals [rightDuration]
 select ...
-
 ```
 
 With the query syntax approach, finding the male and female pairs that are in the room at the same time looks like this:
@@ -502,33 +486,30 @@ join female in femaleEntering on maleEntering.Where(exit =>
 exit.Name == male.Name) equals
 femaleExiting.Where(exit => female.Name == exit.Name)
 select new {Male = male.Name, Female = female.Name};
-
 ```
 
 The join clause creates a single observable on which all the correlations are emitted. Sometimes, however, a divide-and-conquer approach is easier to work with.
 
-In the spirit of this approach, you'd like to receive per each male, all the occurrences of that male with the females in the room with him. So each male becomes a group key for the group of all the associated females, and this group is an observable of those females. So instead of one observable with all the pairs, you'll have multiple observables—one for each group. For this behavior, you need to use the GroupJoin operator.
+In the spirit of this approach, you'd like to receive per each male, all the occurrences of that male with the females in the room with him. So each male becomes a group key for the group of all the associated females, and this group is an observable of those females. So instead of one observable with all the pairs, you'll have multiple observables—one for each group. For this behavior, you need to use the `GroupJoin` operator.
 
 ### 9.3.2 Joining into groups
 
-The GroupJoin operator lets you correlate the elements of two observable sequences based on overlapping durations and combines the elements that correlate with each element into a group that's itself an observable (figure 9.8). For example, in a statistical observation experiment, you want to emit, for each male, all the females that were in the same room with him. You'll call this observable of associated females per male a group.
+The `GroupJoin` operator lets you correlate the elements of two observable sequences based on overlapping durations and combines the elements that correlate with each element into a group that's itself an observable (figure 9.8). For example, in a statistical observation experiment, you want to emit, for each male, all the females that were in the same room with him. You'll call this observable of associated females per male a group.
 
 The motivation for this group, based on coincidence, is that for each group you can define a finer query in a much easier way. For example, what's the average age of the women group?
 
-The GroupJoin operator has a signature similar to Join:
+The `GroupJoin` operator has a signature similar to Join:
 
 ```C#
-IObservable<TResult> GroupJoin<TLeft, TRight, TLeftDuration, TRightDuration,
-TResult>(
+IObservable<TResult> GroupJoin<TLeft,TRight,TLeftDuration,TRightDuration,TResult>(
      this IObservable<TLeft> left,
      IObservable<TRight> right,
      Func<TLeft, IObservable<TLeftDuration>> leftDurationSelector,
      Func<TRight, IObservable<TRightDuration>> rightDurationSelector,
      Func<TLeft, IObservable<TRight>, TResult> resultSelector)
-
 ```
 
-Figure 9.8 The GroupJoin operator correlates elements from two observables based on overlapping duration time frames. The elements from the second observable are grouped by the element from the first observable to which they correlate.
+Figure 9.8 The `GroupJoin` operator correlates elements from two observables based on overlapping duration time frames. The elements from the second observable are grouped by the element from the first observable to which they correlate.
 
 Suppose you want to extend your example from the previous section (finding all the pairs of males and females in a room together). Now, you want to add a counter that shows the number of females that each male was in the room with, up to the current point.
 
@@ -539,10 +520,9 @@ var maleEntering = entrances.Where(x => x.Gender == Gender.Male);
 var femaleEntering = entrances.Where(x => x.Gender == Gender.Female);
 var maleExiting = exits.Where(x => x.Gender == Gender.Male);
 var femaleExiting = exits.Where(x => x.Gender == Gender.Female);
-
 ```
 
-Now you can use GroupJoin to create the groups of correlations. For each male, you create an object that contains the male's name and the observable of females that correlate to him:
+Now you can use `GroupJoin` to create the groups of correlations. For each male, you create an object that contains the male's name and the observable of females that correlate to him:
 
 ```C#
 var malesAcquaintances =
@@ -551,7 +531,6 @@ var malesAcquaintances =
             male => maleExiting.Where(exit => exit.Name == male.Name),
             female => femaleExiting.Where(exit => female.Name == exit.Name),
             (m, females) => new {Male = m.Name, Females = females});
-
 ```
 
 
@@ -562,8 +541,8 @@ var amountPerUser =
     from acquaintances in malesAcquaintances
     from cnt in acquaintances.Females.Scan(0, (acc, curr) => acc + 1)
     select new {acquaintances.Male, cnt};
-amountPerUser.SubscribeConsole("Amount of meetings for User");
 
+amountPerUser.SubscribeConsole("Amount of meetings for User");
 ```
 
 Running this example with the males and females shown in figure 9.8 generates this output:
@@ -574,7 +553,6 @@ Amount of meetings per User - OnNext({ Male = John, cnt = 1 })
 Amount of meetings per User - OnNext({ Male = Bob, cnt = 2 })
 Amount of meetings per User - OnNext({ Male = John, cnt = 2 })
 Amount of meetings per User - OnNext({ Male = Dan, cnt = 1 })
-
 ```
 
 Note that a notification emits each time the count changes.
@@ -616,7 +594,7 @@ The important difference between the two is that with windowing, you get the emi
 
 Figure 9.9 Buffering versus windowing: with windowing, you get the emissions as soon as they arrive, and with buffering you get the buffer only when it closes.
 
-Two definitions of window
+##### Two definitions of window
 
 The word window is a little confusing here because it represents two different but related things.
 
@@ -657,7 +635,6 @@ var accelerations =
     let speedDelta = buffer[1] - buffer[0]
     select speedDelta/timeDelta;
 accelerations.SubscribeConsole("Acceleration");
-
 ```
 
 
@@ -671,7 +648,6 @@ You can see in the example that you provide two arguments to the Buffer operator
 IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
       int count,
       int skip);
-
 ```
 
 The first argument passed is the number of items you want in each buffer, and the second argument (called skip) defines the number of notifications that need to be emitted when the first buffer opens, before another buffer will be opened. The combinations of the two arguments create the various types of windows (as a container of elements over time, explained in the beginning of this section), as shown in figure 9.11:
@@ -695,7 +671,6 @@ IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
 IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
     TimeSpan timeSpan,
     int count);
-
 ```
 
 If you need more control over when the buffer starts and when it closes, you can use the Buffer overload that accepts observables as its triggers for starting or closing a buffer.
@@ -706,7 +681,6 @@ If the closing of a buffer triggers the opening of the next buffer, use this ove
 IObservable<IList<TSource>> Buffer<TSource, TBufferBoundary>(
     IObservable<TSource> source,
     IObservable<TBufferBoundary> bufferBoundaries);
-
 ```
 
 If a single observable for controlling the closing of the buffer (and opening the next one) isn't enough for your needs, and you need to create a specific duration for each buffer that's opened, consider using this overload:
@@ -715,7 +689,6 @@ If a single observable for controlling the closing of the buffer (and opening th
 IObservable<IList<TSource>> Buffer<TSource, TBufferClosing>(
     IObservable<TSource> source,
     Func<IObservable<TBufferClosing>> bufferClosingSelector);
-
 ```
 
 If buffers can open and close independently, consider using this overload:
@@ -726,7 +699,6 @@ IObservable<IList<TSource>> Buffer<TSource, TBufferOpening,
     IObservable<TSource> source,
     IObservable<TBufferOpening> bufferOpenings,
     Func<TBufferOpening, IObservable<TBufferClosing>> bufferClosingSelector);
-
 ```
 
 Suppose you're writing a chat messaging application that can receive messages at a rapid rate. Because you don't want to block your UI, you need to protect it from too many updates in a short period of time. What you want is to wait until there's a short pause between the messages and then put all the messages on the screen at once. To do that, you can buffer the chat messages and control the buffering with another observable that emits when there's a short pause:
@@ -769,7 +741,6 @@ Hi-Rate Messages - OnNext(Buffer 1 - Message 1)
 Hi-Rate Messages - OnNext(Buffer 1 - Message 2)
 Hi-Rate Messages - OnNext(Buffer 1 - Message 3)
 Hi-Rate Messages - OnCompleted()
-
 ```
 
 With the different overloads of the Buffer operator, you can control when a buffer is opened and when it's closed. Still, your observer receives the elements inside the buffer only when the buffer closes, which can take some time (depending on your logic).
@@ -797,7 +768,6 @@ var donationsSums =
     select sum;
 
 donationsSums.SubscribeConsole("donations in shift");
-
 ```
 
 
@@ -820,7 +790,6 @@ donations in shift - OnNext(49)
 donations in shift - OnNext(97)
 donations in shift - OnNext(142)
 donations in shift - OnCompleted()
-
 ```
 
 
@@ -841,7 +810,6 @@ IObservable<IObservable<TSource>> Window<TSource>(
     IObservable<TSource> source,
     TimeSpan timeSpan,
     int count);
-
 ```
 
 
@@ -857,7 +825,6 @@ Windows can open and close dynamically, based on your own logic that might depen
 IObservable<IObservable<TSource>> Window<TSource, TWindowClosing>(
      IObservable<TSource> source,
      Func<IObservable<TWindowClosing>> windowClosingSelector);
-
 ```
 
 Opening a window can be controlled in a similar fashion. You can provide an observable to the Window operator that triggers the opening of a window by emitting a notification:
@@ -868,7 +835,6 @@ Closing>(
     IObservable<TSource> source,
     IObservable<TWindowOpening> windowOpenings,
     Func<TWindowOpening, IObservable<TWindowClosing>> windowClosingSelector);
-
 ```
 
 If you want to create non-overlapping windows and control the window boundaries by your own logic, you can use this overload:
@@ -877,7 +843,6 @@ If you want to create non-overlapping windows and control the window boundaries 
 IObservable<IObservable<TSource>> Window<TSource, TWindowBoundary>(
     IObservable<TSource> source,
     IObservable<TWindowBoundary> windowBoundaries);
-
 ```
 
 
