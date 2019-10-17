@@ -506,7 +506,7 @@ With operators that take or skip notifications, you can easily adjust the source
 
 After an observable completes, no more notifications are received by the observer. Sometimes, however, you may want to restart and subscribe to the observable. This is usually done when you have a cold observable (covered in chapter 7) that starts emitting notifications when the observer subscribes. Resubscribing will make the observable emit the notifications again. This can also occur with hot observables. For example, you can subscribe to a mouse movement observable until a click is made and then resubscribe to capture the movements until the next click happens, and so on.
 
-To automatically resubscribe in Rx, you use the Repeat operator. For example, you can create an observable that emits the range 1 to 3 twice:
+To automatically resubscribe in Rx, you use the `Repeat` operator. For example, you can create an observable that emits the range 1 to 3 twice:
 
 ```C#
 Observable.Range(1, 3)
@@ -527,7 +527,7 @@ Repeat(2) - OnNext(3)
 Repeat(2) - OnCompleted()
 ```
 
-The Repeat operator has two overloads, as shown next. With both overloads, when the source observable completes successfully, an observer will be subscribed to it again:
+The `Repeat` operator has two overloads, as shown next. With both overloads, when the source observable completes successfully, an observer will be subscribed to it again:
 
 ```C#
 IObservable<TSource> Repeat<TSource>(this IObservable<TSource> source)
@@ -535,9 +535,9 @@ IObservable<TSource> Repeat<TSource>(this IObservable<TSource> source,
     int repeatCount)
 ```
 
-TIP Another operator that allows “repeating” an observable is DoWhile, which repeats the observable if a predicate is true.
+TIP Another operator that allows “repeating” an observable is `DoWhile`, which repeats the observable if a predicate is true.
 
-You need to remember that Repeat calls the Subscribe method according to the number of times you specified. So if there's a side effect taking place in the observable Subscribe method (such as connecting to an external source), it'll repeat.
+You need to remember that `Repeat` calls the `Subscribe` method according to the number of times you specified. So if there's a side effect taking place in the observable `Subscribe` method (such as connecting to an external source), it'll repeat.
 
 Side effects are another interesting topic. When thinking about observable pipelines, how can you add an invocation to an operation (such as logging) in the middle of the pipeline? We'll discuss that next.
 
@@ -547,11 +547,11 @@ In chapter 3, you learned that a side effect is a change in the environment that
 
 The important part about side effects is that you want them to be visible and discoverable. Until now, the only place that you could change state or call operations was inside the Rx observer methods, which means only at the end of the notification journey when something reacted to it. This is limiting. What if you wanted to do something simple like writing a log between operators?
 
-To allow this kind of operation as part of your observable pipeline, Rx provides the Do operator (illustrated in figure 6.11).
+To allow this kind of operation as part of your observable pipeline, Rx provides the `Do` operator (illustrated in figure 6.11).
 
 Figure 6.11 Adding a side effect between operators
 
-Here's how to use the Do operator to add logs that'll make it easy to debug your observable pipeline:
+Here's how to use the `Do` operator to add logs that'll make it easy to debug your observable pipeline:
 
 ```C#
 Observable.Range(1, 5)
@@ -577,7 +577,7 @@ final - OnNext(12)
 final - OnCompleted()
 ```
 
-Like the Subscribe operator, the Do operator has several overloads that let you add functionality to the various source observable emissions:
+Like the `Subscribe` operator, the `Do` operator has several overloads that let you add functionality to the various source observable emissions:
 
 ```C#
 IObservable<TSource> Do<TSource>(this IObservable<TSource> source,
@@ -683,9 +683,9 @@ movements
     .Subscribe(pos => line.Points.Add(pos));
 ```
 
-Here the mouseUp observable is passed to the TakeUntil operator. When a notification that that mouse button is up is emitted, the observer will be detached from the observable.
+Here the mouseUp observable is passed to the `TakeUntil` operator. When a notification that that mouse button is up is emitted, the observer will be detached from the observable.
 
-You still need to add the trigger to start drawing the line when the mouse button is down. This is achieved by using the SkipUntil operator. For example:
+You still need to add the trigger to start drawing the line when the mouse button is down. This is achieved by using the `SkipUntil` operator. For example:
 
 ```C#
 movements
@@ -698,7 +698,7 @@ movements
 
 After a mouse-button-down notification is emitted, the mouse movements are observed by the observer that adds the points to the line. And when the mouse button is up, the observer stops.
 
-This creates a situation in which only one transaction is allowed (only one cycle of a mouse-down and mouse-up event). For this application, you want to repeat this cycle again and again, which is (of course) the job of Repeat. For example:
+This creates a situation in which only one transaction is allowed (only one cycle of a mouse-down and mouse-up event). For this application, you want to repeat this cycle again and again, which is (of course) the job of `Repeat`. For example:
 
 ```C#
 movements
@@ -712,7 +712,7 @@ movements
 
 Great, you now have an application that draws a line, but it always adds points to the same line. A drawing application that draws only one line, reactive as it may be, isn't useful.
 
-What you want is to add a new line when the mouse button is down and have the points received from the mouse move added to that line, which becomes the current line. This is a side effect you need to take care of. Luckily, you have the Do operator. The following listing shows the complete application code that handles the drawing. As always, you can find the entire application's source code in the book's Git repo (http://mng.bz/IZ4B).
+What you want is to add a new line when the mouse button is down and have the points received from the mouse move added to that line, which becomes the current line. This is a side effect you need to take care of. Luckily, you have the `Do` operator. The following listing shows the complete application code that handles the drawing. As always, you can find the entire application's source code in the book's Git repo (http://mng.bz/IZ4B).
 
 Listing 6.2 Reactive Draw application—full code
 
@@ -741,25 +741,25 @@ Another chapter comes to its end, and this one was fundamental for understanding
 
 Here's what you learned in this chapter:
 
-  * You can easily create and subscribe an observer by using the Subscribe extension method, which accepts the OnNext, OnError, and OnCompleted methods.
+  * You can easily create and subscribe an observer by using the `Subscribe` extension method, which accepts the `OnNext`, `OnError`, and `OnCompleted` methods.
 
-  * If you want to use the observer more than once, you can create an observer instance with the Observer.Create method and subscribe it yourself.
+  * If you want to use the observer more than once, you can create an observer instance with the `Observer.Create` method and subscribe it yourself.
 
-  * You can replace the disposable subscription object with a CancellationToken and then pass it to the Subscribe method.
+  * You can replace the disposable subscription object with a `CancellationToken` and then pass it to the `Subscribe` method.
 
-  * To delay the subscription of an observer to an observable, you use the DelaySubscription method and pass it the relative TimeSpan or the absolute DateTimeOffset.
+  * To delay the subscription of an observer to an observable, you use the `DelaySubscription` method and pass it the relative `TimeSpan` or the absolute `DateTimeOffset`.
 
-  * The TakeUntil operator lets you specify the time the observer will stop receiving notifications or lets you pass another observable that marks the stop by emitting a notification.
+  * The `TakeUntil` operator lets you specify the time the observer will stop receiving notifications or lets you pass another observable that marks the stop by emitting a notification.
 
-  * The SkipUntil operator lets you specify the time the observer will start receiving notifications or lets you pass another observable that marks the start by emitting a notification.
+  * The `SkipUntil` operator lets you specify the time the observer will start receiving notifications or lets you pass another observable that marks the start by emitting a notification.
 
-  * You can skip any number of notifications by using the Skip operator, and stop receiving notifications after a specified number by using the Take operator.
+  * You can skip any number of notifications by using the `Skip` operator, and stop receiving notifications after a specified number by using the `Take` operator.
 
-  * You can set a condition to start receiving notifications and to stop receiving notifications by using the SkipWhile and TakeWhile operators, respectively.
+  * You can set a condition to start receiving notifications and to stop receiving notifications by using the `SkipWhile` and `TakeWhile` operators, respectively.
 
-  * An observer can automatically be subscribed to an observable with the Repeat operator, which lets you specify a certain number of times or an indefinite number of times.
+  * An observer can automatically be subscribed to an observable with the `Repeat` operator, which lets you specify a certain number of times or an indefinite number of times.
 
-  * To show a side effect explicitly as part of your observable pipeline, use the Do operator, where you can specify the actions to do in the OnNext, OnError, and OnCompleted notifications.
+  * To show a side effect explicitly as part of your observable pipeline, use the `Do` operator, where you can specify the actions to do in the `OnNext`, `OnError`, and `OnCompleted` notifications.
 
   * The Reactive Drawing application you created in this chapter used many of these operators to make a powerful application with just a few lines of code.
 
