@@ -594,6 +594,8 @@ The important difference between the two is that with windowing, you get the emi
 
 Figure 9.9 Buffering versus windowing: with windowing, you get the emissions as soon as they arrive, and with buffering you get the buffer only when it closes.
 
+---
+
 ##### Two definitions of window
 
 The word window is a little confusing here because it represents two different but related things.
@@ -604,19 +606,23 @@ Second, window is the logical boundary in which elements are gathered from the s
 
 In figure 9.9 you can say that the buffer is created from a time frame (window) that spans over the three items, which are emitted and then collected to the buffer. You can also say that the three items that are emitted in that time frame are emitted to an observable that we call a window.
 
+buffer == window + to array
+
+window == buffer + to observable
+
 You can define three types of windows when you consider them as containers of elements over time:
 
   - Tumbling windows are a series of fixed-sized, non-overlapping, contiguous time intervals.
-
   - Hopping windows are a series of windows that “hop” forward in time by a fixed period.
-
   - Sliding windows are a type of hopping window in which the window width is larger than the “hop,” causing the windows to overlap.
+
+---
 
 ### 9.4.1 Buffering
 
 With buffering, you can wrap consecutive elements emitted by an observable into a buffer and create an observable of collections, but not of single elements. You can buffer by time, number of items, or any logical duration you specify by using an observable whose notifications define when the buffer closes.
 
-Suppose your application connects to your bike's speedometer, which pushes the speed at a constant rate. You want your application to show how your acceleration changes. To do that, you need to get two consecutive readings and calculate the difference between them. You can use Buffer to accomplish that, where the buffering is done with a sliding window of two items.
+Suppose your application connects to your bike's speedometer, which pushes the speed at a constant rate. You want your application to show how your acceleration changes. To do that, you need to get two consecutive readings and calculate the difference between them. You can use `Buffer` to accomplish that, where the buffering is done with a sliding window of two items.
 
 Figure 9.10 shows the marble diagram of what you're trying to achieve.
 
@@ -627,27 +633,33 @@ This listing shows the code for the marble diagram in figure 9.10.
 Listing 9.2 Using Buffer to find the deltas between two speedometer readings
 
 ```C#
-IObservable<double> speedReadings = ...
-double timeDelta = 1/3600; //1 second in hours unit
+var speedReadings = ... as IObservable<double>;
+var timeDelta = 1./3600.; //1 second in hours unit
 var accelerations =
     from buffer in speedReadings.Buffer(count: 2, skip: 1)
-    where buffer.Count==2
+    where buffer.Count == 2
     let speedDelta = buffer[1] - buffer[0]
     select speedDelta/timeDelta;
 accelerations.SubscribeConsole("Acceleration");
 ```
 
 
-In this example, you use the query syntax approach because it allows you to use the let keyword to introduce new sub-calculations that make your code smaller. After applying the Buffer operator on the speedReadings observable, you get an observable of buffers with two consecutive items.
+In this example, you use the query syntax approach because it allows you to use the `let` keyword to introduce new sub-calculations that make your code smaller. After applying the `Buffer` operator on the speedReadings observable, you get an observable of buffers with two consecutive items.
 
-TIP Instead of creating a buffer of two consecutive elements to find the speed delta, you could use the Zip operator like this: speedReadings.Zip (speedReadings.Skip(1), (x,y)=> y-x). This zips the observable with a shifted version of itself.
+TIP Instead of creating a buffer of two consecutive elements to find the speed delta, you could use the `Zip` operator like this: 
 
-You can see in the example that you provide two arguments to the Buffer operator by using this overload:
+```C#
+speedReadings.Zip(speedReadings.Skip(1), (x,y)=> y-x);
+```
+
+This zips the observable with a shifted version of itself.
+
+You can see in the example that you provide two arguments to the `Buffer` operator by using this overload:
 
 ```C#
 IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
       int count,
-      int skip);
+      int skip)
 ```
 
 The first argument passed is the number of items you want in each buffer, and the second argument (called skip) defines the number of notifications that need to be emitted when the first buffer opens, before another buffer will be opened. The combinations of the two arguments create the various types of windows (as a container of elements over time, explained in the beginning of this section), as shown in figure 9.11:
@@ -658,58 +670,53 @@ The first argument passed is the number of items you want in each buffer, and th
 
   - Sliding window: If skip is smaller than the number of items a buffer contains, then the buffer overlaps with the next one and shares some of the items.
 
-Figure 9.11 Buffering with various combinations of amount and skip and the effect on the windows’ behavior
+Figure 9.11 Buffering with various combinations of amount and skip and the effect on the windows' behavior
 
 Buffer has overloads that let you make the buffering by time span, or you can set the buffering to be both by time and number of items, whichever happens first:
 
 ```C#
 IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
-    TimeSpan timeSpan);
+    TimeSpan timeSpan)
 IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
     TimeSpan timeSpan,
-    TimeSpan timeShift);
+    TimeSpan timeShift)
 IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
     TimeSpan timeSpan,
-    int count);
+    int count)
 ```
 
-If you need more control over when the buffer starts and when it closes, you can use the Buffer overload that accepts observables as its triggers for starting or closing a buffer.
+If you need more control over when the buffer starts and when it closes, you can use the `Buffer` overload that accepts observables as its triggers for starting or closing a buffer.
 
 If the closing of a buffer triggers the opening of the next buffer, use this overload:
 
 ```C#
-IObservable<IList<TSource>> Buffer<TSource, TBufferBoundary>(
-    IObservable<TSource> source,
-    IObservable<TBufferBoundary> bufferBoundaries);
+IObservable<IList<TSource>> Buffer<TSource, TBufferBoundary>(IObservable<TSource> source,
+    IObservable<TBufferBoundary> bufferBoundaries)
 ```
 
 If a single observable for controlling the closing of the buffer (and opening the next one) isn't enough for your needs, and you need to create a specific duration for each buffer that's opened, consider using this overload:
 
 ```C#
-IObservable<IList<TSource>> Buffer<TSource, TBufferClosing>(
-    IObservable<TSource> source,
-    Func<IObservable<TBufferClosing>> bufferClosingSelector);
+IObservable<IList<TSource>> Buffer<TSource, TBufferClosing>(IObservable<TSource> source,
+    Func<IObservable<TBufferClosing>> bufferClosingSelector)
 ```
 
 If buffers can open and close independently, consider using this overload:
 
 ```C#
-IObservable<IList<TSource>> Buffer<TSource, TBufferOpening,
-                                   TBufferClosing>(
-    IObservable<TSource> source,
+IObservable<IList<TSource>> Buffer<TSource, TBufferOpening,TBufferClosing>(IObservable<TSource> source,
     IObservable<TBufferOpening> bufferOpenings,
-    Func<TBufferOpening, IObservable<TBufferClosing>> bufferClosingSelector);
+    Func<TBufferOpening, IObservable<TBufferClosing>> bufferClosingSelector)
 ```
 
 Suppose you're writing a chat messaging application that can receive messages at a rapid rate. Because you don't want to block your UI, you need to protect it from too many updates in a short period of time. What you want is to wait until there's a short pause between the messages and then put all the messages on the screen at once. To do that, you can buffer the chat messages and control the buffering with another observable that emits when there's a short pause:
 
 ```C#
-IObservable<string> messages = ...
-messages.Buffer(messages.Throttle(TimeSpan.FromMilliseconds(100)))
+var messages = ... as IObservable<string>;
+messages.Buffer(messages.Throttle(TimeSpan.FromMilliseconds(100))) // 200?
     .SelectMany((b, i) =>
-b.Select(m => string.Format("Buffer {0} - {1}", i, m)))
+        b.Select(m => string.Format("Buffer {0} - {1}", i, m)))
     .SubscribeConsole("Hi-Rate Messages");
-Console.ReadLine();
 ```
 
 To simulate the situation of high-rate messages, you'll create an observable that emits four messages, one every 50 ms, and then pauses for 200 ms before it emits four more messages. (Note that I'm converting the cold observable into a hot one in order to get realistic results):
@@ -719,14 +726,13 @@ var coldMessages = Observable.Interval(TimeSpan.FromMilliseconds(50))
     .Take(4)
     .Select(x => "Message " + x);
 
-IObservable<string> messages =
+var messages = // as IObservable<string>
     coldMessages.Concat(
-         coldMessages.DelaySubscription(TimeSpan.FromMilliseconds(200)))
-
-         .Publish()
-         .RefCount();
+        coldMessages.DelaySubscription(TimeSpan.FromMilliseconds(200))
+    )
+    .Publish()
+    .RefCount();
 //Rest of the example as it is shown in the snippet and use the Buffer operator
-
 ```
 
 Running this example displays these results:
@@ -736,6 +742,7 @@ Hi-Rate Messages - OnNext(Buffer 0 - Message 0)
 Hi-Rate Messages - OnNext(Buffer 0 - Message 1)
 Hi-Rate Messages - OnNext(Buffer 0 - Message 2)
 Hi-Rate Messages - OnNext(Buffer 0 - Message 3)
+
 Hi-Rate Messages - OnNext(Buffer 1 - Message 0)
 Hi-Rate Messages - OnNext(Buffer 1 - Message 1)
 Hi-Rate Messages - OnNext(Buffer 1 - Message 2)
@@ -745,20 +752,20 @@ Hi-Rate Messages - OnCompleted()
 
 With the different overloads of the Buffer operator, you can control when a buffer is opened and when it's closed. Still, your observer receives the elements inside the buffer only when the buffer closes, which can take some time (depending on your logic).
 
-If you need to perform any operations on the elements inside the buffer (such as summing or filtering them), you can do that only at the end of each buffer. For cases like this, requiring a more “live” operation, you should use the Window operator.
+If you need to perform any operations on the elements inside the buffer (such as summing or filtering them), you can do that only at the end of each buffer. For cases like this, requiring a more “live” operation, you should use the `Window` operator.
 
 ### 9.4.2 Windowing the observable sequence
 
-The Window operator lets you fragment the observable sequence into windows along temporal boundaries or capacity. A window is an observable that emits the elements in that temporal boundary (figure 9.12). The Window operator looks similar to the Buffer operator, but instead of wrapping all the elements of the buffer inside a collection that emits when the buffer closes, a window emits the items as soon as they arrive.
+The `Window` operator lets you fragment the observable sequence into windows along temporal boundaries or capacity. A window is an observable that emits the elements in that temporal boundary (figure 9.12). The `Window` operator looks similar to the `Buffer` operator, but instead of wrapping all the elements of the buffer inside a collection that emits when the buffer closes, a window emits the items as soon as they arrive.
 
 Figure 9.12 The Window operator splits the observable sequence into sub-observables based on temporal boundaries or capacity.
 
 Suppose you have an application for a call center that collects donations. The work is done in shifts of 1 hour, and you want to see how many donations were collected in each shift.
 
-In this case, working with Buffer isn't sufficient because you'll get the sum of the donations only at the end of the 1-hour window. Instead, you'll use the Window operator so that values are summed and displayed immediately onscreen:
+In this case, working with `Buffer` isn't sufficient because you'll get the sum of the donations only at the end of the 1-hour window. Instead, you'll use the `Window` operator so that values are summed and displayed immediately on screen:
 
 ```C#
-IObservable<decimal> donations = ...
+var donations = ... as IObservable<decimal>;
 
 var windows = donations.Window(TimeSpan.FromHours(1));
 
@@ -771,16 +778,14 @@ donationsSums.SubscribeConsole("donations in shift");
 ```
 
 
-The donations observable is broken into non-overlapping windows of 1 hour each. Then, you take each window and apply the Scan operator to sum all the values of the donations made. Scan emits the summation when the values change (as opposed to Aggregate, which emits when the observable completes).
+The donations observable is broken into non-overlapping windows of 1 hour each. Then, you take each window and apply the `Scan` operator to sum all the values of the donations made. `Scan` emits the summation when the values change (as opposed to `Aggregate`, which emits when the observable completes).
 
-The donationsSums observable is a flat observable that emits the summations from all the windows. Because you've added the Do operator to the windows observable, you'll see a message between each window. Here's the output I received when running the example for two shifts with the sample donation values:
+The donationsSums observable is a flat observable that emits the summations from all the windows. Because you've added the `Do` operator to the windows observable, you'll see a message between each window. Here's the output I received when running the example for two shifts with the sample donation values:
 
 ```C#
 Shift 1—50$, 55$, 60$
 Shift 2—49$, 48$, 45$
-
 Output:
-
 New Window
 donations in shift - OnNext(50)
 donations in shift - OnNext(105)
@@ -793,46 +798,39 @@ donations in shift - OnCompleted()
 ```
 
 
-The Window operator has some overloads that let you control when the window is opened and when it closes. Windows can be opened and closed based on the number of items they contain or by the duration of time they should be opened. You can also specify the number of items to be skipped between them or the duration of a pause between closing a window and opening another.
+The `Window` operator has some overloads that let you control when the window is opened and when it closes. Windows can be opened and closed based on the number of items they contain or by the duration of time they should be opened. You can also specify the number of items to be skipped between them or the duration of a pause between closing a window and opening another.
 
-Here's a small subset of these overloads (you'll find them similar to the ones that the Buffer operator provides):
+Here's a small subset of these overloads (you'll find them similar to the ones that the `Buffer` operator provides):
 
 ```C#
-IObservable<IObservable<TSource>> Window<TSource>(
-    IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource>(IObservable<TSource> source,
     int count,
     int skip);
-IObservable<IObservable<TSource>> Window<TSource>(
-    IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource>(IObservable<TSource> source,
     TimeSpan timeSpan,
     TimeSpan timeShift);
-IObservable<IObservable<TSource>> Window<TSource>(
-    IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource>(IObservable<TSource> source,
     TimeSpan timeSpan,
     int count);
 ```
 
+If the number of items to skip (or the time shift) is less than the number of items in the window (or the window duration), a sliding window is created, and there will be an overlap between the two windows, as shown in figure 9.13.
 
 Figure 9.13 Fixed windows versus sliding windows
-
-If the number of items to skip (or the time shift) is less than the number of items in the window (or the window duration), a sliding window is created, and there will be an overlap between the two windows, as shown in figure 9.13.
 
 #### DYNAMIC WINDOWS
 
 Windows can open and close dynamically, based on your own logic that might depend on other observables. You can define the window closure strategy differently for each window by providing a function that creates an observable per window. This observable determines when the window closes by emitting a notification on completion:
 
 ```C#
-IObservable<IObservable<TSource>> Window<TSource, TWindowClosing>(
-     IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource, TWindowClosing>(IObservable<TSource> source,
      Func<IObservable<TWindowClosing>> windowClosingSelector);
 ```
 
-Opening a window can be controlled in a similar fashion. You can provide an observable to the Window operator that triggers the opening of a window by emitting a notification:
+Opening a window can be controlled in a similar fashion. You can provide an observable to the `Window` operator that triggers the opening of a window by emitting a notification:
 
 ```C#
-IObservable<IObservable<TSource>> Window<TSource, TWindowOpening, TWindow-
-Closing>(
-    IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource, TWindowOpening, TWindowClosing>(IObservable<TSource> source,
     IObservable<TWindowOpening> windowOpenings,
     Func<TWindowOpening, IObservable<TWindowClosing>> windowClosingSelector);
 ```
@@ -840,8 +838,7 @@ Closing>(
 If you want to create non-overlapping windows and control the window boundaries by your own logic, you can use this overload:
 
 ```C#
-IObservable<IObservable<TSource>> Window<TSource, TWindowBoundary>(
-    IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource, TWindowBoundary>(IObservable<TSource> source,
     IObservable<TWindowBoundary> windowBoundaries);
 ```
 
@@ -856,36 +853,36 @@ This concludes your journey into the ways to combine observables and the ways to
 
 In this chapter, you've learned that building reactive queries isn't restricted to a single observable and that you can create queries that rely on the relationship and combinations of multiple observables:
 
-  - The Zip operator pairs elements from two or more observables that share the same index.
+  - The `Zip` operator pairs elements from two or more observables that share the same index.
 
-  - The CombineLatest operator combines the latest values emitted from each of the observables.
+  - The `CombineLatest` operator combines the latest values emitted from each of the observables.
 
-  - The Concat operator emits the elements from the next observable when the previous observable completes.
+  - The `Concat` operator emits the elements from the next observable when the previous observable completes.
 
-  - Concat subscribes to the observable only when the previous one completes.
+  - `Concat` subscribes to the observable only when the previous one completes.
 
-  - The Merge operator subscribes to all of the observables and emits their notifications as they arrive.
+  - The `Merge` operator subscribes to all of the observables and emits their notifications as they arrive.
 
-  - You can restrict the number of concurrent subscriptions for the Merge operator by passing the number of allowed concurrent subscriptions as an argument.
+  - You can restrict the number of concurrent subscriptions for the `Merge` operator by passing the number of allowed concurrent subscriptions as an argument.
 
-  - The Switch operator creates a single observable that emits the notifications from the most recent observable.
+  - The `Switch` operator creates a single observable that emits the notifications from the most recent observable.
 
-  - The Amb operator works similarly to Switch, but switches to the first observable that emits.
+  - The `Amb` operator works similarly to `Switch`, but switches to the first observable that emits.
 
-  - In Rx, grouping means to create observables of elements that share the same key. This is done with the GroupBy operator.
+  - In Rx, grouping means to create observables of elements that share the same key. This is done with the `GroupBy` operator.
 
   - In Rx, joining two observables means to emit pairs of elements that exist in the same time frame.
 
-  - The Join operator combines items emitted by two observables in the same time frame and emits the pairs into a single flat observable.
+  - The `Join` operator combines items emitted by two observables in the same time frame and emits the pairs into a single flat observable.
 
-  - The GroupJoin operator correlates the elements of two observable sequences based on overlapping durations, and then groups all elements that correlate with each element, which is an observable itself.
+  - The `GroupJoin` operator correlates the elements of two observable sequences based on overlapping durations, and then groups all elements that correlate with each element, which is an observable itself.
 
-  - You can write your Join and GroupJoin queries using both query syntax and method chaining.
+  - You can write your `Join` and `GroupJoin` queries using both query syntax and method chaining.
 
-  - The Buffer operator breaks an observable sequence into bounded collections and creates an observable of those collections.
+  - The `Buffer` operator breaks an observable sequence into bounded collections and creates an observable of those collections.
 
-  - The Window operator breaks an observable sequence into finer observables. 
+  - The `Window` operator breaks an observable sequence into finer observables. 
 
-  - Both Buffer and Window allow you to control the duration or capacity of the buffer or windows and allow the creation of sliding windows.
+  - Both `Buffer` and `Window` allow you to control the duration or capacity of the buffer or windows and allow the creation of sliding windows.
 
 In the many examples you've seen in this book, from creating observables through querying and combining, we've added the element of time and of execution context (threads, tasks, and so on). The next chapter teaches you how Rx models time and concurrency and how to use that to control the execution of your queries.
