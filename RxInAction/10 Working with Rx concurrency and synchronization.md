@@ -384,11 +384,11 @@ In the previous chapters, you've already seen some of the operators that are tim
 
 ### 10.2.1 Adding a timestamp to a notification
 
-Because the observable emits notifications at different times, it makes sense to ask what time each notification was emitted. Instead of manually adding the time information, Rx provides the Timestamp operator, which adds the UTC date and time details for each notification in the observable sequence. Figure 10.4 depicts the Timestamp operator.
+Because the observable emits notifications at different times, it makes sense to ask what time each notification was emitted. Instead of manually adding the time information, Rx provides the `Timestamp` operator, which adds the UTC date and time details for each notification in the observable sequence. Figure 10.4 depicts the `Timestamp` operator.
 
 Figure 10.4 The Timestamp operator adds a timestamp of the emission time to every notification.
 
-The Timestamp operator takes no parameters (except for an optional scheduler) and wraps the notification object with the Timestamped<T> type that holds the timestamp of the emission:
+The `Timestamp` operator takes no parameters (except for an optional scheduler) and wraps the notification object with the `Timestamped<T>` type that holds the timestamp of the emission:
 
 ```C#
 IObservable<Timestamped<TSource>> Timestamp<TSource>(
@@ -396,20 +396,17 @@ IObservable<Timestamped<TSource>> Timestamp<TSource>(
 IObservable<Timestamped<TSource>> Timestamp<TSource>(
                                   this IObservable<TSource> source,
                                   IScheduler scheduler)
-
-
 ```
 
-In the next example, you create an observable that emits a notification every 1 second, like a heartbeat notification received from a hardware product that your software monitors. 2 You add a timestamp by using the Timestamp operator so you can log the information for future analysis. Because you don't want the example to run forever, you're taking only three notifications:
+In the next example, you create an observable that emits a notification every 1 second, like a heartbeat notification received from a hardware product that your software monitors. You add a timestamp by using the `Timestamp` operator so you can log the information for future analysis. Because you don't want the example to run forever, you're taking only three notifications:
 
 ```C#
-IObservable<long> deviceHeartbeat =
+var deviceHeartbeat = //IObservable<long>
     Observable.Interval(TimeSpan.FromSeconds(1));
 deviceHeartbeat
     .Take(3)
     .Timestamp()
     .SubscribeConsole("Heartbeat");
-Console.ReadLine();
 ```
 
 
@@ -422,26 +419,27 @@ Heartbeat - OnNext(2@25/12/2015 22:29:26 +00:00)
 Heartbeat - OnCompleted()
 ```
 
-The bolded text values were emitted by the observable. I got this formatted output because of the Timestamped<T> type. The Timestamped<T> type holds the notification object that was emitted by the timestamped observable and the timestamp of when the notification was emitted. It also implements a nice ToString method that helps when debugging.
+The bolded text values were emitted by the observable. I got this formatted output because of the `Timestamped<T>` type. The `Timestamped<T>` type holds the notification object that was emitted by the timestamped observable and the timestamp of when the notification was emitted. It also implements a nice `ToString` method that helps when debugging.
 
-The Timestamp operator can be useful when you need to investigate what's going on inside your observable and how the time dimension affects your handling.
+The `Timestamp` operator can be useful when you need to investigate what's going on inside your observable and how the time dimension affects your handling.
 
 ### 10.2.2 Adding the time interval between notifications
 
-Useful as the Timestamp operator can be, sometimes all you care about is the time interval between two emissions. Instead of calculating this interval by subtracting the two timestamps, you can use the TimeInterval operator, which records the time interval between consecutive elements in the observable. Figure 10.5 shows a marble diagram of the TimeInterval operator.
+Useful as the `Timestamp` operator can be, sometimes all you care about is the time interval between two emissions. Instead of calculating this interval by subtracting the two timestamps, you can use the `TimeInterval` operator, which records the time interval between consecutive elements in the observable. Figure 10.5 shows a marble diagram of the `TimeInterval` operator.
 
 Figure 10.5 The TimeInterval operator computes the time interval between two notifications.
 
-```C#
-TimeInterval wraps every notification object with a TimeInterval<T> type:
-IObservable<TimeInterval<TSource>> TimeInterval<TSource>
-    (this IObservable<TSource> source);
-IObservable<TimeInterval<TSource>> TimeInterval<TSource>
-    (this IObservable<TSource> source, IScheduler scheduler);
+`TimeInterval` wraps every notification object with a `TimeInterval<T>` type:
 
+```C#
+IObservable<TimeInterval<TSource>> TimeInterval<TSource>(
+    this IObservable<TSource> source);
+IObservable<TimeInterval<TSource>> TimeInterval<TSource>(
+    this IObservable<TSource> source, 
+    IScheduler scheduler);
 ```
 
-In the next example, you simulate a hardware device that sends heartbeat signals that the application monitors. You create an observable that emits three notifications with the following intervals between them: 1 second, 2 seconds, and 4 seconds. You use the TimeInterval operator to record the interval between them. Obviously, when there's a long gap between heartbeats, it means that something is unhealthy with the device being monitored.
+In the next example, you simulate a hardware device that sends heartbeat signals that the application monitors. You create an observable that emits three notifications with the following intervals between them: 1 second, 2 seconds, and 4 seconds. You use the `TimeInterval` operator to record the interval between them. Obviously, when there's a long gap between heartbeats, it means that something is unhealthy with the device being monitored.
 
 ```C#
 var deviceHeartbeat = Observable
@@ -449,11 +447,9 @@ var deviceHeartbeat = Observable
     .Concat(Observable.Timer(TimeSpan.FromSeconds(2)))
     .Concat(Observable.Timer(TimeSpan.FromSeconds(4)));
 
-	deviceHeartbeat
+deviceHeartbeat
     .TimeInterval()
     .SubscribeConsole("time from last heartbeat");
-Console.ReadLine();
-
 ```
 
 This code prints the following output:
@@ -463,14 +459,13 @@ time from last heartbeat - OnNext(0@00:00:01.0120598)
 time from last heartbeat - OnNext(0@00:00:02.0070871)
 time from last heartbeat - OnNext(0@00:00:04.0029774)
 time from last heartbeat - OnCompleted()
-
 ```
 
 The bold text shows the time intervals that were recorded. Of course, the measured time isn't the same as what you've set. That's because many factors were involved in scheduling the notifications and in measuring the intervals: the preemptive OS, the time of the measurement itself, and so forth.
 
-Even so, your application can now alert the user that something is wrong with the device simply by checking that the interval encapsulated in the TimeInterval type is within the normal time limits. The TimeInterval struct holds the Interval property (of type TimeSpan) and the Value property that contains the emitted notification, and implements a nice ToString method useful for debugging.
+Even so, your application can now alert the user that something is wrong with the device simply by checking that the interval encapsulated in the `TimeInterval` type is within the normal time limits. The `TimeInterval` struct holds the `Interval` property (of type `TimeSpan`) and the `Value` property that contains the emitted notification, and implements a nice `ToString` method useful for debugging.
 
-Using the TimeInterval operator lets you make decisions based on the distance between the emitted values. Sometimes the behavior you're trying to implement is that if the time distance is too long, you want to cancel the operation (or query). This is known as setting a timeout.
+Using the `TimeInterval` operator lets you make decisions based on the distance between the emitted values. Sometimes the behavior you're trying to implement is that if the time distance is too long, you want to cancel the operation (or query). This is known as setting a timeout.
 
 ### 10.2.3 Adding a timeout policy
 
@@ -478,15 +473,14 @@ As discussed in previous chapters, observables can represent an asynchronous ope
 
 When doing things asynchronously, you must always ask how long it takes before you can say that the action was faulty. When you work with asynchronous service providers, it's common for some kind of error to happen that prevents you from receiving a response.
 
-To make handling such cases easy, Rx provides the Timeout operator that, as its name indicates, handles the timeout cases for you. It monitors the notifications emitted by the observable and, if a notification hasn't been emitted (since the previous one) in the period of time that you configured, it raises an exception that will be passed to the observer by its OnError method. Figure 10.6 illustrates Timeout.
+To make handling such cases easy, Rx provides the `Timeout` operator that, as its name indicates, handles the timeout cases for you. It monitors the notifications emitted by the observable and, if a notification hasn't been emitted (since the previous one) in the period of time that you configured, it raises an exception that will be passed to the observer by its `OnError` method. Figure 10.6 illustrates Timeout.
 
-Figure 10.6 The Timeout operator emits an error notification when the timeout duration has passed without emitting.
+Figure 10.6 The `Timeout` operator emits an error notification when the timeout duration has passed without emitting.
 
 The next example simulates a case in which four remote requests are sent, one after the other, and you're waiting for their responses. You set the timeout to 3 seconds, meaning that when a response takes more than 3 seconds to return, you can unsubscribe from the observable. To simulate this, you create an observable that emits two notifications with a 1-second gap between them, and two more notifications with a 4-second gap. You add the Timeout operator to your pipeline and configure it to 3 seconds:
 
 ```C#
-var observable = Observable
-     .Timer(TimeSpan.FromSeconds(1))
+var observable = Observable.Timer(TimeSpan.FromSeconds(1))
      .Concat(Observable.Timer(TimeSpan.FromSeconds(1)))
      .Concat(Observable.Timer(TimeSpan.FromSeconds(4)))
      .Concat(Observable.Timer(TimeSpan.FromSeconds(4)));
@@ -494,26 +488,28 @@ var observable = Observable
 observable
     .Timeout(TimeSpan.FromSeconds(3))
     .SubscribeConsole("Timeout");
-Console.ReadLine();
+```
+
 Running the example shows this output:
+
+```
 Timeout - OnNext(0)
 Timeout - OnNext(0)
 Timeout - OnError:
     System.TimeoutException: The operation has timed out.
-
 ```
 
-You can see that because you define the timeout to be 3 seconds, and no notification was sent, you get a TimeoutException.
+You can see that because you define the timeout to be 3 seconds, and no notification was sent, you get a `TimeoutException`.
 
 ### 10.2.4 Delaying the notifications
 
 The notifications emitted by the observable can come at any rate. In most cases, you'll want to react to them as soon as they arrive. But in some cases delaying the handling of a notification is preferred; for example, when you get requests that have different priorities (based on customer service-level agreement, or SLA), and you want to delay the processing of the lower-priority requests and give precedence to requests of a higher priority.
 
-The Delay operator lets you add the delay you want, either constantly to all notifications or independently per notification. Figure 10.7 shows how the Delay operator affects the notification when passing it a relative time span. (Overloads that accept an absolute time exists as well.)
+The `Delay` operator lets you add the delay you want, either constantly to all notifications or independently per notification. Figure 10.7 shows how the `Delay` operator affects the notification when passing it a relative time span. (Overloads that accept an absolute time exists as well.)
 
 Figure 10.7 The Delay operator shifts the observable notifications by a time duration.
 
-If you want to add a fixed time period for each notification delay, you can accomplish it using the Delay operator.
+If you want to add a fixed time period for each notification delay, you can accomplish it using the `Delay` operator.
 
 Listing 10.3 Delaying notifications with the Delay operator
 
@@ -542,21 +538,20 @@ Delay - OnNext(0@26/12/2015 14:47:42 +00:00@26/12/2015 14:47:44 +00:00)
 Delay - OnNext(0@26/12/2015 14:47:46 +00:00@26/12/2015 14:47:48 +00:00)
 Delay - OnNext(0@26/12/2015 14:47:50 +00:00@26/12/2015 14:47:52 +00:00)
 Delay - OnCompleted()
-
 ```
+
+不影响之前的可观察发射。
 
 The important pieces of data here are the two timestamps. The one on the right (bolded text) is the time the notification was emitted after the delay, and the one on the left is the time the notification was emitted by the source observable. You can easily see that there's a 2-second difference between the timestamps for each notification.
 
-ADDING A VARIABLE DELAY
+#### ADDING A VARIABLE DELAY
 
-When a constant delay doesn't fit your needs, you can use the Delay operator overloads that let you specify the delay duration per notification:
+When a constant delay doesn't fit your needs, you can use the `Delay` operator overloads that let you specify the delay duration per notification:
 
 ```C#
-IObservable<TSource> Delay<TSource, TDelay>(
-    this IObservable<TSource> source,
+IObservable<TSource> Delay<TSource, TDelay>(this IObservable<TSource> source,
     IObservable<TDelay> subscriptionDelay,
     Func<TSource, IObservable<TDelay>> delayDurationSelector);
-
 ```
 
 Another overload also exists whereby you can omit the subscriptionDelay, which is used to delay the subscription to the source observable.
@@ -571,8 +566,6 @@ observable
     .Delay(x => Observable.Timer(TimeSpan.FromSeconds(x.Value)))
     .Timestamp()
     .SubscribeConsole("Delay");
-Console.ReadLine();
-
 ```
 
 This is the output I got on my machine:
@@ -591,23 +584,21 @@ Because you create the observable from a collection of integers, all of them wer
 
 In many cases, handling notifications emitted close to one another adds no real value. For example, if users update their details at a high rate (let's say three times per second), it might not be cost-effective to handle the first two updates because they're no longer relevant.
 
-To add this kind of behavior to your observable pipeline, so notifications will be dropped unless a predefined period of time has passed without other notifications arriving, you can use the Throttle operator, 4 depicted in figure 10.8.
+To add this kind of behavior to your observable pipeline, so notifications will be dropped unless a predefined period of time has passed without other notifications arriving, you can use the `Throttle` operator, depicted in figure 10.8.
 
 Figure 10.8 The Throttle operator emits an item from an observable only if a particular time span has passed without emitting another item.
 
 In the next example, you simulate a case in which multiple updates are arriving, but only if 2 seconds have passed without another update coming will the update be allowed to proceed:
 
 ```C#
-var observable = Observable
-  .Return("Update A")
-  .Concat(Observable.Timer(TimeSpan.FromSeconds(2)).Select(_ => "Update B"))
-  .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Select(_ => "Update C"))
-  .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Select(_ => "Update D"))
- .Concat(Observable.Timer(TimeSpan.FromSeconds(3)).Select(_ => "Update E"));
+var observable = Observable.Return("Update A")
+    .Concat(Observable.Timer(TimeSpan.FromSeconds(2)).Select(_ => "Update B"))
+    .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Select(_ => "Update C"))
+    .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Select(_ => "Update D"))
+    .Concat(Observable.Timer(TimeSpan.FromSeconds(3)).Select(_ => "Update E"));
 
 observable.Throttle(TimeSpan.FromSeconds(2))
     .SubscribeConsole("Throttle");
-Console.ReadLine();
 ```
 
 Running the example displays this output:
@@ -617,37 +608,32 @@ Throttle - OnNext(Update A)
 Throttle - OnNext(Update D)
 Throttle - OnNext(Update E)
 Throttle - OnCompleted()
-
 ```
 
 You can see that updates B and C were dropped because both of them were followed by another notification that was emitted after less than 2 seconds.
 
-VARIABLE THROTTLING
+#### VARIABLE THROTTLING
 
-The Throttle operator lets you control the throttling duration for each element in an independent way. To achieve that, you can pass a function that returns an observable for each element that signals when the throttling period ends:
+The `Throttle` operator lets you control the throttling duration for each element in an independent way. To achieve that, you can pass a function that returns an observable for each element that signals when the throttling period ends:
 
 ```C#
-IObservable<TSource> Throttle<TSource, TThrottle>(
-    this IObservable<TSource> source,
+IObservable<TSource> Throttle<TSource, TThrottle>(this IObservable<TSource> source,
     Func<TSource, IObservable<TThrottle>> throttleDurationSelector)
-
 ```
 
-Every emitted notification causes the Throttle operator to drop the previously returned observable and to start a new duration with the newly returned observable.
+Every emitted notification causes the `Throttle` operator to drop the previously returned observable and to start a new duration with the newly returned observable.
 
 In listing 10.4, you extend your throttling example such that, in addition to the normal update messages, a new type of update message is created that triggers an immediate update. You use the Throttle operator to prevent handling of fast-rate messages, unless it's an Immediate Message, which is handled immediately. In your applications, an Immediate Message might be a notification of high importance or an item that comes from a source of high priority.
 
 Listing 10.4 Throttling notifications
 
 ```C#
-var observable = Observable
-    .Return("Msg A")
+var observable = Observable.Return("Msg A")
     .Concat(Observable.Timer(TimeSpan.FromSeconds(2)).Select(_ => "Msg B"))
-    .Concat(Observable.Timer(TimeSpan.FromSeconds(1))
-     ➥  .Select(_ => "Immediate Update"))
-
+    .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Select(_ => "Immediate Update"))
     .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Select(_ => "Msg D"))
     .Concat(Observable.Timer(TimeSpan.FromSeconds(3)).Select(_ => "Msg E"));
+
 observable
  .Throttle(x => x == "Immediate Update"
                     ? Observable.Empty<long>()
@@ -666,7 +652,7 @@ Variable Throttling - OnNext(Msg E)
 Variable Throttling - OnCompleted()
 ```
 
-In this example, you're checking each element. If it's an Immediate Update, you return an observable that emits a notification immediately (the OnCompleted notification). Otherwise, you create an observable that emits a notification after 2 seconds. That's why, even though notifications were emitted less than 2 seconds from when the Immediate Update was emitted, Immediate Update was emitted as well.
+In this example, you're checking each element. If it's an Immediate Update, you return an observable that emits a notification immediately (the `OnCompleted` notification). Otherwise, you create an observable that emits a notification after 2 seconds. That's why, even though notifications were emitted less than 2 seconds from when the Immediate Update was emitted, Immediate Update was emitted as well.
 
 ### 10.2.6 Sampling the observable in intervals
 
@@ -681,8 +667,6 @@ Observable.Interval(TimeSpan.FromSeconds(1))
     .Sample(TimeSpan.FromSeconds(3.5))
     .Take(3)
     .SubscribeConsole("Sample");
-Console.ReadLine();
-
 ```
 
 
@@ -693,7 +677,6 @@ Sample - OnNext(2)
 Sample - OnNext(5)
 Sample - OnNext(9)
 Sample - OnCompleted()
-
 ```
 
 The duration of the interval doesn't have to be constant. The next Sample overload lets you control the duration of each interval by passing an observable that emits when the interval ends:
@@ -702,7 +685,6 @@ The duration of the interval doesn't have to be constant. The next Sample overlo
 IObservable<TSource> Sample<TSource, TSample>(
     this IObservable<TSource> source,
     IObservable<TSample> sampler)
-
 ```
 
 Upon each emission done by the sampler (sampling tick), the latest element (if any) in the source observable during the last sampling interval is sent to the resulting sequence. All the operators you've learned about in this chapter (and others covered in other chapters) can receive the IScheduler you want them to use for introducing concurrency. But, for the operators that don't introduce concurrency, you can't pass the scheduler. So what do you do if you want to change the execution context in the middle of your observable pipeline? You use the Rx-provided operators that add synchronization.
@@ -713,11 +695,11 @@ From the observer's standpoint, the emissions done by the observables can happen
 
 ### 10.3.1 Changing the observation's execution context
 
-If you need to control the execution context (the observations of elements done by the observer), Rx provides the ObserveOn operator that lets you pass the scheduler that the emissions will be scheduled on. You have the ability (to some extent) to specify on which thread you want the OnNext/OnError/OnCompleted functions to run. Figure 10.10 is a marble diagram of ObserveOn.
+If you need to control the execution context (the observations of elements done by the observer), Rx provides the `ObserveOn` operator that lets you pass the scheduler that the emissions will be scheduled on. You have the ability (to some extent) to specify on which thread you want the `OnNext`/`OnError`/`OnCompleted` functions to run. Figure 10.10 is a marble diagram of ObserveOn.
 
 Figure 10.10 The ObserveOn operator runs the observer functions on the specified scheduler.
 
-A classic use of ObserveOn occurs when you need your observer to modify a UI control (for example, changing the width of a button), and you need to make sure the observer runs in the UI thread. The UI thread is managed either by DispatcherScheduler for XAML platforms or by ControlScheduler in WinForms.
+A classic use of `ObserveOn` occurs when you need your observer to modify a UI control (for example, changing the width of a button), and you need to make sure the observer runs in the UI thread. The UI thread is managed either by `DispatcherScheduler` for XAML platforms or by `ControlScheduler` in WinForms.
 
 The next example creates an observable from the TextBox.TextChanged event and throttles it. The text values that survive the throttling are then added to a ListBox. Because the Throttle operator uses a default scheduler (usually ThreadPool), you use the ObserveOn operator to make sure the ListBox is changed on the UI thread.
 
@@ -729,11 +711,11 @@ Observable.FromEventPattern(TextBox, "TextChanged")
     .Subscribe(t => ThrottledResults.Items.Add(t));
 ```
 
-Because the observation on the Dispatcher is something that happens frequently, you can use the shortened operator ObserveOnDispatcher, which does the same thing. The ObserveOn operator also has overloads that let you pass the SynchronizationContext or the WinForms Control with which you want to make the observation. Under the hood, the ObserveOn operator creates an interceptor in the observable pipeline that intercepts each call done on the observer and executes it on the specified scheduler.
+Because the observation on the `Dispatcher` is something that happens frequently, you can use the shortened operator `ObserveOnDispatcher`, which does the same thing. The `ObserveOn` operator also has overloads that let you pass the `SynchronizationContext` or the WinForms Control with which you want to make the observation. Under the hood, the `ObserveOn` operator creates an interceptor in the observable pipeline that intercepts each call done on the observer and executes it on the specified scheduler.
 
 ### 10.3.2 Changing the subscription/unsubscription execution context
 
-In addition to controlling the execution context of the observation, you can control the execution context that runs the subscription and unsubscription, meaning the thread in which the Subscribe method of the observable and the Dispose method of the subscription is called.
+In addition to controlling the execution context of the observation, you can control the execution context that runs the subscription and unsubscription, meaning the thread in which the `Subscribe` method of the observable and the `Dispose` method of the subscription is called.
 
 This is something that you'd typically want to do if the observable's work must happen on a specific thread (as in Silverlight, where the registration to a control's events has to happen on the UI thread, but the processing of the notifications can happen anywhere).
 
@@ -749,27 +731,29 @@ var observable =
         return Disposable.Empty;
     });
 observable.SubscribeConsole("LongOperation");
-
 ```
 
 
-When running this example, the calling thread will be blocked for 5 seconds, and only afterward do the messages appear. Adding ObserveOn to this example won't help because the long operation happens as part of the subscription. What you want is to make the subscription itself on another thread.
+When running this example, the calling thread will be blocked for 5 seconds, and only afterward do the messages appear. Adding `ObserveOn` to this example won't help because the long operation happens as part of the subscription. What you want is to make the subscription itself on another thread.
 
-The SubscribeOn operator lets you pass the scheduler that'll be used to schedule the subscription and unsubscription. It creates interceptors in the observable pipeline that'll intercept the call to the observable Subscribe method and make these calls run on the specified Scheduler. Then, the interceptor wraps the disposable returned by the Subscribe method so that its Dispose method will also run under the specified scheduler. Figure 10.11 depicts the SubscribeOn operator.
+The `SubscribeOn` operator lets you pass the scheduler that'll be used to schedule the subscription and unsubscription. It creates interceptors in the observable pipeline that'll intercept the call to the observable `Subscribe` method and make these calls run on the specified `Scheduler`. Then, the interceptor wraps the disposable returned by the Subscribe method so that its Dispose method will also run under the specified scheduler. Figure 10.11 depicts the SubscribeOn operator.
+
+`SubscribeOn`向上，`ObserveOn`向下
 
 Figure 10.11 The SubscribeOn operator runs the observer subscription and unsubscription on the specified scheduler.
 
-This interception over the unsubscription can cause confusion because the moment you call the Dispose method, it might go into effect only at a later time, based on the scheduler used. In the next example, you create an observable that emits every 1 second and uses the EventLoopScheduler for making the subscription. Then you schedule work items that take a long time to complete and dispose of the subscription. The unsubscription will take some time until it's complete and, in the meantime, notifications will still be processed inside the pipeline.
+This interception over the unsubscription can cause confusion because the moment you call the Dispose method, it might go into effect only at a later time, based on the scheduler used. In the next example, you create an observable that emits every 1 second and uses the `EventLoopScheduler` for making the subscription. Then you schedule work items that take a long time to complete and dispose of the subscription. The unsubscription will take some time until it's complete and, in the meantime, notifications will still be processed inside the pipeline.
+
+描述行为不一致，实际上`Dispose`将立即执行完成，不会间隔发射信号。
 
 Listing 10.5 Confusion from using SubscribeOn when unsubscribing
 
 ```C#
 var eventLoopScheduler = new EventLoopScheduler();
-var subscription =
- Observable.Interval(TimeSpan.FromSeconds(1))
-        .Do(x => Console.WriteLine("Inside Do"))
-        .SubscribeOn(eventLoopScheduler)
-        .SubscribeConsole();
+var subscription = Observable.Interval(TimeSpan.FromSeconds(1))
+    .Do(x => Console.WriteLine("Inside Do"))
+    .SubscribeOn(eventLoopScheduler)
+    .Subscribe();
 
 eventLoopScheduler.Schedule(1,
     (s, state) =>
@@ -795,7 +779,7 @@ After sleep
 Inside Do
 ```
 
-Note that the call to Dispose happens almost immediately; but, because the real subscription will be disposed of on the event loop, it needs to wait until the long operation completes, and so you see the messages from the Do operator.
+Note that the call to `Dispose` happens almost immediately; but, because the real subscription will be disposed of on the event loop, it needs to wait until the long operation completes, and so you see the messages from the `Do` operator.
 
 ### 10.3.3 Using SubscribeOn and ObserveOn together
 
