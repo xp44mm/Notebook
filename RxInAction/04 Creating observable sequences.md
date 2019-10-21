@@ -437,8 +437,7 @@ Defer is good when you want to create observables with any of the observable fac
 This is how to use `Defer` to create the ObservableConnection:
 
 ```C#
-public IObservable<string> ObserveMessagesDeferred(string user,
-                                                   string password)
+public IObservable<string> ObserveMessagesDeferred(string user, string password)
 {
     return Observable.Defer(() =>
     {
@@ -456,7 +455,7 @@ var subscription1 = messages.SubscribeConsole();
 var subscription2 = messages.SubscribeConsole();
 ```
 
-This behavior isn't specific to Defer. The same issue occurred in the observables you created previously. Keep that in mind, and you'll learn when and how to make shareable observables in chapter 6 when we talk about cold and hot observables. Defer also plays another role in the observables “temperature” world because it can be used to turn a hot observable to a cold one, but I'm getting ahead of myself.
+This behavior isn't specific to `Defer`. The same issue occurred in the observables you created previously. Keep that in mind, and you'll learn when and how to make shareable observables in chapter 6 when we talk about cold and hot observables. `Defer` also plays another role in the observables “temperature” world because it can be used to turn a hot observable to a cold one, but I'm getting ahead of myself.
 
 Eventually, the observable you created bridged traditional .NET events into the Rx. This is something you often do with Rx, so Rx provides operators that ease that work.
 
@@ -772,7 +771,7 @@ IEnumerable<string> names = new[] { "Shira", "Yonatan", "Gabi", "Tamir" };
 names.Subscribe(new ConsoleObserver<string>("subscribe"));
 ```
 
-WHERE TO USE IT
+#### WHERE TO USE IT
 
 At the beginning of this chapter, you created an ObservableConnection that helped you consume chat messages through an observable. The nature of the ObservableConnection is that only new messages will be received by the client, but as users, you'd like to enter the chat room and see the messages that were there before you connected.
 
@@ -1006,7 +1005,7 @@ IObservable<int> observable =
 常规的文件读取方法：
 
 ```F#
-[
+let lines = [
     use sr:StreamReader = File.OpenText("TextFile.txt")
     while not sr.EndOfStream do
         yield (sr.ReadLine())
@@ -1134,9 +1133,9 @@ Wow, you learned a lot in this chapter. You should feel proud of yourself. The m
 
   * All observables implement the `IObservable<T>` interface.
 
-  * Creating observables by manually implementing the IObservables interface is discouraged. Instead, use one of the built-in creation operators.
+  * Creating observables by manually implementing the `IObservable`s interface is discouraged. Instead, use one of the built-in creation operators.
 
-  * The `Create` operator allows you to create observables by passing the Subscribe method that will run for each observer that subscribes.
+  * The `Create` operator allows you to create observables by passing the `Subscribe` method that will run for each observer that subscribes.
 
   * The `Defer` operator allows you to defer or delay the creation of the observable until the time when an observer subscribes to the sequence.
 

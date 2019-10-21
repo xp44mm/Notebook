@@ -744,7 +744,7 @@ Figure 10.11 The SubscribeOn operator runs the observer subscription and unsubsc
 
 This interception over the unsubscription can cause confusion because the moment you call the Dispose method, it might go into effect only at a later time, based on the scheduler used. In the next example, you create an observable that emits every 1 second and uses the `EventLoopScheduler` for making the subscription. Then you schedule work items that take a long time to complete and dispose of the subscription. The unsubscription will take some time until it's complete and, in the meantime, notifications will still be processed inside the pipeline.
 
-描述行为不一致，实际上`Dispose`将立即执行完成，不会间隔发射信号。
+描述行为不一致，实际上`Dispose`将立即执行完成，不会等待3秒留出间隔发射信号。
 
 Listing 10.5 Confusion from using SubscribeOn when unsubscribing
 
@@ -790,9 +790,7 @@ To help with that, I created this simple LogWithThread operator to provide insig
 Listing 10.6 The LogWithThread operator logs both events and threads.
 
 ```C#
-public static IObservable<T> LogWithThread<T>(
-     this IObservable<T> observable,
-     string msg = "")
+static IObservable<T> LogWithThread<T>(this IObservable<T> observable,string msg = "")
 {
      return Observable.Defer(() =>
      {
@@ -816,20 +814,24 @@ public static IObservable<T> LogWithThread<T>(
 
 The LogWithThread operator prints messages to the console when the observer subscribes and for every notification done by the source observable. With each log message, the thread on which the event happens is also written.
 
-Now let's see what happens when you use SubscribeOn and ObserveOn with LogWithThread to log the details for you. In the next example, you create a simple observable that emits three notifications (one every second), and you use the SubscribeOn and ObserveOn operators to control the execution context. The example creates an observable that emits five numbers and adds a few operators on it.
+Now let's see what happens when you use `SubscribeOn` and `ObserveOn` with LogWithThread to log the details for you. In the next example, you create a simple observable that emits three notifications (one every second), and you use the `SubscribeOn` and `ObserveOn` operators to control the execution context. The example creates an observable that emits five numbers and adds a few operators on it.
 
 Listing 10.7 Testing the order of execution and effects of SubscribeOn and ObserveOn
 
 ```C#
-new[] {0,1,2,3,4,5}.ToObservable()
-    .Take(3).LogWithThread("A")
-    .Where(x => x%2 == 0).LogWithThread("B")
-    .SubscribeOn(NewThreadScheduler.Default).LogWithThread("C")
-    .Select(x => x*x).LogWithThread("D")
-    .ObserveOn(TaskPoolScheduler.Default).LogWithThread("E")
+new[] {0,1,2,3,4,5}
+    .ToObservable()
+    .Take(3)
+    .LogWithThread("A")
+    .Where(x => x%2 == 0)
+    .LogWithThread("B")
+    .SubscribeOn(NewThreadScheduler.Default)
+    .LogWithThread("C")
+    .Select(x => x*x)
+    .LogWithThread("D")
+    .ObserveOn(TaskPoolScheduler.Default)
+    .LogWithThread("E")
     .SubscribeConsole("squares by time");
-Console.ReadLine();
-
 ```
 
 Running the example on my machine shows this output:
@@ -844,23 +846,22 @@ A - OnNext(0) Thread: 3
 B - OnNext(0) Thread: 3
 C - OnNext(0) Thread: 3
 D - OnNext(0) Thread: 3
-E - OnNext(0) Thread: 4
 A - OnNext(1) Thread: 3
 A - OnNext(2) Thread: 3
-squares by time - OnNext(0)
 B - OnNext(2) Thread: 3
 C - OnNext(2) Thread: 3
 D - OnNext(4) Thread: 3
-E - OnNext(4) Thread: 4
-squares by time - OnNext(4)
 A - OnCompleted() Thread 3
 B - OnCompleted() Thread 3
 C - OnCompleted() Thread 3
 D - OnCompleted() Thread 3
+E - OnNext(0) Thread: 4
+squares by time - OnNext(0)
+E - OnNext(4) Thread: 4
+squares by time - OnNext(4)
 E - OnCompleted() Thread 4
 squares by time - OnCompleted()
 ```
-
 
 Figure 10.12 shows the marble diagram that displays what you see in the output.
 
@@ -870,11 +871,11 @@ Here are the key points in the example output:
 
   - The order of the subscriptions is from the bottom to the top (the subscription is first executed at stage E, and only at the end at stage A). This is because the observable returned by the last LogWithThread operator is the one the observer is subscribing to.
 
-  - The subscriptions are executed on thread 1 until SubscribeOn is called, and then the subscriptions are made with thread 3 (step B).
+  - The subscriptions are executed on thread 1 until `SubscribeOn` is called, and then the subscriptions are made with thread 3 (step B).
 
   - The notifications are done from top to bottom (A is first, and E is last).
 
-  - The notifications are emitted on thread 3 (where the subscriptions occur) until ObserveOn is called (right before E), and then the notifications are emitted on thread 4.
+  - The notifications are emitted on thread 3 (where the subscriptions occur) until `ObserveOn` is called (right before E), and then the notifications are emitted on thread 4.
 
   - While the notification is observed on thread 4, thread 3 is free to observe the next notification. That's why you see the observation of 0 together with the emission of 2 (the bolded lines).
 
@@ -882,7 +883,7 @@ Next, I'll talk about how to synchronize processing of the notifications in the 
 
 ### 10.3.4 Synchronizing notifications
 
-The notifications observed by the observer are assumed to arrive in a serialized fashion. The Rx Design Guidelines (see paragraphs 4.2 and 6.7) state that all Rx operators should safely assume that their inputs are serialized. 5 They won't receive notifications concurrently, but only one after the other. If this assumption isn't made, almost every operator and every observer should be written in a thread-safe way and use various kinds of locks to ensure the validity of their operations. This imposes a significant performance hit that isn't necessary.
+The notifications observed by the observer are assumed to arrive in a serialized fashion. The Rx Design Guidelines (see paragraphs 4.2 and 6.7) state that all Rx operators should safely assume that their inputs are serialized. They won't receive notifications concurrently, but only one after the other. If this assumption isn't made, almost every operator and every observer should be written in a thread-safe way and use various kinds of locks to ensure the validity of their operations. This imposes a significant performance hit that isn't necessary.
 
 But you can't control every observable subscribed to. Some observables might be from a third party or might be constructed on top of a source that doesn't act in a serialized way. For these types of observables, you should synchronize their emissions in the observable pipeline.
 
@@ -891,11 +892,20 @@ Suppose you create an observable from an event exposed by a third-party componen
 ```C#
 class Messenger
 {
-    public event EventHandler<string> MessageReceived;
+    event EventHandler<string> MessageReceived;
 
     //Rest of the Messenger code
 }
+```
 
+F#
+
+```F#
+type Messenger() =
+    let messageReceived = new Event<EventHandler<string>,string>()
+    
+    [<CLIEvent>]
+    member this.MessageReceived = messageReceived.Publish
 ```
 
 This is how to create the observable:
@@ -905,17 +915,26 @@ var messenger = new Messenger();
 var messages =
     Observable.FromEventPattern<string>(
         h => messenger.MessageReceived += h,
-        h => messenger.MessageReceived -= h);
+        h => messenger.MessageReceived -= h)
+    .Select(evt => evt.EventArgs);
+```
+
+F#
+
+```F#
+let messages = messenger.MessageReceived :> IObservable<string>
+```
+
 And this is how to subscribe to it:
+
+```C#
 messages
-    .Select(evt => evt.EventArgs)
     .Subscribe(msg =>
     {
         Console.WriteLine("Message {0} arrived", msg);
         Thread.Sleep(1000);
         Console.WriteLine("Message {0} exit", msg);
     });
-
 ```
 
 When I ran this example and received three messages from multiple threads, this is what I got:
@@ -930,33 +949,28 @@ Message msg2 exit
 ```
 
 
-It's obvious that the messages are received in an unserialized way. To serialize the notifications received in the observer (or in any operator), you need to use the Synchronize operator:
+It's obvious that the messages are received in an unserialized way. To serialize the notifications received in the observer (or in any operator), you need to use the `Synchronize` operator:
 
 ```C#
 messages
-    .Select(evt => evt.EventArgs)
     .Synchronize()
     .Subscribe(msg =>
     {
         Console.WriteLine("Message {0} arrived", msg);
         Thread.Sleep(1000);
-
         Console.WriteLine("Message {0} exit", msg);
     });
-
 ```
 
-Now the messages are received in a serialized way, no matter from what thread the emission was made. Internally, the Synchronize operator creates a lock around every notification it makes to the observer. The lock is done on an inner object called the gate.
+Now the messages are received in a serialized way, no matter from what thread the emission was made. Internally, the `Synchronize` operator creates a lock around every notification it makes to the observer. The lock is done on an inner object called the `gate`.
 
-SYNCHRONIZING MULTIPLE OBSERVABLES
+#### SYNCHRONIZING MULTIPLE OBSERVABLES
 
-The Synchronize operator has an overload that lets you send the gate object that will be used to make the locks:
+The `Synchronize` operator has an overload that lets you send the gate object that will be used to make the locks:
 
 ```C#
-IObservable<TSource> Synchronize<TSource>(
-    IObservable<TSource> source,
+IObservable<TSource> Synchronize<TSource>(IObservable<TSource> source,
     object gate);
-
 ```
 
 This overload can be useful when you need to share the lock between multiple subscribed observables. Suppose the Messenger class exposes another event, FriendRequestReceived, of all the friend requests you receive. After you create an observable, you want to synchronize the processing of the two types of notifications (friend requests and text messages). This how to do that:
@@ -965,15 +979,14 @@ This overload can be useful when you need to share the lock between multiple sub
 var gate = new object();
 
 messages
-    .Select(evt => evt.EventArgs)
+    .Select(evt => evt.EventArgs)//
     .Synchronize(gate)
     .Subscribe(msg => { /* processing the text message */  });
 
 friendRequests
-    .Select(evt => evt.EventArgs)
+    .Select(evt => evt.EventArgs)//
     .Synchronize(gate)
     .Subscribe(request => { /* processing the friend request */ });
-
 ```
 
 Now the friend requests and the messages will be received in a serialized fashion.
@@ -988,32 +1001,32 @@ In this chapter, you've learned about the way Rx models time and concurrency, an
 
   - With a scheduler, you can schedule work to be posted to an execution context at a specific time.
 
-  - All Rx schedulers implement the IScheduler interface.
+  - All Rx schedulers implement the `IScheduler` interface.
 
-  - Some schedulers also implement the ISchedulerPeriodic or the ISchedulerLongRunning interfaces.
+  - Some schedulers also implement the `ISchedulerPeriodic` or the `ISchedulerLongRunning` interfaces.
 
-  - Rx operators that introduce concurrency can receive a parameter of type IScheduler, allowing you to control the way concurrency is introduced.
+  - Rx operators that introduce concurrency can receive a parameter of type `IScheduler`, allowing you to control the way concurrency is introduced.
 
-  - Out-of-the-box Rx comes with a handful of schedulers: NewThreadScheduler, ThreadPoolScheduler, TaskPoolScheduler, CurrentThreadScheduler, ImmediateScheduler, and EventLoopScheduler.
+  - Out-of-the-box Rx comes with a handful of schedulers: `NewThreadScheduler`, `ThreadPoolScheduler`, `TaskPoolScheduler`, `CurrentThreadScheduler`, `ImmediateScheduler`, and `EventLoopScheduler`.
 
-  - Depending on the framework you use, other schedulers that are bound to the synchronization context will also be included (for example, ControlScheduler or DispatcherScheduler).
+  - Depending on the framework you use, other schedulers that are bound to the synchronization context will also be included (for example, `ControlScheduler` or `DispatcherScheduler`).
 
-  - You use the Timestamp operator to add a timestamp of the emission time to every notification.
+  - You use the `Timestamp` operator to add a timestamp of the emission time to every notification.
 
-  - You use the TimeInterval operator to add a time interval between two notifications.
+  - You use the `TimeInterval` operator to add a time interval between two notifications.
 
-  - You use the Timeout operator to emit an error notification in case the timeout duration has passed without the source observable emitting.
+  - You use the `Timeout` operator to emit an error notification in case the timeout duration has passed without the source observable emitting.
 
-  - You use the Delay operator to shift the observable notifications by a time duration.
+  - You use the `Delay` operator to shift the observable notifications by a time duration.
 
-  - You use the Throttle operator to emit an item from an observable if a particular time span has passed without the source observable emitting another item.
+  - You use the `Throttle` operator to emit an item from an observable if a particular time span has passed without the source observable emitting another item.
 
-  - You use the Sample operator to sample the observable sequence every time interval, emitting the last notification in each interval.
+  - You use the `Sample` operator to sample the observable sequence every time interval, emitting the last notification in each interval.
 
-  - You use the ObserveOn operator to enforce the observer functions to run on a specified scheduler.
+  - You use the `ObserveOn` operator to enforce the observer functions to run on a specified scheduler.
 
-  - You use the SubscribeOn operator to enforce observer subscription and unsubscription to run on a specified scheduler.
+  - You use the `SubscribeOn` operator to enforce observer subscription and unsubscription to run on a specified scheduler.
 
-  - You use the Synchronize operator to create a lock so that the notifications are received in a serialized way.
+  - You use the `Synchronize` operator to create a lock so that the notifications are received in a serialized way.
 
 The topics in this chapter are considered advanced and complex, but they're inherent in many of the operators you've seen throughout the book. Controlling them will help you achieve the goals of your observable pipelines. The next chapter covers something we all dislike but must take care of: errors. Because they're inevitable, I'll show you how to add error handling and recovery to your observable queries.
