@@ -1,7 +1,5 @@
 # Demystifying HttpClient APIs
 
-
-
 As a Universal Windows Platform (UWP) app developer, if you are trying to communicate over HTTP with a web service or any server endpoint, you have multiple API choices. Two of the most used and recommended APIs for implementing the HTTP client role in a managed UWP app are `System.Net.Http.HttpClient` and `Windows.Web.Http.HttpClient`. These APIs should be preferred over older, discouraged APIs such as `WebClient` and `HttpWebRequest` (although a small subset of `HttpWebRequest` is available in UWP for backward compatibility).
 
 We have received several questions about the differences between these APIs, equivalent functionalities between the two, which one to use when, and so on. In this post, we will try to address these questions and help clarify the purpose of these two APIs.

@@ -14,7 +14,7 @@
 
 SQL Server命令行如下：
 
-```
+```powershell
 # 停止SQL Server
 NET STOP MSSQLSERVER
 

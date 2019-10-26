@@ -94,8 +94,8 @@ For your convenience, I have prepared a list of recurring patterns, which you ca
 
 You can find more regular expressions in the Visual Studio Regular Expression Editor dialog box (see Figure 14-2) or by browsing the huge regular expression library you can find at http://www.regexlib.com. If you are serious about regular expressions, don't miss The Regulator free utility, which you can download from http://regex.osherove.com/.
 
-~~!Image from book~~ 
-~~Figure 14-2: Setting the ValidationExpression property of a RegularExpressionValidator ASP.NET control by selecting one of the common regular expressions you find in the Regular Expression Editor dialog box~~ 
+~~!Image from book~~
+~~Figure 14-2: Setting the ValidationExpression property of a RegularExpressionValidator ASP.NET control by selecting one of the common regular expressions you find in the Regular Expression Editor dialog box~~
 
 ### Searching for Words and Quoted Strings
 

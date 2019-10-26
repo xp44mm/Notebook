@@ -60,18 +60,18 @@ Asynchronous programming has two primary benefits. The first benefit is for end-
 
 Both benefits of asynchronous programming derive from the same underlying aspect: asynchronous programming frees up a thread. For GUI programs, asynchronous programming frees up the UI thread; this permits the GUI application to remain responsive to user input. For server applications, asynchronous programming frees up request threads; this permits the server to use its threads to serve more requests.
 
-Modern asynchronous .NET applications use two keywords: async and await. The async keyword is added to a method declaration, and performs a double purpose: it enables the await keyword within that method and it signals the compiler to generate a state machine for that method, similar to how yield return works. An async method may return `Task<TResult>` if it returns a value, `Task` if it doesn't return a value, or any other “task-like” type, such as `ValueTask`. In addition, an async method may return `IAsyncEnumerable<T>`or `IAsyncEnumerator<T>` if it returns multiple values in an enumeration. The task-like types represent futures; they can notify the calling code when the async method completes.
+Modern asynchronous .NET applications use two keywords: `async` and `await`. The `async` keyword is added to a method declaration, and performs a double purpose: it enables the `await` keyword within that method and it signals the compiler to generate a state machine for that method, similar to how `yield return` works. An async method may return `Task<TResult>` if it returns a value, `Task` if it doesn't return a value, or any other “task-like” type, such as `ValueTask`. In addition, an async method may return `IAsyncEnumerable<T>`or `IAsyncEnumerator<T>` if it returns multiple values in an enumeration. The task-like types represent futures; they can notify the calling code when the async method completes.
 
 ##### WARNING
 
-Avoid `async void`! It is possible to have an async method return void, but you should only do this if you're writing an async event handler. A regular async method without a return value should return `Task`, not `void`.
+Avoid `async void`! It is possible to have an async method return `void`, but you should only do this if you're writing an async event handler. A regular async method without a return value should return `Task`, not `void`.
 
 With that background, let's take a quick look at an example:
 
 ```C#
 async Task DoSomethingAsync()
 {
-  int value = 13;
+  var value = 13;
   // Asynchronously wait 1 second.
   await Task.Delay(TimeSpan.FromSeconds(1));
   value *= 2;
@@ -81,9 +81,9 @@ async Task DoSomethingAsync()
 }
 ```
 
-An async method begins executing synchronously, just like any other method. Within an async method, the await keyword performs an asynchronous wait on its argument. First, it checks whether the operation is already complete; if it is, it continues executing (synchronously). Otherwise, it will pause the async method and return an incomplete task. When that operation completes some time later, the async method will resume executing.
+An async method begins executing synchronously, just like any other method. Within an async method, the `await` keyword performs an asynchronous wait on its argument. First, it checks whether the operation is already complete; if it is, it continues executing (synchronously). Otherwise, it will pause the async method and return an incomplete task. When that operation completes some time later, the async method will resume executing.
 
-You can think of an async method as having several synchronous portions, broken up by await statements. The first synchronous portion executes on whatever thread calls the method, but where do the other synchronous portions execute? The answer is a bit complicated.
+You can think of an async method as having several synchronous portions, broken up by `await` statements. The first synchronous portion executes on whatever thread calls the method, but where do the other synchronous portions execute? The answer is a bit complicated.
 
 When you await a task (the most common scenario), a context is captured when the await decides to pause the method. This is the current `SynchronizationContext` unless it's null, in which case the context is the current `TaskScheduler`. The method resumes executing within that captured context. Usually, this context is the UI context (if you're on the UI thread) or the threadpool context (most other situations). If you have an ASP.NET Classic (pre-Core) application, then the context could also be an ASP.NET request context. ASP.NET Core uses the threadpool context rather than a special request context.
 
@@ -129,7 +129,7 @@ async Task TrySomethingAsync()
 }
 ```
 
-When an async method throws (or propagates) an exception, the exception is placed on its returned `Task` and the `Task` is completed. When that `Task` is awaited, the await operator will retrieve that exception and (re)throw it in a way such that its original stack trace is preserved. Thus, code such as the following example would work as expected if PossibleExceptionAsync was an async method:
+When an async method throws (or propagates) an exception, the exception is placed on its returned `Task` and the `Task` is completed. When that `Task` is awaited, the `await` operator will retrieve that exception and (re)throw it in a way such that its original stack trace is preserved. Thus, code such as the following example would work as expected if PossibleExceptionAsync was an async method:
 
 ```C#
 async Task TrySomethingAsync()
@@ -149,7 +149,7 @@ async Task TrySomethingAsync()
 }
 ```
 
-There's one other important guideline when it comes to async methods: once you start using async, it's best to allow it to grow through your code. If you call an async method, you should (eventually) await the task it returns. Resist the temptation to call `Task.Wait()`, `Task<TResult>.Result`, or `Task.GetAwaiter().GetResult()`; doing so could cause a deadlock. Consider the following method:
+There's one other important guideline when it comes to async methods: once you start using `async`, it's best to allow it to grow through your code. If you call an async method, you should (eventually) await the task it returns. Resist the temptation to call `Task.Wait()`, `Task<TResult>.Result`, or `Task.GetAwaiter().GetResult()`; doing so could cause a deadlock. Consider the following method:
 
 ```C#
 async Task WaitAsync()
@@ -169,13 +169,13 @@ void Deadlock()
 
 The code in this example will deadlock if called from a UI or ASP.NET Classic context because both of those contexts only allow one thread in at a time. Deadlock will call WaitAsync, which begins the delay. Deadlock then (synchronously) waits for that method to complete, blocking the context thread.
 
-When the delay completes, await attempts to resume WaitAsync within the captured context, but it cannot because there's already a thread blocked in the context, and the context only allows one thread at a time. Deadlock can be prevented two ways: you can use ConfigureAwait(false) within WaitAsync (which causes await to ignore its context), or you can await the call to WaitAsync (making Deadlock into an async method).
+When the delay completes, await attempts to resume WaitAsync within the captured context, but it cannot because there's already a thread blocked in the context, and the context only allows one thread at a time. Deadlock can be prevented two ways: you can use `ConfigureAwait(false)` within WaitAsync (which causes await to ignore its context), or you can await the call to WaitAsync (making Deadlock into an async method).
 
 ##### WARNING
 
-If you use async, it's best to use async all the way.
+If you use `async`, it's best to use `async` all the way.
 
-For a more complete introduction to async, the online documentation that Microsoft has provided for async is fantastic; I recommend reading at least the Asynchronous Programming overview and the Task-based Asynchronous Pattern (TAP) overview. If you want to go a bit deeper, there's also the Async in Depth documentation.
+For a more complete introduction to `async`, the online documentation that Microsoft has provided for async is fantastic; I recommend reading at least the Asynchronous Programming overview and the Task-based Asynchronous Pattern (TAP) overview. If you want to go a bit deeper, there's also the Async in Depth documentation.
 
 Asynchronous streams take the groundwork of `async` and `await` and extend it to handle multiple values. Asynchronous streams are built around the concept of asynchronous enumerables, which are like regular enumerables, except that they enable asynchronous work to be done when retrieving the next item in the sequence. This is an extremely powerful concept that Chapter 3 covers in more detail. Asynchronous streams are especially useful whenever you have a sequence of data that arrives either one at a time or in chunks. For example, if your application processes the response of an API that uses paging with limit and offset parameters, then asynchronous streams are an ideal abstraction. As of the time of this writing, asynchronous streams are only available on the newest .NET platforms.
 
@@ -187,7 +187,7 @@ There are two forms of parallelism: data parallelism and task parallelism. Data 
 
 There are a few different ways to do data parallelism. `Parallel.ForEach` is similar to a foreach loop and should be used when possible.
 
-`Parallel.ForEach` is covered in Recipe 4.1. The Parallel class also supports `Parallel.For`, which is similar to a for loop, and can be used if the data processing depends on the index. Code that uses `Parallel.ForEach` looks like the following:
+`Parallel.ForEach` is covered in Recipe 4.1. The `Parallel` class also supports `Parallel.For`, which is similar to a for loop, and can be used if the data processing depends on the index. Code that uses `Parallel.ForEach` looks like the following:
 
 ```C#
 void RotateMatrices(IEnumerable<Matrix> matrices, float degrees)
@@ -196,7 +196,7 @@ void RotateMatrices(IEnumerable<Matrix> matrices, float degrees)
 }
 ```
 
-Another option is PLINQ (Parallel LINQ), which provides an `AsParallel` extension method for LINQ queries. Parallel is more resource friendly than PLINQ; Parallel will play more nicely with other processes in the system, while PLINQ will (by default) attempt to spread itself over all CPUs. The downside to Parallel is that it's more explicit; PLINQ in many cases has more elegant code. PLINQ is covered in Recipe 4.5 and looks like this:
+Another option is PLINQ (Parallel LINQ), which provides an `AsParallel` extension method for LINQ queries. Parallel is more resource friendly than PLINQ; Parallel will play more nicely with other processes in the system, while PLINQ will (by default) attempt to spread itself over all CPUs. The downside to `Parallel` is that it's more explicit; PLINQ in many cases has more elegant code. PLINQ is covered in Recipe 4.5 and looks like this:
 
 ```C#
 IEnumerable<bool> PrimalityTest(IEnumerable<int> values)
@@ -213,11 +213,11 @@ The chunks of work should be as independent from one another as possible.
 
 As long as your chunk of work is independent from all other chunks, you maximize your parallelism. As soon as you start sharing state between multiple threads, you have to synchronize access to that shared state, and your application becomes less parallel. Chapter 12 covers synchronization in more detail.
 
-The output of your parallel processing can be handled in various ways. You can place the results in some kind of a concurrent collection, or you can aggregate the results into a summary. Aggregation is common in parallel processing; this kind of map/reduce functionality is also supported by the Parallel class method overloads. Recipe 4.2 looks at aggregation in more detail.
+The output of your parallel processing can be handled in various ways. You can place the results in some kind of a concurrent collection, or you can aggregate the results into a summary. Aggregation is common in parallel processing; this kind of map/reduce functionality is also supported by the `Parallel` class method overloads. Recipe 4.2 looks at aggregation in more detail.
 
 Now let's turn to task parallelism. Data parallelism is focused on processing data; task parallelism is just about doing work. At a high level, data parallelism and task parallelism are similar; “processing data” is a kind of “work.” Many parallelism problems can be solved either way; it's convenient to use whichever API is more natural for the problem at hand.
 
-`Parallel.Invoke` is one type of Parallel method that does a kind of fork/join task parallelism. This method is covered in Recipe 4.3; you just pass in the delegates you want to execute in parallel:
+`Parallel.Invoke` is one type of `Parallel` method that does a kind of fork/join task parallelism. This method is covered in Recipe 4.3; you just pass in the delegates you want to execute in parallel:
 
 ```C#
 void ProcessArray(double[] array)
@@ -233,7 +233,7 @@ void ProcessPartialArray(double[] array, int begin, int end)
 }
 ```
 
-The Task type was originally introduced for task parallelism, though these days it's also used for asynchronous programming. A Task instance—as used in task parallelism—represents some work. You can use the `Wait` method to wait for a task to complete, and you can use the `Result` and `Exception` properties to retrieve the results of that work. Code using `Task` directly is more complex than code using Parallel, but it can be useful if you don't know the structure of the parallelism until runtime. With this kind of dynamic parallelism, you don't know how many pieces of work you need to do at the beginning of the processing; you find out as you go along. Generally, a dynamic piece of work should start whatever child tasks it needs and then wait for them to complete. The Task type has a special flag, `TaskCreationOptions.AttachedToParent`, which you could use for this. Dynamic parallelism is covered in Recipe 4.4.
+The Task type was originally introduced for task parallelism, though these days it's also used for asynchronous programming. A `Task` instance—as used in task parallelism—represents some work. You can use the `Wait` method to wait for a task to complete, and you can use the `Result` and `Exception` properties to retrieve the results of that work. Code using `Task` directly is more complex than code using `Parallel`, but it can be useful if you don't know the structure of the parallelism until runtime. With this kind of dynamic parallelism, you don't know how many pieces of work you need to do at the beginning of the processing; you find out as you go along. Generally, a dynamic piece of work should start whatever child tasks it needs and then wait for them to complete. The `Task` type has a special flag, `TaskCreationOptions.AttachedToParent`, which you could use for this. Dynamic parallelism is covered in Recipe 4.4.
 
 Task parallelism should strive to be independent, just like data parallelism. The more independent your delegates can be, the more efficient your program can be. Also, if your delegates aren't independent, then they need to be synchronized, and it's harder to write correct code if that code needs synchronization. With task parallelism, be especially careful of variables captured in closures. Remember that closures capture references (not values), so you can end up with sharing that isn't obvious.
 

@@ -157,7 +157,9 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 ###### Character classes
 
 * `.`
-  The dot character matches any character except the newline character. It matches any character, including newline, if you're using the Singleline option.
+  The dot character matches any character except the newline character. It matches any character, including newline, if you're using the `Singleline` option.
+
+  补充：点表示除`\n`以外的字符，即`[^\n]`，注意点号匹配`\r`。当换行符是`\r\n`时，一个更明确的做法是使用正则表达式`[^\r\n]`匹配行内任意字符。
 
 * `[aeiou]`
   Any character in the list between the opening and closing brackets; `[aeiou]` matches any vowel.
@@ -347,9 +349,6 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 * `#`
   X-mode comment; the text that follows an unescaped `#` until the end of line is ignored. This construct requires that the `x` option or the `RegexOptions.IgnorePatternWhiteSpace` enumerated option be activated.
 
-
-
-
 ### Regular Expression Options
 
 The `Match`, `Matches`, and `Replace` static methods of the `Regex` object support an optional argument, which lets you specify one or more options to be applied to the regular expression search (see Table 14-2). For example, the following code searches for all occurrences of the "abc" word, regardless of its case:
@@ -426,7 +425,7 @@ FileGrep @"^\s*Public\s+\w+\s+As\s+(New\s+)?ArrayList" "*.vb"
 (For simplicity's sake, the regular expression doesn't account for variants of the basic syntax, such as the presence of the `ReadOnly` keyword or of the complete `System.Collections.ArrayList` class name.) It's easy to modify this code to display details about all occurrences or to extend the search to an entire directory tree.
 
 ~~**Note**~~
-~~The Windows operating system includes a little-known command-line utility named `FindStr`, which supports searches with regular expressions and recursion over subdirectories, case-insensitive matches, display of lines that do *not* include the pattern, and so forth. Learn more by typing `FindStr /?` at the command prompt.~~ 
+~~The Windows operating system includes a little-known command-line utility named `FindStr`, which supports searches with regular expressions and recursion over subdirectories, case-insensitive matches, display of lines that do *not* include the pattern, and so forth. Learn more by typing `FindStr /?` at the command prompt.~~
 
 
 Another way to specify a regular expression option is by means of the `(?imnsx-imnsx)` construct, which lets you enable or disable one or more options from the current position to the end of the pattern string. The following code snippet finds all Dim, Private, and Public variable declarations at the beginning of individual text lines. Note that the regular expression options are specified inside the pattern string instead of as an argument of the `Regex.Matches` method:
@@ -438,7 +437,7 @@ let source: String = File.ReadAllText("Module1.vb")
 let mc: MatchCollection = Regex.Matches(source, pattern)
 ```
 
-### Table 14-2: Regular Expression Options 
+### Table 14-2: Regular Expression Options
 These regular expression options can be specified when you create the `Regex` object. If a character is provided in the middle column, they can be specified also from inside a `(?)` construct. All these options are turned off by default.
 
 * `None`
@@ -448,7 +447,7 @@ These regular expression options can be specified when you create the `Regex` ob
   Case insensitivity match.
 
 * `Singleline` (?s)
-  Singleline mode; changes the behavior of the `. `(dot) character so that it matches any character (instead of any character but the newline character).
+  Singleline mode; changes the behavior of the `.`(dot) character so that it matches any character (instead of any character but the newline character).
 
 * `Multiline` (?m)
   Multiline mode; changes the behavior of `^` and `$` so that they match the beginning and end of individual lines, respectively, instead of the whole string.
