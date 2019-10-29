@@ -220,7 +220,7 @@ On my machine, this code produces a pair of outputs every two seconds:
 21: Got 8 and 9
 ```
 
-The following is a similar example of using Window to create groups of two events:
+The following is a similar example of using `Window` to create groups of two events:
 
 ```C#
 Observable.Interval(TimeSpan.FromSeconds(1))
@@ -234,7 +234,7 @@ Observable.Interval(TimeSpan.FromSeconds(1))
     });
 ```
 
-On my machine, this Window example produces this output:
+On my machine, this `Window` example produces this output:
 
 ```C#
 17: Starting new group
@@ -429,12 +429,12 @@ The code in the following example observes mouse movements until there's a timeo
 private void Button_Click(object sender, RoutedEventArgs e)
 {
   IObservable<Point> clicks =
-      Observable.FromEventPattern<MouseButtonEventHandler,
-MouseButtonEventArgs>(
+      Observable.FromEventPattern<MouseButtonEventHandler,MouseButtonEventArgs>(
           handler => (s, a) => handler(s, a),
           handler => MouseDown += handler,
           handler => MouseDown -= handler)
       .Select(x => x.EventArgs.GetPosition(this));
+      
   Observable.FromEventPattern<MouseEventHandler, MouseEventArgs>(
           handler => (s, a) => handler(s, a),
           handler => MouseMove += handler,

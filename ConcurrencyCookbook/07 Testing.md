@@ -4,9 +4,9 @@ Testing is an essential part of software quality. Unit testing advocates have be
 
 I encourage you to write at least some unit tests. Start with the code in which you feel the least confidence. In my experience, unit tests have given me two main advantages:
 
-Better understanding of the code. You know that part of the application that works but you have no idea how? It's always kind of in the back of your mind when the really weird bug reports come in. Writing unit tests for code you find difficult is a great way to get a clear understanding of how it works. After writing unit tests describing its behavior, the code is no longer mysterious; you end up with a set of unit tests that describe its behavior and the dependencies that code has on the rest of the code.
+  - Better understanding of the code. You know that part of the application that works but you have no idea how? It's always kind of in the back of your mind when the really weird bug reports come in. Writing unit tests for code you find difficult is a great way to get a clear understanding of how it works. After writing unit tests describing its behavior, the code is no longer mysterious; you end up with a set of unit tests that describe its behavior and the dependencies that code has on the rest of the code.
 
-Greater confidence to make changes. Sooner or later, you'll get that feature request that requires you to change the code that scares you, and you'll no longer be able to pretend it isn't there (I know how that feels; I've been there!). It's best to be proactive: write the unit tests for the scary code before the feature request comes in. Once your unit tests are complete, you'll have an early warning system that will alert you immediately if your changes break existing behavior. When you have a pull request, unit tests also give you greater confidence that the code changes don't break existing behavior.
+  - Greater confidence to make changes. Sooner or later, you'll get that feature request that requires you to change the code that scares you, and you'll no longer be able to pretend it isn't there (I know how that feels; I've been there!). It's best to be proactive: write the unit tests for the scary code before the feature request comes in. Once your unit tests are complete, you'll have an early warning system that will alert you immediately if your changes break existing behavior. When you have a pull request, unit tests also give you greater confidence that the code changes don't break existing behavior.
 
 Both of these advantages apply to your own code just as much as others' code. I'm sure there are other advantages, too. Does unit testing decrease the frequency of bugs? Most likely. Does unit testing reduce the overall time on a project? Possibly. But the advantages I've described are definite; I experience them every time I write unit tests. So, that's my sales pitch for unit testing.
 
@@ -34,7 +34,7 @@ public async Task MyMethodAsync_ReturnsFalse()
 }
 ```
 
-The unit test framework will notice that the return type of the method is Task and will intelligently wait for the task to complete before marking the test “successful” or “failed.”
+The unit test framework will notice that the return type of the method is `Task` and will intelligently wait for the task to complete before marking the test “successful” or “failed.”
 
 If your unit test framework doesn't support async Task unit tests, then it'll need some help to wait for the asynchronous operation under test. One option is that you can use `GetAwaiter().GetResult()` to synchronously block on the task; if you then use `GetAwaiter().GetResult()` instead of `Wait()`, it avoids the `AggregateException` wrapper if the task has an exception. However, I prefer to use the `AsyncContext` type from the `Nito.AsyncEx` NuGet package:
 
@@ -163,11 +163,11 @@ public static async Task<TException> ThrowsAsync<TException>(
   catch (Exception ex)
   {
     if (allowDerivedTypes && !(ex is TException))
-      Assert.Fail($"Delegate threw exception of type {ex.GetType().Name}" +
-          $", but {typeof(TException).Name} or a derived type was expected.");
+      Assert.Fail(
+        $"Delegate threw exception of type {ex.GetType().Name}, but {typeof(TException).Name} or a derived type was expected.");
     if (!allowDerivedTypes && ex.GetType() != typeof(TException))
-      Assert.Fail($"Delegate threw exception of type {ex.GetType().Name}" +
-          $", but {typeof(TException).Name} was expected.");
+      Assert.Fail(
+        $"Delegate threw exception of type {ex.GetType().Name}, but {typeof(TException).Name} was expected.");
     return (TException) ex;
   }
 }
@@ -243,12 +243,13 @@ Dataflow meshes are independent: they have a lifetime of their own and are async
 [TestMethod]
 public async Task MyCustomBlock_AddsOneToDataItems()
 {
-  var myCustomBlock = CreateMyCustomBlock();//
+  var myCustomBlock = CreateMyCustomBlock();
   myCustomBlock.Post(3);
   myCustomBlock.Post(13);
   myCustomBlock.Complete();
   Assert.AreEqual(4, myCustomBlock.Receive());
   Assert.AreEqual(14, myCustomBlock.Receive());
+  // ...
   await myCustomBlock.Completion;
 }
 ```
@@ -275,11 +276,9 @@ public async Task MyCustomBlock_Fault_DiscardsDataAndFaults()
 public static void AssertExceptionIs<TException>(Exception ex, bool allowDerivedTypes = true)
 {
   if (allowDerivedTypes && !(ex is TException))
-    Assert.Fail($"Exception is of type {ex.GetType().Name}, but " +
-        $"{typeof(TException).Name} or a derived type was expected.");
+    Assert.Fail($"Exception is of type {ex.GetType().Name}, but {typeof(TException).Name} or a derived type was expected.");
   if (!allowDerivedTypes && ex.GetType() != typeof(TException))
-    Assert.Fail($"Exception is of type {ex.GetType().Name}, but " +
-        $"{typeof(TException).Name} was expected.");
+    Assert.Fail($"Exception is of type {ex.GetType().Name}, but {typeof(TException).Name} was expected.");
 }
 ```
 
@@ -323,7 +322,7 @@ public class MyTimeoutClass
 }
 ```
 
-The system under test is MyTimeoutClass, which consumes an observable dependency and produces an observable as output.
+The system under test is `MyTimeoutClass`, which consumes an observable dependency and produces an observable as output.
 
 The `Return` operator creates a cold sequence with a single element in it; you can use `Return` to build a simple stub. The `SingleAsync` operator returns a `Task<T>` that is completed when the next event arrives. `SingleAsync` can be used for simple unit tests like the following:
 
@@ -397,10 +396,11 @@ The System.Reactive (Rx) library was designed with testing in mind; in fact, the
 To make your observables testable, you need to allow your caller to specify the scheduler. For example, you can take the MyTimeoutClass from Recipe 7.5 and add a scheduler:
 
 ```C#
-public interface IHttpService // ...
+public interface IHttpService
 {
   IObservable<string> GetString(string url);
 }
+
 public class MyTimeoutClass
 {
   private readonly IHttpService _httpService;
@@ -408,6 +408,7 @@ public class MyTimeoutClass
   {
     _httpService = httpService;
   }
+  // ...
   public IObservable<string> GetStringWithTimeout(string url, IScheduler scheduler = null)
   {
     return _httpService.GetString(url)
@@ -431,7 +432,7 @@ private class SuccessHttpServiceStub : IHttpService
 }
 ```
 
-Now you can go ahead and use `TestScheduler`, a type included in the `System.Reactive` library. `TestScheduler` gives you powerful control over (virtual) time.
+Now you can go ahead and use `TestScheduler`~~, a type included in the `System.Reactive` library~~. `TestScheduler` gives you powerful control over (virtual) time.
 
 ##### TIP
 
@@ -441,9 +442,10 @@ Now you can go ahead and use `TestScheduler`, a type included in the `System.Rea
 
 ```C#
 [TestMethod]
-public void MyTimeoutClass_SuccessfulGetShortDelay_ReturnsResult() // ...
+public void MyTimeoutClass_SuccessfulGetShortDelay_ReturnsResult()
 {
   var scheduler = new TestScheduler();
+
   var stub = new SuccessHttpServiceStub
   {
     Scheduler = scheduler,
@@ -451,6 +453,7 @@ public void MyTimeoutClass_SuccessfulGetShortDelay_ReturnsResult() // ...
   };
   var my = new MyTimeoutClass(stub);
   string result = null;
+  // ...
   my.GetStringWithTimeout("http://www.example.com/", scheduler)
       .Subscribe(r => { result = r; });
   scheduler.Start();
@@ -463,8 +466,8 @@ The code simulates a network delay of half a second. It's important to note that
 Now that everything is using test schedulers, it's easy to test timeout situations:
 
 ```C#
-[TestMethod] // ...
-public void MyTimeoutClass_SuccessfulGetLongDelay_ThrowsTimeoutException() // ...
+[TestMethod]
+public void MyTimeoutClass_SuccessfulGetLongDelay_ThrowsTimeoutException()
 {
   var scheduler = new TestScheduler();
   var stub = new SuccessHttpServiceStub
@@ -475,7 +478,7 @@ public void MyTimeoutClass_SuccessfulGetLongDelay_ThrowsTimeoutException() // ..
   var my = new MyTimeoutClass(stub);
   Exception result = null;
   my.GetStringWithTimeout("http://www.example.com/", scheduler)
-      .Subscribe( _ => Assert.Fail("Received value"), ex => { result = ex; });
+      .Subscribe( _ => {Assert.Fail("Received value")}, ex => { result = ex; });
   scheduler.Start();
   Assert.IsInstanceOfType(result, typeof(TimeoutException));
 }
