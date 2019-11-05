@@ -1,4 +1,4 @@
-﻿# 2 Hello, Rx
+# 2 Hello, Rx
 
 The goal of Rx is to coordinate and orchestrate event-based and asynchronous computations that come from various sources, such as social networks, sensors, UI events, and others. For instance, security cameras around a building, together with movement sensors that trigger when someone might be near the building, send us photos from the closest camera. Rx can also count tweets that contain the names of election candidates to estimate a candidate's popularity. This is done by calling an external web service in an asynchronous way. For those scenarios and other similar ones, the orchestrations tend to lead to complex programs, and Rx definitely eases that effort, as you'll see.
 
@@ -32,7 +32,6 @@ class StockTicker
     public event EventHandler<StockTick> StockTick;    
 }
 ```
-
 
 The StockTick class holds the information about the stock, such as its quote symbol and price. 
 
@@ -181,8 +180,7 @@ class StockMonitor : IDisposable
             var changeRatio = Math.Abs(priceDiff / stockInfo.PrevPrice);  
             if (changeRatio > maxChangeRatio)                           
             {
-                Debug.WriteLine("Stock:{0} has changed with {1} ratio 
-                                 OldPrice:{2} newPrice:{3}", 
+                Debug.WriteLine("Stock:{0} has changed with {1} ratio OldPrice:{2} newPrice:{3}",
                     quoteSymbol,
                     changeRatio,
                     stockInfo.PrevPrice,
@@ -230,7 +228,6 @@ A class is called thread-safe if any one of its methods is thread-safe, even if 
 ---
 
 The dictionary you're using does support multiple readers at the same time, but if the dictionary is read while it's being modified, an exception is thrown. This situation is illustrated in table 2.1. Thread1 (on the left) reaches the marked code, where it tries to get the StockInfo for a stock with the symbol symbol1. At the same time, Thread2 (on the right) reaches the line of code that adds a new StockInfo (with a symbol2 symbol) to the dictionary. Both the reading and the mutating of the dictionary is happening at the same time and leads to an exception.
-
 
 Table 2.1 Reading and modifying the dictionary at the same time from two threads 
 
@@ -289,8 +286,7 @@ void OnStockTick(object sender, StockTick stockTick)
                     Math.Abs(priceDiff/stockInfo.PrevPrice);
             if (changeRatio > maxChangeRatio)
             {
-                Debug.WriteLine("Stock:{0} has changed with {1} ratio 
-                                 OldPrice:{2} newPrice:{3}", 
+                Debug.WriteLine("Stock:{0} has changed with {1} ratio OldPrice:{2} newPrice:{3}", 
                     quoteSymbol,
                     changeRatio,
                     stockInfo.PrevPrice,
@@ -317,7 +313,7 @@ Rx provides operators to run concurrent code, as you'll see later in this chapte
 
 ### 2.1.2 Retrospective on the solution and looking at the future
 
-Thus far, our code gives a solution to the requirements Mr. Penny described at the beginning of the chapter. Functionally, the code does everything it needs to do. But what's your feeling about it? Is it readable? Does it seem to be maintainable? Is it easy to extend? I'd like to point your attention to a few things. 
+Thus far, our code gives a solution to the requirements Mr. Penny described at the beginning of the chapter. Functionally, the code does everything it needs to do. But what's your feeling about it? Is it readable? Does it seem to be maintainable? Is it easy to extend? I'd like to point your attention to a few things.
 
 **CODE SCATTERING**
 
@@ -432,8 +428,10 @@ Composition is the ability to compose a complex structure from simpler construct
 
 Composition also allows us to use a function as the argument of another function:
 
+```
 g(x) = x + 1
 f(g(x)) = (x + 1)^2  + sin(x + 1)
+```
 
 In computer science, we use composition to express complex code with simpler functions. This allows us to make higher abstractions and concentrate on the purpose of the code and less on the details, making it easier to grasp.
 
@@ -518,8 +516,8 @@ StockTicker exposes the event StockTick that's raised each time an update occurs
 
 ```C#
 IObservable<EventPattern<StockTick>> ticks =
-        Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(  
-      h => ticker.StockTick += h,                   
+  Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
+      h => ticker.StockTick += h,
       h => ticker.StockTick -= h)
 
 FromEventPattern<TDelegate, TEventArgs>(Action<TDelegate> addHandler,

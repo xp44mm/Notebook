@@ -133,7 +133,6 @@ val specialDay : DateTime = 6/20/1982 12:00:00 AM
 val it : int * int * DayOfWeek = (6, 20, Sunday)
 ```
 
-
 But what if you want to not only read values from an indexer, but write them back as well? Also, what if you wanted the indexer to accept a non-integer parameter? The F# language can accommodate both of those requests.
 
 Example 8-3 defines an indexer for a type that accepts a non-integer parameter. In a different take on the Year class example, the indexer takes a month and date tuple.
@@ -365,7 +364,6 @@ The reference constraint enforces that the type argument must be a reference typ
 'a : not struct
 ```
 
-
 *Enumeration constraint*
 
 With the enumeration constraint, the type argument must be an enumeration type whose underlying type must be of the given base type (such as int). The syntax for the enumeration constraint is as follows:
@@ -397,8 +395,6 @@ The delegate constraint requires that the type argument must be a delegate type,
 ``` F#
 'a : delegate<tupled-args, return-type>
 ```
-
-
 
 The second set of constraints has to do with the capabilities of the type; these are the most common types of generic constraints.
 
@@ -494,7 +490,6 @@ val it : unit = ()
 ```
 
 Abstractly, we can describe the `CoffeeCup` class as a pattern enabling consumers—people who have an instance of the class—to subscribe to an event—when the cup is empty. This turns out to be very useful, and makes up the foundation of most graphical programming environments (so-called event-driven programming). For example, windowing systems allow you to provide functions to be called when a button is clicked or when a check box is toggled. However, our custom implementation of keeping a list of function values is clunky at best.
-
 
 Fortunately, the .NET framework has rich support for this pattern through the use of delegates and events. A delegate is very similar to F#’s function values. An event is simply the mechanism for calling the functions provided by all interested parties.
 

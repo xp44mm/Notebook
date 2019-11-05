@@ -644,7 +644,6 @@ let Main(args : String[]) =
 
 The `CodeStats` type is where the actual parse occurs. Each instance of this class has public fields to store information about line count, plus a `Members` collection that can contain other `CodeStats` instances. For example, the `CodeStats` object for the file contains a collection of `CodeStats` objects related to the types defined in the file, and `CodeStats` objects related to types have a collection of `CodeStats` objects related to type members (methods and property procedures). For the sake of simplicity, I account for neither nested types nor less common blocks such as custom events.
 
-
 ```F#
 let reTotalLines = new Regex("^.*$", RegexOptions.Multiline)
 let reBlankLines = new Regex(@"^\s*$", RegexOptions.Multiline)
@@ -785,15 +784,11 @@ FILE D:\repos\xp44mm\Programming Microsoft Visual Basic 2005 The Language\14 Reg
 
 Figure 14-4: Using the `CodeStats` class to count how many statements its own source code contains
 
-
-
 ### Playing with Regular Expressions (Literally)
 
 By now, you should be convinced that regular expressions are too powerful to be used only for plain text searches and substitutions. In this last example, I want to prove that regular expressions can be useful when you'd never suspect that searches are involved and that you can use them simply to perform pattern matching.
 
 Let's consider the game of poker. I won't build an entire application that plays poker (nor encourage gambling in any way...), but I will focus on a very small programming problem that is related to this game. How would you write a method that evaluates the score corresponding to a hand of five cards? You can solve this problem in a variety of ways, with numerous If and Select Case statements, but the solution offered by regular expressions can hardly be beaten as far as elegance, performance, and conciseness are concerned.
-
-
 
 The following method accepts five strings, each one corresponding to a card in the hand and each one consisting of a character pair: the first character stands for the card value and can be a digit 1–9, or T, J, Q, or K (where T stands for Ten); the second character of the pair is the card's suit and can be C (clubs), D (diamonds), H (hearts), or S (spades). The code in the method sorts the five cards by their value, and then builds two separate strings—one containing the five values and the other containing the five suits—and tests them against suitable regular expressions, starting from the most complex and moving to the simpler ones. (Testing the regular expressions in this order is crucial; otherwise, a plain straight would be mistakenly reported as a straight flush and a pair would appear to be a full house or a four-of-a-kind.)
 

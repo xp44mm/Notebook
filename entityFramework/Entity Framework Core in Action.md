@@ -38,8 +38,6 @@ In a console application, you configure EF Core's database options by overriding
 use db = new AppDbContext()
 ```
 
-
-
 ### 1.9.1  Modeling the database
 
 从代码生成数据库：
@@ -165,8 +163,6 @@ let Ch02_CreateDbContext() =
 
 首先是如何读取配置文件，并从配置文件读取连接字符串。可以参考文件 [配置.md](..\配置.md) 。
 
-
-
 为了便于测试，我们可以为每一个测试类，甚至每一个测试方法，在每一个分支下创建自己专属的数据库，这些数据库除了数据库的名称外，其他配置完全相同。
 
 下面的正则表达式匹配数据库连接字符串中的数据库名部分。
@@ -182,8 +178,6 @@ let uniqueConnectionString = rgxDbName.Replace(connectionString, "$&." + suffix)
 ```
 
 正则表达式参考：https://docs.microsoft.com/zh-cn/dotnet/standard/base-types/regular-expression-language-quick-reference
-
-
 
 有了连接字符串，下一步是`DbContext`构造所需的输入参数`DbContextOptions<DbContext>`：
 
@@ -215,8 +209,6 @@ type Test(output:ITestOutputHelper) =
 
 附加测试类的类型名作为其专用的数据库名称，然后利用这个名称创建上下文。
 
-
-
 有了选项，就可以创建数据库上下文了：
 
 ```F#
@@ -236,8 +228,6 @@ type Test(output:ITestOutputHelper) =
 ```
 
 注意数据库上下文占用数据库连接，声明需要使用`use`代替`let`。
-
-
 
 ### 数据库初始化
 
@@ -273,8 +263,6 @@ let ensureSeed seedDatabase (context:#DbContext)=
         seedDatabase()
 ```
 
-
-
 这里用到两个关键的数据库方法：
 
 `EnsureDeleted`
@@ -284,8 +272,6 @@ let ensureSeed seedDatabase (context:#DbContext)=
 `EnsureCreated `
 
 如果数据库不存在，就创建它和上下文的模式；存在就算了，什么也不做。它的返回值没有什么用，一般都返回真。还没有遇到返回假的时候。
-
-
 
 ### 日志数据库上下文
 
@@ -325,8 +311,6 @@ let lst = 1:4:lst
 
 每次`let`都一个新的引用，充分利用现有数据。这是尾不变的。
 
-
-
 再定义一个提供器，将日志记录器提供给数据库上下文：
 
 ```F#
@@ -356,19 +340,10 @@ type Test(output:ITestOutputHelper) =
         context |> logToXunit output
 ```
 
-
-
-
-
-
-
-
-
 连接字符串可以提取数据库名称，通过`SqlConnectionStringBuilder`类实现的。
 
 ```F#
 
 ```
-
 
 

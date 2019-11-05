@@ -23,7 +23,7 @@ public void CancelableMethodWithDefault(CancellationToken cancellationToken = de
 }
 ```
 
-`CancellationToken.None` represents a cancellation token that will never be canceled, and is a special value that is equivalent to default(`CancellationToken`). Consumers pass this value when they don't ever want the operation to be canceled.
+`CancellationToken.None` represents a cancellation token that will never be canceled, and is a special value that is equivalent to `default(CancellationToken)`. Consumers pass this value when they don't ever want the operation to be canceled.
 
 Asynchronous streams have a similar but more complex way of handling cancellation. Canceling asynchronous streams is covered in detail in Recipe 3.4.
 
@@ -86,7 +86,7 @@ async Task IssueCancelRequestAsync()
 }
 ```
 
-Normally, setting up the `CancellationTokenSource` and issuing the cancellation are in separate methods. Once you cancel a `CancellationTokenSource` instance, it is permanently canceled. If you need another source, you must create another instance. The following code is a more realistic GUI-based example that uses one button to start an asynchronous operation and another button to cancel it. It also disables and enables StartButton and CancelButton so that there can only be one operation at a time:
+Normally, setting up the `CancellationTokenSource` and issuing the cancellation are in separate methods. Once you cancel a `CancellationTokenSource` instance, it is permanently canceled. If you need another source, you must create another instance. The following code is a more realistic GUI-based example that uses one button to start an asynchronous operation and another button to cancel it. It also disables and enables `StartButton` and `CancelButton` so that there can only be one operation at a time:
 
 ```C#
 private CancellationTokenSource _cts;
@@ -96,7 +96,7 @@ private async void StartButton_Click(object sender, RoutedEventArgs e)
   CancelButton.IsEnabled = true;
   try
   {
-    _cts = new CancellationTokenSource();
+    this._cts = new CancellationTokenSource();
     var token = _cts.Token; // as CancellationToken
     await Task.Delay(TimeSpan.FromSeconds(5), token);
     MessageBox.Show("Delay completed successfully.");
@@ -118,7 +118,7 @@ private async void StartButton_Click(object sender, RoutedEventArgs e)
 }
 private void CancelButton_Click(object sender, RoutedEventArgs e)
 {
-  _cts.Cancel();
+  this._cts.Cancel();
   CancelButton.IsEnabled = false;
 }
 ```

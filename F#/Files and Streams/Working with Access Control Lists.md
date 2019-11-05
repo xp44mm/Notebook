@@ -96,8 +96,6 @@ let sd = fileSec.GetSecurityDescriptorSddlForm(AccessControlSections.Access)
 Assert.Equal(sd,"D:(A;ID;FA;;;BA)(A;ID;FA;;;SY)(A;ID;0x1301bf;;;AU)(A;ID;0x1200a9;;;BU)")
 ```
 
-
-
 ---
 
 ##### Note
@@ -106,11 +104,7 @@ A discretionary access control list (DACL) defines who is granted or denied acce
 
 ---
 
-
-
 An SDDL string is rarely useful, though, or at least it is hard for humans to decode. To get the ACL in readable format you can use one of the following methods: `GetOwner` (to retrieve the owner of the resource), `GetGroup` (to retrieve the primary group associated with the owner), `GetAccessRules` (to retrieve the collection of access rules), and `GetAuditRules` (to retrieve the collection of audit rules). These three methods have similar syntax.
-
-
 
 The `GetOwner` and `GetGroup` methods return a single object that derives from `IdentityReference`, therefore either an `NTAccount` or a `SecurityIdentifier` object. You specify which object you want to be returned by passing a proper `System.Type` object as an argument:
 
@@ -146,109 +140,81 @@ DESKTOP01\FrancescoB     Write                          Deny   false
 BUILTIN\Users            ReadAndExecute, Synchronize    Allow  true
 ```
 
-
-
 ##### Table 15-1: Values of the FileSystemRights Enumerated Type 
 
 * `AppendData`
   Specifies the right to append data to the end of a file. 
 
-
 * `ChangePermissions`
   Specifies the right to change the security and audit rules associated with a file or folder. 
-
 
 * `CreateDirectories`
   Specifies the right to create a folder. This right requires the `Synchronize` right. If you don't explicitly set the `Synchronize` right when creating a file or folder, the `Synchronize` right will be set automatically for you. 
 
-
 * `CreateFiles`
   Specifies the right to create a file. This right requires the `Synchronize` right. If you don't explicitly set the `Synchronize` right when creating a file or folder, the `Synchronize` right will be set automatically for you. 
-
 
 * `Delete`
   Specifies the right to delete a folder or file. 
 
-
 * `DeleteSubdirectoriesAndFiles`
   Specifies the right to delete a folder and any files contained within that folder. 
-
 
 * `ExecuteFile`
   Specifies the right to run an application file. 
 
-
 * `FullControl`
   Specifies the right to exert full control over a folder or file and to modify access control and audit rules. 
-
 
 * `ListDirectory`
   Specifies the right to list the contents of a folder. 
 
-
 * `Modify`
   Specifies the right to read, write, list folder contents, delete folders and files, and run application files. 
-
 
 * `Read`
   Specifies the right to open and copy folders or files as read-only. It includes the right to read file system attributes, extended file system attributes, and access and audit rules. 
 
-
 * `ReadAndExecute`
   Specifies the right to open and copy folders or files as read-only and to run application files. It includes the right to read file system attributes,extended file system attributes, and access and audit rules. 
-
 
 * `ReadAttributes`
   Specifies the right to open and copy file system attributes from a folder or file. It doesn't include the right to read data, extended file system attributes, or access and audit rules. 
 
-
 * `ReadData`
   Specifies the right to open and copy a file or folder. It doesn't include the right to read file system attributes, extended file system attributes, or access and audit rules. 
-
 
 * `ReadExtendedAttributes`
   Specifies the right to open and copy extended file system attributes from a folder or file. It doesn't include the right to read data, file system attributes, or access and audit rules. 
 
-
 * `ReadPermissions`
   Specifies the right to open and copy access and audit rules from a folder or file. It doesn't include the right to read data, file system attributes, and extended file system attributes. 
-
 
 * `Synchronize`
   Specifies the right to synchronize a file or folder. The right to create a file or folder requires this right. If you don't explicitly set this right when creating a file, the right will be set automatically for you. 
 
-
 * `TakeOwnership`
   Specifies the right to change the owner of a folder or file. 
-
 
 * `Traverse`
   Specifies the right to list the contents of a folder and to run applications contained within that folder. 
 
-
 * `Write`
   Specifies the right to create folders and files and to add or remove data from files. It includes the ability to write file system attributes, extended file system attributes, and access and audit rules. 
-
 
 * `WriteAttributes`
   Specifies the right to open and write file system attributes to a folder or file. It doesn't include the ability to write data, extended attributes, or access and audit rules. 
 
-
 * `WriteData`
   Specifies the right to open and write to a file or folder. It doesn't include the right to open and write file system attributes, extended file system attributes, or access and audit rules. 
-
 
 * `WriteExtendedAttributes`
   Specifies the right to open and write extended file system attributes to a folder or file. It doesn't include the ability to write data, attributes, or access and audit rules. 
 
 You can compare these results with the actual permissions set for the specific file. To do so, right-click the file in Windows Explorer, select the Properties command from the context menu, and switch to the Security tab, as shown in Figure 15-2. (If you don't see this tab, select the Folder Options command from the Tools menu in Windows Explorer, switch to the View tab, and ensure that the Use Simple File Sharing option is cleared.) Some attributes are visible in the Advanced Security Settings dialog box, which you display by clicking the Advanced button.
 
-
-
 ![Image from book](images/fig631%5F01%5F0%`2Ejpg`) 
 Figure 15-2: The Security tab of the Properties dialog box (left) and the Advanced Security Settings dialog box (right) of a file 
-
-
 
 You can change security-related information as well. For example, the `FileSecurity` object exposes the `SetOwner` method for changing the owner of a file:
 
@@ -257,8 +223,6 @@ You can change security-related information as well. For example, the `FileSecur
 let nta = new NTAccount(@"NT AUTHORITY\SYSTEM")
 fileSec.SetOwner(nta)
 ```
-
-
 
 ### Modifying ACLs
 

@@ -26,8 +26,6 @@ Rx facilitates working with streams of events by abstracting them as observable 
 
 Figure 1.4 The Rx layers. In the middle are the key interfaces that represent event streams and on the bottom are the schedulers that control the concurrency of the stream processing. Above all is the powerful operators library that enables you to create an event-processing pipeline in LINQ style.
 
-
-
 You'll explore each component of the Rx layers as well as their interactions throughout this book, but first let's look at a short history of Rx origins.
 
 ### 1.2.1 Rx history
@@ -226,7 +224,6 @@ The application that you're writing will be used by a number of users—hopefull
 
 To overcome the causes of overload, your system needs to be elastic: it needs to span instances as the load increases and remove instances as the load decreases. This kind of automatic behavior has been much more apparent since the cloud entered our lives. When running on the cloud, you get the illusion of infinite resources; with a few simple configurations, you can set your application to scale up or down, depending on the threshold you define. You need to remember only that a cost is associated with running extra servers.
 
-
 ### 1.3.4 Message driven
 
 At this point, you can say that responsiveness is your goal, resiliency is the way to ensure that you keep being responsive, and elasticity is one method for being resilient. The missing piece of the puzzle of reactive systems is the way that the parts of a system communicate with each other to allow for the type of reactiveness we've explored.
@@ -360,7 +357,6 @@ private Task<IEnumerable<Discount>> GetDiscounts()
 ```
 
 In this example, you're reacting to the connectivity changes that are carried on the myConnectivity observable. Each time a change in connectivity occurs, you check to see whether it's because you're online, and if so, you call the asynchronous GetDiscounts method. When the method execution is complete, you select the result that was returned. This result is what will be pushed to the observers of the newDiscounts observable that was created from your code.
-
 
 ## 1.5 Understanding events and streams
 

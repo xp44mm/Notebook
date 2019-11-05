@@ -16,8 +16,6 @@ Types that implement `ISerializable` are serialized as JSON objects. When serial
 
 In situations where this behavior is not wanted, the `JsonObjectAttribute` can be placed on a .NET type that implements `ISerializable` to force it to be serialized as a normal JSON object.
 
-
-
 查看自己的本地 SDK 是什么版本的，打开命令行程序，执行下面命令：
 
 ```

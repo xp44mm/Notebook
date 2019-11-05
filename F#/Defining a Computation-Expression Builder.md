@@ -56,6 +56,4 @@ member Zero : unit -> M<'T>
 
 Used to de-sugar empty `else` branches of `if/then` constructs within computation expressions
 
-
-
 Most of the elements of a builder are usually implemented in terms of simpler primitives. For example, assume you're defining a builder for some type `M<'T>` and you already have implementations of functions `bindM` and `returnM` with the types:

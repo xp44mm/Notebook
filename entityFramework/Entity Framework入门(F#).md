@@ -27,8 +27,6 @@ providerName="System.Data.SqlClient" />
 </configuration>
 ```
 
-
-
 在项目根目录下添加POCO.fs文件：
 ```fsharp
 namespace entityframeworks.POCO

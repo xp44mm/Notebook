@@ -190,7 +190,6 @@ Regular expressions are an important notation for specifying lexeme patterns. Wh
 
 An *alphabet* is any finite set of symbols. Typical examples of symbols are letters, digits, and punctuation. The set {0, 1} is the *binary alphabet*. ASCII is an important example of an alphabet; it is used in many software systems. Unicode, which includes approximately 100,000 characters from alphabets around the world, is another important example of an alphabet. 
 
-
 A *string* over an alphabet is a finite sequence of symbols drawn from that alphabet. In language theory, the terms "sentence" and "word" are often used as synonyms for "string." The length of a string s, usually written $|s|$ is the number of occurrences of symbols in s. For example, `banana` is a string of length six. The empty string, denoted ε, is the string of length zero.
 
 A language is any countable set of strings over some fixed alphabet. This definition is very broad. Abstract languages like Ø, the *empty set*, or {ε}, the set containing only the empty string, are languages under this definition. So too are the set of all syntactically well-formed C programs and the set of all grammatically correct English sentences, although the latter two languages are difficult to specify exactly. Note that the definition of "language" does not require that any meaning be ascribed to the strings in the language. Methods for defining the "meaning" of strings are discussed in Chapter 5. 
@@ -481,8 +480,6 @@ start-->0
 6-->|other|8("(8)* GT")
 ```
 
-
-
 Figure 3.13: Transition diagram for relop
 
 On the other hand, if in state 0 the first character we see is `=`, then this one character must be the lexeme. We immediately return that fact from state 5. The remaining possibility is that the first character is >. Then, we must enter state 6 and decide, on the basis of the next character, whether the lexeme is >= ( if we next see the = sign ) , or just > ( on any other character ) . Note that if, in state 0, we see any character besides <, =, or >, we can not possibly be seeing a relop lexeme, so this transition diagram will not be used. □
@@ -595,7 +592,6 @@ We see the typical behavior of a state in case 0, the case where the current sta
 If the next input character is not one that can begin a comparison operator, then a function `fail()` is called. What `fail()` does depends on the global error-recovery strategy of the lexical analyzer. It should reset the `forward` pointer to `lexemeBegin`, in order to allow another transition diagram to be applied to the true beginning of the unprocessed input. It might then change the value of state to be the start state for another transition diagram, which will search for another token. Alternatively, if there is no other transition diagram that remains unused, `fail()` could initiate an error-correction phase that will try to repair the input and find a lexeme, as discussed in Section 3.1.4.
 
 We also show the action for state 8 in Fig. 3.18. Because state 8 bears a * , we must retract the input pointer one position ( i.e., put c back on the input stream). That task is accomplished by the function `retract()` . Since state 8 represents the recognition of lexeme >, we set the second component of the returned object, which we suppose is named attribute, to GT, the code for this operator. □
-
 
 To place the simulation of one transition diagram in perspective, let us consider the ways code like Fig. 3.18 could fit into the entire lexical analyzer.
 

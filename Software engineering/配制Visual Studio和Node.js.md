@@ -12,46 +12,19 @@ Choose your startup task or even a shell with arguments:
 {Shells::cmd(Admin)}
 ```
 
-
-
 ## 配置visual studio
 
-菜单[工具]->[选项...]
+### 选项配置
 
-左侧:[项目和解决方案],[Web Package Management],[程序包还原]:所有选项都设为`False`
+欲进行配置，通过点击：菜单[工具]->[选项...]，打开选项对话框：
 
-左侧:[项目和解决方案],[Web Package Management],[外部Web工具]:外部工具的位置:$(PATH)向上至顶部以获得最高优先级.
-
-visual studio工具->扩展和更新...
-
-[ ] Add New File
-[ ] CodeMaid
-[ ] EF Core Power Tools
-[ ] File Icons
-[ ] Project File Tools
-
-
-
-引用安装包的版本号是根据目标框架版本号推算出的，不要加版本号：
-
-```xml
-<PackageReference Include="Microsoft.AspNetCore.All"/>
+左侧列表框选择[项目和解决方案]，[Web包管理器(Web Package Management)]，[程序包还原]。然后见右侧，NPM分组下面的所有选项都设为`False`
 ```
-详见网址：
-https://docs.microsoft.com/zh-cn/dotnet/core/tools/csproj#implicit-package-references
+保存时还原：False
+打开项目时还原：False
+```
 
-
-
-`Microsoft.AspNetCore.App`已经取代了`Microsoft.AspNetCore.All`，详见网址：
-
-https://docs.microsoft.com/en-us/aspnet/core/fundamentals/metapackage?view=aspnetcore-2.1#migrate
-
-
-
-
-
-
-
+左侧列表框选择[项目和解决方案]，[Web包管理器(Web Package Management)]，[外部Web工具]。然后见右侧，外部工具的位置：`$(PATH)`向上至顶部，以获得最高优先级。
 
 
 ### ESLint设置
@@ -79,25 +52,47 @@ visual studio 自带ESLint功能，只需修改默认配置文件：
 
 如果有额外选项，可以用数组常量，依次排列选项。
 
-### 如何重新安装和更新包
+### 常用扩展工具
+
+visual studio工具->扩展和更新...
+
+[ ] CodeMaid
+[ ] Markdown Editor
+[ ] EF Core Power Tools
+[ ] Add New File
+[ ] File Icons
+[ ] Project File Tools
+
+### Asp.net core的配置
+
+引用安装包的版本号是根据目标框架版本号推算出的，不要加版本号：
+
+```xml
+<PackageReference Include="Microsoft.AspNetCore.All"/>
+```
+
+详见网址：
+https://docs.microsoft.com/zh-cn/dotnet/core/tools/csproj#implicit-package-references
+
+`Microsoft.AspNetCore.App`已经取代了`Microsoft.AspNetCore.All`，详见网址：
+
+https://docs.microsoft.com/en-us/aspnet/core/fundamentals/metapackage?view=aspnetcore-2.1#migrate
+
+### 如何重新安装和更新NuGet包
 
 [何时重新安装包](https://docs.microsoft.com/zh-cn/nuget/consume-packages/reinstalling-and-updating-packages#when-to-reinstall-a-package)中描述了大量有关对包的引用可能在 Visual Studio 项目中损坏的情况。 在这些情况下，卸载并重新安装同一版本的包会将这些应用还原为正常工作状态。 更新包仅意味着安装更新版本，这常常将包还原为正常工作状态。
 
 更新和重新安装包按以下方式实现：
 
-| 方法                                                         | 更新                                           | 重新安装                                                     |
-| ------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
-| 包管理器控制台（[使用 Update-Package](https://docs.microsoft.com/zh-cn/nuget/consume-packages/reinstalling-and-updating-packages#using-update-package)中所述） | `Update-Package`命令                           | `Update-Package -reinstall` 命令                             |
-| 包管理器 UI                                                  | 在“更新”选项卡上，选择一个或多个包并选择“更新” | 在“已安装”选项卡上，选择一个包，记录其名称，然后选择“卸载”。 切换到“浏览”选项卡，搜索包名称并选中，然后选择“安装”。 |
-| nuget.exe CLI                                                | `nuget update` 命令                            | 对于所有包，删除包文件夹，然后运行 `nuget install`。对于单个包，删除包文件夹并使用 `nuget install <id>`再安装一个。 |
-
-
+|     方法      |                    更新                    |                                                  重新安装                                                   |
+| ------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 包管理器控制台 | `Update-Package`命令                       | `Update-Package -reinstall` 命令                                                                           |
+| 包管理器 UI    | 在“更新”选项卡上，选择一个或多个包并选择“更新” | 在“已安装”选项卡上，选择一个包，记录其名称，然后选择“卸载”。 切换到“浏览”选项卡，搜索包名称并选中，然后选择“安装”。    |
+| nuget.exe CLI | `nuget update` 命令                        | 对于所有包，删除包文件夹，然后运行 `nuget install`。对于单个包，删除包文件夹并使用 `nuget install <id>`再安装一个。 |
 
 ## 安装或升级node.js
 
 从网站 https://nodejs.org/en/download/ 下载最新版安装文件.
-
-
 
 ### 安装或升级npm
 
@@ -118,15 +113,11 @@ npx
 npx.cmd
 ```
 
-
-
 查看npm版本:
 
 ```
 npm -v
 ```
-
-
 
 Try the latest stable version of npm
 
@@ -135,15 +126,11 @@ npm install -g npm@latest
 npm install -g npm@next
 ```
 
-
-
 查看npm全局包：
 
 ```
 npm list -g --depth=0
 ```
-
-
 
 ### npm插件
 
@@ -155,15 +142,11 @@ npm-check-updates工具用于更新`package.json`中的包版本到最新版,参
 npm install -g npm-check-updates@latest
 ```
 
-
-
 ### 升级全局的本地包
 
 ```
 npm install -g
 ```
-
-
 
 查看哪些包有更新：
 
@@ -177,8 +160,6 @@ npm -g outdated
  npm i -g @angular/cli@latest
 ```
 
-
-
 ### 使用NPM查找包的所有版本
 
 ```
@@ -191,8 +172,6 @@ npm view react-hot-loader versions
 npm v immutable versions
 ```
 
-
-
 ### 本地安装位置
 
 `npm install` saves any specified packages into `dependencies` by default. Additionally, you can control where and how they get saved with some additional flags:
@@ -201,8 +180,6 @@ npm v immutable versions
 * `-D, --save-dev`: Package will appear in your `devDependencies`.
 * `-O, --save-optional`: Package will appear in your `optionalDependencies`.
 * `--no-save`: Prevents saving to `dependencies`.
-
-
 
 ### 置命令行于项目文件夹
 
@@ -215,8 +192,6 @@ ConEmu64.exe
 命令行以`#`提示，表示是管理员模式，以`$`提示则是非管理员模式，欲进入管理员模式:
 
 在命令行窗口的标签上右击,[restart or duplicate],[restart as Adimin],以置命令行于项目文件夹。
-
-
 
 ### NPM Unexpected end of JSON input while parsing near
 
@@ -245,9 +220,23 @@ Content garbage-collected: 1 (87138 bytes)
 Index entries: 4304
 Finished in 14.909s
 ```
+### npx
 
+这个命令的目的是为了提升开发者使用包内提供的命令行工具的体验。
 
-### Chrome浏览器启用 Experimental JavaScript 
+npx 允许我们单次执行命令而不需要安装，例如：
+
+```
+npx create-react-app my-app
+```
+
+这条命令会临时安装 create-react-app 包，命令完成后 create-react-app 会删掉，不会出现在 global 中。下次再执行，还是会重新临时安装。
+
+npm naming restrictions:
+
+  *  name can no longer contain capital letters
+
+## Chrome浏览器启用 Experimental JavaScript
 
 地址栏输入：
 
@@ -262,6 +251,5 @@ JavaScript
 ```
 
 找到可用的选项进行修改，即可。
-
 
 

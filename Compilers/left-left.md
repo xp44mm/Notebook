@@ -128,7 +128,6 @@ Ideally, we would like a compiler to make as few changes as possible in processi
 
 Do note that a closest correct program may not be what the programmer had in mind. Nevertheless, the notion of least-cost correction provides a yardstick for evaluating error-recovery techniques, and has been used for finding optimal replacement strings for phrase-level recovery.
 
-
 ## 4.2 Context-Free Grammars
 
 Grammars were introduced in Section 2.2 to systematically describe the syntax of programming language constructs like expressions and statements. Using a syntactic variable stmt to denote statements and variable expr to denote expressions, the production
@@ -418,7 +417,6 @@ Figure 4.6: DFA $D$ accepting both $a^i b^i$ and $a^j b^i$.
 
 Colloquially, we say that “finite automaton cannot count,” meaning that a finite automaton cannot accept a language like $\{a^n b^n | n\ge 1\}$ that would require it to keep count of the number of $a$’s before it sees the $b$’s. Likewise, “a grammar can count two items but not three,” as we shall see when we consider non-context-free language constructs in Section 4.3.5.
 
-
 ## 4.3 Writing a Grammar
 
 Grammars are capable of describing most, but not all, of the syntax of programming languages. For instance, the requirement that identifiers be declared before they are used, cannot be described by a context-free grammar. Therefore, the sequences of tokens accepted by a parser form a superset of the programming language; subsequent phases of the compiler must analyze the output of the parser to ensure compliance with rules that are not checked by the parser.
@@ -460,8 +458,6 @@ has the parse tree shown in Fig. 4.8. [^1]
 ![](images/figure4.8.png)
 
 Figure 4.8: Parse tree for a conditional statement
-
-
 
 Grammar (4.14) is ambiguous since the string
 $$
@@ -666,7 +662,6 @@ expr\_list   &\to& expr\_list , expr \\
 \end{array}
 $$
 with suitable productions for $expr$. Checking that the number of parameters in a call is correct is usually done during the semantic-analysis phase. □
-
 
 ## 4.4 Top-Down Parsing
 
@@ -1046,7 +1041,6 @@ The above discussion of panic-mode recovery does not address the important issue
 #### Phrase-level Recovery
 
 Phrase-level error recovery is implemented by filling in the blank entries in the predictive parsing table with pointers to error routines. These routines may change, insert, or delete symbols on the input and issue appropriate error messages. They may also pop from the stack. Alteration of stack symbols or the pushing of new symbols onto the stack is questionable for several reasons. First, the steps carried out by the parser might then not correspond to the derivation of any word in the language at all. Second, we must ensure that there is no possibility of an infinite loop. Checking that any recovery action eventually results in an input symbol being consumed (or the stack being shortened if the end of the input has been reached) is a good way to protect against such loops.
-
 
 ## 4.5 Bottom-Up Parsing
 

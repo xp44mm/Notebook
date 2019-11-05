@@ -66,7 +66,6 @@ let res = Regex.Replace(text, @"a\d", "a")
 ~~!Image from book~~
 ~~Figure 14-1: The RegexTester application, enabling you to experiment with all the most important methods and options of the Regex object~~ 
 
-
 ### The Regular Expression Language
 
 Table 14-1 lists all the constructs that are legal as regular expression patterns, grouped in the following categories:
@@ -426,7 +425,6 @@ FileGrep @"^\s*Public\s+\w+\s+As\s+(New\s+)?ArrayList" "*.vb"
 
 ~~**Note**~~
 ~~The Windows operating system includes a little-known command-line utility named `FindStr`, which supports searches with regular expressions and recursion over subdirectories, case-insensitive matches, display of lines that do *not* include the pattern, and so forth. Learn more by typing `FindStr /?` at the command prompt.~~
-
 
 Another way to specify a regular expression option is by means of the `(?imnsx-imnsx)` construct, which lets you enable or disable one or more options from the current position to the end of the pattern string. The following code snippet finds all Dim, Private, and Public variable declarations at the beginning of individual text lines. Note that the regular expression options are specified inside the pattern string instead of as an argument of the `Regex.Matches` method:
 

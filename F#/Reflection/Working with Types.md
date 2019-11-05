@@ -955,7 +955,6 @@ for attrData: CustomAttributeData in attrList do
         // A comma is used as the separator for all elements after the first one.
         sep <- ","
 
-
     // Include all optional arguments for this constructor.
     for namedArg: CustomAttributeNamedArgument in attrData.NamedArguments do
         // The TypedValue property returns a CustomAttributeTypedArgument object.
@@ -1185,13 +1184,9 @@ As provided, the utility displays output in a purely textual format. It is easy,
 `GenericTypeParameters` is better if you expect the type to be a definition. It only exists after adding `.GetTypeInfo()` though.
 If you don't have an expectation about constructed vs definition, I'm not sure how you can meaningfully use `GetGenericArguments()`.
 
-
-
 I'm still not sure if this is a good diagnostic, but the example would be `typeof(List<>).GetGenericArguments()` being replaced with `t1.GetTypeInfo().GenericTypeParameters` since `List<>` doesn't technically have its type parameters filled by any type arguments.
 
 The win is that you're using the correct terminology for what you're getting, 'parameters', not 'arguments.' And if the type changes to `List<int>`, you'll get an empty array when you ask for type parameters because you should be doing `GetGenericTypeDefinition()` first if you're interested in parameters.
-
-
 
 `typeof(List<>)` is an example where they differ. The property returns an empty array, while the method returns an array with a generic `T` in it. (this `T` has `IsGenericParameter` `true`)
 

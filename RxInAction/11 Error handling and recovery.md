@@ -55,7 +55,6 @@ weatherSimulationResults
         });
 ```
 
-
 One thing that you might think when looking at this example from the developer's standpoint is that reacting to errors isn't code friendly. You're absolutely right. You have to do type checking to see what the exception type is and, for each type of exception, the error handling requires your manual intervention, even if all you want to do is to dismiss it.
 
 The Rx team realizes that developers tend to have common responses to errors happening in the observable pipeline. Those responses include catching a specific exception type and doing something accordingly, or dismissing the error and resuming the execution with the original observable or another observable.
@@ -133,7 +132,6 @@ weatherStationB
     .OnErrorResumeNext(weatherStationB)
     .SubscribeConsole("OnErrorResumeNext(source completed)");
 ```
-
 
 Running the example shows this output, where only Station B reports are received:
 
@@ -300,7 +298,6 @@ IObservable<TResult> Using<TResult, TResource>(
     Func<TResource, CancellationToken, Task<IObservable<TResult>>> observableFactoryAsync)
 ```
 
-
 Because the factories are asynchronous, they both receive a cancellation token that will report cancellation in case the subscription was disposed of while the factories are still running. Other than that, the asynchronous version works the same as what you saw in the preceding synchronous version.
 
 The `Using` operator works amazingly well when you need to dispose of resources. Nonetheless, in some cases cleanup operations aren't exposed through a disposable object. In C#, when you have a piece of code that needs to run at the end of an operation, no matter whether the operation succeeded or failed, you use the try-finally statement. Rx provides similar semantics.
@@ -390,7 +387,6 @@ var observable = ... as IObservable<int>
 var subscription = // IDisposable
     observable.Subscribe(x =>{/*the observer code*/});
 ```
-
 
 Unfortunately, many developers throw away the subscription object and don't maintain it. Developers also forget to dispose of the subscription properly even if they do save it, which also results in a dangling observer.
 

@@ -20,7 +20,7 @@ You have an async method that you need to unit test.
 
 ### Solution
 
-Most modern unit test frameworks support async Task unit test methods, including MSTest, NUnit, and xUnit. MSTest began support for these tests with Visual Studio 2012. If you use another unit test framework, you may have to upgrade to the latest version.
+Most modern unit test frameworks support **async Task unit test methods**, including MSTest, NUnit, and xUnit. MSTest began support for these tests with Visual Studio 2012. If you use another unit test framework, you may have to upgrade to the latest version.
 
 Here is an example of an async MSTest unit test:
 
@@ -100,7 +100,7 @@ Recipe 7.2 covers unit testing asynchronous methods expected to fail.
 
 ### Problem
 
-You need to write a unit test that checks for a specific failure of an async Task method.
+You need to write a unit test that checks for a specific failure of an **async Task method**.
 
 ### Solution
 
@@ -135,7 +135,7 @@ public async Task Divide_WhenDenominatorIsZero_ThrowsDivideByZero()
 
 Do not forget to await the task returned by `ThrowsAsync`! The `await` will propagate any assertion failures that it detects. If you forget the `await` and ignore the compiler warning, your unit test will always silently succeed regardless of your method's behavior.
 
-Unfortunately, several other unit test frameworks don't include an equivalent async-compatible ThrowsAsync. If you find yourself in this boat, create your own:
+Unfortunately, several other unit test frameworks don't include an equivalent async-compatible `ThrowsAsync`. If you find yourself in this boat, create your own:
 
 ```C#
 /// <summary>
@@ -189,7 +189,7 @@ Recipe 7.1 covers the basics of unit testing asynchronous methods.
 
 ### Problem
 
-You have an async void method that you need to unit test.
+You have an **async void method** that you need to unit test.
 
 ### Solution
 
@@ -362,7 +362,6 @@ public async Task MyTimeoutClass_FailedGet_PropagatesFailure()
   var my = new MyTimeoutClass(stub);
   await ThrowsAsync<HttpRequestException>(async () =>
   {
-
     await my.GetStringWithTimeout("http://www.example.com/")
         .SingleAsync();
   });
@@ -371,13 +370,13 @@ public async Task MyTimeoutClass_FailedGet_PropagatesFailure()
 
 ### Discussion
 
-`Return` and `Throw` are great for creating observable stubs, and `SingleAsync` is an easy way to test observables with async unit tests. They're a good combination for simple observables, but they don't hold up well once you start dealing with time. For example, if you wanted to test the timeout capability of MyTimeoutClass, the unit test would have to wait for that amount of time.
+`Return` and `Throw` are great for creating observable stubs, and `SingleAsync` is an easy way to test observables with async unit tests. They're a good combination for simple observables, but they don't hold up well once you start dealing with time. For example, if you wanted to test the timeout capability of `MyTimeoutClass`, the unit test would have to wait for that amount of time.
 
 That, however, would be a poor approach: it makes your unit tests unreliable by introducing a race condition, and it doesn't scale well as you add more unit tests. Recipe 7.6 covers a special way that `System.Reactive` empowers you to stub out time itself.
 
 ### See Also
 
-Recipe 7.1 covers unit testing async methods, which is very similar to unit tests that await SingleAsync.
+Recipe 7.1 covers unit testing async methods, which is very similar to unit tests that await `SingleAsync`.
 
 Recipe 7.6 covers unit testing observable sequences that depend on time passing.
 
@@ -391,9 +390,9 @@ You have an observable that is dependent on time, and want to write a unit test 
 
 It's certainly possible to put delays in your unit tests; however, there are two problems with that approach: 1) the unit tests take a long time to run, and 2) there are race conditions because the unit tests all run at the same time, making timing unpredictable.
 
-The System.Reactive (Rx) library was designed with testing in mind; in fact, the Rx library itself is extensively unit tested. To enable thorough unit testing, Rx introduced a concept called a scheduler, and every Rx operator that deals with time is implemented using this abstract scheduler.
+The `System.Reactive` (Rx) library was designed with testing in mind; in fact, the Rx library itself is extensively unit tested. To enable thorough unit testing, Rx introduced a concept called a scheduler, and every Rx operator that deals with time is implemented using this abstract scheduler.
 
-To make your observables testable, you need to allow your caller to specify the scheduler. For example, you can take the MyTimeoutClass from Recipe 7.5 and add a scheduler:
+To make your observables testable, you need to allow your caller to specify the scheduler. For example, you can take the `MyTimeoutClass` from Recipe 7.5 and add a scheduler:
 
 ```C#
 public interface IHttpService
@@ -432,7 +431,7 @@ private class SuccessHttpServiceStub : IHttpService
 }
 ```
 
-Now you can go ahead and use `TestScheduler`~~, a type included in the `System.Reactive` library~~. `TestScheduler` gives you powerful control over (virtual) time.
+Now you can go ahead and use `TestScheduler`, which gives you powerful control over (virtual) time.
 
 ##### TIP
 
@@ -445,14 +444,13 @@ Now you can go ahead and use `TestScheduler`~~, a type included in the `System.R
 public void MyTimeoutClass_SuccessfulGetShortDelay_ReturnsResult()
 {
   var scheduler = new TestScheduler();
-
   var stub = new SuccessHttpServiceStub
   {
     Scheduler = scheduler,
     Delay = TimeSpan.FromSeconds(0.5),
   };
   var my = new MyTimeoutClass(stub);
-  string result = null;
+  var result = null as string;
   // ...
   my.GetStringWithTimeout("http://www.example.com/", scheduler)
       .Subscribe(r => { result = r; });
@@ -461,7 +459,7 @@ public void MyTimeoutClass_SuccessfulGetShortDelay_ReturnsResult()
 }
 ```
 
-The code simulates a network delay of half a second. It's important to note that this unit test does not take half a second to run; on my machine, it takes about 70 milliseconds. The half-second delay only exists in virtual time. The other notable difference in this unit test is that it isn't asynchronous; since you're using TestScheduler, all your tests can complete immediately.
+The code simulates a network delay of half a second. It's important to note that this unit test does not take half a second to run; on my machine, it takes about 70 milliseconds. The half-second delay only exists in virtual time. The other notable difference in this unit test is that it isn't asynchronous; since you're using `TestScheduler`, all your tests can complete immediately.
 
 Now that everything is using test schedulers, it's easy to test timeout situations:
 
@@ -476,9 +474,11 @@ public void MyTimeoutClass_SuccessfulGetLongDelay_ThrowsTimeoutException()
     Delay = TimeSpan.FromSeconds(1.5),
   };
   var my = new MyTimeoutClass(stub);
-  Exception result = null;
+  var result = null as Exception;
   my.GetStringWithTimeout("http://www.example.com/", scheduler)
-      .Subscribe( _ => {Assert.Fail("Received value")}, ex => { result = ex; });
+      .Subscribe(
+        t => {Assert.Fail("Received value")},
+        ex => { result = ex; });
   scheduler.Start();
   Assert.IsInstanceOfType(result, typeof(TimeoutException));
 }
@@ -495,5 +495,3 @@ In this recipe we've just scratched the surface on `System.Reactive` schedulers 
 ### See Also
 
 Recipe 7.5 covers the basics of unit testing observable sequences.
-
-

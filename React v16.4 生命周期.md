@@ -143,7 +143,6 @@ componentDidMount() {
 * getSnapshotBeforeUpdate
 * componentDidUpdate
 
-
 ### getDerivedStateFromProps
 
 这个方法在装载阶段已经讲过了，这里不再赘述，记住在更新阶段，无论我们接收到新的属性，调用了`setState`还是调用了`forceUpdate`，这个方法都会被调用。
@@ -165,7 +164,6 @@ shouldComponentUpdate(nextProps, nextState)
 在未来的版本，`shouldComponentUpdate`返回`false`，仍然可能导致组件重新的渲染，这是官方自己说的
 
 > In the future React may treat `shouldComponentUpdate()` as a hint rather than a strict directive, and returning false may still result in a re-rendering of the component.
-
 
 ### render
 

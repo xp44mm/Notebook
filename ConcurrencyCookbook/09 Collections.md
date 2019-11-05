@@ -2,7 +2,7 @@
 
 Using the proper collections is essential in concurrent applications. I'm not talking about the standard collections like `List<T>`; I assume you already know about those. The purpose of this chapter is to introduce newer collections that are specifically intended for concurrent or asynchronous use.
 
-Immutable collections are collection instances that can never change. At first glance, this sounds completely useless; but they're actually very useful, even in single-threaded, nonconcurrent applications. Read-only operations (such as enumeration) act directly on the immutable instance. Write operations (such as adding an item) return a new immutable instance instead of changing the existing instance. This isn't as wasteful as it first sounds because most of the time immutable collections share most of their memory. Furthermore, immutable collections have the advantage of being implicitly safe to access from multiple threads; since they cannot change, they are threadsafe.
+**Immutable collections** are collection instances that can never change. At first glance, this sounds completely useless; but they're actually very useful, even in single-threaded, nonconcurrent applications. Read-only operations (such as enumeration) act directly on the immutable instance. Write operations (such as adding an item) return a new immutable instance instead of changing the existing instance. This isn't as wasteful as it first sounds because most of the time immutable collections share most of their memory. Furthermore, immutable collections have the advantage of being implicitly safe to access from multiple threads; since they cannot change, they are threadsafe.
 
 ##### TIP
 
@@ -24,6 +24,17 @@ There are a number of different producer/consumer collections used in the recipe
 
 Table 9-1. Producer/consumer collections
 
+|       Feature        | Channels | BlockingCollection | BufferBlock | AsyncProducerConsumerQueue |
+| -------------------- | -------- | ------------------ | ----------- | -------------------------- |
+| Queue semantics      |          |                    |             |                            |
+| Stack/bag semantics  | false    |                    | false       | false                      |
+| Synchronous API      |          |                    |             |                            |
+| Asynchronous API     |          | false              |             |                            |
+| Drop items when full |          | false              | false       | false                      |
+| Tested by Microsoft  |          |                    |             | false                      |
+
+##### TIP
+
 `Channels` can be found in the `System.Threading.Channels` NuGet package, `BufferBlock<T>` in the NuGet package for `System.Threading.Tasks.Dataflow`, and `AsyncProducerConsumerQueue<T>` and `AsyncCollection<T>` in the NuGet package for `Nito.AsyncEx`.
 
 ## 9.1 Immutable Stacks and Queues
@@ -41,55 +52,54 @@ Immutable stacks and queues are the simplest immutable collections. They behave 
 Stacks are a first-in, last-out data structure. The following code creates an empty immutable stack, pushes two items, enumerates the items, and then pops an item:
 
 ```C#
-ImmutableStack<int> stack = ImmutableStack<int>.Empty;
-stack = stack.Push(13);
-stack = stack.Push(7);
+var stack1 = ImmutableStack<int>.Empty;
+var stack2 = stack1.Push(13);
+var stack3 = stack2.Push(7);
 // Displays "7" followed by "13".
-foreach (int item in stack)
+foreach (var item in stack3)
   Trace.WriteLine(item);
 int lastItem;
-stack = stack.Pop(out lastItem);
+var stack4 = stack3.Pop(out lastItem);
 // lastItem == 7
 ```
 
 Note in the example that we keep overwriting the local variable stack. Immutable collections follow a pattern where they return an updated collection; the original collection reference is unchanged. This means that once you have a reference to a particular immutable collection instance, it'll never change. Consider the following example:
 
 ```C#
-ImmutableStack<int> stack = ImmutableStack<int>.Empty;
-stack = stack.Push(13);
-ImmutableStack<int> biggerStack = stack.Push(7);
+var stack0 = ImmutableStack<int>.Empty;
+var stack1 = stack0.Push(13);
+var biggerStack = stack1.Push(7);
 // Displays "7" followed by "13".
 foreach (int item in biggerStack)
   Trace.WriteLine(item);
 // Only displays "13".
-foreach (int item in stack)
+foreach (var item in stack1)
   Trace.WriteLine(item);
 ```
 
 Under the covers, the two stacks are sharing the memory used to contain the item 13. This kind of implementation is very efficient while enabling you to easily snapshot the current state. Each immutable collection instance is naturally threadsafe, but immutable collections can also be used in single-threaded applications. In my experience, immutable collections are especially useful when the code is more functional or when you need to store a large number of snapshots and want them to share memory as much as possible. Queues are similar to stacks, except they are a first-in, first-out data structure. The following code creates an empty immutable queue, enqueues two items, enumerates the items, and then dequeues an item:
 
 ```C#
-ImmutableQueue<int> queue = ImmutableQueue<int>.Empty;
-queue = queue.Enqueue(13);
-queue = queue.Enqueue(7);
+var queue0 = ImmutableQueue<int>.Empty;
+var queue1 = queue0.Enqueue(13);
+var queue2 = queue1.Enqueue(7);
 // Displays "13" followed by "7".
-foreach (int item in queue)
+foreach (var item in queue2)
   Trace.WriteLine(item);
-int nextItem;
-queue = queue.Dequeue(out nextItem);
-// Displays "13".
-Trace.WriteLine(nextItem);
+var nextItem;
+var queue3 = queue2.Dequeue(out nextItem);
+Trace.WriteLine(nextItem); // Displays "13".
 ```
 
 ### Discussion
 
 This recipe introduced the two simplest immutable collections, the stack and the queue. It also covered several important design philosophies that are true for all immutable collections:
 
-An instance of an immutable collection never changes.
+- An instance of an immutable collection never changes.
 
-Since it never changes, it is naturally threadsafe.
+- Since it never changes, it is naturally threadsafe.
 
-When you call a modifying method on an immutable collection, the new modified collection is returned.
+- When you call a modifying method on an immutable collection, the new modified collection is returned.
 
 ##### WARNING
 
@@ -126,22 +136,29 @@ A list is a general-purpose data structure that can be used for all kinds of app
 `ImmutableList<T>` does support similar methods as `List<T>`, as the following example shows:
 
 ```C#
-ImmutableList<int> list = ImmutableList<int>.Empty;
-list = list.Insert(0, 13);
-list = list.Insert(0, 7);
+var list0 = ImmutableList<int>.Empty;
+var list1 = list0.Insert(0, 13);
+var list2 = list1.Insert(0, 7);
 // Displays "7" followed by "13".
-foreach (int item in list)
+foreach (var item in list2)
   Trace.WriteLine(item);
-list = list.RemoveAt(1);
+var list3 = list2.RemoveAt(1);
 ```
 
 The immutable list is internally organized as a binary tree so that immutable list instances may maximize the amount of memory they share with other instances. As a result, there are performance differences between `ImmutableList<T>` and `List<T>` for some common operations (Table 9-2).
 
 Table 9-2. Performance difference of immutable lists
 
-Of note, the indexing operation for `ImmutableList<T>` is O(log N), not O(1), as you may expect. If you're replacing `List<T>` with `ImmutableList<T>` in existing code, you'll need to consider how your algorithms access items in the collection.
+|  Operation  |      List      | ImmutableList |
+| ----------- | -------------- | ------------- |
+| Add         | amortized O(1) | O(log N)      |
+| Insert      | O(N)           | O(log N)      |
+| RemoveAt    | O(N)           | O(log N)      |
+| Item[index] | O(1)           | O(log N)      |
 
-This means that you should use `foreach` instead of `for` whenever possible. A foreach loop over an `ImmutableList<T>` executes in O(N) time, while a for loop over the same collection executes in O(N * log N) time:
+Of note, the indexing operation for `ImmutableList<T>` is `O(log N)`, not `O(1)`, as you may expect. If you're replacing `List<T>` with `ImmutableList<T>` in existing code, you'll need to consider how your algorithms access items in the collection.
+
+This means that you should use `foreach` instead of `for` whenever possible. A `foreach` loop over an `ImmutableList<T>` executes in `O(N)` time, while a `for` loop over the same collection executes in `O(N * log N)` time:
 
 ```C#
 // The best way to iterate over an ImmutableList<T>.
@@ -179,36 +196,42 @@ For example, an index of words from a file would be a good use case for a set.
 There are two immutable set types: `ImmutableHashSet<T>` is a collection of unique items, and `ImmutableSortedSet<T>` is a sorted collection of unique items. Both types have a similar interface:
 
 ```C#
-ImmutableHashSet<int> hashSet = ImmutableHashSet<int>.Empty;
-hashSet = hashSet.Add(13);
-hashSet = hashSet.Add(7);
+var hashSet0 = ImmutableHashSet<int>.Empty;
+var hashSet1 = hashSet0.Add(13);
+var hashSet2 = hashSet1.Add(7);
 // Displays "7" and "13" in an unpredictable order.
-foreach (int item in hashSet)
+foreach (var item in hashSet2)
   Trace.WriteLine(item);
-hashSet = hashSet.Remove(7);
+var hashSet3 = hashSet2.Remove(7);
 ```
 
 Only the sorted set allows indexing into it like a list:
 
 ```C#
-ImmutableSortedSet<int> sortedSet = ImmutableSortedSet<int>.Empty;
-sortedSet = sortedSet.Add(13);
-sortedSet = sortedSet.Add(7);
+var sortedSet0 = ImmutableSortedSet<int>.Empty;
+var sortedSet1 = sortedSet0.Add(13);
+var sortedSet2 = sortedSet1.Add(7);
 // Displays "7" followed by "13".
-foreach (int item in sortedSet)
+foreach (var item in sortedSet2)
   Trace.WriteLine(item);
-int smallestItem = sortedSet[0];
+var smallestItem = sortedSet2[0];
 // smallestItem == 7
-sortedSet = sortedSet.Remove(7);
+var sortedSet3 = sortedSet2.Remove(7);
 ```
 
 Unsorted sets and sorted sets have similar performance (see Table 9-3).
 
 Table 9-3. Performance of immutable sets
 
+|  Operation  | ImmutableHashSet | ImmutableSortedSet |
+| ----------- | ---------------- | ------------------ |
+| Add         | O(log N)         | O(log N)           |
+| Remove      | O(log N)         | O(log N)           |
+| Item[index] | n/a              | O(log N)           |
+
 However, I recommend you use an unsorted set unless you know it needs to be sorted. Many types only support basic equality and not full comparison, so an unsorted set can be used for many more types than a sorted set.
 
-One important note about the sorted set is that its indexing is O(log N), not O(1), just like `ImmutableList<T>`, which is covered in Recipe 9.2. This means that the same caveat applies in this situation: you should use `foreach` instead of `for` whenever possible with an `ImmutableSortedSet<T>`.
+One important note about the sorted set is that its indexing is `O(log N)`, not `O(1)`, just like `ImmutableList<T>`, which is covered in Recipe 9.2. This means that the same caveat applies in this situation: you should use `foreach` instead of `for` whenever possible with an `ImmutableSortedSet<T>`.
 
 ### Discussion
 
@@ -241,39 +264,43 @@ There are two immutable dictionary types: `ImmutableDictionary<TKey, TValue>` an
 Both of these collection types have very similar members:
 
 ```C#
-ImmutableDictionary<int, string> dictionary =
-    ImmutableDictionary<int, string>.Empty;
-dictionary = dictionary.Add(10, "Ten");
-dictionary = dictionary.Add(21, "Twenty-One");
-dictionary = dictionary.SetItem(10, "Diez");
+var dictionary0 = ImmutableDictionary<int, string>.Empty;
+var dictionary1 = dictionary0.Add(10, "Ten");
+var dictionary2 = dictionary1.Add(21, "Twenty-One");
+var dictionary3 = dictionary2.SetItem(10, "Diez");
 // Displays "10Diez" and "21Twenty-One" in an unpredictable order.
-foreach (KeyValuePair<int, string> item in dictionary)
+foreach (var item in dictionary3) // item as KeyValuePair<int, string>
   Trace.WriteLine(item.Key + item.Value);
-string ten = dictionary[10];
+var ten = dictionary[10];
 // ten == "Diez"
-dictionary = dictionary.Remove(21);
+var dictionary4 = dictionary3.Remove(21);
 ```
-
 
 Note the use of `SetItem`. In a mutable dictionary, you could try doing something like `dictionary[key] = item`, but immutable dictionaries must return the updated immutable dictionary, so they use the `SetItem` method instead:
 
 ```C#
-ImmutableSortedDictionary<int, string> sortedDictionary =
-    ImmutableSortedDictionary<int, string>.Empty;
-sortedDictionary = sortedDictionary.Add(10, "Ten");
-sortedDictionary = sortedDictionary.Add(21, "Twenty-One");
-sortedDictionary = sortedDictionary.SetItem(10, "Diez");
+var sortedDictionary0 = ImmutableSortedDictionary<int, string>.Empty;
+var sortedDictionary1 = sortedDictionary0.Add(10, "Ten");
+var sortedDictionary2 = sortedDictionary1.Add(21, "Twenty-One");
+var sortedDictionary3 = sortedDictionary2.SetItem(10, "Diez");
 // Displays "10Diez" followed by "21Twenty-One".
-foreach (KeyValuePair<int, string> item in sortedDictionary)
+foreach (var item in sortedDictionary3) // item as KeyValuePair<int, string>
   Trace.WriteLine(item.Key + item.Value);
-string ten = sortedDictionary[10];
+var ten = sortedDictionary[10];
 // ten == "Diez"
-sortedDictionary = sortedDictionary.Remove(21);
+var sortedDictionary4 = sortedDictionary3.Remove(21);
 ```
 
-Unsorted dictionaries and sorted dictionaries have similar performance, but I recommend you use an unordered dictionary unless you need your elements to be sorted (see Table 9-4). Unsorted dictionaries can be a little faster overall.
+Unsorted dictionaries and sorted dictionaries have similar performance, but I recommend you use an unordered dictionary unless you need your elements to be sorted (see Table 9-4). Unsorted dictionaries can be a little faster overall. Furthermore, unsorted dictionaries can be used with any key types, whereas sorted dictionaries require their key types to be fully comparable.
 
-Furthermore, unsorted dictionaries can be used with any key types, whereas sorted dictionaries require their key types to be fully comparable. Table 9-4. Performance of immutable dictionaries
+Table 9-4. Performance of immutable dictionaries
+
+| Operation | ImmutableDictionary | ImmutableSortedDictionary |
+| --------- | ------------------- | ------------------------- |
+| Add       | O(log N)            | O(log N)                  |
+| SetItem   | O(log N)            | O(log N)                  |
+| Item[key] | O(log N)            | O(log N)                  |
+| Remove    | O(log N)            | O(log N)                  |
 
 ### Discussion
 
@@ -311,12 +338,13 @@ First, let's learn how to write a value to the collection. To set the value of a
 
 ```C#
 var dictionary = new ConcurrentDictionary<int, string>();
-string newValue = dictionary.AddOrUpdate(0,
-    key => "Zero",
-    (key, oldValue) => "Zero");
+var newValue = dictionary.AddOrUpdate( // as string
+    key: 0,
+    addValueFactory: key => "Zero",
+    updateValueFactory: (key, oldValue) => "Zero");
 ```
 
-`AddOrUpdate` is a bit complex because it must do several things, depending on the current contents of the concurrent dictionary. The first method argument is the key. The second argument is a delegate that transforms the key (in this case, 0) into a value to be added to the dictionary (in this case, "Zero"). This delegate is only invoked if the key doesn't exist in the dictionary. The third argument is another delegate that transforms the key (0) and the old value into an updated value to be stored in the dictionary ("Zero"). This delegate is only invoked if the key does exist in the dictionary. `AddOrUpdate` returns the new value for that key (the same value that was returned by one of the delegates).
+`AddOrUpdate` is a bit complex because it must do several things, depending on the current contents of the concurrent dictionary. The first method argument is the `key`. The second argument is a delegate that transforms the key (in this case, 0) into a value to be added to the dictionary (in this case, "Zero"). This delegate is only invoked if the key doesn't exist in the dictionary. The third argument is another delegate that transforms the key (0) and the old value into an updated value to be stored in the dictionary ("Zero"). This delegate is only invoked if the key does exist in the dictionary. `AddOrUpdate` returns the new value for that key (the same value that was returned by one of the delegates).
 
 Now for the part that really bends your brain: in order for the concurrent dictionary to work properly, `AddOrUpdate` might have to invoke either (or both) delegates multiple times. This is very rare, but it can happen. So your delegates should be simple and fast and not cause side effects. This means that your delegate should only create the value; it shouldn't change any other variables in your application. The same principle holds for all delegates you pass to methods on `ConcurrentDictionary<TKey, TValue>`.
 
@@ -438,8 +466,10 @@ The .NET type `BlockingCollection<T>` acts as a blocking queue by default, but i
 So, you can create a `BlockingCollection<T>` with last-in, first-out (stack) semantics or unordered (bag) semantics:
 
 ```C#
-BlockingCollection<int> _blockingStack = new BlockingCollection<int>(new ConcurrentStack<int>());
-BlockingCollection<int> _blockingBag = new BlockingCollection<int>(new ConcurrentBag<int>());
+var _blockingStack =
+    new BlockingCollection<int>(new ConcurrentStack<int>());
+var _blockingBag =
+    new BlockingCollection<int>(new ConcurrentBag<int>());
 ```
 
 It's important to keep in mind that there are now race conditions around the ordering of the items. If you let the same producer code execute before any consumer code, and then execute the consumer code after the producer code, then the order of the items will be exactly like a stack:
@@ -451,7 +481,7 @@ _blockingStack.Add(13);
 _blockingStack.CompleteAdding();
 // Consumer code
 // Displays "13" followed by "7".
-foreach (int item in _blockingStack.GetConsumingEnumerable())
+foreach (var item in _blockingStack.GetConsumingEnumerable())
   Trace.WriteLine(item);
 ```
 
@@ -484,17 +514,17 @@ What you need is a queue with an asynchronous API. There is no type like this in
 The first option is to use `Channels`. `Channels` are a modern library for asynchronous producer/consumer collections, with a nice emphasis on high performance for high-volume scenarios. Producers generally write items to a channel using `WriteAsync`, and when they are all done producing, one of them calls `Complete` to notify the channel that there won't be any more items in the future, like this:
 
 ```C#
-Channel<int> queue = Channel.CreateUnbounded<int>();
+var queue = Channel.CreateUnbounded<int>(); // as Channel<int>
 // Producer code
-ChannelWriter<int> writer = queue.Writer;
+var writer = queue.Writer; // as ChannelWriter<int>
 await writer.WriteAsync(7);
 await writer.WriteAsync(13);
 writer.Complete();
 // Consumer code
 // Displays "7" followed by "13".
-ChannelReader<int> reader = queue.Reader;
-await foreach (int value in reader.ReadAllAsync())
-  Trace.WriteLine(value);
+var reader = queue.Reader; // as ChannelReader<int>
+await foreach (var i in reader.ReadAllAsync())
+  Trace.WriteLine(i);
 ```
 
 This more natural consumer code uses asynchronous streams; see Chapter 3 for more information. As of this writing, asynchronous streams are only available on the newest .NET platforms; older platforms can use the following pattern:
@@ -502,10 +532,10 @@ This more natural consumer code uses asynchronous streams; see Chapter 3 for mor
 ```C#
 // Consumer code (older platforms)
 // Displays "7" followed by "13".
-ChannelReader<int> reader = queue.Reader;
+var reader = queue.Reader; // as ChannelReader<int>
 while (await reader.WaitToReadAsync())
-  while (reader.TryRead(out int value))
-    Trace.WriteLine(value);
+  while (reader.TryRead(out int i))
+    Trace.WriteLine(i);
 ```
 
 Note the double while loop in the consumer code for older platforms; this is normal. `WaitToReadAsync` will asynchronously wait until an item is available or the channel has been marked complete; it returns true when there is an item available to be read. `TryRead` will attempt to read an item (immediately and synchronously), returning true if an item was read. If `TryRead` returns false, this could be because there's no item available right now, or it could be because the channel has been marked complete and there will never be any more items. So, when `TryRead` returns false, the inner while loop exits and the consumer again calls `WaitToReadAsync`, which will return false if the channel has been marked complete.
@@ -521,7 +551,10 @@ _asyncQueue.Complete();
 // Consumer code
 // Displays "7" followed by "13".
 while (await _asyncQueue.OutputAvailableAsync())
-  Trace.WriteLine(await _asyncQueue.ReceiveAsync());
+{
+  var i = await _asyncQueue.ReceiveAsync();
+  Trace.WriteLine(i);
+}
 ```
 
 The example consumer code uses `OutputAvailableAsync`, which is really only useful if you have just a single consumer. If you have multiple consumers, it is possible that `OutputAvailableAsync` will return true for more than one consumer even though there is only one item. If the queue is completed, then `ReceiveAsync` will throw `InvalidOperationException`. So if you have multiple consumers, the consumer code usually looks more like the following:
@@ -553,11 +586,13 @@ _asyncQueue.CompleteAdding();
 // Consumer code
 // Displays "7" followed by "13".
 while (await _asyncQueue.OutputAvailableAsync())
-  Trace.WriteLine(await _asyncQueue.DequeueAsync());
+{
+  var i = await _asyncQueue.DequeueAsync()
+  Trace.WriteLine(i);
+}
 ```
 
-
-This consumer code also uses OutputAvailableAsync and has the same problems as BufferBlock<T>. If you have multiple consumers, the consumer code usually looks more like the following:
+This consumer code also uses `OutputAvailableAsync` and has the same problems as `BufferBlock<T>`. If you have multiple consumers, the consumer code usually looks more like the following:
 
 ```C#
 while (true)
@@ -577,7 +612,7 @@ while (true)
 
 ### Discussion
 
-I recommend using `Channels` for asynchronous producer/consumer queues whenever possible. They have multiple sampling options in addition to throttling, and they are highly optimized. However, if your application logic can be expressed as a “pipeline” through which data flows, then TPL Dataflow may be a more natural fit. The final option is `AsyncProducerConsumerQueue<T>`, which may make sense if your application is already using other types from AsyncEx.
+I recommend using `Channels` for asynchronous producer/consumer queues whenever possible. They have multiple sampling options in addition to throttling, and they are highly optimized. However, if your application logic can be expressed as a “pipeline” through which data flows, then TPL Dataflow may be a more natural fit. The final option is `AsyncProducerConsumerQueue<T>`, which may make sense if your application is already using other types from `AsyncEx`.
 
 ##### TIP
 
@@ -604,8 +639,8 @@ When you use producer/consumer queues, you do need to consider what happens if y
 `Channels` can be throttled by creating a bounded channel rather than an unbounded channel. Since channels are asynchronous, producers will be asynchronously throttled:
 
 ```C#
-Channel<int> queue = Channel.CreateBounded<int>(1);
-ChannelWriter<int> writer = queue.Writer;
+var queue = Channel.CreateBounded<int>(1); // as Channel<int>
+var writer = queue.Writer; // as ChannelWriter<int>
 // This Write completes immediately.
 await writer.WriteAsync(7);
 // This Write (asynchronously) waits for the 7 to be removed
@@ -627,9 +662,9 @@ await queue.SendAsync(13);
 queue.Complete();
 ```
 
-The producer in the preceding code snippet uses the asynchronous SendAsync API; the same approach works for the synchronous Post API.
+The producer in the preceding code snippet uses the asynchronous `SendAsync` API; the same approach works for the synchronous `Post` API.
 
-The AsyncEx type `AsyncProducerConsumerQueue<T>` has support for throttling. Just construct the queue with the appropriate value:
+The `AsyncEx` type `AsyncProducerConsumerQueue<T>` has support for throttling. Just construct the queue with the appropriate value:
 
 ```C#
 var queue = new AsyncProducerConsumerQueue<int>(maxCount: 1);
@@ -681,12 +716,13 @@ You have a producer/consumer queue, but your producers may run faster than your 
 `Channels` are the easiest way to apply sampling to input items. One common example is to always take the latest n items, discarding the oldest items once the queue is full:
 
 ```C#
-Channel<int> queue = Channel.CreateBounded<int>(
+var queue = // as Channel<int>
+  Channel.CreateBounded<int>(
     new BoundedChannelOptions(1)
     {
       FullMode = BoundedChannelFullMode.DropOldest,
     });
-ChannelWriter<int> writer = queue.Writer;
+var writer = queue.Writer; // as ChannelWriter<int>
 // This Write completes immediately.
 await writer.WriteAsync(7);
 // This Write also completes immediately.
@@ -699,12 +735,13 @@ This is an easy way to tame input streams, keeping them from flooding your consu
 There are other `BoundedChannelFullMode` options as well. For example, if you wanted the oldest items to be preserved, you could discard any new items once the channel is full:
 
 ```C#
-Channel<int> queue = Channel.CreateBounded<int>(
+var queue = // as Channel<int>
+  Channel.CreateBounded<int>(
     new BoundedChannelOptions(1)
     {
       FullMode = BoundedChannelFullMode.DropWrite,
     });
-ChannelWriter<int> writer = queue.Writer;
+var writer = queue.Writer; // as ChannelWriter<int>
 // This Write completes immediately.
 await writer.WriteAsync(7);
 // This Write also completes immediately.
@@ -714,9 +751,9 @@ await writer.WriteAsync(13);
 
 ### Discussion
 
-Channels are great for doing simple sampling like this. A particularly useful option in many situations is `BoundedChannelFullMode.DropOldest`. More complex sampling would need to be done by the consumers themselves.
+`Channel`s are great for doing simple sampling like this. A particularly useful option in many situations is `BoundedChannelFullMode.DropOldest`. More complex sampling would need to be done by the consumers themselves.
 
-If you need to do time-based sampling, such as “only 10 items per second,” use `System.Reactive. System.Reactive` has natural operators for working with time.
+If you need to do time-based sampling, such as “only 10 items per second,” use `System.Reactive`. `System.Reactive` has natural operators for working with time.
 
 ##### TIP
 
@@ -738,7 +775,7 @@ You need a conduit to pass messages or data from one part of code to another, bu
 
 ### Solution
 
-The Nito.AsyncEx library provides a type `AsyncCollection<T>`, which acts like an asynchronous queue by default, but it can also act like any kind of producer/consumer collection. The wrapper around an `IProducerConsumerCollection<T>`, `AsyncCollection<T>` is also the async equivalent of the .NET `BlockingCollection<T>`, which is covered in Recipe 9.7.
+The `Nito.AsyncEx` library provides a type `AsyncCollection<T>`, which acts like an asynchronous queue by default, but it can also act like any kind of producer/consumer collection. The wrapper around an `IProducerConsumerCollection<T>`, `AsyncCollection<T>` is also the async equivalent of the .NET `BlockingCollection<T>`, which is covered in Recipe 9.7.
 
 `AsyncCollection<T>` supports last-in, first-out (stack) or unordered (bag) semantics, based on whatever collection you pass to its constructor:
 
@@ -757,7 +794,10 @@ _asyncStack.CompleteAdding();
 // Consumer code
 // Displays "13" followed by "7".
 while (await _asyncStack.OutputAvailableAsync())
-  Trace.WriteLine(await _asyncStack.TakeAsync());
+{
+  var i = await _asyncStack.TakeAsync();
+  Trace.WriteLine(i);
+}
 ```
 
 When both producers and consumers are executing concurrently (which is the usual case), the consumer will always get the most recently added item next.
@@ -768,7 +808,8 @@ This will cause the collection as a whole to act not quite like a stack. Of cour
 
 ```C#
 var _asyncStack = new AsyncCollection<int>(
-    new ConcurrentStack<int>(), maxCount: 1);
+    new ConcurrentStack<int>(),
+    maxCount: 1);
 ```
 
 Now the same producer code will asynchronously wait as needed:
@@ -836,7 +877,10 @@ await queue.SendAsync(13);
 queue.Complete();
 // Consumer code for a single consumer
 while (await queue.OutputAvailableAsync())
-  Trace.WriteLine(await queue.ReceiveAsync());
+{
+  var i = await queue.ReceiveAsync();
+  Trace.WriteLine(i);
+}
 // Consumer code for multiple consumers
 while (true)
 {
@@ -891,7 +935,7 @@ queue.Post(13);
 queue.Complete();
 ```
 
-If the TPL Dataflow library isn't available on your desired platform(s), then there is an `AsyncProducerConsumerQueue<T>` type in Nito.AsyncEx that also supports both synchronous and asynchronous methods:
+If the TPL Dataflow library isn't available on your desired platform(s), then there is an `AsyncProducerConsumerQueue<T>` type in `Nito.AsyncEx` that also supports both synchronous and asynchronous methods:
 
 ```C#
 var queue = new AsyncProducerConsumerQueue<int>();
@@ -904,7 +948,10 @@ queue.Enqueue(13);
 queue.CompleteAdding();
 // Asynchronous single consumer code
 while (await queue.OutputAvailableAsync())
-  Trace.WriteLine(await queue.DequeueAsync());
+{
+  var i = await queue.DequeueAsync();
+  Trace.WriteLine(i);
+}
 // Asynchronous multi-consumer code
 while (true)
 {
@@ -920,20 +967,20 @@ while (true)
   Trace.WriteLine(item);
 }
 // Synchronous consumer code
-foreach (int item in queue.GetConsumingEnumerable())
+foreach (var item in queue.GetConsumingEnumerable())
   Trace.WriteLine(item);
 ```
 
 ### Discussion
 
-I recommend using `BufferBlock<T>` or `ActionBlock<T>` if possible because the TPL Dataflow library has been more extensively tested than the Nito.AsyncEx library. However, `AsyncProducerConsumerQueue<T>` may be useful if your application is already using other types from the AsyncEx library.
+I recommend using `BufferBlock<T>` or `ActionBlock<T>` if possible because the TPL Dataflow library has been more extensively tested than the `Nito.AsyncEx` library. However, `AsyncProducerConsumerQueue<T>` may be useful if your application is already using other types from the `AsyncEx` library.
 
 It is also possible to use `System.Threading.Channels` synchronously, but only indirectly. Their natural API is asynchronous, but since they are threadsafe collections, you can force them to work synchronously by wrapping your production or consumption code inside a `Task.Run` and then blocking on the task returned from `Task.Run`, like this:
 
 ```C#
-Channel<int> queue = Channel.CreateBounded<int>(10);
+var queue = Channel.CreateBounded<int>(10); // as Channel<int>
 // Producer code
-ChannelWriter<int> writer = queue.Writer;
+var writer = queue.Writer; // as ChannelWriter<int>
 Task.Run(async () =>
 {
   await writer.WriteAsync(7);
@@ -941,7 +988,7 @@ Task.Run(async () =>
   writer.Complete();
 }).GetAwaiter().GetResult();
 // Consumer code
-ChannelReader<int> reader = queue.Reader;
+var reader = queue.Reader; // as ChannelReader<int>
 Task.Run(async () =>
 {
   while (await reader.WaitToReadAsync())

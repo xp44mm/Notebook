@@ -2,8 +2,6 @@
 
 by Alex Davies
 
-
-
 ## CHAPTER 1 Introduction
 
 Let's start with a high-level introduction to the async feature in C# 5.0, and what it means for you.
@@ -166,8 +164,6 @@ However, it's not designed to let you forget that there are background operation
 
 Without understanding what's really happening, your program will fail in surprising ways, and you won't understand the error messages or the debugger to be able to fix it.
 
-
-
 ## CHAPTER 2 Why Programs Need to Be Asynchronous
 
 Asynchronous programming is important and useful, but the reason that it's important varies, depending on what kind of application you're writing. Some of the benefits exist everywhere, but matter most in a kind of application that you may never write. If this applies to you, do read the whole chapter, as the background knowledge will help you to understand the whole context.
@@ -285,11 +281,7 @@ We'll look at an example of a desktop UI application that is badly in need of co
 
 Run the program, and you'll see a window with a button. If you press the button, it will display the icons from some popular websites. It does this by downloading a file called favicon.ico that most websites contain (Figure 2-1).
 
-
-
 Figure 2-1. Favicon browser running
-
-
 
 Let's take a look at the code. The important part is the method that downloads the favicon and adds it to a WPF WrapPanel in the window.
 
@@ -316,8 +308,6 @@ let AddAFavicon(domain:string) =
 You'll notice that this implementation is completely synchronous. The thread blocks while the icon is downloading. You'll probably also have noticed that the window becomes unresponsive for a few seconds when you press the button. As you know, that's because the UI thread is blocked while downloading all the icons, and can't return to process user events.
 
 We'll use this example in the following chapters to walk through converting a synchronous program to an asynchronous one.
-
-
 
 ## CHAPTER 3 Writing Asynchronous Code Manually
 
@@ -594,8 +584,6 @@ let AddAFavicon(domain:string) =
 Of course, our logic that really belongs together needs to be split into two methods. I prefer not to use a lambda with the EAP because the lambda would appear before the actual call to start the download, which I find unreadable.
 
 This version of the example is also available online, under the branch `manual`. If you run it, not only does the UI remain responsive, but the icons appear gradually. Because of that, we've introduced a bug. Now, because all the download operations are started together (before any have finished) the icons are ordered by how quickly each downloaded, rather than by the order in which I requested them. If you'd like to check that you understand how to do manual asynchronous coding, I recommend fixing this bug. One solution is available under the branch `orderedManual`, and involves transforming the loop to a recursive method. More efficient solutions are also possible.
-
-
 
 ## CHAPTER 4 Writing Async Methods
 
@@ -926,8 +914,6 @@ let getWordAsync = Func<Task<string>>(fun () -> task {return "hello"})
 
 All the same rules apply in these as in ordinary async methods. You can use them to keep code concise, and to capture closures, in exactly the same way you would in non-async code.
 
-
-
 ## CHAPTER 5 What await Actually Does
 
 There are two ways to think about the async feature of C# 5.0, and in particular what happens at an `await` keyword:
@@ -1221,9 +1207,6 @@ Remember that the async method only pauses when it reaches the first `await`. Ev
 Because of the last possibility, something interesting happens when you await a Task that's already complete, deep in a chain of async methods. The entire chain is likely to complete synchronously. That's because in a chain of async methods, the first `await` to be called is always the deepest one. The others are only reached after the deepest method has had a chance to return synchronously.
 
 You might wonder why you would use `async` in the first place if the first or second possibilities happened. If those methods were guaranteed to always return synchronously, you'd be right, and it would be more efficient to write synchronous code than to write async methods with no `await`. However, there are situations where methods would sometimes return synchronously. For example, a method that cached its results in memory could return synchronously when the result is available from the cache, but asynchronously when it needs to make a network request. You may also want to make methods return `Task` or `Task<T>` to future-proof a codebase, when you know there's a good chance you'd like to make those methods asynchronous at some point down the line.
-
-
-
 
 ## CHAPTER 6 The Task-Based Asynchronous Pattern
 
@@ -1520,8 +1503,6 @@ task{
 ```
 
 While this is important in a UI application, it has no practical benefits in a web application. Nevertheless, when we see a method that appears to follow the TAP, we expect it to return quickly. Anyone that takes your code and moves it to a UI application will be in for a surprise if you did a slow picture resize synchronously.
-
-
 
 ## CHAPTER 7 Utilities for Async Code
 
@@ -1913,8 +1894,6 @@ progress.Report(percent)
 
 The difficult part is to choose the type parameter T. This is the type of the object that you pass to Report, which is the same object that the caller's lambda is given. An `int` is a good choice for simple percentages, as I've used here, but sometimes you need more details. Be careful though, because that object will usually be consumed on a different thread to the one that made it. Use an immutable type to avoid problems.
 
-
-
 ## CHAPTER 8 Which Thread Runs My Code?
 
 As I've said before, asynchronous programming is all about threads. In C#, that means we need to understand which .NET thread is running our code at what points in the program, and what happens to the threads while long-running operations take place.
@@ -2149,8 +2128,6 @@ F#
 let result = Task.Run(fun () -> AlexsMethodAsync()).Result;
 ```
 
-
-
 ## CHAPTER 9 Exceptions in Async Code
 
 In synchronous code, exceptions work their way up the call stack, back through each method call until they reach either a `try` and `catch` that can catch them, or they leave your code. In async code, particularly after a method has been resumed after an `await`, the current call stack has very little to do with the programmer's intention, and mostly contains framework logic to resume the async method. The exception would be impossible to catch in your calling code, and stack traces wouldn't be very helpful at all, so C# changes the behavior of exceptions to be more useful.
@@ -2254,7 +2231,6 @@ F#
 ```F#
 // This never throws AlexsException
 let t = Thrower()
-
 
 let Catcher() =
     task {
@@ -2421,8 +2397,6 @@ let AlexsMethod()=
 I've used `TaskCompletionSource` to create a puppet Task, then simply forgotten about it. Because there's no thread in `AlexsMethod` anymore, there's nothing to mean that it'll ever resume or throw an exception. It will just be garbage collected eventually. 
 
 So the guarantee provided by `finally` is much weaker in async methods.
-
-
 
 ## CHAPTER 10 Parallelism Using Async
 
@@ -2643,8 +2617,6 @@ While you can implement these interfaces yourself, it's much more normal to use 
 There are many other built-in blocks, and with them you can implement any conveyor-belt style computation. Out of the box, the blocks act as a pipeline in parallel, but each block will only process one message at a time. That's fine if most of your blocks take a similar length of time, but if an individual stage is slower than the rest, you can configure `ActionBlock<T>`s and `TransformBlock<TIn, TOut>` to work in parallel within the individual block, effectively splitting itself into many identical blocks and sharing the work.
 
 TPL dataflow is improved by async because the delegates passed to `ActionBlock<T>`s and `TransformBlock<TIn, TOut>`s can be async, and can return `Task` or `Task<T>` respectively. When those delegates involve long-running remote operations, this is very important, as those long running operations can be run in parallel without wasting threads. Also, when interacting with dataflow blocks from the outside, it's useful to do so in an asynchronous way, so there are TAP methods like the `SendAsync` extension method on `ITargetBlock<T>` to make that easy.
-
-
 
 ## CHAPTER 11 Unit Testing Async Code
 
@@ -3208,8 +3180,6 @@ class X
   }
 }
 ```
-
-
 
 Note that by default, if you open `FSharp.Control.Tasks.V2`, you'll get a `task { ... }` builder that behaves as closely to C#'s async methods as possible.
 

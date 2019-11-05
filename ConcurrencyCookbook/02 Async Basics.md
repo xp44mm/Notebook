@@ -1,11 +1,10 @@
-﻿# Chapter 2. Async Basics
+# Chapter 2. Async Basics
 
 This chapter introduces you to the basics of using `async` and `await` for asynchronous operations. Here, we'll only deal with naturally asynchronous operations, which are operations such as HTTP requests, database commands, and web service calls.
 
 If you have a CPU-intensive operation that you want to treat as though it were asynchronous (e.g., so that it doesn't block the UI thread), then see Chapter 4 and Recipe 8.4. Also, this chapter only deals with operations that are started once and complete once; if you need to handle streams of events, then see Chapters 3 and 6.
 
 ## 2.1 Pausing for a Period of Time
-
 
 ### Problem
 
@@ -18,21 +17,21 @@ The `Task` type has a static method `Delay` that returns a task that completes a
 The following example code defines a task that completes asynchronously. When faking an asynchronous operation, it's important to test synchronous success and asynchronous success, as well as asynchronous failure. The following example returns a task used for the asynchronous success case:
 
 ```C#
-async Task<T> DelayResult<T>(T result, TimeSpan delay)
+async Task<T> DelayResult<T>(T result, TimeSpan delayTime)
 {
-  await Task.Delay(delay);
+  await Task.Delay(delayTime);
   return result;
 }
 ```
 
-Exponential backoff is a strategy in which you increase the delays between retries. Use it when working with web services to ensure that the server doesn't get flooded with retries. The next example is a simple implementation of exponential backoff:
+**Exponential backoff** is a strategy in which you increase the delays between retries. Use it when working with web services to ensure that the server doesn't get flooded with retries. The next example is a simple implementation of exponential backoff:
 
 ```C#
 async Task<string> DownloadStringWithRetries(HttpClient client, string uri)
 {
   // Retry after 1 second, then after 2 seconds, then 4.
-  TimeSpan nextDelay = TimeSpan.FromSeconds(1);
-  for (int i = 0; i != 3; ++i)
+  var nextDelay = TimeSpan.FromSeconds(1);
+  for (int i = 0; i < 3; i++)
   {
     try
     {
@@ -42,7 +41,7 @@ async Task<string> DownloadStringWithRetries(HttpClient client, string uri)
     {
     }
     await Task.Delay(nextDelay);
-    nextDelay = nextDelay + nextDelay;
+    nextDelay = nextDelay * 2;
   }
   // Try one last time, allowing the error to propagate.
   return await client.GetStringAsync(uri);
@@ -53,9 +52,7 @@ async Task<string> DownloadStringWithRetries(HttpClient client, string uri)
 
 For production code, I'd recommend a more thorough solution, such as the `Polly` NuGet library; this code is just a simple example of `Task.Delay` usage.
 
-You can also use `Task.Delay` as a simple timeout.
-
-`CancellationTokenSource` is the normal type used to implement a timeout (Recipe 10.3). You can wrap a cancellation token in an infinite `Task.Delay` to provide a task that cancels after a specified time. Finally, use that timer task with `Task.WhenAny` (Recipe 2.5) to implement a “soft timeout.” The following example code returns null if the service doesn't respond within three seconds:
+You can also use `Task.Delay` as a simple timeout. `CancellationTokenSource` is the normal type used to implement a timeout (Recipe 10.3). You can wrap a cancellation token in an infinite `Task.Delay` to provide a task that cancels after a specified time. Finally, use that timer task with `Task.WhenAny` (Recipe 2.5) to implement a “soft timeout.” The following example code returns null if the service doesn't respond within three seconds:
 
 ```C#
 async Task<string> DownloadStringWithTimeout(HttpClient client, string uri)
@@ -83,7 +80,6 @@ Recipe 2.5 covers how `Task.WhenAny` is used to determine which task completes f
 Recipe 10.3 covers using `CancellationToken` as a timeout.
 
 ## 2.2 Returning Completed Tasks
-
 
 ### Problem
 
@@ -131,7 +127,6 @@ Task<T> NotImplementedAsync<T>()
   return Task.FromException<T>(new NotImplementedException());
 }
 ```
-
 
 Similarly, there's a `Task.FromCanceled` for creating tasks that have already been canceled from a given `CancellationToken`:
 
@@ -194,7 +189,6 @@ Recipe 8.3 shows how `TaskCompletionSource<T>` can be used for general-purpose i
 
 ## 2.3 Reporting Progress
 
-
 ### Problem
 
 You need to respond to progress while an operation is executing.
@@ -245,7 +239,6 @@ When a method supports progress reporting, it should also make a best effort to 
 Recipe 10.4 covers how to support cancellation in an asynchronous method.
 
 ## 2.4 Waiting for a Set of Tasks to Complete
-
 
 ### Problem
 
@@ -321,7 +314,7 @@ async Task ObserveAllExceptionsAsync()
 {
   var task1 = ThrowNotImplementedExceptionAsync();
   var task2 = ThrowInvalidOperationExceptionAsync();
-  Task allTasks = Task.WhenAll(task1, task2);
+  var allTasks = Task.WhenAll(task1, task2);
   try
   {
     await allTasks;
@@ -336,7 +329,7 @@ async Task ObserveAllExceptionsAsync()
 
 Most of the time, I do not observe all the exceptions when using `Task.WhenAll`. It's usually sufficient to respond to only the first error that was thrown, rather than all of them.
 
-Note that in the preceding example, the ThrowNotImplementedExceptionAsync and ThrowInvalidOperationExceptionAsync methods don't throw their exceptions directly; they use the `async` keyword, so their exceptions are captured and placed on a task that is returned normally. This is the normal and expected behavior of methods that return awaitable types.
+Note that in the preceding example, the `ThrowNotImplementedExceptionAsync` and `ThrowInvalidOperationExceptionAsync` methods don't throw their exceptions directly; they use the `async` keyword, so their exceptions are captured and placed on a task that is returned normally. This is the normal and expected behavior of methods that return awaitable types.
 
 ### See Also
 
@@ -347,7 +340,6 @@ Recipe 2.6 covers waiting for a collection of tasks to complete and performing a
 Recipe 2.8 covers exception handling for async Task methods.
 
 ## 2.5 Waiting for Any Task to Complete
-
 
 ### Problem
 
@@ -392,7 +384,6 @@ Recipe 2.6 covers waiting for a collection of tasks to complete and performing a
 Recipe 10.3 covers using a cancellation token to implement timeouts.
 
 ## 2.6 Processing Tasks as They Complete
-
 
 ### Problem
 
@@ -452,7 +443,7 @@ async Task ProcessTasksAsync()
   Task<int> taskC = DelayAndReturnAsync(1);
   Task<int>[] tasks = new[] { taskA, taskB, taskC };
   IEnumerable<Task> taskQuery =
-      from t in tasks 
+      from t in tasks
       select AwaitAndProcessAsync(t);
   Task[] processingTasks = taskQuery.ToArray();
   // Await all processing to complete
@@ -494,7 +485,7 @@ If refactoring isn't a palatable solution, then there is an alternative. Stephen
 
 ##### TIP
 
-The `OrderByCompletion` extension method is also available in the open source AsyncEx library, in the Nito.AsyncEx NuGet package.
+The `OrderByCompletion` extension method is also available in the open source `AsyncEx` library, in the `Nito.AsyncEx` NuGet package.
 
 Using an extension method like `OrderByCompletion` minimizes the changes to the original code:
 
@@ -527,7 +518,6 @@ Recipe 2.4 covers asynchronously waiting for a sequence of tasks to complete.
 
 ## 2.7 Avoiding Context for Continuations
 
-
 ### Problem
 
 When an async method resumes after an await, by default it will resume executing within the same context. This can cause performance problems if that context was a UI context and a large number of async methods are resuming on the UI context.
@@ -549,7 +539,7 @@ async Task ResumeWithoutContextAsync()
 }
 ```
 
-表示回来就不回去了，忘记来时路。
+表示离去了就不回来了，忘记来时路。
 
 ### Discussion
 
@@ -567,10 +557,9 @@ Chapter 1 covers an introduction to asynchronous programming.
 
 ## 2.8 Handling Exceptions from async Task Methods
 
-
 ### Problem
 
-Exception handling is a critical part of any design. It's easy to design for the success case, but a design isn't correct until it also handles the failure cases. Fortunately, handling exceptions from `async Task` methods is straightforward.
+Exception handling is a critical part of any design. It's easy to design for the success case, but a design isn't correct until it also handles the failure cases. Fortunately, handling exceptions from async Task methods is straightforward.
 
 ### Solution
 
@@ -584,20 +573,19 @@ async Task ThrowExceptionAsync()
 }
 ```
 
-
-Exceptions raised from `async Task` methods are placed on the returned Task. They are only raised when the returned Task is awaited:
+Exceptions raised from async Task methods are placed on the returned `Task`. They are only raised when the returned `Task` is awaited:
 
 ```C#
 async Task TestAsync()
 {
-  // The exception is thrown by the method and placed on the task.
-  Task task = ThrowExceptionAsync();
+  // The exception is thrown by the method and placed on the `tsk`.
+  var tsk = ThrowExceptionAsync();
   try
   {
-    // The exception is re-raised here, where the task is awaited.
-    await task;
+    // The exception is re-raised here, where the `tsk` is awaited.
+    await tsk;
   }
-  catch (InvalidOperationException)
+  catch (InvalidOperationException e)
   {
     // The exception is correctly caught here.
   }
@@ -606,13 +594,13 @@ async Task TestAsync()
 
 ### Discussion
 
-When an exception is thrown out of an `async Task` method, that exception is captured and put on the returned Task. Since `async void` methods don't have a Task to put their exception on, their behavior is different; catching exceptions from async void methods is covered in Recipe 2.9.
+When an exception is thrown out of an async Task method, that exception is captured and put on the returned `Task`. Since async void methods don't have a `Task` to put their exception on, their behavior is different; catching exceptions from async void methods is covered in Recipe 2.9.
 
-When you await a faulted Task, the first exception on that task is re-thrown. If you're familiar with the problems of re-throwing exceptions, you may be wondering about stack traces. Rest assured: when the exception is re-thrown, the original stack trace is correctly preserved.
+When you await a faulted `Task`, the first exception on that task is re-thrown. If you're familiar with the problems of re-throwing exceptions, you may be wondering about stack traces. Rest assured: when the exception is re-thrown, the original stack trace is correctly preserved.
 
 This setup sounds somewhat complicated, but all this complexity works together so that the simple scenario has simple code. Most of the time, your code should propagate exceptions from asynchronous methods that it calls; all it has to do is await the task returned from that asynchronous method, and the exception will be propagated naturally.
 
-There are some situations (such as `Task.WhenAll`) where a Task may have multiple exceptions, and await will only re-throw the first one. See Recipe 2.4 for an example of handling all exceptions.
+There are some situations (such as `Task.WhenAll`) where a `Task` may have multiple exceptions, and await will only re-throw the first one. See Recipe 2.4 for an example of handling all exceptions.
 
 ### See Also
 
@@ -624,14 +612,13 @@ Recipe 7.2 covers unit testing exceptions thrown from async Task methods.
 
 ## 2.9 Handling Exceptions from async void Methods
 
-
 ### Problem
 
-You have an `async void` method and need to handle exceptions propagated out of that method.
+You have an async void method and need to handle exceptions propagated out of that method.
 
 ### Solution
 
-There is no good solution. If at all possible, change the method to return `Task` instead of `void`. In some situations, doing that isn't possible; for example, let's say you need to unit test an `ICommand` implementation (which must return void). In this case, you can provide a Task-returning overload of your `Execute` method:
+There is no good solution. If at all possible, change the method to return `Task` instead of `void`. In some situations, doing that isn't possible; for example, let's say you need to unit test an `ICommand` implementation (which must return `void`). In this case, you can provide a Task-returning overload of your `Execute` method:
 
 ```C#
 sealed class MyAsyncCommand : ICommand
@@ -650,9 +637,9 @@ sealed class MyAsyncCommand : ICommand
 
 It's best to avoid propagating exceptions out of async void methods. If you must use an async void method, consider wrapping all of its code in a try block and handling the exception directly.
 
-There is another solution for handling exceptions from `async void` methods. When an `async void` method propagates an exception, that exception is then raised on the `SynchronizationContext` that was active at the time the `async void` method started executing. If your execution environment provides a `SynchronizationContext`, then it usually has a way to handle these top-level exceptions at a global scope. For example, WPF has `Application.DispatcherUnhandledException`, Universal Windows has `Application.UnhandledException`, and ASP.NET has the `UseExceptionHandler` middleware.
+There is another solution for handling exceptions from async void methods. When an async void method propagates an exception, that exception is then raised on the `SynchronizationContext` that was active at the time the async void method started executing. If your execution environment provides a `SynchronizationContext`, then it usually has a way to handle these top-level exceptions at a global scope. For example, WPF has `Application.DispatcherUnhandledException`, Universal Windows has `Application.UnhandledException`, and ASP.NET has the `UseExceptionHandler` middleware.
 
-It is also possible to handle exceptions from `async void` methods by controlling the `SynchronizationContext`. Writing your own `SynchronizationContext` isn't easy, but you can use the `AsyncContext` type from the free `Nito.AsyncEx` NuGet helper library. `AsyncContext` is particularly useful for applications that don't have a built-in `SynchronizationContext`, such as Console applications and Win32 services. The next example uses `AsyncContext` to run and handle exceptions from an `async void` method:
+It is also possible to handle exceptions from async void methods by controlling the `SynchronizationContext`. Writing your own `SynchronizationContext` isn't easy, but you can use the `AsyncContext` type from the free `Nito.AsyncEx` NuGet helper library. `AsyncContext` is particularly useful for applications that don't have a built-in `SynchronizationContext`, such as Console applications and Win32 services. The next example uses `AsyncContext` to run and handle exceptions from an async void method:
 
 ```C#
 static class Program
@@ -692,7 +679,6 @@ Recipe 2.8 covers exception handling with async Task methods.
 Recipe 7.3 covers unit testing async void methods.
 
 ## 2.10 Creating a ValueTask
-
 
 ### Problem
 
@@ -757,14 +743,13 @@ Recipe 11.6 covers asynchronous disposal.
 
 ## 2.11 Consuming a ValueTask
 
-
 ### Problem
 
-You need to consume a ValueTask<T> value.
+You need to consume a `ValueTask<T>` value.
 
 ### Solution
 
-Using await is the most straightforward and common way to consume a ValueTask<T> or ValueTask value. The majority of the time, this is all you need to do:
+Using await is the most straightforward and common way to consume a `ValueTask<T>` or `ValueTask` value. The majority of the time, this is all you need to do:
 
 ```C#
 ValueTask<int> MethodAsync();
@@ -786,7 +771,7 @@ async Task ConsumingMethodAsync()
 }
 ```
 
-Both of these are appropriate because the ValueTask is only awaited a single time. This is one of the restrictions of ValueTask.
+Both of these are appropriate because the `ValueTask` is only awaited a single time. This is one of the restrictions of `ValueTask`.
 
 ##### WARNING
 
@@ -817,20 +802,20 @@ async Task ConsumingMethodAsync()
 }
 ```
 
-However, for each ValueTask<T>, you can only call AsTask once. The usual approach is to convert it to a Task<T> immediately and then ignore the ValueTask<T>. Also note that you cannot both await and call AsTask on the same ValueTask<T>.
+However, for each `ValueTask<T>`, you can only call `AsTask` once. The usual approach is to convert it to a `Task<T>` immediately and then ignore the `ValueTask<T>`. Also note that you cannot both await and call `AsTask` on the same `ValueTask<T>`.
 
-Most code should either immediately await a ValueTask<T> or convert it to a Task<T>.
+Most code should either immediately await a `ValueTask<T>` or convert it to a `Task<T>`.
 
 ### Discussion
 
-Other properties on ValueTask<T> are for more advanced usage. They don't tend to act like other properties you may be familiar with; in particular, ValueTask<T>.Result has more restrictions than Task<T>.Result. Code that synchronously retrieves a result from a ValueTask<T> may call ValueTask<T>.Result or ValueTask<T>.GetAwaiter().GetResult(), but these members must not be called until the ValueTask<T> is complete. Synchronously retrieving a result from Task<T> blocks the calling thread until the task completes; ValueTask<T> makes no such guarantees.
+Other properties on `ValueTask<T>` are for more advanced usage. They don't tend to act like other properties you may be familiar with; in particular, `ValueTask<T>.Result` has more restrictions than `Task<T>.Result`. Code that synchronously retrieves a result from a `ValueTask<T>` may call `ValueTask<T>.Result` or `ValueTask<T>.GetAwaiter().GetResult()`, but these members must not be called until the `ValueTask<T>` is complete. Synchronously retrieving a result from `Task<T>` blocks the calling thread until the task completes; `ValueTask<T>` makes no such guarantees.
 
-Synchronously getting results from a ValueTask or ValueTask<T> may only be done once, after the ValueTask has completed, and that same ValueTask cannot be awaited or converted to a task.
+Synchronously getting results from a `ValueTask` or `ValueTask<T>` may only be done once, after the `ValueTask` has completed, and that same `ValueTask` cannot be awaited or converted to a task.
 
-At the risk of being repetitive, when your code calls a method returning ValueTask or ValueTask<T>, it should either immediately await that ValueTask or immediately call AsTask to convert it to a Task. This simple guideline doesn't cover all the advanced scenarios, but most applications will never need to do more than that.
+At the risk of being repetitive, when your code calls a method returning `ValueTask` or `ValueTask<T>`, it should either immediately await that `ValueTask` or immediately call `AsTask` to convert it to a `Task`. This simple guideline doesn't cover all the advanced scenarios, but most applications will never need to do more than that.
 
 ### See Also
 
-Recipe 2.10 covers how to return ValueTask<T> and ValueTask values from your methods.
+Recipe 2.10 covers how to return `ValueTask<T>` and `ValueTask` values from your methods.
 
 Recipes 2.4 and 2.5 cover waiting for multiple tasks simultaneously.

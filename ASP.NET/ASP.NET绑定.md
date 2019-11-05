@@ -82,8 +82,6 @@ namespace ExampleApp
 
 ```
 
-
-
 #### \\Views\\Home\\bindings.cshtml
 
 ```html
@@ -134,8 +132,6 @@ namespace ExampleApp
 <script src="~/Scripts/bindings.js"></script>
 
 ```
-
-
 
 #### \\Scripts\\bindings.js
 
@@ -248,8 +244,6 @@ vm.kvpairs = function () {
 
 ko.applyBindings(vm)
 ```
-
-
 
 ## WebApi项目
 

@@ -91,7 +91,6 @@ Trees are recursively defined data structures that contain a root node:
 
 A preorder traversal of this tree has the following steps, starting with root:
 
-
 1. Display the data part of the root element
 
 2. Traverse the left subtree by recursively calling the preorder function
@@ -119,8 +118,6 @@ Formally speaking, two functions `f` and `g` are *type-compatible* if the output
 separating a function's description from its evaluation.
 
 programming to interfaces
-
-
 
 ### 4.5.4. Coping with pure and impure code
 
@@ -186,8 +183,6 @@ Monads are the containers that functors “reach into.”
 ### 5.3.1. Monads: from control flow to data flow
 
 But a better strategy is to make this function more honest about how it handles each case and state that it returns a valid number when given the correct input value, or ignores it otherwise.
-
-
 
 Listing 5.3. Wrapper monad
 

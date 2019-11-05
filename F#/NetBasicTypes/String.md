@@ -823,8 +823,6 @@ msg = String.Format(@"{0:MM\/dd\/yyyy}", aDate)   // => 05/17/2005
 | '…' "…" | A group of literal characters. You can add a sequence of literal characters by enclosing them in single or double quotation marks. |
 | other   | Any other character is taken literally and inserted in the result string as is. |
 
-
-
 ### The Char Type
 
 The `Char` class represents a single character. There isn't much to say about this data type, other than it exposes a number of useful static methods that enable you to test whether a single character meets a given criterion. All these methods are overloaded and take either a single `Char`, or a `String` plus an index in the string. For example, you check whether a character is a digit as follows:

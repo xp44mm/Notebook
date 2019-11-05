@@ -7,8 +7,6 @@ Figure 18-1: The Reflection logical hierarchy
 
 In this section, I describe the `Assembly`, `AssemblyName`, and `Module` classes.
 
-
-
 ### The Assembly Type
 
 As its name implies, the `Assembly` type represents a .NET assembly. This type offers no constructor method because you never actually create an assembly, but simply get a reference to an existing assembly. There are many ways to perform this operation, as described in the following section.
@@ -205,8 +203,6 @@ let ty: Type = asm.GetType("system.data.datatable", true, true)
 
 Finally, two methods of the `Assembly` class return an `AssemblyName` object, which is described in the next section.
 
-
-
 ### The AssemblyName Type
 
 The `AssemblyName` class represents the object that .NET uses to hold the identity and to retrieve information about an assembly. A fully specified `AssemblyName` object has a name, a culture, and a version number, but the runtime can also use partially filled `AssemblyName` objects when searching for an assembly to be bound to caller code. Most often, you get a reference to an existing `AssemblyName` object by using the `GetName` property of the `Assembly` object:
@@ -258,8 +254,6 @@ Unlike most other reflection types, the `AssemblyName` type has a constructor, w
 ```FSharp
 let an = new AssemblyName("mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, ProcessorArchitecture=x86")
 ```
-
-
 
 ### The Module Type
 

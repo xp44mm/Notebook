@@ -65,8 +65,6 @@ $a_1, a_2, \dots, a_n$
 
 $a_1 + a_2 + \cdots + a_n$
 
-
-
 ### 4.3.2 指数、上下标和导数
 
 $p^3_{ij} \qquad m_\mathrm{Knuth} $
@@ -77,8 +75,6 @@ $a^x+y \neq a^{x+y}\qquad e^{x^2} \neq {e^x}^2$
 
 $f(x) = x^2 \quad f’(x)= 2x \quad f’’^{2}(x) = 4$
 
-
-
 ### 4.3.3 分式和根式
 
 In display style:
@@ -88,11 +84,7 @@ $$
 In text style:
 $1\frac{1}{2}$ hours $1\dfrac{1}{2}$ hours
 
-
-
 $\sqrt{x} \Leftrightarrow x^{1/2}\quad \sqrt[3]{2}\quad \sqrt{x^{2} + \sqrt{y}}$
-
-
 
 Pascal's rule is
 $$
@@ -139,8 +131,6 @@ $$
 巨算符上下标位置：
 
 行内：$\sum\limits_{i=1}^n \quad \int\limits_0^{\frac{\pi}{2}}  \quad\prod\limits_\epsilon$
-
-
 
 行间：
 $$
@@ -283,10 +273,7 @@ l + m &= n
 \end{equation}
 $$
 
-
 split 环境和 aligned 环境用法类似，也用于和 equation 环境套用，区别是 split 只能将每行的一个公式分两栏，aligned 允许每行多个公式多栏。
-
-
 
 ## 4.5 数组和矩阵
 
@@ -385,7 +372,6 @@ $$
 
 ### 4.7.3 加粗的数学符号
 
-
 $$
 $\mu, M \qquad
 \boldsymbol{\mu}, \boldsymbol{M}$
@@ -444,7 +430,6 @@ E=mc^2 \qedhere
 \]
 \end{proof}
 $$
-
 
 Assuming $\gamma= 1/\sqrt{1-v^2/c^2}$, then
 $$
@@ -538,14 +523,5 @@ $\llcorner$、$\lrcorner$、$\lvert$、$\lVert$、$\rvert$、$\rVert$、$\ulcorn
 表 4.21: AMS 其它符号
 
 $\angle$、$\backprime$、$\Bbbk$、$\bigstar$、$\blacklozenge$、$\blacksquare$、$\blacktriangle$、$\blacktriangledown$、$\circledS$、$\complement$、$\diagdown$、$\diagup$、$\eth$、$\Finv$、$\Game$、$\hbar$、$\hslash$、$\lozenge$、$\measuredangle$、$\mho$、$\nexists$、$\sphericalangle$、$\square$、$\triangledown$、$\varnothing$、$\vartriangle$
-
-
-
-
-
-
-
-
-
 
 

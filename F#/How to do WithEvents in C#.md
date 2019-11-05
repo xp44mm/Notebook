@@ -1,7 +1,5 @@
 ### How to do "WithEvents" in C#?
 
-
-
 ##### Brett
 
 What is the C# equivalent for this VB.NET code:
@@ -15,8 +13,6 @@ I get as far as:
 private SHDocVw.InternetExplorer IE_Inst = new SHDocVw.InternetExplorer();
 ```
 but am not sure how to translate the `WithEvents` part. Any suggestions?  
-
-
 
 ##### Bob Powell
 
@@ -52,11 +48,7 @@ Maps to things such as:
 Public Sub IEDocComplete(ByVal pDisp As Object, ByRef URL As Object) Handles IE_Inst.DocumentComplete
 ```
 
-
-
 ##### David Anton
-
-
 
 The usual general format of the C# add handler equivalent is:
 ```C#
@@ -77,8 +69,6 @@ public void IEDocComplete(object pDisp, ref object URL)
 
 ```
 
-
-
 ##### Bob Powell
 
 The `.Paint` part was just an example of a well-known event.
@@ -90,8 +80,6 @@ AxSHDocVw.AxWebBrowser axWebBrowser1 = new AxSHDocVw.AxWebBrowser();
 
 this.axWebBrowser1.DocumentComplete += new AxSHDocVw.DWebBrowserEvents2_DocumentCompleteEventHandler(this.axWebBrowser1_DocumentComplete);
 ```
-
-
 
 ##### Brett
 
@@ -118,13 +106,9 @@ public void IEDocComplete(object pDisp, ref object url)
 
 What exactly is it asking for?
 
-
-
 ##### Steve Walker
 
 A method to call with the signature `void Foo(object x, System.EventArgs y)`, not one with the signature `void IEDocComplete(object pDisp, ref object url)`.
-
-
 
 ##### Brett
 
@@ -141,8 +125,6 @@ How is VB basically getting away with doing the samething I'm doing in c#? Isn't
 IE_Inst.DocumentComplete += new System.EventHandler(IEDocComplete);
 public void IEDocComplete(object pDisp, ref object url)
 ```
-
-
 
 ##### Steve Walker
 

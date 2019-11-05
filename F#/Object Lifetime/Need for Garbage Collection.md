@@ -1,12 +1,8 @@
 # Chapter 9: Object Lifetime
 
-
-
 ## Overview
 
 An important facet of Microsoft .NET programming is understanding how the Common Language Runtime (CLR) allocates and releases memory, and above all how objects are destroyed at the end of their life cycle. In this chapter, you'll learn how you can improve your applications' performance remarkably.
-
-
 
 ## The Need for Garbage Collection
 
@@ -340,9 +336,6 @@ type Widget() =
 Notice that no `Finalize` method is created automatically. This is the correct approach, because—as I emphasized previously—only types that create unmanaged resources need the `Finalize` method. Most disposable objects do not. 
 
 ---
-
-
-
 
 ### Finalizers in Derived Classes
 

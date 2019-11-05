@@ -48,7 +48,6 @@ speed.CombineLatest(heartRate,
     .SubscribeConsole("Metrics");
 ```
 
-
 Now you can emit the values from each observable and see what happens:
 
 ```C#
@@ -60,7 +59,6 @@ speed.OnNext(31);
 heartRate.OnNext(153);
 heartRate.OnNext(154);
 ```
-
 
 The output from this sequence is shown here:
 
@@ -83,7 +81,6 @@ speed.StartWith(0)
                    (s, h) => String.Format("Heart:{0} Speed:{1}", h, s))
     .SubscribeConsole("Metrics");
 ```
-
 
 NOTE Currently, the Rx codebase also includes the operator `WithLatestFrom`, which is like a one-way CombineLatest. `WithLatestFrom` combines each value from the first observable with the latest value from the second observable, but not the other way around. This operator isn't included in Rx versions prior to 3.0, which this book is using.
 
@@ -116,7 +113,6 @@ Observable.Concat(facebookMessages.ToObservable(),
     .SubscribeConsole("Concat Messages");
 ```
 
-
 Running this example shows this output:
 
 ```C#
@@ -126,7 +122,6 @@ Concat Messages - OnNext(Twitter1)
 Concat Messages - OnNext(Twitter2)
 Concat Messages - OnCompleted()
 ```
-
 
 Even though the results from Facebook take longer to arrive (due to the use of `Delay`), they're still present first. At times, however, that order between the observables has no meaning, and you want to react to the notifications emitted by the observables the moment they're pushed. For this, you need the `Merge` operator.
 
@@ -156,7 +151,6 @@ Observable.Merge(
     .SubscribeConsole("Merged Messages");
 ```
 
-
 Now, even though the Facebook asynchronous operation is passed first to the `Merge` operator, the first values you'll see printed are those from Twitter because this operation completes first:
 
 ```C#
@@ -182,7 +176,6 @@ IObservable<TSource> Merge<TSource>(
     this IObservable<IObservable<TSource>> sources)
 ```
 
-
 These overloads let you add `Merge` or `Concat` as part of a broader pipeline; for example, when a source observable emits a value that'll be transformed into another observable (like one that represents an asynchronous operation). Suppose you want to create an observable from the textchanged event of a text box, and when the text changes, you want to make a call to a remote search service and show all the results from all the searches.
 
 ```C#
@@ -196,7 +189,6 @@ texts
     .SubscribeConsole("Merging from observable");
 ```
 
-
 Running the example yields this output:
 
 ```C#
@@ -204,7 +196,6 @@ Merging from observable - OnNext(Hello-Result)
 Merging from observable - OnNext(World-Result)
 Merging from observable - OnCompleted()
 ```
-
 
 NOTE Conceptually, the operator `SelectMany` (described broadly in chapter 8) operates the same as calling `Select` and `Merge`.
 
@@ -301,7 +292,6 @@ Observable.Amb(server1, server2)
     .SubscribeConsole("Amb");
 ```
 
-
 In this case, the server2 observable emits first, so you'll see only the values with the prefix `Server2-`.
 
 TIP You can also write the example like this:
@@ -381,7 +371,6 @@ IObservable<TResult> Join<TLeft, TRight,TLeftDuration, TRightDuration,TResult>(
      Func<TLeft, TRight, TResult> resultSelector);
 ```
 
-
 The tricky part of the method signature is the duration selector functions. Those functions receive an emitted element and return an observable whose emissions determine the end of the time frame for the element.
 
 Suppose you have a sensor, coded as a hot observable of DoorEvent objects, that monitors people who enter and exit a room. You want to emit all the males and females that are in the same room at the same time:
@@ -408,7 +397,6 @@ var entrances = doorOpened.Where(o => o.Direction == OpenDirection.Entering);
 var maleEntering = entrances.Where(x => x.Gender == Gender.Male);
 var femaleEntering = entrances.Where(x => x.Gender == Gender.Female);
 ```
-
 
 In the same way, you can extract the observable of those leaving:
 
@@ -533,7 +521,6 @@ var malesAcquaintances =
             (m, females) => new {Male = m.Name, Females = females});
 ```
 
-
 Then you can create a query for the malesAcquaintances observable that computes the number of females each man meets in the room and subscribe to it:
 
 ```C#
@@ -642,7 +629,6 @@ var accelerations =
     select speedDelta/timeDelta;
 accelerations.SubscribeConsole("Acceleration");
 ```
-
 
 In this example, you use the query syntax approach because it allows you to use the `let` keyword to introduce new sub-calculations that make your code smaller. After applying the `Buffer` operator on the speedReadings observable, you get an observable of buffers with two consecutive items.
 
@@ -777,7 +763,6 @@ var donationsSums =
 donationsSums.SubscribeConsole("donations in shift");
 ```
 
-
 The donations observable is broken into non-overlapping windows of 1 hour each. Then, you take each window and apply the `Scan` operator to sum all the values of the donations made. `Scan` emits the summation when the values change (as opposed to `Aggregate`, which emits when the observable completes).
 
 The donationsSums observable is a flat observable that emits the summations from all the windows. Because you've added the `Do` operator to the windows observable, you'll see a message between each window. Here's the output I received when running the example for two shifts with the sample donation values:
@@ -796,7 +781,6 @@ donations in shift - OnNext(97)
 donations in shift - OnNext(142)
 donations in shift - OnCompleted()
 ```
-
 
 The `Window` operator has some overloads that let you control when the window is opened and when it closes. Windows can be opened and closed based on the number of items they contain or by the duration of time they should be opened. You can also specify the number of items to be skipped between them or the duration of a pause between closing a window and opening another.
 
@@ -841,7 +825,6 @@ If you want to create non-overlapping windows and control the window boundaries 
 IObservable<IObservable<TSource>> Window<TSource, TWindowBoundary>(IObservable<TSource> source,
     IObservable<TWindowBoundary> windowBoundaries);
 ```
-
 
 windowBounderies is an observable that you provide to close the previous window and open the next by emitting a notification.
 

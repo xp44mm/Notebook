@@ -323,7 +323,6 @@ Normally the `>` that begins a block quote may be followed optionally by a space
 </ul>
 ````````````````````````````````
 
-
 ````````````````````````````````html
     foo
 →bar
@@ -363,7 +362,6 @@ bar
 <hr />
 ````````````````````````````````
 
-
 ## Insecure characters
 
 For security reasons, the Unicode character `U+0000` must be replaced with the REPLACEMENT CHARACTER (`U+FFFD`).
@@ -385,7 +383,6 @@ Indicators of block structure always take precedence over indicators of inline s
 <li>two`</li>
 </ul>
 ````````````````````````````````
-
 
 This means that parsing can proceed in two steps: first, the block structure of the document can be discerned; second, text lines inside paragraphs, headings, and other block constructs can be parsed for inline structure. The second step requires information about link reference definitions that will be available only at the end of the first step. Note that the first step requires processing lines in sequence, but the second can be parallelized, since the inline parsing of one block element does not affect the inline parsing of any other.
 
@@ -411,7 +408,6 @@ ___
 <hr />
 ````````````````````````````````
 
-
 Wrong characters:
 
 ````````````````````````````````html
@@ -420,13 +416,11 @@ Wrong characters:
 <p>+++</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ===
 .
 <p>===</p>
 ````````````````````````````````
-
 
 Not enough characters:
 
@@ -440,7 +434,6 @@ __
 __</p>
 ````````````````````````````````
 
-
 One to three spaces indent are allowed:
 
 ````````````````````````````````html
@@ -453,7 +446,6 @@ One to three spaces indent are allowed:
 <hr />
 ````````````````````````````````
 
-
 Four spaces is too many:
 
 ````````````````````````````````html
@@ -463,7 +455,6 @@ Four spaces is too many:
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 Foo
     ***
@@ -471,7 +462,6 @@ Foo
 <p>Foo
 ***</p>
 ````````````````````````````````
-
 
 More than three characters may be used:
 
@@ -481,7 +471,6 @@ _____________________________________
 <hr />
 ````````````````````````````````
 
-
 Spaces are allowed between the characters:
 
 ````````````````````````````````html
@@ -490,20 +479,17 @@ Spaces are allowed between the characters:
 <hr />
 ````````````````````````````````
 
-
 ````````````````````````````````html
  **  * ** * ** * **
 .
 <hr />
 ````````````````````````````````
 
-
 ````````````````````````````````html
 -     -      -      -
 .
 <hr />
 ````````````````````````````````
-
 
 Spaces are allowed at the end:
 
@@ -512,7 +498,6 @@ Spaces are allowed at the end:
 .
 <hr />
 ````````````````````````````````
-
 
 However, no other characters may occur in the line:
 
@@ -528,7 +513,6 @@ a------
 <p>---a---</p>
 ````````````````````````````````
 
-
 It is required that all of the [non-whitespace characters] be the same.
 So, this is not a thematic break:
 
@@ -537,7 +521,6 @@ So, this is not a thematic break:
 .
 <p><em>-</em></p>
 ````````````````````````````````
-
 
 Thematic breaks do not need blank lines before or after:
 
@@ -555,7 +538,6 @@ Thematic breaks do not need blank lines before or after:
 </ul>
 ````````````````````````````````
 
-
 Thematic breaks can interrupt a paragraph:
 
 ````````````````````````````````html
@@ -568,7 +550,6 @@ bar
 <p>bar</p>
 ````````````````````````````````
 
-
 If a line of dashes that meets the above conditions for being a thematic break could also be interpreted as the underline of a [setext heading], the interpretation as a [setext heading] takes precedence. Thus, for example, this is a setext heading, not a paragraph followed by a thematic break:
 
 ````````````````````````````````html
@@ -579,7 +560,6 @@ bar
 <h2>Foo</h2>
 <p>bar</p>
 ````````````````````````````````
-
 
 When both a thematic break and a list item are possible interpretations of a line, the thematic break takes precedence:
 
@@ -597,7 +577,6 @@ When both a thematic break and a list item are possible interpretations of a lin
 </ul>
 ````````````````````````````````
 
-
 If you want a thematic break in a list item, use a different bullet:
 
 ````````````````````````````````html
@@ -611,7 +590,6 @@ If you want a thematic break in a list item, use a different bullet:
 </li>
 </ul>
 ````````````````````````````````
-
 
 ## ATX headings
 
@@ -635,7 +613,6 @@ Simple headings:
 <h6>foo</h6>
 ````````````````````````````````
 
-
 More than six `#` characters is not a heading:
 
 ````````````````````````````````html
@@ -643,7 +620,6 @@ More than six `#` characters is not a heading:
 .
 <p>####### foo</p>
 ````````````````````````````````
-
 
 At least one space is required between the `#` characters and the heading's contents, unless the heading is empty. Note that many implementations currently do not require the space. However, the space was required by the [original ATX implementation](http://www.aaronsw.com/2002/atx/atx.py), and it helps prevent things like the following from being parsed as headings:
 
@@ -656,7 +632,6 @@ At least one space is required between the `#` characters and the heading's cont
 <p>#hashtag</p>
 ````````````````````````````````
 
-
 This is not a heading, because the first `#` is escaped:
 
 ````````````````````````````````html
@@ -664,7 +639,6 @@ This is not a heading, because the first `#` is escaped:
 .
 <p>## foo</p>
 ````````````````````````````````
-
 
 Contents are parsed as inlines:
 
@@ -674,7 +648,6 @@ Contents are parsed as inlines:
 <h1>foo <em>bar</em> *baz*</h1>
 ````````````````````````````````
 
-
 Leading and trailing [whitespace] is ignored in parsing inline content:
 
 ````````````````````````````````html
@@ -682,7 +655,6 @@ Leading and trailing [whitespace] is ignored in parsing inline content:
 .
 <h1>foo</h1>
 ````````````````````````````````
-
 
 One to three spaces indentation are allowed:
 
@@ -696,7 +668,6 @@ One to three spaces indentation are allowed:
 <h1>foo</h1>
 ````````````````````````````````
 
-
 Four spaces are too much:
 
 ````````````````````````````````html
@@ -706,7 +677,6 @@ Four spaces are too much:
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo
     # bar
@@ -714,7 +684,6 @@ foo
 <p>foo
 # bar</p>
 ````````````````````````````````
-
 
 A closing sequence of `#` characters is optional:
 
@@ -726,7 +695,6 @@ A closing sequence of `#` characters is optional:
 <h3>bar</h3>
 ````````````````````````````````
 
-
 It need not be the same length as the opening sequence:
 
 ````````````````````````````````html
@@ -737,7 +705,6 @@ It need not be the same length as the opening sequence:
 <h5>foo</h5>
 ````````````````````````````````
 
-
 Spaces are allowed after the closing sequence:
 
 ````````````````````````````````html
@@ -745,7 +712,6 @@ Spaces are allowed after the closing sequence:
 .
 <h3>foo</h3>
 ````````````````````````````````
-
 
 A sequence of `#` characters with anything but [spaces] following it is not a closing sequence, but counts as part of the contents of the heading:
 
@@ -755,7 +721,6 @@ A sequence of `#` characters with anything but [spaces] following it is not a cl
 <h3>foo ### b</h3>
 ````````````````````````````````
 
-
 The closing sequence must be preceded by a space:
 
 ````````````````````````````````html
@@ -763,7 +728,6 @@ The closing sequence must be preceded by a space:
 .
 <h1>foo#</h1>
 ````````````````````````````````
-
 
 Backslash-escaped `#` characters do not count as part of the closing sequence:
 
@@ -777,7 +741,6 @@ Backslash-escaped `#` characters do not count as part of the closing sequence:
 <h1>foo #</h1>
 ````````````````````````````````
 
-
 ATX headings need not be separated from surrounding content by blank lines, and they can interrupt paragraphs:
 
 ````````````````````````````````html
@@ -790,7 +753,6 @@ ATX headings need not be separated from surrounding content by blank lines, and 
 <hr />
 ````````````````````````````````
 
-
 ````````````````````````````````html
 Foo bar
 # baz
@@ -800,7 +762,6 @@ Bar foo
 <h1>baz</h1>
 <p>Bar foo</p>
 ````````````````````````````````
-
 
 ATX headings can be empty:
 
@@ -813,7 +774,6 @@ ATX headings can be empty:
 <h1></h1>
 <h3></h3>
 ````````````````````````````````
-
 
 ## Setext headings
 
@@ -838,7 +798,6 @@ Foo *bar*
 <h2>Foo <em>bar</em></h2>
 ````````````````````````````````
 
-
 The content of the header may span more than one line:
 
 ````````````````````````````````html
@@ -861,7 +820,6 @@ baz*→
 baz</em></h1>
 ````````````````````````````````
 
-
 The underlining can be any length:
 
 ````````````````````````````````html
@@ -874,7 +832,6 @@ Foo
 <h2>Foo</h2>
 <h1>Foo</h1>
 ````````````````````````````````
-
 
 The heading content can be indented up to three spaces, and need not line up with the underlining:
 
@@ -893,7 +850,6 @@ The heading content can be indented up to three spaces, and need not line up wit
 <h1>Foo</h1>
 ````````````````````````````````
 
-
 Four spaces indent is too much:
 
 ````````````````````````````````html
@@ -911,7 +867,6 @@ Foo
 <hr />
 ````````````````````````````````
 
-
 The setext heading underline can be indented up to three spaces, and may have trailing spaces:
 
 ````````````````````````````````html
@@ -920,7 +875,6 @@ Foo
 .
 <h2>Foo</h2>
 ````````````````````````````````
-
 
 Four spaces is too much:
 
@@ -931,7 +885,6 @@ Foo
 <p>Foo
 ---</p>
 ````````````````````````````````
-
 
 The setext heading underline cannot contain internal spaces:
 
@@ -948,7 +901,6 @@ Foo
 <hr />
 ````````````````````````````````
 
-
 Trailing spaces in the content line do not cause a line break:
 
 ````````````````````````````````html
@@ -958,7 +910,6 @@ Foo
 <h2>Foo</h2>
 ````````````````````````````````
 
-
 Nor does a backslash at the end:
 
 ````````````````````````````````html
@@ -967,7 +918,6 @@ Foo\
 .
 <h2>Foo\</h2>
 ````````````````````````````````
-
 
 Since indicators of block structure take precedence over indicators of inline structure, the following are setext headings:
 
@@ -986,7 +936,6 @@ of dashes"/>
 <p>of dashes&quot;/&gt;</p>
 ````````````````````````````````
 
-
 The setext heading underline cannot be a [lazy continuation line] in a list item or block quote:
 
 ````````````````````````````````html
@@ -998,7 +947,6 @@ The setext heading underline cannot be a [lazy continuation line] in a list item
 </blockquote>
 <hr />
 ````````````````````````````````
-
 
 ````````````````````````````````html
 > foo
@@ -1012,7 +960,6 @@ bar
 </blockquote>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 - Foo
 ---
@@ -1022,7 +969,6 @@ bar
 </ul>
 <hr />
 ````````````````````````````````
-
 
 A blank line is needed between a paragraph and a following setext heading, since otherwise the paragraph becomes part of the heading's content:
 
@@ -1034,7 +980,6 @@ Bar
 <h2>Foo
 Bar</h2>
 ````````````````````````````````
-
 
 But in general a blank line is not required before or after setext headings:
 
@@ -1052,7 +997,6 @@ Baz
 <p>Baz</p>
 ````````````````````````````````
 
-
 Setext headings cannot be empty:
 
 ````````````````````````````````html
@@ -1061,7 +1005,6 @@ Setext headings cannot be empty:
 .
 <p>====</p>
 ````````````````````````````````
-
 
 Setext heading text lines must not be interpretable as block constructs other than paragraphs. So, the line of dashes in these examples gets interpreted as a thematic break:
 
@@ -1073,7 +1016,6 @@ Setext heading text lines must not be interpretable as block constructs other th
 <hr />
 ````````````````````````````````
 
-
 ````````````````````````````````html
 - foo
 -----
@@ -1084,7 +1026,6 @@ Setext heading text lines must not be interpretable as block constructs other th
 <hr />
 ````````````````````````````````
 
-
 ````````````````````````````````html
     foo
 ---
@@ -1093,7 +1034,6 @@ Setext heading text lines must not be interpretable as block constructs other th
 </code></pre>
 <hr />
 ````````````````````````````````
-
 
 ````````````````````````````````html
 > foo
@@ -1105,7 +1045,6 @@ Setext heading text lines must not be interpretable as block constructs other th
 <hr />
 ````````````````````````````````
 
-
 If you want a heading with `> foo` as its literal text, you can use backslash escapes:
 
 ````````````````````````````````html
@@ -1114,7 +1053,6 @@ If you want a heading with `> foo` as its literal text, you can use backslash es
 .
 <h2>&gt; foo</h2>
 ````````````````````````````````
-
 
 **Compatibility note:** Most existing Markdown implementations do not allow the text of setext headings to span multiple lines. But there is no consensus about how to interpret
 
@@ -1146,7 +1084,6 @@ baz
 <p>baz</p>
 ````````````````````````````````
 
-
 Authors who want interpretation 2 can put blank lines around the thematic break,
 
 ````````````````````````````````html
@@ -1163,7 +1100,6 @@ bar</p>
 <p>baz</p>
 ````````````````````````````````
 
-
 or use a thematic break that cannot count as a [setext heading underline], such as
 
 ````````````````````````````````html
@@ -1178,7 +1114,6 @@ bar</p>
 <p>baz</p>
 ````````````````````````````````
 
-
 Authors who want interpretation 3 can use backslash escapes:
 
 ````````````````````````````````html
@@ -1192,7 +1127,6 @@ bar
 ---
 baz</p>
 ````````````````````````````````
-
 
 ## Indented code blocks
 
@@ -1209,7 +1143,6 @@ An indented code block cannot interrupt a paragraph, so there must be a blank li
 </code></pre>
 ````````````````````````````````
 
-
 If there is any ambiguity between an interpretation of indentation as a code block and as indicating that material belongs to a [list item][list items], the list item interpretation takes precedence:
 
 ````````````````````````````````html
@@ -1224,7 +1157,6 @@ If there is any ambiguity between an interpretation of indentation as a code blo
 </li>
 </ul>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 1.  foo
@@ -1241,8 +1173,6 @@ If there is any ambiguity between an interpretation of indentation as a code blo
 </ol>
 ````````````````````````````````
 
-
-
 The contents of a code block are literal text, and do not get parsed as Markdown:
 
 ````````````````````````````````html
@@ -1257,7 +1187,6 @@ The contents of a code block are literal text, and do not get parsed as Markdown
 - one
 </code></pre>
 ````````````````````````````````
-
 
 Here we have three chunks separated by blank lines:
 
@@ -1274,12 +1203,9 @@ Here we have three chunks separated by blank lines:
 
 chunk2
 
-
-
 chunk3
 </code></pre>
 ````````````````````````````````
-
 
 Any initial spaces beyond four will be included in the content, even in interior blank lines:
 
@@ -1294,7 +1220,6 @@ Any initial spaces beyond four will be included in the content, even in interior
 </code></pre>
 ````````````````````````````````
 
-
 An indented code block cannot interrupt a paragraph. (This allows hanging indents and the like.)
 
 ````````````````````````````````html
@@ -1306,7 +1231,6 @@ Foo
 bar</p>
 ````````````````````````````````
 
-
 However, any non-blank line with fewer than four leading spaces ends the code block immediately. So a paragraph may occur immediately after indented code:
 
 ````````````````````````````````html
@@ -1317,7 +1241,6 @@ bar
 </code></pre>
 <p>bar</p>
 ````````````````````````````````
-
 
 And indented code can occur immediately before and after other kinds of blocks:
 
@@ -1338,7 +1261,6 @@ Heading
 <hr />
 ````````````````````````````````
 
-
 The first line can be indented more than four spaces:
 
 ````````````````````````````````html
@@ -1349,7 +1271,6 @@ The first line can be indented more than four spaces:
 bar
 </code></pre>
 ````````````````````````````````
-
 
 Blank lines preceding or following an indented code block are not included in it:
 
@@ -1364,7 +1285,6 @@ Blank lines preceding or following an indented code block are not included in it
 </code></pre>
 ````````````````````````````````
 
-
 Trailing spaces are included in the code block's content:
 
 ````````````````````````````````html
@@ -1373,8 +1293,6 @@ Trailing spaces are included in the code block's content:
 <pre><code>foo  
 </code></pre>
 ````````````````````````````````
-
-
 
 ## Fenced code blocks
 
@@ -1402,7 +1320,6 @@ Here is a simple example with backticks:
  &gt;
 </code></pre>
 ````````````````````````````````
-
 
 With tildes:
 
@@ -1440,7 +1357,6 @@ The closing code fence must use the same character as the opening fence:
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 |~~~
 |aaa
@@ -1451,7 +1367,6 @@ The closing code fence must use the same character as the opening fence:
 |```
 |</code></pre>
 ````````````````````````````````
-
 
 The closing code fence must be at least as long as the opening fence:
 
@@ -1466,7 +1381,6 @@ The closing code fence must be at least as long as the opening fence:
 |</code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ~~~~
 aaa
@@ -1478,7 +1392,6 @@ aaa
 </code></pre>
 ````````````````````````````````
 
-
 Unclosed code blocks are closed by the end of the document (or the enclosing [block quote][block quotes] or [list item][list items]):
 
 ````````````````````````````````html
@@ -1486,7 +1399,6 @@ Unclosed code blocks are closed by the end of the document (or the enclosing [bl
 .
 <pre><code></code></pre>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 |`````
@@ -1499,7 +1411,6 @@ Unclosed code blocks are closed by the end of the document (or the enclosing [bl
 |aaa
 |</code></pre>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 > ```
@@ -1514,7 +1425,6 @@ bbb
 <p>bbb</p>
 ````````````````````````````````
 
-
 A code block can have all empty lines as its content:
 
 ````````````````````````````````html
@@ -1528,7 +1438,6 @@ A code block can have all empty lines as its content:
 </code></pre>
 ````````````````````````````````
 
-
 A code block can be empty:
 
 ````````````````````````````````html
@@ -1537,7 +1446,6 @@ A code block can be empty:
 .
 <pre><code></code></pre>
 ````````````````````````````````
-
 
 Fences can be indented. If the opening fence is indented, content lines will have equivalent opening indentation removed, if present:
 
@@ -1552,7 +1460,6 @@ aaa
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 |  ```
 |aaa
@@ -1565,7 +1472,6 @@ aaa
 aaa
 </code></pre>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 |   ```
@@ -1580,7 +1486,6 @@ aaa
 </code></pre>
 ````````````````````````````````
 
-
 Four spaces indentation produces an indented code block:
 
 ````````````````````````````````html
@@ -1594,7 +1499,6 @@ Four spaces indentation produces an indented code block:
 |</code></pre>
 ````````````````````````````````
 
-
 Closing fences may be indented by 0-3 spaces, and their indentation need not match that of the opening fence:
 
 ````````````````````````````````html
@@ -1606,7 +1510,6 @@ Closing fences may be indented by 0-3 spaces, and their indentation need not mat
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 |   ```
 |aaa
@@ -1615,7 +1518,6 @@ Closing fences may be indented by 0-3 spaces, and their indentation need not mat
 <pre><code>aaa
 </code></pre>
 ````````````````````````````````
-
 
 This is not a closing fence, because it is indented 4 spaces:
 
@@ -1629,8 +1531,6 @@ This is not a closing fence, because it is indented 4 spaces:
 |</code></pre>
 ````````````````````````````````
 
-
-
 Code fences (opening and closing) cannot contain internal spaces:
 
 ````````````````````````````````html
@@ -1641,7 +1541,6 @@ Code fences (opening and closing) cannot contain internal spaces:
 aaa</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ~~~~~~
 aaa
@@ -1651,7 +1550,6 @@ aaa
 ~~~ ~~
 </code></pre>
 ````````````````````````````````
-
 
 Fenced code blocks can interrupt paragraphs, and can be followed directly by paragraphs, without a blank line between:
 
@@ -1667,7 +1565,6 @@ Fenced code blocks can interrupt paragraphs, and can be followed directly by par
 </code></pre>
 <p>baz</p>
 ````````````````````````````````
-
 
 Other blocks can also occur before and after fenced code blocks without an intervening blank line:
 
@@ -1685,7 +1582,6 @@ bar
 <h1>baz</h1>
 ````````````````````````````````
 
-
 An [info string] can be provided after the opening code fence. Although this spec doesn't mandate any particular treatment of the info string, the first word is typically used to specify the language of the code block. In HTML output, the language is normally indicated by adding a class to the `code` element consisting of `language-` followed by the language name.
 
 ````````````````````````````````html
@@ -1701,7 +1597,6 @@ end
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ~~~~    ruby startline=3 $%@#$
 def foo(x)
@@ -1715,14 +1610,12 @@ end
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 |````;
 |````
 .
 <pre><code class="language-;"></code></pre>
 ````````````````````````````````
-
 
 [Info strings] for backtick code blocks cannot contain backticks:
 
@@ -1733,7 +1626,6 @@ end
 <p><code>aa</code>
 foo</p>
 ````````````````````````````````
-
 
 [Info strings] for tilde code blocks can contain backticks and tildes:
 
@@ -1746,7 +1638,6 @@ foo
 </code></pre>
 ````````````````````````````````
 
-
 Closing code fences cannot have [info strings]:
 
 ````````````````````````````````html
@@ -1757,8 +1648,6 @@ Closing code fences cannot have [info strings]:
 <pre><code>``` aaa
 </code></pre>
 ````````````````````````````````
-
-
 
 ## HTML blocks
 
@@ -1828,7 +1717,6 @@ okay.
 <p>okay.</p>
 ````````````````````````````````
 
-
 ```````````````````````````````` example
  <div>
   *hello*
@@ -1839,7 +1727,6 @@ okay.
          <foo><a>
 ````````````````````````````````
 
-
 A block can also start with a closing tag:
 
 ````````````````````````````````html
@@ -1849,7 +1736,6 @@ A block can also start with a closing tag:
 </div>
 *foo*
 ````````````````````````````````
-
 
 Here we have two HTML blocks with a Markdown paragraph between them:
 
@@ -1865,7 +1751,6 @@ Here we have two HTML blocks with a Markdown paragraph between them:
 </DIV>
 ````````````````````````````````
 
-
 The tag on the first line can be partial, as long as it is split where there would be whitespace:
 
 ````````````````````````````````html
@@ -1878,7 +1763,6 @@ The tag on the first line can be partial, as long as it is split where there wou
 </div>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <div id="foo" class="bar
   baz">
@@ -1888,7 +1772,6 @@ The tag on the first line can be partial, as long as it is split where there wou
   baz">
 </div>
 ````````````````````````````````
-
 
 An open tag need not be closed:
 
@@ -1903,8 +1786,6 @@ An open tag need not be closed:
 <p><em>bar</em></p>
 ````````````````````````````````
 
-
-
 A partial tag need not even be completed (garbage in, garbage out):
 
 ````````````````````````````````html
@@ -1915,7 +1796,6 @@ A partial tag need not even be completed (garbage in, garbage out):
 *hi*
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <div class
 foo
@@ -1923,7 +1803,6 @@ foo
 <div class
 foo
 ````````````````````````````````
-
 
 The initial tag doesn't even need to be a valid tag, as long as it starts like one:
 
@@ -1935,7 +1814,6 @@ The initial tag doesn't even need to be a valid tag, as long as it starts like o
 *foo*
 ````````````````````````````````
 
-
 In type 6 blocks, the initial tag need not be on a line by itself:
 
 ````````````````````````````````html
@@ -1944,7 +1822,6 @@ In type 6 blocks, the initial tag need not be on a line by itself:
 <div><a href="bar">*foo*</a></div>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <table><tr><td>
 foo
@@ -1954,7 +1831,6 @@ foo
 foo
 </td></tr></table>
 ````````````````````````````````
-
 
 Everything until the next blank line or end of document gets included in the HTML block. So, in the following example, what looks like a Markdown code block is actually part of the HTML block, which continues until a blank line or the end of the document is reached:
 
@@ -1970,7 +1846,6 @@ Everything until the next blank line or end of document gets included in the HTM
 |```
 ````````````````````````````````
 
-
 To start an [HTML block] with a tag that is *not* in the list of block-level tags in (6), you must put the tag by itself on the first line (and it must be complete):
 
 ````````````````````````````````html
@@ -1982,7 +1857,6 @@ To start an [HTML block] with a tag that is *not* in the list of block-level tag
 *bar*
 </a>
 ````````````````````````````````
-
 
 In type 7 blocks, the [tag name] can be anything:
 
@@ -1996,7 +1870,6 @@ In type 7 blocks, the [tag name] can be anything:
 </Warning>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <i class="foo">
 *bar*
@@ -2007,7 +1880,6 @@ In type 7 blocks, the [tag name] can be anything:
 </i>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 </ins>
 *bar*
@@ -2015,7 +1887,6 @@ In type 7 blocks, the [tag name] can be anything:
 </ins>
 *bar*
 ````````````````````````````````
-
 
 These rules are designed to allow us to work with tags that can function as either block-level or inline-level tags. The `<del>` tag is a nice example. We can surround content with `<del>` tags in three different ways. In this case, we get a raw HTML block, because the `<del>` tag is on a line by itself:
 
@@ -2028,7 +1899,6 @@ These rules are designed to allow us to work with tags that can function as eith
 *foo*
 </del>
 ````````````````````````````````
-
 
 In this case, we get a raw HTML block that just includes the `<del>` tag (because it ends with the following blank line). So the contents get interpreted as CommonMark:
 
@@ -2044,7 +1914,6 @@ In this case, we get a raw HTML block that just includes the `<del>` tag (becaus
 </del>
 ````````````````````````````````
 
-
 Finally, in this case, the `<del>` tags are interpreted as [raw HTML] *inside* the CommonMark paragraph. (Because the tag is not on a line by itself, we get inline HTML rather than an [HTML block].)
 
 ````````````````````````````````html
@@ -2052,7 +1921,6 @@ Finally, in this case, the `<del>` tags are interpreted as [raw HTML] *inside* t
 .
 <p><del><em>foo</em></del></p>
 ````````````````````````````````
-
 
 HTML tags designed to contain literal content (`script`, `style`, `pre`), comments, processing instructions, and declarations are treated somewhat differently. Instead of ending at the first blank line, these blocks end at the first line containing a corresponding end tag. As a result, these blocks can contain blank lines:
 
@@ -2076,7 +1944,6 @@ main = print $ parseTags tags
 <p>okay</p>
 ````````````````````````````````
 
-
 A script tag (type 1):
 
 ````````````````````````````````html
@@ -2094,7 +1961,6 @@ document.getElementById("demo").innerHTML = "Hello JavaScript!";
 </script>
 <p>okay</p>
 ````````````````````````````````
-
 
 A style tag (type 1):
 
@@ -2116,7 +1982,6 @@ p {color:blue;}
 <p>okay</p>
 ````````````````````````````````
 
-
 If there is no matching end tag, the block will end at the end of the document (or the enclosing [block quote][block quotes] or [list item][list items]):
 
 ````````````````````````````````html
@@ -2131,7 +1996,6 @@ foo
 foo
 ````````````````````````````````
 
-
 ````````````````````````````````html
 > <div>
 > foo
@@ -2145,7 +2009,6 @@ foo
 <p>bar</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 - <div>
 - foo
@@ -2158,7 +2021,6 @@ foo
 </ul>
 ````````````````````````````````
 
-
 The end tag can occur on the same line as the start tag:
 
 ````````````````````````````````html
@@ -2169,7 +2031,6 @@ The end tag can occur on the same line as the start tag:
 <p><em>foo</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <!-- foo -->*bar*
 *baz*
@@ -2177,7 +2038,6 @@ The end tag can occur on the same line as the start tag:
 <!-- foo -->*bar*
 <p><em>baz</em></p>
 ````````````````````````````````
-
 
 Note that anything on the last line after the end tag will be included in the [HTML block]:
 
@@ -2190,7 +2050,6 @@ foo
 foo
 </script>1. *bar*
 ````````````````````````````````
-
 
 A comment (type 2):
 
@@ -2207,8 +2066,6 @@ bar
    baz -->
 <p>okay</p>
 ````````````````````````````````
-
-
 
 A processing instruction (type 3):
 
@@ -2228,7 +2085,6 @@ okay
 <p>okay</p>
 ````````````````````````````````
 
-
 A declaration (type 4):
 
 ````````````````````````````````html
@@ -2236,7 +2092,6 @@ A declaration (type 4):
 .
 <!DOCTYPE html>
 ````````````````````````````````
-
 
 CDATA (type 5):
 
@@ -2270,7 +2125,6 @@ function matchwo(a,b)
 <p>okay</p>
 ````````````````````````````````
 
-
 The opening tag can be indented 1-3 spaces, but not 4:
 
 ```````````````````````````````` example
@@ -2283,7 +2137,6 @@ The opening tag can be indented 1-3 spaces, but not 4:
 </code></pre>
 ````````````````````````````````
 
-
 ```````````````````````````````` example
   <div>
 
@@ -2293,7 +2146,6 @@ The opening tag can be indented 1-3 spaces, but not 4:
 <pre><code>&lt;div&gt;
 </code></pre>
 ````````````````````````````````
-
 
 An HTML block of types 1-6 can interrupt a paragraph, and need not be preceded by a blank line.
 
@@ -2309,7 +2161,6 @@ bar
 </div>
 ````````````````````````````````
 
-
 However, a following blank line is needed, except at the end of a document, and except for blocks of types 1-5, [above][HTML block]:
 
 ````````````````````````````````html
@@ -2324,7 +2175,6 @@ bar
 *foo*
 ````````````````````````````````
 
-
 HTML blocks of type 7 cannot interrupt a paragraph:
 
 ````````````````````````````````html
@@ -2336,7 +2186,6 @@ baz
 <a href="bar">
 baz</p>
 ````````````````````````````````
-
 
 This rule differs from John Gruber's original Markdown syntax specification, which says:
 
@@ -2369,7 +2218,6 @@ Compare:
 </div>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <div>
 *Emphasized* text.
@@ -2379,7 +2227,6 @@ Compare:
 *Emphasized* text.
 </div>
 ````````````````````````````````
-
 
 Some Markdown implementations have adopted a convention of interpreting content inside tags as text if the open tag has the attribute `markdown=1`. The rule given above seems a simpler and more elegant way of achieving the same expressive power, which is also much simpler to parse.
 
@@ -2407,7 +2254,6 @@ Hi
 </table>
 ````````````````````````````````
 
-
 There are problems, however, if the inner tags are indented*and* separated by spaces, as then they will be interpreted as an indented code block:
 
 ````````````````````````````````html
@@ -2433,7 +2279,6 @@ There are problems, however, if the inner tags are indented*and* separated by sp
 </table>
 ````````````````````````````````
 
-
 Fortunately, blank lines are usually not necessary and can be deleted. The exception is inside `<pre>` tags, but as described [above][HTML blocks], raw HTML blocks starting with `<pre>` *can* contain blank lines.
 
 ## Link reference definitions
@@ -2450,7 +2295,6 @@ A [link reference definition] does not correspond to a structural element of a d
 <p><a href="/url" title="title">foo</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
    [foo]: 
       /url  
@@ -2461,7 +2305,6 @@ A [link reference definition] does not correspond to a structural element of a d
 <p><a href="/url" title="the title">foo</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [Foo*bar\]]:my_(url) 'title (with parens)'
 
@@ -2469,7 +2312,6 @@ A [link reference definition] does not correspond to a structural element of a d
 .
 <p><a href="my_(url)" title="title (with parens)">Foo*bar]</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [Foo bar]:
@@ -2480,7 +2322,6 @@ A [link reference definition] does not correspond to a structural element of a d
 .
 <p><a href="my%20url" title="title">Foo bar</a></p>
 ````````````````````````````````
-
 
 The title may extend over multiple lines:
 
@@ -2500,7 +2341,6 @@ line2
 ">foo</a></p>
 ````````````````````````````````
 
-
 However, it may not contain a [blank line]:
 
 ````````````````````````````````html
@@ -2515,7 +2355,6 @@ with blank line'
 <p>[foo]</p>
 ````````````````````````````````
 
-
 The title may be omitted:
 
 ````````````````````````````````html
@@ -2526,7 +2365,6 @@ The title may be omitted:
 .
 <p><a href="/url">foo</a></p>
 ````````````````````````````````
-
 
 The link destination may not be omitted:
 
@@ -2560,7 +2398,6 @@ The title must be separated from the link destination by whitespace:
 <p>[foo]</p>
 ````````````````````````````````
 
-
 Both title and destination can contain backslash escapes and literal backslashes:
 
 ````````````````````````````````html
@@ -2571,7 +2408,6 @@ Both title and destination can contain backslash escapes and literal backslashes
 <p><a href="/url%5Cbar*baz" title="foo&quot;bar\baz">foo</a></p>
 ````````````````````````````````
 
-
 A link can come before its corresponding definition:
 
 ````````````````````````````````html
@@ -2581,7 +2417,6 @@ A link can come before its corresponding definition:
 .
 <p><a href="url">foo</a></p>
 ````````````````````````````````
-
 
 If there are several matching definitions, the first one takes precedence:
 
@@ -2594,7 +2429,6 @@ If there are several matching definitions, the first one takes precedence:
 <p><a href="first">foo</a></p>
 ````````````````````````````````
 
-
 As noted in the section on [Links], matching of labels is case-insensitive (see [matches]).
 
 ````````````````````````````````html
@@ -2605,7 +2439,6 @@ As noted in the section on [Links], matching of labels is case-insensitive (see 
 <p><a href="/url">Foo</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [ΑΓΩ]: /φου
 
@@ -2614,14 +2447,12 @@ As noted in the section on [Links], matching of labels is case-insensitive (see 
 <p><a href="/%CF%86%CE%BF%CF%85">αγω</a></p>
 ````````````````````````````````
 
-
 Here is a link reference definition with no corresponding link. It contributes nothing to the document.
 
 ```````````````````````````````` example
 [foo]: /url
 .
 ````````````````````````````````
-
 
 Here is another one:
 
@@ -2634,7 +2465,6 @@ bar
 <p>bar</p>
 ````````````````````````````````
 
-
 This is not a link reference definition, because there are [non-whitespace characters] after the title:
 
 ````````````````````````````````html
@@ -2642,7 +2472,6 @@ This is not a link reference definition, because there are [non-whitespace chara
 .
 <p>[foo]: /url &quot;title&quot; ok</p>
 ````````````````````````````````
-
 
 This is a link reference definition, but it has no title:
 
@@ -2652,7 +2481,6 @@ This is a link reference definition, but it has no title:
 .
 <p>&quot;title&quot; ok</p>
 ````````````````````````````````
-
 
 This is not a link reference definition, because it is indented four spaces:
 
@@ -2665,7 +2493,6 @@ This is not a link reference definition, because it is indented four spaces:
 </code></pre>
 <p>[foo]</p>
 ````````````````````````````````
-
 
 This is not a link reference definition, because it occurs inside a code block:
 
@@ -2681,7 +2508,6 @@ This is not a link reference definition, because it occurs inside a code block:
 <p>[foo]</p>
 ````````````````````````````````
 
-
 A [link reference definition] cannot interrupt a paragraph.
 
 ````````````````````````````````html
@@ -2694,7 +2520,6 @@ Foo
 [bar]: /baz</p>
 <p>[bar]</p>
 ````````````````````````````````
-
 
 However, it can directly follow other block elements, such as headings and thematic breaks, and it need not be followed by a blank line.
 
@@ -2728,7 +2553,6 @@ bar
 <a href="/url">foo</a></p>
 ````````````````````````````````
 
-
 Several [link reference definitions] can occur one after another, without intervening blank lines.
 
 ````````````````````````````````html
@@ -2746,7 +2570,6 @@ Several [link reference definitions] can occur one after another, without interv
 <a href="/baz-url">baz</a></p>
 ````````````````````````````````
 
-
 [Link reference definitions] can occur inside block containers, like lists and block quotations. They affect the entire document, not just the container in which they are defined:
 
 ````````````````````````````````html
@@ -2759,14 +2582,12 @@ Several [link reference definitions] can occur one after another, without interv
 </blockquote>
 ````````````````````````````````
 
-
 Whether something is a [link reference definition] is independent of whether the link reference it defines is used in the document. Thus, for example, the following document contains just a link reference definition, and no visible content:
 
 ```````````````````````````````` example
 [foo]: /url
 .
 ````````````````````````````````
-
 
 ## Paragraphs
 
@@ -2783,7 +2604,6 @@ bbb
 <p>bbb</p>
 ````````````````````````````````
 
-
 Paragraphs can contain multiple lines, but no blank lines:
 
 ````````````````````````````````html
@@ -2799,19 +2619,16 @@ bbb</p>
 ddd</p>
 ````````````````````````````````
 
-
 Multiple blank lines between paragraph have no effect:
 
 ````````````````````````````````html
 aaa
-
 
 bbb
 .
 <p>aaa</p>
 <p>bbb</p>
 ````````````````````````````````
-
 
 Leading spaces are skipped:
 
@@ -2822,7 +2639,6 @@ Leading spaces are skipped:
 <p>aaa
 bbb</p>
 ````````````````````````````````
-
 
 Lines after the first may be indented any amount, since indented code blocks cannot interrupt paragraphs.
 
@@ -2836,7 +2652,6 @@ bbb
 ccc</p>
 ````````````````````````````````
 
-
 However, the first line may be indented at most three spaces, or an indented code block will be triggered:
 
 ````````````````````````````````html
@@ -2847,7 +2662,6 @@ bbb
 bbb</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
     aaa
 bbb
@@ -2856,7 +2670,6 @@ bbb
 </code></pre>
 <p>bbb</p>
 ````````````````````````````````
-
 
 Final spaces are stripped before inline parsing, so a paragraph that ends with two or more spaces will not end with a [hard line break]:
 
@@ -2867,7 +2680,6 @@ bbb
 <p>aaa<br />
 bbb</p>
 ````````````````````````````````
-
 
 ## Blank lines
 
@@ -2888,8 +2700,6 @@ aaa
 <p>aaa</p>
 <h1>aaa</h1>
 ````````````````````````````````
-
-
 
 # Container blocks
 
@@ -2931,7 +2741,6 @@ baz</p>
 </blockquote>
 ````````````````````````````````
 
-
 The spaces after the `>` characters can be omitted:
 
 ````````````````````````````````html
@@ -2945,7 +2754,6 @@ The spaces after the `>` characters can be omitted:
 baz</p>
 </blockquote>
 ````````````````````````````````
-
 
 The `>` characters can be indented 1-3 spaces:
 
@@ -2961,7 +2769,6 @@ baz</p>
 </blockquote>
 ````````````````````````````````
 
-
 Four spaces gives us a code block:
 
 ````````````````````````````````html
@@ -2974,7 +2781,6 @@ Four spaces gives us a code block:
 &gt; baz
 </code></pre>
 ````````````````````````````````
-
 
 The Laziness clause allows us to omit the `>` before [paragraph continuation text]:
 
@@ -2990,7 +2796,6 @@ baz</p>
 </blockquote>
 ````````````````````````````````
 
-
 A block quote can contain some lazy and some non-lazy continuation lines:
 
 ````````````````````````````````html
@@ -3004,7 +2809,6 @@ baz
 foo</p>
 </blockquote>
 ````````````````````````````````
-
 
 Laziness only applies to lines that would have been continuations of paragraphs had they been prepended with [block quote markers]. For example, the `> ` cannot be omitted in the second line of
 
@@ -3024,7 +2828,6 @@ without changing the meaning:
 </blockquote>
 <hr />
 ````````````````````````````````
-
 
 Similarly, if we omit the `> ` in the second line of
 
@@ -3049,7 +2852,6 @@ then the block quote ends after the first line:
 </ul>
 ````````````````````````````````
 
-
 For the same reason, we can't omit the `> ` in front of subsequent lines of an indented or fenced code block:
 
 ````````````````````````````````html
@@ -3064,7 +2866,6 @@ For the same reason, we can't omit the `> ` in front of subsequent lines of an i
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 |> ```
 |foo
@@ -3077,7 +2878,6 @@ For the same reason, we can't omit the `> ` in front of subsequent lines of an i
 <pre><code></code></pre>
 ````````````````````````````````
 
-
 Note that in the following case, we have a [lazy continuation line]:
 
 ````````````````````````````````html
@@ -3089,7 +2889,6 @@ Note that in the following case, we have a [lazy continuation line]:
 - bar</p>
 </blockquote>
 ````````````````````````````````
-
 
 To see why, note that in
 
@@ -3109,7 +2908,6 @@ A block quote can be empty:
 </blockquote>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 >
 >  
@@ -3118,7 +2916,6 @@ A block quote can be empty:
 <blockquote>
 </blockquote>
 ````````````````````````````````
-
 
 A block quote can have initial or final blank lines:
 
@@ -3131,7 +2928,6 @@ A block quote can have initial or final blank lines:
 <p>foo</p>
 </blockquote>
 ````````````````````````````````
-
 
 A blank line always separates block quotes:
 
@@ -3148,7 +2944,6 @@ A blank line always separates block quotes:
 </blockquote>
 ````````````````````````````````
 
-
 (Most current Markdown implementations, including John Gruber's original `Markdown.pl`, will parse this example as a single block quote with two paragraphs. But it seems better to allow the author to decide whether two block quotes or one are wanted.)
 
 Consecutiveness means that if we put these block quotes together, we get a single block quote:
@@ -3163,7 +2958,6 @@ bar</p>
 </blockquote>
 ````````````````````````````````
 
-
 To get a block quote with two paragraphs, use:
 
 ````````````````````````````````html
@@ -3177,7 +2971,6 @@ To get a block quote with two paragraphs, use:
 </blockquote>
 ````````````````````````````````
 
-
 Block quotes can interrupt paragraphs:
 
 ````````````````````````````````html
@@ -3189,7 +2982,6 @@ foo
 <p>bar</p>
 </blockquote>
 ````````````````````````````````
-
 
 In general, blank lines are not needed before or after block quotes:
 
@@ -3207,7 +2999,6 @@ In general, blank lines are not needed before or after block quotes:
 </blockquote>
 ````````````````````````````````
 
-
 However, because of laziness, a blank line is needed between a block quote and a following paragraph:
 
 ````````````````````````````````html
@@ -3220,7 +3011,6 @@ baz</p>
 </blockquote>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 > bar
 
@@ -3231,7 +3021,6 @@ baz
 </blockquote>
 <p>baz</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 > bar
@@ -3243,7 +3032,6 @@ baz
 </blockquote>
 <p>baz</p>
 ````````````````````````````````
-
 
 It is a consequence of the Laziness rule that any number of initial `>`s may be omitted on a continuation line of a nested block quote:
 
@@ -3261,7 +3049,6 @@ bar</p>
 </blockquote>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 >>> foo
 > bar
@@ -3278,7 +3065,6 @@ baz</p>
 </blockquote>
 ````````````````````````````````
 
-
 When including an indented code block in a block quote, remember that the [block quote marker] includes both the `>` and a following space. So *five spaces* are needed after the `>`:
 
 ````````````````````````````````html
@@ -3294,8 +3080,6 @@ When including an indented code block in a block quote, remember that the [block
 <p>not code</p>
 </blockquote>
 ````````````````````````````````
-
-
 
 ## List items
 
@@ -3333,7 +3117,6 @@ with two lines.</p>
 </blockquote>
 ````````````````````````````````
 
-
 And let *M* be the marker `1.`, and *N* = 2. Then rule #1 says that the following is an ordered list item with start number 1, and the same contents as *Ls*:
 
 ````````````````````````````````html
@@ -3357,7 +3140,6 @@ with two lines.</p>
 </ol>
 ````````````````````````````````
 
-
 The most important thing to notice is that the position of the text after the list marker determines how much indentation is needed in subsequent blocks in the list item. If the list marker takes up two spaces, and there are three spaces between the list marker and the next [non-whitespace character], then blocks must be indented five spaces in order to fall under the list item.
 
 Here are some examples showing how far content must be indented to be put under the list item:
@@ -3373,7 +3155,6 @@ Here are some examples showing how far content must be indented to be put under 
 <p>two</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 - one
 
@@ -3387,7 +3168,6 @@ Here are some examples showing how far content must be indented to be put under 
 </ul>
 ````````````````````````````````
 
-
 ````````````````````````````````html
  -    one
 
@@ -3399,7 +3179,6 @@ Here are some examples showing how far content must be indented to be put under 
 <pre><code> two
 </code></pre>
 ````````````````````````````````
-
 
 ````````````````````````````````html
  -    one
@@ -3413,7 +3192,6 @@ Here are some examples showing how far content must be indented to be put under 
 </li>
 </ul>
 ````````````````````````````````
-
 
 It is tempting to think of this in terms of columns: the continuation blocks must be indented at least to the column of the first [non-whitespace character] after the list marker. However, that is not quite right. The spaces after the list marker determine how much relative indentation is needed. Which column this indentation reaches will depend on how the list item is embedded in other constructions, as shown by this example:
 
@@ -3434,7 +3212,6 @@ It is tempting to think of this in terms of columns: the continuation blocks mus
 </blockquote>
 ````````````````````````````````
 
-
 Here `two` occurs in the same column as the list marker `1.`, but is actually contained in the list item, because there is sufficient indentation after the last containing blockquote marker.
 
 The converse is also possible. In the following example, the word `two` occurs far to the right of the initial text of the list item, `one`, but it is not considered part of the list item, because it is not indented far enough past the blockquote marker:
@@ -3454,7 +3231,6 @@ The converse is also possible. In the following example, the word `two` occurs f
 </blockquote>
 ````````````````````````````````
 
-
 Note that at least one space is needed between the list marker and any following content, so these are not list items:
 
 ````````````````````````````````html
@@ -3466,12 +3242,10 @@ Note that at least one space is needed between the list marker and any following
 <p>2.two</p>
 ````````````````````````````````
 
-
 A list item may contain blocks that are separated by more than one blank line.
 
 ````````````````````````````````html
 - foo
-
 
   bar
 .
@@ -3482,7 +3256,6 @@ A list item may contain blocks that are separated by more than one blank line.
 </li>
 </ul>
 ````````````````````````````````
-
 
 A list item may contain any kind of block:
 
@@ -3510,7 +3283,6 @@ A list item may contain any kind of block:
 </ol>
 ````````````````````````````````
 
-
 A list item that contains an indented code block will preserve empty lines within the code block verbatim.
 
 ````````````````````````````````html
@@ -3518,14 +3290,12 @@ A list item that contains an indented code block will preserve empty lines withi
 
       bar
 
-
       baz
 .
 <ul>
 <li>
 <p>Foo</p>
 <pre><code>bar
-
 
 baz
 </code></pre>
@@ -3543,13 +3313,11 @@ Note that ordered list start numbers must be nine digits or less:
 </ol>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 1234567890. not ok
 .
 <p>1234567890. not ok</p>
 ````````````````````````````````
-
 
 A start number may begin with 0s:
 
@@ -3561,7 +3329,6 @@ A start number may begin with 0s:
 </ol>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 003. ok
 .
@@ -3570,7 +3337,6 @@ A start number may begin with 0s:
 </ol>
 ````````````````````````````````
 
-
 A start number may not be negative:
 
 ````````````````````````````````html
@@ -3578,8 +3344,6 @@ A start number may not be negative:
 .
 <p>-1. not ok</p>
 ````````````````````````````````
-
-
 
 2.  **Item starting with indented code.** If a sequence of lines *Ls* constitute a sequence of blocks *Bs* starting with an indented code block, and *M* is a list marker of width *W* followed by one space, then the result of prepending *M* and the following space to the first line of *Ls*, and indenting subsequent lines of *Ls* by *W + 1* spaces, is a list item with *Bs* as its contents. If a line is empty, then it need not be indented. The type of the list item (bullet or ordered) is determined by the type of its list marker. If the list item is ordered, then it is also assigned a start number, based on the ordered list marker.
 
@@ -3599,7 +3363,6 @@ An indented code block will have to be indented four spaces beyond the edge of t
 </ul>
 ````````````````````````````````
 
-
 And in this case it is 11 spaces:
 
 ````````````````````````````````html
@@ -3616,7 +3379,6 @@ And in this case it is 11 spaces:
 </ol>
 ````````````````````````````````
 
-
 If the *first* block in the list item is an indented code block, then by rule #2, the contents must be indented *one* space after the list marker:
 
 ````````````````````````````````html
@@ -3632,7 +3394,6 @@ paragraph
 <pre><code>more code
 </code></pre>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 1.     indented code
@@ -3651,7 +3412,6 @@ paragraph
 </li>
 </ol>
 ````````````````````````````````
-
 
 Note that an additional space indent is interpreted as space inside the code block:
 
@@ -3673,7 +3433,6 @@ Note that an additional space indent is interpreted as space inside the code blo
 </ol>
 ````````````````````````````````
 
-
 Note that rules #1 and #2 only apply to two cases: (a) cases in which the lines to be included in a list item begin with a [non-whitespace character], and (b) cases in which they begin with an indented code block. In a case like the following, where the first block begins with a three-space indent, the rules do not allow us to form a list item by indenting the whole thing and prepending a list marker:
 
 ````````````````````````````````html
@@ -3685,7 +3444,6 @@ bar
 <p>bar</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 -    foo
 
@@ -3696,7 +3454,6 @@ bar
 </ul>
 <p>bar</p>
 ````````````````````````````````
-
 
 This is not a significant restriction, because when a block begins with 1-3 spaces indent, the indentation can always be removed without a change in interpretation, allowing rule #1 to be applied. So, in the above case:
 
@@ -3712,7 +3469,6 @@ This is not a significant restriction, because when a block begins with 1-3 spac
 </li>
 </ul>
 ````````````````````````````````
-
 
 3.  **Item starting with a blank line.** If a sequence of lines *Ls* starting with a single [blank line] constitute a (possibly empty) sequence of blocks *Bs*, not separated from each other by more than one blank line, and *M* is a list marker of width *W*, then the result of prepending *M* to the first line of *Ls*, and indenting subsequent lines of *Ls* by *W + 1* spaces, is a list item with *Bs* as its contents.
     If a line is empty, then it need not be indented. The type of the list item (bullet or ordered) is determined by the type of its list marker. If the list item is ordered, then it is also assigned a start number, based on the ordered list marker.
@@ -3753,7 +3509,6 @@ When the list item starts with a blank line, the number of spaces following the 
 </ul>
 ````````````````````````````````
 
-
 A list item can begin with at most one blank line. In the following example, `foo` is not part of the list item:
 
 ````````````````````````````````html
@@ -3766,7 +3521,6 @@ A list item can begin with at most one blank line. In the following example, `fo
 </ul>
 <p>foo</p>
 ````````````````````````````````
-
 
 Here is an empty bullet list item:
 
@@ -3782,7 +3536,6 @@ Here is an empty bullet list item:
 </ul>
 ````````````````````````````````
 
-
 It does not matter whether there are spaces following the [list marker]:
 
 ````````````````````````````````html
@@ -3797,7 +3550,6 @@ It does not matter whether there are spaces following the [list marker]:
 </ul>
 ````````````````````````````````
 
-
 Here is an empty ordered list item:
 
 ````````````````````````````````html
@@ -3811,7 +3563,6 @@ Here is an empty ordered list item:
 <li>bar</li>
 </ol>
 ````````````````````````````````
-
 
 A list may start or end with an empty list item:
 
@@ -3838,7 +3589,6 @@ foo
 1.</p>
 ````````````````````````````````
 
-
 4.  **Indentation.** If a sequence of lines *Ls* constitutes a list item according to rule #1, #2, or #3, then the result of indenting each line of *Ls* by 1-3 spaces (the same for each line) also constitutes a list item with the same contents and attributes. If a line is empty, then it need not be indented.
 
 Indented one space:
@@ -3864,7 +3614,6 @@ with two lines.</p>
 </ol>
 ````````````````````````````````
 
-
 Indented two spaces:
 
 ````````````````````````````````html
@@ -3887,7 +3636,6 @@ with two lines.</p>
 </li>
 </ol>
 ````````````````````````````````
-
 
 Indented three spaces:
 
@@ -3912,7 +3660,6 @@ with two lines.</p>
 </ol>
 ````````````````````````````````
 
-
 Four spaces indent gives a code block:
 
 ````````````````````````````````html
@@ -3931,8 +3678,6 @@ Four spaces indent gives a code block:
     &gt; A block quote.
 </code></pre>
 ````````````````````````````````
-
-
 
 5.  **Laziness.** If a string of lines *Ls* constitute a [list item](#list-items) with contents *Bs*, then the result of deleting some or all of the indentation from one or more lines in which the next [non-whitespace character] after the indentation is [paragraph continuation text] is a list item with the same contents and attributes. The unindented lines are called [lazy continuation line](#)s.
 
@@ -3959,7 +3704,6 @@ with two lines.</p>
 </ol>
 ````````````````````````````````
 
-
 Indentation can be partially deleted:
 
 ````````````````````````````````html
@@ -3971,7 +3715,6 @@ Indentation can be partially deleted:
 with two lines.</li>
 </ol>
 ````````````````````````````````
-
 
 These examples show how laziness can work in nested structures:
 
@@ -3991,7 +3734,6 @@ continued here.</p>
 </blockquote>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 > 1. > Blockquote
 > continued here.
@@ -4007,8 +3749,6 @@ continued here.</p>
 </ol>
 </blockquote>
 ````````````````````````````````
-
-
 
 6.  **That's all.** Nothing that is not counted as a list item by rules #1-5 counts as a [list item](#list-items).
 
@@ -4039,7 +3779,6 @@ So, in this case we need two spaces indent:
 </ul>
 ````````````````````````````````
 
-
 One is not enough:
 
 ````````````````````````````````html
@@ -4056,7 +3795,6 @@ One is not enough:
 </ul>
 ````````````````````````````````
 
-
 Here we need four, because the list marker is wider:
 
 ````````````````````````````````html
@@ -4072,7 +3810,6 @@ Here we need four, because the list marker is wider:
 </ol>
 ````````````````````````````````
 
-
 Three is not enough:
 
 ````````````````````````````````html
@@ -4087,7 +3824,6 @@ Three is not enough:
 </ul>
 ````````````````````````````````
 
-
 A list may be the first block in a list item:
 
 ````````````````````````````````html
@@ -4101,7 +3837,6 @@ A list may be the first block in a list item:
 </li>
 </ul>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 1. - 2. foo
@@ -4118,7 +3853,6 @@ A list may be the first block in a list item:
 </li>
 </ol>
 ````````````````````````````````
-
 
 A list item can contain a heading:
 
@@ -4137,7 +3871,6 @@ A list item can contain a heading:
 baz</li>
 </ul>
 ````````````````````````````````
-
 
 ### Motivation
 
@@ -4291,7 +4024,6 @@ Changing the bullet or ordered list delimiter starts a new list:
 </ul>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 1. foo
 2. bar
@@ -4305,7 +4037,6 @@ Changing the bullet or ordered list delimiter starts a new list:
 <li>baz</li>
 </ol>
 ````````````````````````````````
-
 
 In CommonMark, a list can interrupt a paragraph. That is, no blank line is needed to separate a paragraph from a following list:
 
@@ -4400,7 +4131,6 @@ There can be any number of blank lines between items:
 
 - bar
 
-
 - baz
 .
 <ul>
@@ -4421,7 +4151,6 @@ There can be any number of blank lines between items:
   - bar
     - baz
 
-
       bim
 .
 <ul>
@@ -4439,7 +4168,6 @@ There can be any number of blank lines between items:
 </li>
 </ul>
 ````````````````````````````````
-
 
 To separate consecutive lists of the same type, or to separate a list from an indented code block that would otherwise be parsed as a subparagraph of the final list item, you can insert a blank HTML comment:
 
@@ -4462,7 +4190,6 @@ To separate consecutive lists of the same type, or to separate a list from an in
 <li>bim</li>
 </ul>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 -   foo
@@ -4489,7 +4216,6 @@ To separate consecutive lists of the same type, or to separate a list from an in
 </code></pre>
 ````````````````````````````````
 
-
 List items need not be indented to the same level. The following list items will be treated as items at the same list level, since none is indented enough to belong to the previous list item:
 
 ````````````````````````````````html
@@ -4511,7 +4237,6 @@ List items need not be indented to the same level. The following list items will
 <li>g</li>
 </ul>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 1. a
@@ -4572,7 +4297,6 @@ And here, `3. c` is treated as in indented code block, because it is indented fo
 </code></pre>
 ````````````````````````````````
 
-
 This is a loose list, because there is a blank line between two of the list items:
 
 ````````````````````````````````html
@@ -4594,7 +4318,6 @@ This is a loose list, because there is a blank line between two of the list item
 </ul>
 ````````````````````````````````
 
-
 So is this, with a empty second item:
 
 ````````````````````````````````html
@@ -4613,7 +4336,6 @@ So is this, with a empty second item:
 </li>
 </ul>
 ````````````````````````````````
-
 
 These are loose lists, even though there is no space between the items, because one of the items directly contains two block-level elements with a blank line between them:
 
@@ -4638,7 +4360,6 @@ These are loose lists, even though there is no space between the items, because 
 </ul>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 - a
 - b
@@ -4659,7 +4380,6 @@ These are loose lists, even though there is no space between the items, because 
 </ul>
 ````````````````````````````````
 
-
 This is a tight list, because the blank lines are in a code block:
 
 ````````````````````````````````html
@@ -4676,13 +4396,11 @@ This is a tight list, because the blank lines are in a code block:
 <li>
 <pre><code>b
 
-
 </code></pre>
 </li>
 <li>c</li>
 </ul>
 ````````````````````````````````
-
 
 This is a tight list, because the blank line is between two paragraphs of a sublist. So the sublist is loose while the outer list is tight:
 
@@ -4706,7 +4424,6 @@ This is a tight list, because the blank line is between two paragraphs of a subl
 </ul>
 ````````````````````````````````
 
-
 This is a tight list, because the blank line is inside the block quote:
 
 ````````````````````````````````html
@@ -4724,7 +4441,6 @@ This is a tight list, because the blank line is inside the block quote:
 <li>c</li>
 </ul>
 ````````````````````````````````
-
 
 This list is tight, because the consecutive block elements are not separated by blank lines:
 
@@ -4748,7 +4464,6 @@ This list is tight, because the consecutive block elements are not separated by 
 </ul>
 ````````````````````````````````
 
-
 A single-paragraph list is tight:
 
 ````````````````````````````````html
@@ -4758,7 +4473,6 @@ A single-paragraph list is tight:
 <li>a</li>
 </ul>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 - a
@@ -4772,7 +4486,6 @@ A single-paragraph list is tight:
 </li>
 </ul>
 ````````````````````````````````
-
 
 This list is loose, because of the blank line between the two block elements in the list item:
 
@@ -4792,7 +4505,6 @@ This list is loose, because of the blank line between the two block elements in 
 </ol>
 ````````````````````````````````
 
-
 Here the outer list is loose, the inner list tight:
 
 ````````````````````````````````html
@@ -4811,7 +4523,6 @@ Here the outer list is loose, the inner list tight:
 </li>
 </ul>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 - a
@@ -4840,7 +4551,6 @@ Here the outer list is loose, the inner list tight:
 </ul>
 ````````````````````````````````
 
-
 # Inlines
 
 Inlines are parsed sequentially from the beginning of the character stream to the end (left to right, in left-to-right languages). Thus, for example, in
@@ -4853,7 +4563,6 @@ Inlines are parsed sequentially from the beginning of the character stream to th
 
 `hi` is parsed as code, leaving the backtick at the end as a literal backtick.
 
-
 ## Backslash escapes
 
 Any ASCII punctuation character may be backslash-escaped:
@@ -4864,7 +4573,6 @@ Any ASCII punctuation character may be backslash-escaped:
 <p>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_`{|}~</p>
 ````````````````````````````````
 
-
 Backslashes before other characters are treated as literal backslashes:
 
 ````````````````````````````````html
@@ -4872,7 +4580,6 @@ Backslashes before other characters are treated as literal backslashes:
 .
 <p>\→\A\a\ \3\φ\«</p>
 ````````````````````````````````
-
 
 Escaped characters are treated as regular characters and do not have their usual Markdown meanings:
 
@@ -4898,7 +4605,6 @@ Escaped characters are treated as regular characters and do not have their usual
 &amp;ouml; not a character entity</p>
 ````````````````````````````````
 
-
 If a backslash is itself escaped, the following character is not:
 
 ````````````````````````````````html
@@ -4906,7 +4612,6 @@ If a backslash is itself escaped, the following character is not:
 .
 <p>\<em>emphasis</em></p>
 ````````````````````````````````
-
 
 A backslash at the end of the line is a [hard line break]:
 
@@ -4918,7 +4623,6 @@ bar
 bar</p>
 ````````````````````````````````
 
-
 Backslash escapes do not work in code blocks, code spans, autolinks, or raw HTML:
 
 ````````````````````````````````html
@@ -4927,14 +4631,12 @@ Backslash escapes do not work in code blocks, code spans, autolinks, or raw HTML
 <p><code>\[\`</code></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
     \[\]
 .
 <pre><code>\[\]
 </code></pre>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 ~~~
@@ -4945,20 +4647,17 @@ Backslash escapes do not work in code blocks, code spans, autolinks, or raw HTML
 </code></pre>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <http://example.com?find=\*>
 .
 <p><a href="http://example.com?find=%5C*">http://example.com?find=\*</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <a href="/bar\/)">
 .
 <a href="/bar\/)">
 ````````````````````````````````
-
 
 But they work in all other contexts, including URLs and link titles, link references, and [info strings] in [fenced code blocks]:
 
@@ -4968,7 +4667,6 @@ But they work in all other contexts, including URLs and link titles, link refere
 <p><a href="/bar*" title="ti*tle">foo</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo]
 
@@ -4976,7 +4674,6 @@ But they work in all other contexts, including URLs and link titles, link refere
 .
 <p><a href="/bar*" title="ti*tle">foo</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 |``` foo\+bar
@@ -4986,8 +4683,6 @@ But they work in all other contexts, including URLs and link titles, link refere
 <pre><code class="language-foo+bar">foo
 </code></pre>
 ````````````````````````````````
-
-
 
 ## Entity and numeric character references
 
@@ -5011,7 +4706,6 @@ Conforming CommonMark parsers need not store information about whether a particu
 ∲ ≧̸</p>
 ````````````````````````````````
 
-
 [Decimal numeric character references](#) consist of `&#` + a string of 1-7 arabic digits + `;`. A numeric character reference is parsed as the corresponding Unicode character. Invalid Unicode code points will be replaced by the REPLACEMENT CHARACTER (`U+FFFD`). For security reasons, the code point `U+0000` will also be replaced by `U+FFFD`.
 
 ````````````````````````````````html
@@ -5020,7 +4714,6 @@ Conforming CommonMark parsers need not store information about whether a particu
 <p># Ӓ Ϡ �</p>
 ````````````````````````````````
 
-
 [Hexadecimal numeric character references](#) consist of `&#` +either `X` or `x` + a string of 1-6 hexadecimal digits + `;`. They too are parsed as the corresponding Unicode character (this time specified with a hexadecimal numeral instead of decimal).
 
 ````````````````````````````````html
@@ -5028,7 +4721,6 @@ Conforming CommonMark parsers need not store information about whether a particu
 .
 <p>&quot; ആ ಫ</p>
 ````````````````````````````````
-
 
 Here are some nonentities:
 
@@ -5044,7 +4736,6 @@ Here are some nonentities:
 &amp;ThisIsNotDefined; &amp;hi?;</p>
 ````````````````````````````````
 
-
 Although HTML5 does accept some entity references without a trailing semicolon (such as `&copy`), these are not recognized here, because it makes the grammar too ambiguous:
 
 ````````````````````````````````html
@@ -5052,7 +4743,6 @@ Although HTML5 does accept some entity references without a trailing semicolon (
 .
 <p>&amp;copy</p>
 ````````````````````````````````
-
 
 Strings that are not on the list of HTML5 named entities are not recognized as entity references either:
 
@@ -5062,7 +4752,6 @@ Strings that are not on the list of HTML5 named entities are not recognized as e
 <p>&amp;MadeUpEntity;</p>
 ````````````````````````````````
 
-
 Entity and numeric character references are recognized in any context besides code spans or code blocks, including URLs, [link titles], and [fenced code block][] [info strings]:
 
 ````````````````````````````````html
@@ -5071,13 +4760,11 @@ Entity and numeric character references are recognized in any context besides co
 <a href="&ouml;&ouml;.html">
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo](/f&ouml;&ouml; "f&ouml;&ouml;")
 .
 <p><a href="/f%C3%B6%C3%B6" title="föö">foo</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [foo]
@@ -5086,7 +4773,6 @@ Entity and numeric character references are recognized in any context besides co
 .
 <p><a href="/f%C3%B6%C3%B6" title="föö">foo</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 |``` f&ouml;&ouml;
@@ -5097,7 +4783,6 @@ Entity and numeric character references are recognized in any context besides co
 </code></pre>
 ````````````````````````````````
 
-
 Entity and numeric character references are treated as literal text in code spans and code blocks:
 
 ````````````````````````````````html
@@ -5106,14 +4791,12 @@ Entity and numeric character references are treated as literal text in code span
 <p><code>f&amp;ouml;&amp;ouml;</code></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
     f&ouml;f&ouml;
 .
 <pre><code>f&amp;ouml;f&amp;ouml;
 </code></pre>
 ````````````````````````````````
-
 
 Entity and numeric character references cannot be used in place of symbols indicating structure in CommonMark documents.
 
@@ -5150,13 +4833,11 @@ bar</p>
 <p>→foo</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [a](url &quot;tit&quot;)
 .
 <p>[a](url &quot;tit&quot;)</p>
 ````````````````````````````````
-
 
 ## Code spans
 
@@ -5175,7 +4856,6 @@ This is a simple code span:
 <p><code>foo</code></p>
 ````````````````````````````````
 
-
 Here two backticks are used, because the code contains a backtick. This example also illustrates stripping of a single leading and trailing space:
 
 ````````````````````````````````html
@@ -5183,7 +4863,6 @@ Here two backticks are used, because the code contains a backtick. This example 
 .
 <p><code>foo ` bar</code></p>
 ````````````````````````````````
-
 
 This example shows the motivation for stripping leading and trailing spaces:
 
@@ -5227,7 +4906,6 @@ No stripping occurs if the code span contains only spaces:
 <code>  </code></p>
 ````````````````````````````````
 
-
 [Line endings] are treated like spaces:
 
 ````````````````````````````````html
@@ -5247,7 +4925,6 @@ foo
 .
 <p><code>foo </code></p>
 ````````````````````````````````
-
 
 Interior spaces are not collapsed:
 
@@ -5272,7 +4949,6 @@ Note that backslash escapes do not work in code spans. All backslashes are treat
 <p><code>foo\</code>bar`</p>
 ````````````````````````````````
 
-
 Backslash escapes are never needed, because one can always choose a string of *n* backtick characters as delimiters, where the code does not contain any strings of exactly *n* backtick characters.
 
 ````````````````````````````````html
@@ -5287,7 +4963,6 @@ Backslash escapes are never needed, because one can always choose a string of *n
 <p><code>foo `` bar</code></p>
 ````````````````````````````````
 
-
 Code span backticks have higher precedence than any other inline constructs except HTML tags and autolinks. Thus, for example, this is not parsed as emphasized text, since the second `*` is part of a code span:
 
 ````````````````````````````````html
@@ -5295,7 +4970,6 @@ Code span backticks have higher precedence than any other inline constructs exce
 .
 <p>*foo<code>*</code></p>
 ````````````````````````````````
-
 
 And this is not parsed as a link:
 
@@ -5305,7 +4979,6 @@ And this is not parsed as a link:
 <p>[not a <code>link](/foo</code>)</p>
 ````````````````````````````````
 
-
 Code spans, HTML tags, and autolinks have the same precedence. Thus, this is code:
 
 ````````````````````````````````html
@@ -5313,7 +4986,6 @@ Code spans, HTML tags, and autolinks have the same precedence. Thus, this is cod
 .
 <p><code>&lt;a href=&quot;</code>&quot;&gt;`</p>
 ````````````````````````````````
-
 
 But this is an HTML tag:
 
@@ -5323,7 +4995,6 @@ But this is an HTML tag:
 <p><a href="`">`</p>
 ````````````````````````````````
 
-
 And this is code:
 
 ````````````````````````````````html
@@ -5331,7 +5002,6 @@ And this is code:
 .
 <p><code>&lt;http://foo.bar.</code>baz&gt;`</p>
 ````````````````````````````````
-
 
 But this is an autolink:
 
@@ -5341,7 +5011,6 @@ But this is an autolink:
 <p><a href="http://foo.bar.%60baz">http://foo.bar.`baz</a>`</p>
 ````````````````````````````````
 
-
 When a backtick string is not closed by a matching backtick string, we just have literal backticks:
 
 ````````````````````````````````html
@@ -5349,7 +5018,6 @@ When a backtick string is not closed by a matching backtick string, we just have
 .
 <p>```foo``</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 `foo
@@ -5364,7 +5032,6 @@ The following case also illustrates the need for opening and closing backtick st
 .
 <p>`foo<code>bar</code></p>
 ````````````````````````````````
-
 
 ## Emphasis and strong emphasis
 
@@ -5491,7 +5158,6 @@ Rule 1:
 <p><em>foo bar</em></p>
 ````````````````````````````````
 
-
 This is not emphasis, because the opening `*` is followed by whitespace, and hence not part of a [left-flanking delimiter run]:
 
 ````````````````````````````````html
@@ -5499,7 +5165,6 @@ a * foo bar*
 .
 <p>a * foo bar*</p>
 ````````````````````````````````
-
 
 This is not emphasis, because the opening `*` is preceded by an alphanumeric and followed by punctuation, and hence not part of a [left-flanking delimiter run]:
 
@@ -5509,7 +5174,6 @@ a*"foo"*
 <p>a*&quot;foo&quot;*</p>
 ````````````````````````````````
 
-
 Unicode nonbreaking spaces count as whitespace, too:
 
 ````````````````````````````````html
@@ -5517,7 +5181,6 @@ Unicode nonbreaking spaces count as whitespace, too:
 .
 <p>* a *</p>
 ````````````````````````````````
-
 
 Intraword emphasis with `*` is permitted:
 
@@ -5527,13 +5190,11 @@ foo*bar*
 <p>foo<em>bar</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 5*6*78
 .
 <p>5<em>6</em>78</p>
 ````````````````````````````````
-
 
 Rule 2:
 
@@ -5543,7 +5204,6 @@ _foo bar_
 <p><em>foo bar</em></p>
 ````````````````````````````````
 
-
 This is not emphasis, because the opening `_` is followed by whitespace:
 
 ````````````````````````````````html
@@ -5551,7 +5211,6 @@ _ foo bar_
 .
 <p>_ foo bar_</p>
 ````````````````````````````````
-
 
 This is not emphasis, because the opening `_` is preceded by an alphanumeric and followed by punctuation:
 
@@ -5561,7 +5220,6 @@ a_"foo"_
 <p>a_&quot;foo&quot;_</p>
 ````````````````````````````````
 
-
 Emphasis with `_` is not allowed inside words:
 
 ````````````````````````````````html
@@ -5570,20 +5228,17 @@ foo_bar_
 <p>foo_bar_</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 5_6_78
 .
 <p>5_6_78</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 пристаням_стремятся_
 .
 <p>пристаням_стремятся_</p>
 ````````````````````````````````
-
 
 Here `_` does not generate emphasis, because the first delimiter run is right-flanking and the second left-flanking:
 
@@ -5593,7 +5248,6 @@ aa_"bb"_cc
 <p>aa_&quot;bb&quot;_cc</p>
 ````````````````````````````````
 
-
 This is emphasis, even though the opening delimiter is both left- and right-flanking, because it is preceded by punctuation:
 
 ````````````````````````````````html
@@ -5601,7 +5255,6 @@ foo-_(bar)_
 .
 <p>foo-<em>(bar)</em></p>
 ````````````````````````````````
-
 
 Rule 3:
 
@@ -5613,7 +5266,6 @@ _foo*
 <p>_foo*</p>
 ````````````````````````````````
 
-
 This is not emphasis, because the closing `*` is preceded by whitespace:
 
 ````````````````````````````````html
@@ -5621,7 +5273,6 @@ This is not emphasis, because the closing `*` is preceded by whitespace:
 .
 <p>*foo bar *</p>
 ````````````````````````````````
-
 
 A newline also counts as whitespace:
 
@@ -5633,7 +5284,6 @@ A newline also counts as whitespace:
 *</p>
 ````````````````````````````````
 
-
 This is not emphasis, because the second `*` is preceded by punctuation and followed by an alphanumeric (hence it is not part of a [right-flanking delimiter run]:
 
 ````````````````````````````````html
@@ -5641,7 +5291,6 @@ This is not emphasis, because the second `*` is preceded by punctuation and foll
 .
 <p>*(*foo)</p>
 ````````````````````````````````
-
 
 The point of this restriction is more easily appreciated with this example:
 
@@ -5651,7 +5300,6 @@ The point of this restriction is more easily appreciated with this example:
 <p><em>(<em>foo</em>)</em></p>
 ````````````````````````````````
 
-
 Intraword emphasis with `*` is allowed:
 
 ````````````````````````````````html
@@ -5659,8 +5307,6 @@ Intraword emphasis with `*` is allowed:
 .
 <p><em>foo</em>bar</p>
 ````````````````````````````````
-
-
 
 Rule 4:
 
@@ -5672,7 +5318,6 @@ _foo bar _
 <p>_foo bar _</p>
 ````````````````````````````````
 
-
 This is not emphasis, because the second `_` is preceded by punctuation and followed by an alphanumeric:
 
 ````````````````````````````````html
@@ -5680,7 +5325,6 @@ _(_foo)
 .
 <p>_(_foo)</p>
 ````````````````````````````````
-
 
 This is emphasis within emphasis:
 
@@ -5690,7 +5334,6 @@ _(_foo_)_
 <p><em>(<em>foo</em>)</em></p>
 ````````````````````````````````
 
-
 Intraword emphasis is disallowed for `_`:
 
 ````````````````````````````````html
@@ -5699,20 +5342,17 @@ _foo_bar
 <p>_foo_bar</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 _пристаням_стремятся
 .
 <p>_пристаням_стремятся</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 _foo_bar_baz_
 .
 <p><em>foo_bar_baz</em></p>
 ````````````````````````````````
-
 
 This is emphasis, even though the closing delimiter is both left- and right-flanking, because it is followed by punctuation:
 
@@ -5722,7 +5362,6 @@ _(bar)_.
 <p><em>(bar)</em>.</p>
 ````````````````````````````````
 
-
 Rule 5:
 
 ````````````````````````````````html
@@ -5730,7 +5369,6 @@ Rule 5:
 .
 <p><strong>foo bar</strong></p>
 ````````````````````````````````
-
 
 This is not strong emphasis, because the opening delimiter is followed by whitespace:
 
@@ -5740,7 +5378,6 @@ This is not strong emphasis, because the opening delimiter is followed by whites
 <p>** foo bar**</p>
 ````````````````````````````````
 
-
 This is not strong emphasis, because the opening `**` is preceded by an alphanumeric and followed by punctuation, and hence not part of a [left-flanking delimiter run]:
 
 ````````````````````````````````html
@@ -5748,7 +5385,6 @@ a**"foo"**
 .
 <p>a**&quot;foo&quot;**</p>
 ````````````````````````````````
-
 
 Intraword strong emphasis with `**` is permitted:
 
@@ -5758,7 +5394,6 @@ foo**bar**
 <p>foo<strong>bar</strong></p>
 ````````````````````````````````
 
-
 Rule 6:
 
 ````````````````````````````````html
@@ -5766,7 +5401,6 @@ __foo bar__
 .
 <p><strong>foo bar</strong></p>
 ````````````````````````````````
-
 
 This is not strong emphasis, because the opening delimiter is followed by whitespace:
 
@@ -5786,7 +5420,6 @@ foo bar__
 foo bar__</p>
 ````````````````````````````````
 
-
 This is not strong emphasis, because the opening `__` is preceded by an alphanumeric and followed by punctuation:
 
 ````````````````````````````````html
@@ -5794,7 +5427,6 @@ a__"foo"__
 .
 <p>a__&quot;foo&quot;__</p>
 ````````````````````````````````
-
 
 Intraword strong emphasis is forbidden with `__`:
 
@@ -5804,13 +5436,11 @@ foo__bar__
 <p>foo__bar__</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 5__6__78
 .
 <p>5__6__78</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 пристаням__стремятся__
@@ -5818,13 +5448,11 @@ foo__bar__
 <p>пристаням__стремятся__</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 __foo, __bar__, baz__
 .
 <p><strong>foo, <strong>bar</strong>, baz</strong></p>
 ````````````````````````````````
-
 
 This is strong emphasis, even though the opening delimiter is both left- and right-flanking, because it is preceded by punctuation:
 
@@ -5833,8 +5461,6 @@ foo-__(bar)__
 .
 <p>foo-<strong>(bar)</strong></p>
 ````````````````````````````````
-
-
 
 Rule 7:
 
@@ -5846,7 +5472,6 @@ This is not strong emphasis, because the closing delimiter is preceded by whites
 <p>**foo bar **</p>
 ````````````````````````````````
 
-
 (Nor can it be interpreted as an emphasized `*foo bar *`, because of Rule 11.)
 
 This is not strong emphasis, because the second `**` is preceded by punctuation and followed by an alphanumeric:
@@ -5857,7 +5482,6 @@ This is not strong emphasis, because the second `**` is preceded by punctuation 
 <p>**(**foo)</p>
 ````````````````````````````````
 
-
 The point of this restriction is more easily appreciated with these examples:
 
 ````````````````````````````````html
@@ -5865,7 +5489,6 @@ The point of this restriction is more easily appreciated with these examples:
 .
 <p><em>(<strong>foo</strong>)</em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 **Gomphocarpus (*Gomphocarpus physocarpus*, syn.
@@ -5875,13 +5498,11 @@ The point of this restriction is more easily appreciated with these examples:
 <em>Asclepias physocarpa</em>)</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **foo "*bar*" foo**
 .
 <p><strong>foo &quot;<em>bar</em>&quot; foo</strong></p>
 ````````````````````````````````
-
 
 Intraword emphasis:
 
@@ -5890,7 +5511,6 @@ Intraword emphasis:
 .
 <p><strong>foo</strong>bar</p>
 ````````````````````````````````
-
 
 Rule 8:
 
@@ -5902,7 +5522,6 @@ __foo bar __
 <p>__foo bar __</p>
 ````````````````````````````````
 
-
 This is not strong emphasis, because the second `__` is preceded by punctuation and followed by an alphanumeric:
 
 ````````````````````````````````html
@@ -5910,7 +5529,6 @@ __(__foo)
 .
 <p>__(__foo)</p>
 ````````````````````````````````
-
 
 The point of this restriction is more easily appreciated with this example:
 
@@ -5920,7 +5538,6 @@ _(__foo__)_
 <p><em>(<strong>foo</strong>)</em></p>
 ````````````````````````````````
 
-
 Intraword strong emphasis is forbidden with `__`:
 
 ````````````````````````````````html
@@ -5929,20 +5546,17 @@ __foo__bar
 <p>__foo__bar</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 __пристаням__стремятся
 .
 <p>__пристаням__стремятся</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 __foo__bar__baz__
 .
 <p><strong>foo__bar__baz</strong></p>
 ````````````````````````````````
-
 
 This is strong emphasis, even though the closing delimiter is both left- and right-flanking, because it is followed by punctuation:
 
@@ -5951,7 +5565,6 @@ __(bar)__.
 .
 <p><strong>(bar)</strong>.</p>
 ````````````````````````````````
-
 
 Rule 9:
 
@@ -5963,7 +5576,6 @@ Any nonempty sequence of inline elements can be the contents of an emphasized sp
 <p><em>foo <a href="/url">bar</a></em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo
 bar*
@@ -5971,7 +5583,6 @@ bar*
 <p><em>foo
 bar</em></p>
 ````````````````````````````````
-
 
 In particular, emphasis and strong emphasis can be nested inside emphasis:
 
@@ -5981,13 +5592,11 @@ _foo __bar__ baz_
 <p><em>foo <strong>bar</strong> baz</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 _foo _bar_ baz_
 .
 <p><em>foo <em>bar</em> baz</em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 __foo_ bar_
@@ -5995,13 +5604,11 @@ __foo_ bar_
 <p><em><em>foo</em> bar</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo *bar**
 .
 <p><em>foo <em>bar</em></em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 *foo **bar** baz*
@@ -6021,9 +5628,7 @@ Note that in the preceding case, the interpretation
 <p><em>foo</em><em>bar<em></em>baz</em></p>
 ```
 
-
 is precluded by the condition that a delimiter that can both open and close (like the `*` after `foo`) cannot form emphasis if the sum of the lengths of the delimiter runs containing the opening and closing delimiters is a multiple of 3 unless both lengths are multiples of 3.
-
 
 For the same reason, we don't get two consecutive emphasis sections in this example:
 
@@ -6033,9 +5638,7 @@ For the same reason, we don't get two consecutive emphasis sections in this exam
 <p><em>foo**bar</em></p>
 ````````````````````````````````
 
-
 The same condition ensures that the following cases are all strong emphasis nested inside emphasis, even when the interior spaces are omitted:
-
 
 ````````````````````````````````html
 ***foo** bar*
@@ -6043,20 +5646,17 @@ The same condition ensures that the following cases are all strong emphasis nest
 <p><em><strong>foo</strong> bar</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo **bar***
 .
 <p><em>foo <strong>bar</strong></em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo**bar***
 .
 <p><em>foo<strong>bar</strong></em></p>
 ````````````````````````````````
-
 
 When the lengths of the interior closing and opening delimiter runs are *both* multiples of 3, though, they can match to create emphasis:
 
@@ -6072,7 +5672,6 @@ foo******bar*********baz
 <p>foo<strong><strong><strong>bar</strong></strong></strong>***baz</p>
 ````````````````````````````````
 
-
 Indefinite levels of nesting are possible:
 
 ````````````````````````````````html
@@ -6081,13 +5680,11 @@ Indefinite levels of nesting are possible:
 <p><em>foo <strong>bar <em>baz</em> bim</strong> bop</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo [*bar*](/url)*
 .
 <p><em>foo <a href="/url"><em>bar</em></a></em></p>
 ````````````````````````````````
-
 
 There can be no empty emphasis or strong emphasis:
 
@@ -6097,14 +5694,11 @@ There can be no empty emphasis or strong emphasis:
 <p>** is not an empty emphasis</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **** is not an empty strong emphasis
 .
 <p>**** is not an empty strong emphasis</p>
 ````````````````````````````````
-
-
 
 Rule 10:
 
@@ -6116,7 +5710,6 @@ Any nonempty sequence of inline elements can be the contents of an strongly emph
 <p><strong>foo <a href="/url">bar</a></strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **foo
 bar**
@@ -6124,7 +5717,6 @@ bar**
 <p><strong>foo
 bar</strong></p>
 ````````````````````````````````
-
 
 In particular, emphasis and strong emphasis can be nested inside strong emphasis:
 
@@ -6134,13 +5726,11 @@ __foo _bar_ baz__
 <p><strong>foo <em>bar</em> baz</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 __foo __bar__ baz__
 .
 <p><strong>foo <strong>bar</strong> baz</strong></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 ____foo__ bar__
@@ -6148,13 +5738,11 @@ ____foo__ bar__
 <p><strong><strong>foo</strong> bar</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **foo **bar****
 .
 <p><strong>foo <strong>bar</strong></strong></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 **foo *bar* baz**
@@ -6162,13 +5750,11 @@ ____foo__ bar__
 <p><strong>foo <em>bar</em> baz</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **foo*bar*baz**
 .
 <p><strong>foo<em>bar</em>baz</strong></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 ***foo* bar**
@@ -6176,13 +5762,11 @@ ____foo__ bar__
 <p><strong><em>foo</em> bar</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **foo *bar***
 .
 <p><strong>foo <em>bar</em></strong></p>
 ````````````````````````````````
-
 
 Indefinite levels of nesting are possible:
 
@@ -6194,13 +5778,11 @@ bim* bop**
 bim</em> bop</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **foo [*bar*](/url)**
 .
 <p><strong>foo <a href="/url"><em>bar</em></a></strong></p>
 ````````````````````````````````
-
 
 There can be no empty emphasis or strong emphasis:
 
@@ -6210,14 +5792,11 @@ __ is not an empty emphasis
 <p>__ is not an empty emphasis</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ____ is not an empty strong emphasis
 .
 <p>____ is not an empty strong emphasis</p>
 ````````````````````````````````
-
-
 
 Rule 11:
 
@@ -6227,13 +5806,11 @@ foo ***
 <p>foo ***</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo *\**
 .
 <p>foo <em>*</em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 foo *_*
@@ -6241,13 +5818,11 @@ foo *_*
 <p>foo <em>_</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo *****
 .
 <p>foo *****</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 foo **\***
@@ -6255,13 +5830,11 @@ foo **\***
 <p>foo <strong>*</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo **_**
 .
 <p>foo <strong>_</strong></p>
 ````````````````````````````````
-
 
 Note that when delimiters do not match evenly, Rule 11 determines that the excess literal `*` characters will appear outside of the emphasis, rather than inside it:
 
@@ -6271,13 +5844,11 @@ Note that when delimiters do not match evenly, Rule 11 determines that the exces
 <p>*<em>foo</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo**
 .
 <p><em>foo</em>*</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 ***foo**
@@ -6285,13 +5856,11 @@ Note that when delimiters do not match evenly, Rule 11 determines that the exces
 <p>*<strong>foo</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ****foo*
 .
 <p>***<em>foo</em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 **foo***
@@ -6299,14 +5868,11 @@ Note that when delimiters do not match evenly, Rule 11 determines that the exces
 <p><strong>foo</strong>*</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo****
 .
 <p><em>foo</em>***</p>
 ````````````````````````````````
-
-
 
 Rule 12:
 
@@ -6316,13 +5882,11 @@ foo ___
 <p>foo ___</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo _\__
 .
 <p>foo <em>_</em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 foo _*_
@@ -6330,13 +5894,11 @@ foo _*_
 <p>foo <em>*</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo _____
 .
 <p>foo _____</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 foo __\___
@@ -6344,20 +5906,17 @@ foo __\___
 <p>foo <strong>_</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo __*__
 .
 <p>foo <strong>*</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 __foo_
 .
 <p>_<em>foo</em></p>
 ````````````````````````````````
-
 
 Note that when delimiters do not match evenly, Rule 12 determines that the excess literal `_` characters will appear outside of the emphasis, rather than inside it:
 
@@ -6367,13 +5926,11 @@ _foo__
 <p><em>foo</em>_</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ___foo__
 .
 <p>_<strong>foo</strong></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 ____foo_
@@ -6381,20 +5938,17 @@ ____foo_
 <p>___<em>foo</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 __foo___
 .
 <p><strong>foo</strong>_</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 _foo____
 .
 <p><em>foo</em>___</p>
 ````````````````````````````````
-
 
 Rule 13 implies that if you want emphasis nested directly inside emphasis, you must use different delimiters:
 
@@ -6404,13 +5958,11 @@ Rule 13 implies that if you want emphasis nested directly inside emphasis, you m
 <p><strong>foo</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *_foo_*
 .
 <p><em><em>foo</em></em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 __foo__
@@ -6418,13 +5970,11 @@ __foo__
 <p><strong>foo</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 _*foo*_
 .
 <p><em><em>foo</em></em></p>
 ````````````````````````````````
-
 
 However, strong emphasis within strong emphasis is possible without switching delimiters:
 
@@ -6434,14 +5984,11 @@ However, strong emphasis within strong emphasis is possible without switching de
 <p><strong><strong>foo</strong></strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ____foo____
 .
 <p><strong><strong>foo</strong></strong></p>
 ````````````````````````````````
-
-
 
 Rule 13 can be applied to arbitrarily long sequences of delimiters:
 
@@ -6451,7 +5998,6 @@ Rule 13 can be applied to arbitrarily long sequences of delimiters:
 <p><strong><strong><strong>foo</strong></strong></strong></p>
 ````````````````````````````````
 
-
 Rule 14:
 
 ````````````````````````````````html
@@ -6460,13 +6006,11 @@ Rule 14:
 <p><em><strong>foo</strong></em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 _____foo_____
 .
 <p><em><strong><strong>foo</strong></strong></em></p>
 ````````````````````````````````
-
 
 Rule 15:
 
@@ -6476,13 +6020,11 @@ Rule 15:
 <p><em>foo _bar</em> baz_</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo __bar *baz bim__ bam*
 .
 <p><em>foo <strong>bar *baz bim</strong> bam</em></p>
 ````````````````````````````````
-
 
 Rule 16:
 
@@ -6492,13 +6034,11 @@ Rule 16:
 <p>**foo <strong>bar baz</strong></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo *bar baz*
 .
 <p>*foo <em>bar baz</em></p>
 ````````````````````````````````
-
 
 Rule 17:
 
@@ -6508,13 +6048,11 @@ Rule 17:
 <p>*<a href="/url">bar*</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 _foo [bar_](/url)
 .
 <p>_foo <a href="/url">bar_</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 *<img src="foo" title="*"/>
@@ -6522,13 +6060,11 @@ _foo [bar_](/url)
 <p>*<img src="foo" title="*"/></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **<a href="**">
 .
 <p>**<a href="**"></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 __<a href="__">
@@ -6536,13 +6072,11 @@ __<a href="__">
 <p>__<a href="__"></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *a `*`*
 .
 <p><em>a <code>*</code></em></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 _a `_`_
@@ -6550,21 +6084,17 @@ _a `_`_
 <p><em>a <code>_</code></em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 **a<http://foo.bar/?q=**>
 .
 <p>**a<a href="http://foo.bar/?q=**">http://foo.bar/?q=**</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 __a<http://foo.bar/?q=__>
 .
 <p>__a<a href="http://foo.bar/?q=__">http://foo.bar/?q=__</a></p>
 ````````````````````````````````
-
-
 
 ## Links
 
@@ -6606,7 +6136,6 @@ Here is a simple inline link:
 <p><a href="/uri" title="title">link</a></p>
 ````````````````````````````````
 
-
 The title may be omitted:
 
 ````````````````````````````````html
@@ -6615,7 +6144,6 @@ The title may be omitted:
 <p><a href="/uri">link</a></p>
 ````````````````````````````````
 
-
 Both the title and the destination may be omitted:
 
 ````````````````````````````````html
@@ -6623,7 +6151,6 @@ Both the title and the destination may be omitted:
 .
 <p><a href="">link</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [link](<>)
@@ -6715,13 +6242,11 @@ However, if you have unbalanced parentheses, you need to escape or use the`<...>
 <p><a href="foo(and(bar)">link</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [link](<foo(and(bar)>)
 .
 <p><a href="foo(and(bar)">link</a></p>
 ````````````````````````````````
-
 
 Parentheses and other symbols can also be escaped, as usual in Markdown:
 
@@ -6730,7 +6255,6 @@ Parentheses and other symbols can also be escaped, as usual in Markdown:
 .
 <p><a href="foo):">link</a></p>
 ````````````````````````````````
-
 
 A link can contain fragment identifiers and queries:
 
@@ -6746,7 +6270,6 @@ A link can contain fragment identifiers and queries:
 <p><a href="http://example.com?foo=3#frag">link</a></p>
 ````````````````````````````````
 
-
 Note that a backslash before a non-escapable character is just a backslash:
 
 ````````````````````````````````html
@@ -6754,7 +6277,6 @@ Note that a backslash before a non-escapable character is just a backslash:
 .
 <p><a href="foo%5Cbar">link</a></p>
 ````````````````````````````````
-
 
 URL-escaping should be left alone inside the destination, as all URL-escaped characters are also valid URL characters. Entity and numerical character references in the destination will be parsed into the corresponding Unicode code points, as usual. These may be optionally URL-escaped when written as HTML, but this spec does not enforce any particular policy for rendering URLs in HTML or other formats. Renderers may make different decisions about how to escape or normalize URLs in the output.
 
@@ -6764,7 +6286,6 @@ URL-escaping should be left alone inside the destination, as all URL-escaped cha
 <p><a href="foo%20b%C3%A4">link</a></p>
 ````````````````````````````````
 
-
 Note that, because titles can often be parsed as destinations, if you try to omit the destination and keep the title, you'll get unexpected results:
 
 ````````````````````````````````html
@@ -6772,7 +6293,6 @@ Note that, because titles can often be parsed as destinations, if you try to omi
 .
 <p><a href="%22title%22">link</a></p>
 ````````````````````````````````
-
 
 Titles may be in single quotes, double quotes, or parentheses:
 
@@ -6786,7 +6306,6 @@ Titles may be in single quotes, double quotes, or parentheses:
 <a href="/url" title="title">link</a></p>
 ````````````````````````````````
 
-
 Backslash escapes and entity and numeric character references may be used in titles:
 
 ````````````````````````````````html
@@ -6794,7 +6313,6 @@ Backslash escapes and entity and numeric character references may be used in tit
 .
 <p><a href="/url" title="title &quot;&quot;">link</a></p>
 ````````````````````````````````
-
 
 Titles must be separated from the link using a [whitespace]. Other [Unicode whitespace] like non-breaking space doesn't work.
 
@@ -6804,7 +6322,6 @@ Titles must be separated from the link using a [whitespace]. Other [Unicode whit
 <p><a href="/url%C2%A0%22title%22">link</a></p>
 ````````````````````````````````
 
-
 Nested balanced quotes are not allowed without escaping:
 
 ````````````````````````````````html
@@ -6813,7 +6330,6 @@ Nested balanced quotes are not allowed without escaping:
 <p>[link](/url &quot;title &quot;and&quot; title&quot;)</p>
 ````````````````````````````````
 
-
 But it is easy to work around this by using a different quote type:
 
 ````````````````````````````````html
@@ -6821,7 +6337,6 @@ But it is easy to work around this by using a different quote type:
 .
 <p><a href="/url" title="title &quot;and&quot; title">link</a></p>
 ````````````````````````````````
-
 
 (Note: `Markdown.pl` did allow double quotes inside a double-quoted title, and its test suite included a test demonstrating this. But it is hard to see a good rationale for the extra complexity this brings, since there are already many ways—backslash escaping, entity and numeric character references, or using a different quote type for the enclosing title—to write titles containing double quotes. `Markdown.pl`'s handling of titles has a number of other strange features. For example, it allows single-quoted titles in inline links, but not reference links. And, in reference links but not inline links, it allows a title to begin with `"` and end with `)`. `Markdown.pl` 1.0.1 even allows titles with no closing quotation mark, though 1.0.2b8 does not. It seems preferable to adopt a simple, rational rule that works the same way in inline links and link reference definitions.)
 
@@ -6834,7 +6349,6 @@ But it is easy to work around this by using a different quote type:
 <p><a href="/uri" title="title">link</a></p>
 ````````````````````````````````
 
-
 But it is not allowed between the link text and the following parenthesis:
 
 ````````````````````````````````html
@@ -6842,7 +6356,6 @@ But it is not allowed between the link text and the following parenthesis:
 .
 <p>[link] (/uri)</p>
 ````````````````````````````````
-
 
 The link text may contain balanced brackets, but not unbalanced ones, unless they are escaped:
 
@@ -6852,13 +6365,11 @@ The link text may contain balanced brackets, but not unbalanced ones, unless the
 <p><a href="/uri">link [foo [bar]]</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [link] bar](/uri)
 .
 <p>[link] bar](/uri)</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [link [bar](/uri)
@@ -6866,13 +6377,11 @@ The link text may contain balanced brackets, but not unbalanced ones, unless the
 <p>[link <a href="/uri">bar</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [link \[bar](/uri)
 .
 <p><a href="/uri">link [bar</a></p>
 ````````````````````````````````
-
 
 The link text may contain inline content:
 
@@ -6882,13 +6391,11 @@ The link text may contain inline content:
 <p><a href="/uri">link <em>foo <strong>bar</strong> <code>#</code></em></a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [![moon](moon.jpg)](/uri)
 .
 <p><a href="/uri"><img src="moon.jpg" alt="moon" /></a></p>
 ````````````````````````````````
-
 
 However, links may not contain other links, at any level of nesting.
 
@@ -6898,20 +6405,17 @@ However, links may not contain other links, at any level of nesting.
 <p>[foo <a href="/uri">bar</a>](/uri)</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo *[bar [baz](/uri)](/uri)*](/uri)
 .
 <p>[foo <em>[bar <a href="/uri">baz</a>](/uri)</em>](/uri)</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![[[foo](uri1)](uri2)](uri3)
 .
 <p><img src="uri3" alt="[foo](uri2)" /></p>
 ````````````````````````````````
-
 
 These cases illustrate the precedence of link text grouping over emphasis grouping:
 
@@ -6921,13 +6425,11 @@ These cases illustrate the precedence of link text grouping over emphasis groupi
 <p>*<a href="/uri">foo*</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo *bar](baz*)
 .
 <p><a href="baz*">foo *bar</a></p>
 ````````````````````````````````
-
 
 Note that brackets that *aren't* part of links do not take precedence:
 
@@ -6937,7 +6439,6 @@ Note that brackets that *aren't* part of links do not take precedence:
 <p><em>foo [bar</em> baz]</p>
 ````````````````````````````````
 
-
 These cases illustrate the precedence of HTML tags, code spans, and autolinks over link grouping:
 
 ````````````````````````````````html
@@ -6946,13 +6447,11 @@ These cases illustrate the precedence of HTML tags, code spans, and autolinks ov
 <p>[foo <bar attr="](baz)"></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo`](/uri)`
 .
 <p>[foo<code>](/uri)</code></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [foo<http://example.com/?search=](uri)>
@@ -6980,7 +6479,6 @@ Here is a simple example:
 <p><a href="/url" title="title">foo</a></p>
 ````````````````````````````````
 
-
 The rules for the [link text] are the same as with [inline links]. Thus:
 
 The link text may contain balanced brackets, but not unbalanced ones, unless they are escaped:
@@ -6993,7 +6491,6 @@ The link text may contain balanced brackets, but not unbalanced ones, unless the
 <p><a href="/uri">link [foo [bar]]</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [link \[bar][ref]
 
@@ -7001,7 +6498,6 @@ The link text may contain balanced brackets, but not unbalanced ones, unless the
 .
 <p><a href="/uri">link [bar</a></p>
 ````````````````````````````````
-
 
 The link text may contain inline content:
 
@@ -7013,7 +6509,6 @@ The link text may contain inline content:
 <p><a href="/uri">link <em>foo <strong>bar</strong> <code>#</code></em></a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [![moon](moon.jpg)][ref]
 
@@ -7021,7 +6516,6 @@ The link text may contain inline content:
 .
 <p><a href="/uri"><img src="moon.jpg" alt="moon" /></a></p>
 ````````````````````````````````
-
 
 However, links may not contain other links, at any level of nesting.
 
@@ -7033,7 +6527,6 @@ However, links may not contain other links, at any level of nesting.
 <p>[foo <a href="/uri">bar</a>]<a href="/uri">ref</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo *bar [baz][ref]*][ref]
 
@@ -7041,7 +6534,6 @@ However, links may not contain other links, at any level of nesting.
 .
 <p>[foo <em>bar <a href="/uri">baz</a></em>]<a href="/uri">ref</a></p>
 ````````````````````````````````
-
 
 (In the examples above, we have two [shortcut reference links] instead of one [full reference link].)
 
@@ -7055,7 +6547,6 @@ The following cases illustrate the precedence of link text grouping over emphasi
 <p>*<a href="/uri">foo*</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo *bar][ref]
 
@@ -7063,7 +6554,6 @@ The following cases illustrate the precedence of link text grouping over emphasi
 .
 <p><a href="/uri">foo *bar</a></p>
 ````````````````````````````````
-
 
 These cases illustrate the precedence of HTML tags, code spans, and autolinks over link grouping:
 
@@ -7075,7 +6565,6 @@ These cases illustrate the precedence of HTML tags, code spans, and autolinks ov
 <p>[foo <bar attr="][ref]"></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo`][ref]`
 
@@ -7084,7 +6573,6 @@ These cases illustrate the precedence of HTML tags, code spans, and autolinks ov
 <p>[foo<code>][ref]</code></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo<http://example.com/?search=][ref]>
 
@@ -7092,7 +6580,6 @@ These cases illustrate the precedence of HTML tags, code spans, and autolinks ov
 .
 <p>[foo<a href="http://example.com/?search=%5D%5Bref%5D">http://example.com/?search=][ref]</a></p>
 ````````````````````````````````
-
 
 Matching is case-insensitive:
 
@@ -7104,7 +6591,6 @@ Matching is case-insensitive:
 <p><a href="/url" title="title">foo</a></p>
 ````````````````````````````````
 
-
 Unicode case fold is used:
 
 ````````````````````````````````html
@@ -7114,7 +6600,6 @@ Unicode case fold is used:
 .
 <p><a href="/url">Толпой</a> is a Russian word.</p>
 ````````````````````````````````
-
 
 Consecutive internal [whitespace] is treated as one space for purposes of determining matching:
 
@@ -7127,7 +6612,6 @@ Consecutive internal [whitespace] is treated as one space for purposes of determ
 <p><a href="/url">Baz</a></p>
 ````````````````````````````````
 
-
 No [whitespace] is allowed between the [link text] and the [link label]:
 
 ````````````````````````````````html
@@ -7138,7 +6622,6 @@ No [whitespace] is allowed between the [link text] and the [link label]:
 <p>[foo] <a href="/url" title="title">bar</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo]
 [bar]
@@ -7148,7 +6631,6 @@ No [whitespace] is allowed between the [link text] and the [link label]:
 <p>[foo]
 <a href="/url" title="title">bar</a></p>
 ````````````````````````````````
-
 
 This is a departure from John Gruber's original Markdown syntax description, which explicitly allows whitespace between the link text and the link label. It brings reference links in line with [inline links], which (according to both original Markdown and this spec) cannot have whitespace after the link text. More importantly, it prevents inadvertent capture of consecutive [shortcut reference links]. If whitespace is allowed between the link text and the link label, then in the following we will have a single reference link, not two shortcut reference links, as intended:
 
@@ -7174,7 +6656,6 @@ When there are multiple matching [link reference definitions], the first is used
 <p><a href="/url1">bar</a></p>
 ````````````````````````````````
 
-
 Note that matching is performed on normalized strings, not parsed inline content. So the following does not match, even though the labels define equivalent inline content:
 
 ````````````````````````````````html
@@ -7184,7 +6665,6 @@ Note that matching is performed on normalized strings, not parsed inline content
 .
 <p>[bar][foo!]</p>
 ````````````````````````````````
-
 
 [Link labels] cannot contain brackets, unless they are backslash-escaped:
 
@@ -7197,7 +6677,6 @@ Note that matching is performed on normalized strings, not parsed inline content
 <p>[ref[]: /uri</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo][ref[bar]]
 
@@ -7206,7 +6685,6 @@ Note that matching is performed on normalized strings, not parsed inline content
 <p>[foo][ref[bar]]</p>
 <p>[ref[bar]]: /uri</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [[[foo]]]
@@ -7217,7 +6695,6 @@ Note that matching is performed on normalized strings, not parsed inline content
 <p>[[[foo]]]: /url</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [foo][ref\[]
 
@@ -7225,7 +6702,6 @@ Note that matching is performed on normalized strings, not parsed inline content
 .
 <p><a href="/uri">foo</a></p>
 ````````````````````````````````
-
 
 Note that in this example `]` is not backslash-escaped:
 
@@ -7237,7 +6713,6 @@ Note that in this example `]` is not backslash-escaped:
 <p><a href="/uri">bar\</a></p>
 ````````````````````````````````
 
-
 A [link label] must contain at least one [non-whitespace character]:
 
 ````````````````````````````````html
@@ -7248,7 +6723,6 @@ A [link label] must contain at least one [non-whitespace character]:
 <p>[]</p>
 <p>[]: /uri</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [
@@ -7263,7 +6737,6 @@ A [link label] must contain at least one [non-whitespace character]:
 ]: /uri</p>
 ````````````````````````````````
 
-
 A [collapsed reference link](#) consists of a [link label] that [matches] a [link reference definition] elsewhere in the document, followed by the string `[]`. The contents of the first link label are parsed as inlines, which are used as the link's text. The link's URI and title are provided by the matching reference link definition. Thus, `[foo][]` is equivalent to `[foo][foo]`.
 
 ````````````````````````````````html
@@ -7274,7 +6747,6 @@ A [collapsed reference link](#) consists of a [link label] that [matches] a [lin
 <p><a href="/url" title="title">foo</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [*foo* bar][]
 
@@ -7282,7 +6754,6 @@ A [collapsed reference link](#) consists of a [link label] that [matches] a [lin
 .
 <p><a href="/url" title="title"><em>foo</em> bar</a></p>
 ````````````````````````````````
-
 
 The link labels are case-insensitive:
 
@@ -7293,8 +6764,6 @@ The link labels are case-insensitive:
 .
 <p><a href="/url" title="title">Foo</a></p>
 ````````````````````````````````
-
-
 
 As with full reference links, [whitespace] is not allowed between the two sets of brackets:
 
@@ -7308,7 +6777,6 @@ As with full reference links, [whitespace] is not allowed between the two sets o
 []</p>
 ````````````````````````````````
 
-
 A [shortcut reference link](#) consists of a [link label] that [matches] a [link reference definition] elsewhere in the document and is not followed by `[]` or a link label. The contents of the first link label are parsed as inlines, which are used as the link's text. The link's URI and title are provided by the matching link reference definition. Thus, `[foo]` is equivalent to `[foo][]`.
 
 ````````````````````````````````html
@@ -7319,7 +6787,6 @@ A [shortcut reference link](#) consists of a [link label] that [matches] a [link
 <p><a href="/url" title="title">foo</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [*foo* bar]
 
@@ -7327,7 +6794,6 @@ A [shortcut reference link](#) consists of a [link label] that [matches] a [link
 .
 <p><a href="/url" title="title"><em>foo</em> bar</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 [[*foo* bar]]
@@ -7337,7 +6803,6 @@ A [shortcut reference link](#) consists of a [link label] that [matches] a [link
 <p>[<a href="/url" title="title"><em>foo</em> bar</a>]</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 [[bar [foo]
 
@@ -7345,7 +6810,6 @@ A [shortcut reference link](#) consists of a [link label] that [matches] a [link
 .
 <p>[[bar <a href="/url">foo</a></p>
 ````````````````````````````````
-
 
 The link labels are case-insensitive:
 
@@ -7357,7 +6821,6 @@ The link labels are case-insensitive:
 <p><a href="/url" title="title">Foo</a></p>
 ````````````````````````````````
 
-
 A space after the link text should be preserved:
 
 ````````````````````````````````html
@@ -7367,7 +6830,6 @@ A space after the link text should be preserved:
 .
 <p><a href="/url">foo</a> bar</p>
 ````````````````````````````````
-
 
 If you just want bracketed text, you can backslash-escape the opening bracket to avoid links:
 
@@ -7379,7 +6841,6 @@ If you just want bracketed text, you can backslash-escape the opening bracket to
 <p>[foo]</p>
 ````````````````````````````````
 
-
 Note that this is a link, because a link label ends with the first following closing bracket:
 
 ````````````````````````````````html
@@ -7389,7 +6850,6 @@ Note that this is a link, because a link label ends with the first following clo
 .
 <p>*<a href="/url">foo*</a></p>
 ````````````````````````````````
-
 
 Full and compact references take precedence over shortcut references:
 
@@ -7438,7 +6898,6 @@ In the following case `[bar][baz]` is parsed as a reference, `[foo]` as normal t
 <p>[foo]<a href="/url">bar</a></p>
 ````````````````````````````````
 
-
 Here, though, `[foo][bar]` is parsed as a reference, since`[bar]` is defined:
 
 ````````````````````````````````html
@@ -7449,7 +6908,6 @@ Here, though, `[foo][bar]` is parsed as a reference, since`[bar]` is defined:
 .
 <p><a href="/url2">foo</a><a href="/url1">baz</a></p>
 ````````````````````````````````
-
 
 Here `[foo]` is not parsed as a shortcut reference, because it is followed by a link label (even though `[bar]` is not defined):
 
@@ -7462,8 +6920,6 @@ Here `[foo]` is not parsed as a shortcut reference, because it is followed by a 
 <p>[foo]<a href="/url1">bar</a></p>
 ````````````````````````````````
 
-
-
 ## Images
 
 Syntax for images is like the syntax for links, with one difference. Instead of [link text], we have an [image description](#). The rules for this are the same as for [link text], except that (a) an image description starts with `![` rather than `[`, and (b) an image description may contain links. An image description has inline elements as its contents. When an image is rendered to HTML, this is standardly used as the image's `alt` attribute.
@@ -7474,7 +6930,6 @@ Syntax for images is like the syntax for links, with one difference. Instead of 
 <p><img src="/url" alt="foo" title="title" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![foo *bar*]
 
@@ -7483,20 +6938,17 @@ Syntax for images is like the syntax for links, with one difference. Instead of 
 <p><img src="train.jpg" alt="foo bar" title="train &amp; tracks" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![foo ![bar](/url)](/url2)
 .
 <p><img src="/url2" alt="foo bar" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![foo [bar](/url)](/url2)
 .
 <p><img src="/url2" alt="foo bar" /></p>
 ````````````````````````````````
-
 
 Though this spec is concerned with parsing, not rendering, it is recommended that in rendering to HTML, only the plain string content of the [image description] be used. Note that in the above example, the alt attribute's value is `foo bar`, not `foo [bar](/url)` or `foo <a href="/url">bar</a>`. Only the plain string content is rendered, without formatting.
 
@@ -7508,7 +6960,6 @@ Though this spec is concerned with parsing, not rendering, it is recommended tha
 <p><img src="train.jpg" alt="foo bar" title="train &amp; tracks" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![foo *bar*][foobar]
 
@@ -7517,13 +6968,11 @@ Though this spec is concerned with parsing, not rendering, it is recommended tha
 <p><img src="train.jpg" alt="foo bar" title="train &amp; tracks" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![foo](train.jpg)
 .
 <p><img src="train.jpg" alt="foo" /></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 My ![foo bar](/path/to/train.jpg  "title"   )
@@ -7531,20 +6980,17 @@ My ![foo bar](/path/to/train.jpg  "title"   )
 <p>My <img src="/path/to/train.jpg" alt="foo bar" title="title" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![foo](<url>)
 .
 <p><img src="url" alt="foo" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![](/url)
 .
 <p><img src="/url" alt="" /></p>
 ````````````````````````````````
-
 
 Reference-style:
 
@@ -7556,7 +7002,6 @@ Reference-style:
 <p><img src="/url" alt="foo" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![foo][bar]
 
@@ -7564,7 +7009,6 @@ Reference-style:
 .
 <p><img src="/url" alt="foo" /></p>
 ````````````````````````````````
-
 
 Collapsed:
 
@@ -7576,7 +7020,6 @@ Collapsed:
 <p><img src="/url" alt="foo" title="title" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![*foo* bar][]
 
@@ -7584,7 +7027,6 @@ Collapsed:
 .
 <p><img src="/url" alt="foo bar" title="title" /></p>
 ````````````````````````````````
-
 
 The labels are case-insensitive:
 
@@ -7595,7 +7037,6 @@ The labels are case-insensitive:
 .
 <p><img src="/url" alt="Foo" title="title" /></p>
 ````````````````````````````````
-
 
 As with reference links, [whitespace] is not allowed between the two sets of brackets:
 
@@ -7609,7 +7050,6 @@ As with reference links, [whitespace] is not allowed between the two sets of bra
 []</p>
 ````````````````````````````````
 
-
 Shortcut:
 
 ````````````````````````````````html
@@ -7620,7 +7060,6 @@ Shortcut:
 <p><img src="/url" alt="foo" title="title" /></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ![*foo* bar]
 
@@ -7628,7 +7067,6 @@ Shortcut:
 .
 <p><img src="/url" alt="foo bar" title="title" /></p>
 ````````````````````````````````
-
 
 Note that link labels cannot contain unescaped brackets:
 
@@ -7641,7 +7079,6 @@ Note that link labels cannot contain unescaped brackets:
 <p>[[foo]]: /url &quot;title&quot;</p>
 ````````````````````````````````
 
-
 The link labels are case-insensitive:
 
 ````````````````````````````````html
@@ -7651,7 +7088,6 @@ The link labels are case-insensitive:
 .
 <p><img src="/url" alt="Foo" title="title" /></p>
 ````````````````````````````````
-
 
 If you just want a literal `!` followed by bracketed text, you can backslash-escape the opening `[`:
 
@@ -7663,7 +7099,6 @@ If you just want a literal `!` followed by bracketed text, you can backslash-esc
 <p>![foo]</p>
 ````````````````````````````````
 
-
 If you want a link after a literal `!`, backslash-escape the `!`:
 
 ````````````````````````````````html
@@ -7673,7 +7108,6 @@ If you want a link after a literal `!`, backslash-escape the `!`:
 .
 <p>!<a href="/url" title="title">foo</a></p>
 ````````````````````````````````
-
 
 ## Autolinks
 
@@ -7693,20 +7127,17 @@ Here are some valid autolinks:
 <p><a href="http://foo.bar.baz">http://foo.bar.baz</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <http://foo.bar.baz/test?q=hello&id=22&boolean>
 .
 <p><a href="http://foo.bar.baz/test?q=hello&amp;id=22&amp;boolean">http://foo.bar.baz/test?q=hello&amp;id=22&amp;boolean</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <irc://foo.bar:2233/baz>
 .
 <p><a href="irc://foo.bar:2233/baz">irc://foo.bar:2233/baz</a></p>
 ````````````````````````````````
-
 
 Uppercase is also fine:
 
@@ -7716,7 +7147,6 @@ Uppercase is also fine:
 <p><a href="MAILTO:FOO@BAR.BAZ">MAILTO:FOO@BAR.BAZ</a></p>
 ````````````````````````````````
 
-
 Note that many strings that count as [absolute URIs] for purposes of this spec are not valid URIs, because their schemes are not registered or because of other problems with their syntax:
 
 ````````````````````````````````html
@@ -7725,13 +7155,11 @@ Note that many strings that count as [absolute URIs] for purposes of this spec a
 <p><a href="a+b+c:d">a+b+c:d</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <made-up-scheme://foo,bar>
 .
 <p><a href="made-up-scheme://foo,bar">made-up-scheme://foo,bar</a></p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 <http://../>
@@ -7739,13 +7167,11 @@ Note that many strings that count as [absolute URIs] for purposes of this spec a
 <p><a href="http://../">http://../</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <localhost:5001/foo>
 .
 <p><a href="localhost:5001/foo">localhost:5001/foo</a></p>
 ````````````````````````````````
-
 
 Spaces are not allowed in autolinks:
 
@@ -7755,7 +7181,6 @@ Spaces are not allowed in autolinks:
 <p>&lt;http://foo.bar/baz bim&gt;</p>
 ````````````````````````````````
 
-
 Backslash-escapes do not work inside autolinks:
 
 ````````````````````````````````html
@@ -7763,7 +7188,6 @@ Backslash-escapes do not work inside autolinks:
 .
 <p><a href="http://example.com/%5C%5B%5C">http://example.com/\[\</a></p>
 ````````````````````````````````
-
 
 An [email autolink](#) consists of `<`, followed by an [email address], followed by `>`. The link's label is the email address, and the URL is `mailto:` followed by the email address.
 
@@ -7781,13 +7205,11 @@ Examples of email autolinks:
 <p><a href="mailto:foo@bar.example.com">foo@bar.example.com</a></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <foo+special@Bar.baz-bar0.com>
 .
 <p><a href="mailto:foo+special@Bar.baz-bar0.com">foo+special@Bar.baz-bar0.com</a></p>
 ````````````````````````````````
-
 
 Backslash-escapes do not work inside email autolinks:
 
@@ -7797,7 +7219,6 @@ Backslash-escapes do not work inside email autolinks:
 <p>&lt;foo+@bar.example.com&gt;</p>
 ````````````````````````````````
 
-
 These are not autolinks:
 
 ````````````````````````````````html
@@ -7806,13 +7227,11 @@ These are not autolinks:
 <p>&lt;&gt;</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 < http://foo.bar >
 .
 <p>&lt; http://foo.bar &gt;</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 <m:abc>
@@ -7820,13 +7239,11 @@ These are not autolinks:
 <p>&lt;m:abc&gt;</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <foo.bar.baz>
 .
 <p>&lt;foo.bar.baz&gt;</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 http://example.com
@@ -7834,13 +7251,11 @@ http://example.com
 <p>http://example.com</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo@bar.example.com
 .
 <p>foo@bar.example.com</p>
 ````````````````````````````````
-
 
 ## Raw HTML
 
@@ -7886,7 +7301,6 @@ Here are some simple open tags:
 <p><a><bab><c2c></p>
 ````````````````````````````````
 
-
 Empty elements:
 
 ````````````````````````````````html
@@ -7894,7 +7308,6 @@ Empty elements:
 .
 <p><a/><b2/></p>
 ````````````````````````````````
-
 
 [Whitespace] is allowed:
 
@@ -7906,7 +7319,6 @@ data="foo" >
 data="foo" ></p>
 ````````````````````````````````
 
-
 With attributes:
 
 ````````````````````````````````html
@@ -7917,7 +7329,6 @@ _boolean zoop:33=zoop:33 />
 _boolean zoop:33=zoop:33 /></p>
 ````````````````````````````````
 
-
 Custom tag names can be used:
 
 ````````````````````````````````html
@@ -7925,7 +7336,6 @@ Foo <responsive-image src="foo.jpg" />
 .
 <p>Foo <responsive-image src="foo.jpg" /></p>
 ````````````````````````````````
-
 
 Illegal tag names, not parsed as HTML:
 
@@ -7935,7 +7345,6 @@ Illegal tag names, not parsed as HTML:
 <p>&lt;33&gt; &lt;__&gt;</p>
 ````````````````````````````````
 
-
 Illegal attribute names:
 
 ````````````````````````````````html
@@ -7944,7 +7353,6 @@ Illegal attribute names:
 <p>&lt;a h*#ref=&quot;hi&quot;&gt;</p>
 ````````````````````````````````
 
-
 Illegal attribute values:
 
 ````````````````````````````````html
@@ -7952,7 +7360,6 @@ Illegal attribute values:
 .
 <p>&lt;a href=&quot;hi'&gt; &lt;a href=hi'&gt;</p>
 ````````````````````````````````
-
 
 Illegal [whitespace]:
 
@@ -7968,7 +7375,6 @@ foo&gt;&lt;bar/ &gt;
 bim!bop /&gt;</p>
 ````````````````````````````````
 
-
 Missing [whitespace]:
 
 ````````````````````````````````html
@@ -7976,7 +7382,6 @@ Missing [whitespace]:
 .
 <p>&lt;a href='bar'title=title&gt;</p>
 ````````````````````````````````
-
 
 Closing tags:
 
@@ -7986,7 +7391,6 @@ Closing tags:
 <p></a></foo ></p>
 ````````````````````````````````
 
-
 Illegal attributes in closing tag:
 
 ````````````````````````````````html
@@ -7994,7 +7398,6 @@ Illegal attributes in closing tag:
 .
 <p>&lt;/a href=&quot;foo&quot;&gt;</p>
 ````````````````````````````````
-
 
 Comments:
 
@@ -8006,13 +7409,11 @@ comment - with hyphen -->
 comment - with hyphen --></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo <!-- not a comment -- two hyphens -->
 .
 <p>foo &lt;!-- not a comment -- two hyphens --&gt;</p>
 ````````````````````````````````
-
 
 Not comments:
 
@@ -8025,7 +7426,6 @@ foo <!-- foo--->
 <p>foo &lt;!-- foo---&gt;</p>
 ````````````````````````````````
 
-
 Processing instructions:
 
 ````````````````````````````````html
@@ -8033,7 +7433,6 @@ foo <?php echo $a; ?>
 .
 <p>foo <?php echo $a; ?></p>
 ````````````````````````````````
-
 
 Declarations:
 
@@ -8043,7 +7442,6 @@ foo <!ELEMENT br EMPTY>
 <p>foo <!ELEMENT br EMPTY></p>
 ````````````````````````````````
 
-
 CDATA sections:
 
 ````````````````````````````````html
@@ -8051,7 +7449,6 @@ foo <![CDATA[>&<]]>
 .
 <p>foo <![CDATA[>&<]]></p>
 ````````````````````````````````
-
 
 Entity and numeric character references are preserved in HTML attributes:
 
@@ -8061,7 +7458,6 @@ foo <a href="&ouml;">
 <p>foo <a href="&ouml;"></p>
 ````````````````````````````````
 
-
 Backslash escapes do not work in HTML attributes:
 
 ````````````````````````````````html
@@ -8070,13 +7466,11 @@ foo <a href="\*">
 <p>foo <a href="\*"></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <a href="\"">
 .
 <p>&lt;a href=&quot;&quot;&quot;&gt;</p>
 ````````````````````````````````
-
 
 ## Hard line breaks
 
@@ -8090,7 +7484,6 @@ baz
 baz</p>
 ````````````````````````````````
 
-
 For a more visible alternative, a backslash before the [line ending] may be used instead of two spaces:
 
 ````````````````````````````````html
@@ -8100,7 +7493,6 @@ baz
 <p>foo<br />
 baz</p>
 ````````````````````````````````
-
 
 More than two spaces can be used:
 
@@ -8112,7 +7504,6 @@ baz
 baz</p>
 ````````````````````````````````
 
-
 Leading spaces at the beginning of the next line are ignored:
 
 ````````````````````````````````html
@@ -8123,7 +7514,6 @@ foo
 bar</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo\
      bar
@@ -8131,7 +7521,6 @@ foo\
 <p>foo<br />
 bar</p>
 ````````````````````````````````
-
 
 Line breaks can occur inside emphasis, links, and other constructs that allow inline content:
 
@@ -8143,7 +7532,6 @@ bar*
 bar</em></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 *foo\
 bar*
@@ -8151,7 +7539,6 @@ bar*
 <p><em>foo<br />
 bar</em></p>
 ````````````````````````````````
-
 
 Line breaks do not occur inside code spans
 
@@ -8162,14 +7549,12 @@ span`
 <p><code>code  span</code></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 `code\
 span`
 .
 <p><code>code\ span</code></p>
 ````````````````````````````````
-
 
 or HTML tags:
 
@@ -8181,7 +7566,6 @@ bar">
 bar"></p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 <a href="foo\
 bar">
@@ -8189,7 +7573,6 @@ bar">
 <p><a href="foo\
 bar"></p>
 ````````````````````````````````
-
 
 Hard line breaks are for separating inline content within a block. Neither syntax for hard line breaks works at the end of a paragraph or other block element:
 
@@ -8199,13 +7582,11 @@ foo\
 <p>foo\</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 foo  
 .
 <p>foo</p>
 ````````````````````````````````
-
 
 ````````````````````````````````html
 ### foo\
@@ -8213,13 +7594,11 @@ foo
 <h3>foo\</h3>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 ### foo  
 .
 <h3>foo</h3>
 ````````````````````````````````
-
 
 ## Soft line breaks
 
@@ -8233,7 +7612,6 @@ baz
 baz</p>
 ````````````````````````````````
 
-
 Spaces at the end of the line and beginning of the next line are removed:
 
 ````````````````````````````````html
@@ -8243,7 +7621,6 @@ foo
 <p>foo
 baz</p>
 ````````````````````````````````
-
 
 A conforming parser may render a soft line break in HTML either as a line break or as a space.
 
@@ -8259,13 +7636,11 @@ hello $.;'there
 <p>hello $.;'there</p>
 ````````````````````````````````
 
-
 ````````````````````````````````html
 Foo χρῆν
 .
 <p>Foo χρῆν</p>
 ````````````````````````````````
-
 
 Internal spaces are preserved verbatim:
 
@@ -8274,7 +7649,6 @@ Multiple     spaces
 .
 <p>Multiple     spaces</p>
 ````````````````````````````````
-
 
 <!-- END TESTS -->
 

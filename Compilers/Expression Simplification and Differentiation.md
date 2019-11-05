@@ -75,7 +75,6 @@ The next thing to do is to get your symbolic manipulator to simplify expressions
 
 ##### Listing 12-6. Symbolic differentiation with local simplifications
 
-
 ```F#
 let simpSum (a, b) =
     match a, b with
@@ -536,12 +535,9 @@ install-package fslexyacc
 
 添加文件：Listing 12-7. Expr.fs
 
-
 添加文件：Listing 12-8. ExprLexer.fsl
 
-
 添加文件：Listing 12-9. ExprParser.fsy
-
 
 从解决方案资源管理器中，依赖项，获取`FsLexYacc`库所在的位置：
 
@@ -560,21 +556,15 @@ C:\Users\cuishengli\.nuget\packages\fslexyacc\9.0.2
 
 执行完命令后，目录下会生成两个文件`ExprParser.fs`、`ExprLexer.fs`。添加这两个现有项到项目。
 
-
-
 对于生成的词法文件，语法文件匹配下面模式的行用于跟踪`.fsy`和`.fsl`中的错误，当编译通过后，可以手动用`//$0`注释掉：
 
 ```
 ^# \d+\b
 ```
 
-
-
 继续添加文件，以完成功能。
 
 添加`ExprUtils.fs`文件：Listing 12-10. ExprUtils.fs，Listing 12-11. ExprUtil.fs
-
-
 
 新建测试项目：
 

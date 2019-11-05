@@ -210,7 +210,6 @@ room1.OnNext(new ChatMessage{Content = "Another Message", Sender = "1" });
 var rooms = roomsSubject.AsObservable() as IObservable<ChatRoom>; //接上个代码的rooms
 ```
 
-
 Running this test program against the query produces this output:
 
 ```C#

@@ -14,8 +14,6 @@ Above example showing that `incrementParam`'s argument a is of type `int byref`.
 
 Lastly when we call `incrementParam`, we provide the address of the mutable values and we do this by using the address-of operator(&). `byref` parameter works with value type like primitive.
 
-
-
 ## Passing by Reference
 
 Passing an F# value by reference involves [byrefs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/byrefs), which are managed pointer types. Guidance for which type to use is as follows:
@@ -60,8 +58,6 @@ let b2 = System.DateTime.TryParse("12-20-04 12:21:00", &dt2)
 
 printfn "%b %A" b2 dt2
 ```
-
-
 
 https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/byrefs
 
@@ -267,8 +263,6 @@ Well, I came to understand that F# is able to manage references (some sort of C+
    printfn "%d" !refInt
    ```
 
-
-
 ## Answer
 
 **Ref keyword** Yes, when you write `let a = ref 10` you're essentially writing `let a = new Ref<int>(10)` where the `Ref<T>` type has a mutable field `Value`.
@@ -294,8 +288,6 @@ bar.Increment(ref a)
 ```
 
 The reason is that you're creating a new instance of `Ref<int>` and you're copying the value of `a` into this instance. The `Increment` method then modifies the value stored on heap in the instance of `Ref<int>`, but you don't have a reference to this object anymore.
-
-
 
 ```
 let a = ref 10

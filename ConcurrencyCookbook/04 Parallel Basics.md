@@ -1,4 +1,4 @@
-﻿# Chapter 4. Parallel Basics
+# Chapter 4. Parallel Basics
 
 This chapter covers patterns for parallel programming. Parallel programming is used to split up CPU-bound pieces of work and divide them among multiple threads. These parallel processing recipes only consider CPU-bound work. If you have naturally asynchronous operations (such as I/O-bound work) that you want to execute in parallel, then see Chapter 2, and Recipe 2.4 in particular. The parallel processing abstractions covered in this chapter are part of the Task Parallel Library (TPL). The TPL is built into the .NET framework.
 
@@ -13,9 +13,9 @@ You have a collection of data, and you need to perform the same operation on eac
 The `Parallel` type contains a `ForEach` method specifically designed for this problem. The following example takes a collection of matrices and rotates them all:
 
 ```C#
-void RotateMatrices(IEnumerable<Matrix> matrices, float degrees)
+void RotateMatrices(IEnumerable<Matrix> matrices, float angles) // degrees
 {
-  Parallel.ForEach(matrices, matrix => matrix.Rotate(degrees));
+  Parallel.ForEach(matrices, mtx => mtx.Rotate(angles));
 }
 ```
 
@@ -24,13 +24,13 @@ There are some situations where you'll want to stop the loop early, such as if y
 ```C#
 void InvertMatrices(IEnumerable<Matrix> matrices)
 {
-  Parallel.ForEach(matrices, (matrix, state) =>
+  Parallel.ForEach(matrices, (mtx, state) =>
   {
 
-    if (!matrix.IsInvertible)
+    if (!mtx.IsInvertible)
       state.Stop();
     else
-      matrix.Invert();
+      mtx.Invert();
   });
 }
 ```
@@ -40,11 +40,11 @@ This code uses `ParallelLoopState.Stop` to stop the loop, preventing any further
 A more common situation is when you want the ability to cancel a parallel loop. This is different than stopping the loop; a loop is stopped from inside the loop, and it is canceled from outside the loop. To show an example, a cancel button may cancel a `CancellationTokenSource`, canceling a parallel loop as in this code example:
 
 ```C#
-void RotateMatrices(IEnumerable<Matrix> matrices, float degrees, CancellationToken token)
+void RotateMatrices(IEnumerable<Matrix> matrices, float angles, CancellationToken tok)
 {
   Parallel.ForEach(matrices,
-      new ParallelOptions { CancellationToken = token },
-      matrix => matrix.Rotate(degrees));
+      new ParallelOptions { CancellationToken = tok },
+      mtx => mtx.Rotate(angles));
 }
 ```
 
@@ -55,13 +55,13 @@ One thing to keep in mind is that each parallel task may run on a different thre
 // This is just an example of using a lock to protect shared state.
 int InvertMatrices(IEnumerable<Matrix> matrices)
 {
-  object mutex = new object();
+  var mutex = new object();
   int nonInvertibleCount = 0;
-  Parallel.ForEach(matrices, matrix =>
+  Parallel.ForEach(matrices, mtx =>
   {
-    if (matrix.IsInvertible)
+    if (mtx.IsInvertible)
     {
-      matrix.Invert();
+      mtx.Invert();
     }
     else
     {
@@ -77,7 +77,7 @@ int InvertMatrices(IEnumerable<Matrix> matrices)
 
 ### Discussion
 
-The `Parallel.ForEach` method enables parallel processing over a sequence of values. A similar solution is Parallel LINQ (PLINQ), which provides much of the same capabilities with a LINQ-like syntax. One difference between Parallel and PLINQ is that PLINQ assumes it can use all the cores on the computer, while Parallel will dynamically react to changing CPU conditions. `Parallel.ForEach` is a parallel foreach loop. If you need to do a parallel for loop, the Parallel class also supports a `Parallel.For` method.
+The `Parallel.ForEach` method enables parallel processing over a sequence of values. A similar solution is Parallel LINQ (PLINQ), which provides much of the same capabilities with a LINQ-like syntax. One difference between Parallel and PLINQ is that PLINQ assumes it can use all the cores on the computer, while `Parallel` will dynamically react to changing CPU conditions. `Parallel.ForEach` is a parallel foreach loop. If you need to do a parallel for loop, the `Parallel` class also supports a `Parallel.For` method.
 
 `Parallel.For` is especially useful if you have multiple arrays of data that all take the same index.
 
@@ -106,8 +106,8 @@ Here's an example of a parallel sum:
 // This is just an example of using a lock to protect shared state.
 int ParallelSum(IEnumerable<int> values)
 {
-  object mutex = new object();
-  int result = 0;
+  var mutex = new object();
+  var result = 0;
   Parallel.ForEach(source: values,
       localInit: () => 0,
       body: (item, state, localValue) => localValue + item,
@@ -157,14 +157,15 @@ You have a number of methods to call in parallel, and these methods are (mostly)
 
 ### Solution
 
-The `Parallel` class contains a simple Invoke member that is designed for this scenario. This example splits an array in half and processes each half independently:
+The `Parallel` class contains a simple `Invoke` member that is designed for this scenario. This example splits an array in half and processes each half independently:
 
 ```C#
 void ProcessArray(double[] array)
 {
+  var middle = array.Length / 2;
   Parallel.Invoke(
-      () => ProcessPartialArray(array, 0, array.Length / 2),
-      () => ProcessPartialArray(array, array.Length / 2, array.Length)
+      () => ProcessPartialArray(array, 0, middle),
+      () => ProcessPartialArray(array, middle, array.Length)
   );
 }
 void ProcessPartialArray(double[] array, int begin, int end)
@@ -176,10 +177,9 @@ void ProcessPartialArray(double[] array, int begin, int end)
 You can also pass an array of delegates to the `Parallel.Invoke` method if the number of invocations isn't known until runtime:
 
 ```C#
-
-void DoAction20Times(Action action)
+void DoAction20Times(Action act)
 {
-  Action[] actions = Enumerable.Repeat(action, 20).ToArray();
+  var actions = Enumerable.Repeat(act, 20).ToArray(); //Action[]
   Parallel.Invoke(actions);
 }
 ```
@@ -187,10 +187,10 @@ void DoAction20Times(Action action)
 `Parallel.Invoke` supports cancellation just like the other members of the `Parallel` class:
 
 ```C#
-void DoAction20Times(Action action, CancellationToken token)
+void DoAction20Times(Action act, CancellationToken tok)
 {
-  Action[] actions = Enumerable.Repeat(action, 20).ToArray();
-  Parallel.Invoke(new ParallelOptions { CancellationToken = token }, actions);
+  Action[] actions = Enumerable.Repeat(act, 20).ToArray();
+  Parallel.Invoke(new ParallelOptions { CancellationToken = tok }, actions);
 }
 ```
 
@@ -200,7 +200,7 @@ void DoAction20Times(Action action, CancellationToken token)
 
 ### See Also
 
-Recipe 4.1 covers Parallel.ForEach, which invokes an action for each item of data.
+Recipe 4.1 covers `Parallel.ForEach`, which invokes an action for each item of data.
 
 Recipe 4.5 covers Parallel LINQ.
 
@@ -212,24 +212,22 @@ You have a more complex parallel situation where the structure and number of par
 
 ### Solution
 
-The Task Parallel Library (TPL) is centered around the `Task` type. The Parallel class and Parallel LINQ are just convenience wrappers around the powerful Task. When you need dynamic parallelism, it's easiest to use the `Task` type directly.
+The Task Parallel Library (TPL) is centered around the `Task` type. The `Parallel` class and Parallel LINQ are just convenience wrappers around the powerful `Task`. When you need dynamic parallelism, it's easiest to use the `Task` type directly.
 
-Here is an example in which some expensive processing needs to be done for each node of a binary tree. The structure of the tree won't be known until runtime, so this is a good scenario for dynamic parallelism. The Traverse method processes the current node and then creates two child tasks, one for each branch underneath the node (for this example, I'm assuming that the parent nodes must be processed before the children). The ProcessTree method starts the processing by creating a top-level parent task and waiting for it to complete:
+Here is an example in which some expensive processing needs to be done for each node of a binary tree. The structure of the tree won't be known until runtime, so this is a good scenario for dynamic parallelism. The `Traverse` method processes the current node and then creates two child tasks, one for each branch underneath the node (for this example, I'm assuming that the parent nodes must be processed before the children). The `ProcessTree` method starts the processing by creating a top-level parent task and waiting for it to complete:
 
 ```C#
 void Traverse(Node current)
 {
   DoExpensiveActionOnNode(current);
-  if (current.Left != null)
-  {
+  if (current.Left != null) {
     Task.Factory.StartNew(
         () => Traverse(current.Left),
         CancellationToken.None,
         TaskCreationOptions.AttachedToParent,
         TaskScheduler.Default);
   }
-  if (current.Right != null)
-  {
+  if (current.Right != null) {
     Task.Factory.StartNew(
         () => Traverse(current.Right),
         CancellationToken.None,
@@ -248,22 +246,21 @@ void ProcessTree(Node root)
 }
 ```
 
-The `AttachedToParent` flag ensures that the `Task` for each branch is linked to the `Task` for their parent node. This creates parent/child relationships among the `Task` instances that mirror the parent/child relationships in the tree nodes. Parent tasks execute their delegate and then wait for their child tasks to complete. Exceptions from child tasks are then propagated from the child tasks to their parent task. So, ProcessTree can wait for the tasks for the entire tree just by calling `Wait` on the single `Task` at the root of the tree.
+The `AttachedToParent` flag ensures that the `Task` for each branch is linked to the `Task` for their parent node. This creates parent/child relationships among the `Task` instances that mirror the parent/child relationships in the tree nodes. Parent tasks execute their delegate and then wait for their child tasks to complete. Exceptions from child tasks are then propagated from the child tasks to their parent task. So, `ProcessTree` can wait for the tasks for the entire tree just by calling `Wait` on the single `Task` at the root of the tree.
 
 If you don't have a parent/child kind of situation, you can schedule any task to run after another by using a task continuation. The continuation is a separate task that executes when the original task completes:
 
 ```C#
-Task task = Task.Factory.StartNew(
+var task = Task.Factory.StartNew(
     () => Thread.Sleep(TimeSpan.FromSeconds(2)),
     CancellationToken.None,
     TaskCreationOptions.None,
     TaskScheduler.Default);
-Task continuation = task.ContinueWith(
-    t => Trace.WriteLine("Task is done"),
+var continuation = task.ContinueWith(
+    t => Trace.WriteLine("Task is done"),// The "t" argument to the continuation is the same as "task".
     CancellationToken.None,
     TaskContinuationOptions.None,
     TaskScheduler.Default);
-// The "t" argument to the continuation is the same as "task".
 ```
 
 ### Discussion
@@ -297,40 +294,38 @@ Most developers are familiar with LINQ, which you can use to write pull-based ca
 PLINQ works well in streaming scenarios, when you have a sequence of inputs and are producing a sequence of outputs. Here's a simple example that just multiplies each element in a sequence by two (real-world scenarios will be much more CPU-intensive than a simple multiply):
 
 ```C#
-IEnumerable<int> MultiplyBy2(IEnumerable<int> values)
+IEnumerable<int> MultiplyBy2(IEnumerable<int> arms)
 {
-  return values.AsParallel().Select(value => value * 2);
+  return arms.AsParallel().Select(a => a * 2);
 }
 ```
 
 The example may produce its outputs in any order; this behavior is the default for Parallel LINQ. You can also specify the order to be preserved. The following example is still processed in parallel, but it preserves the original order:
 
 ```C#
-IEnumerable<int> MultiplyBy2(IEnumerable<int> values)
+IEnumerable<int> MultiplyBy2(IEnumerable<int> arms)
 {
-  return values.AsParallel().AsOrdered().Select(value => value * 2);
+  return arms.AsParallel().AsOrdered().Select(a => a * 2);
 }
 ```
 
 Another natural use of Parallel LINQ is to aggregate or summarize the data in parallel. The following code performs a parallel summation:
 
 ```C#
-int ParallelSum(IEnumerable<int> values)
+int ParallelSum(IEnumerable<int> arms)
 {
-  return values.AsParallel().Sum();
+  return arms.AsParallel().Sum();
 }
 ```
 
 ### Discussion
 
-The Parallel class is good for many scenarios, but PLINQ code is simpler when doing aggregation or transforming one sequence to another. Bear in mind that the Parallel class is more friendly to other processes on the system than PLINQ; this is especially a consideration if the parallel processing is done on a server machine.
+The `Parallel` class is good for many scenarios, but PLINQ code is simpler when doing aggregation or transforming one sequence to another. Bear in mind that the `Parallel` class is more friendly to other processes on the system than PLINQ; this is especially a consideration if the parallel processing is done on a server machine.
 
-PLINQ provides parallel versions of a wide variety of operators, including filtering (Where), projection (Select), and a variety of aggregations, such as Sum, Average, and the more generic Aggregate. In general, anything you can do with regular LINQ you can do in parallel with PLINQ. This makes PLINQ a great choice if you have existing LINQ code that would benefit from running in parallel.
+PLINQ provides parallel versions of a wide variety of operators, including filtering (`Where`), projection (`Select`), and a variety of aggregations, such as `Sum`, `Average`, and the more generic `Aggregate`. In general, anything you can do with regular LINQ you can do in parallel with PLINQ. This makes PLINQ a great choice if you have existing LINQ code that would benefit from running in parallel.
 
 ### See Also
 
-Recipe 4.1 covers how to use the Parallel class to execute code for each element in a sequence.
+Recipe 4.1 covers how to use the `Parallel` class to execute code for each element in a sequence.
 
 Recipe 10.5 covers how to cancel PLINQ queries.
-
-

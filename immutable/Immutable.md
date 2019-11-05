@@ -25,6 +25,5 @@ class OrderedSet extends Set{}
 ```javascript
 class Seq extends Collection{}
 
-
 ```
 

@@ -1,3 +1,5 @@
+ClearScript is a library that makes it easy to add scripting to your .NET applications. It currently supports JavaScript (via V8 and JScript) and VBScript.
+
 Chrome控制台,查看JavaScript类型:
 
 ```javascript
@@ -194,8 +196,6 @@ factorial[1] = 1;  // Initialize the cache to hold this base case.
 
 ## 闭包
 
-
-
 ### call()和apply()
 
 ``` javascript
@@ -334,8 +334,6 @@ Object.assign(Complex, {
     _format: /^\{([^,]+),([^}]+)\}$/,
 })
 ```
-
-
 
 ## 类型
 
@@ -525,3 +523,18 @@ Set.prototype.equals = function (that) {
 };
 ```
 
+# 16. 模块
+
+准则：
+
+- 不要导入可变量。
+- 不要将循环依赖分离到两个文件（模块）中。
+- 不要使用空导入，导出模块中的所有代码，包裹起来，放到默认导出函数中，函数没有输入参数。导入函数后，显示调用函数执行。
+- 不要使用默认导出，即使只导出一个函数、类、对象。使用命名导出。
+
+陈述总结：
+
+- 文件夹下的`index.js`，是入口文件。导入路径。
+- 导入的`*`包括所有命名导出成员，不包括默认导出成员。
+- 有三种导入方法：默认导入、命名导入、名字空间导入，默认导入可以和后两者结合在一个导入语句中。
+- 默认导入时为导入的默认成员起名字。

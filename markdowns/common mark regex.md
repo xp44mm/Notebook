@@ -32,4 +32,3 @@ Code spans, HTML tags, and autolinks have the same precedence.
 Backslash escapes do not work in code spans, autolinks
 
 
-

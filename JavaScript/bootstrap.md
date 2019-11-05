@@ -24,12 +24,7 @@
 
 `no-gutters`
 
-
-
-
-
 ## utilities
-
 
 color
 
@@ -54,8 +49,6 @@ color
 `rounded`: border-radius
 
 `bg-`: background
-
-
 
 `d-`: display
 
@@ -121,6 +114,5 @@ Where *size* is one of:
 </body>
 </html>
 ```
-
 
 

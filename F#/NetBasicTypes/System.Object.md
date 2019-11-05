@@ -25,8 +25,6 @@ Because .NET types inherit from `System.Object` (see Figure 12-1), all of them e
 - **ToString**
   An overridable method that returns the complete name of the class, for example, `MyNamespace.MyClass`. However, most classes redefine this method so that it returns a string that better describes the value of the object. For example, basic types such as `Integer`, `Double`, and `String` override this method to return the object's numeric or string value. The `ToString` method is implicitly called when you pass an object to the `Console.Write` and `Debug.Write` methods. Interestingly, `ToString` is culturally aware. For example, when applied to a numeric type, it uses a comma as the decimal separator if the current culture requires it.
 
-
-
 The `System.Object` class also exposes two static methods:
 
 - **Equals**
@@ -34,8 +32,6 @@ The `System.Object` class also exposes two static methods:
   
 - **ReferenceEquals**
   A static method that takes two object arguments and returns true if they reference the same instance; ~~thus, it corresponds to the Is operator in Microsoft Visual Basic.~~ This method is similar to the `Equals` method except that derived classes can't override it.
-
-
 
 The `System.Object` class also exposes two protected methods. Because everything in the .NET Framework derives directly or indirectly from `System.Object`, all the classes you write can invoke the following methods in their base class and override them:
 
@@ -45,14 +41,10 @@ The `System.Object` class also exposes two protected methods. Because everything
 - **Finalize**
   An overridable method that the .NET Framework calls when the object is taken by the garbage collector. (For more information about this method, see the section titled "Finalize and Dispose Methods" in Chapter 9, "Object Lifetime.")
 
-
-
 The System class hierarchy includes all the most common and useful objects in the .NET Framework, including all the basic data types. The most important classes are depicted in Figure 12-1.
 
 ![Image from book](../images/fig470_01_0.jpg) 
 Figure 12-1: The most important classes in the System namespace
-
-
 
 ### Value Types and Reference Types (Revisited)
 
@@ -107,8 +99,6 @@ Console.WriteLine(s1 = s2)     // => True
 
 .NET arrays are reference types, too, and assigning an array to an Array variable copies only the object's reference, not the array contents. The `Array` class exposes the `Clone` method to enable you to make a (shallow) copy of its elements. (See the section titled "The ICloneable Interface" in Chapter 10 for a discussion of shallow and deep copy operations.)
 
-
-
 ### Boxing and Unboxing
 
 Even if performance is your primary concern, you shouldn't always opt for value types because sometimes reference types are faster. For example, an assignment between value types involves the copy of every field in the object, whereas assigning a reference value to a variable requires only the copy of the object's address (4 bytes in 32-bit versions of the Microsoft Windows operating system).
@@ -132,8 +122,6 @@ let DisposeIt(idisp : IDisposable) =
    Console.WriteLine("Disposing " + (box idisp).ToString()) //不需要使用box
    idisp.Dispose()
 ```
-
-
 
 Sometimes Microsoft Visual Basic 2005 deals with boxed variables in a rather counterintuitive way. For example, consider the following code:
 

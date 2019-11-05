@@ -2,8 +2,6 @@
 
 **Version 2005 of VB or Version 2.0 of .NET** Previous versions of the .NET Framework expose no classes for retrieving information about existing drives, and thus you must use either PInvoke calls to the Windows API or Windows Management Instrumentation (WMI) classes. This gap has been filled in version 2.0 with the introduction of the `DriveInfo` type.
 
-
-
 You can create a `DriveInfo` object in two ways: by passing a drive letter to its constructor or by means of the `GetDrives` static method, which returns an array containing information about all the installed drives:
 
 ```FSharp

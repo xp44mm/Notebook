@@ -23,7 +23,7 @@ var subtractBlock = new TransformBlock<int, int>(item => item - 2);
 multiplyBlock.LinkTo(subtractBlock);
 ```
 
-By default, linked dataflow blocks only propagate data; they do not propagate completion (or errors). If your dataflow is linear (like a pipeline), then you will probably want to propagate completion. To propagate completion (and errors), you can set the PropagateCompletion option on the link:
+By default, linked dataflow blocks only propagate data; they do not propagate completion (or errors). If your dataflow is linear (like a pipeline), then you will probably want to propagate completion. To propagate completion (and errors), you can set the `PropagateCompletion` option on the link:
 
 ```C#
 var multiplyBlock = new TransformBlock<int, int>(item => item * 2);
@@ -50,7 +50,7 @@ Recipe 5.2 covers propagating errors along links.
 
 Recipe 5.3 covers removing links between blocks.
 
-Recipe 8.8 covers how to link dataflow blocks to System.Reactive observable streams.
+Recipe 8.8 covers how to link dataflow blocks to `System.Reactive` observable streams.
 
 ## 5.2 Propagating Errors
 
@@ -87,7 +87,7 @@ try
   block.Post(1);
   await block.Completion;
 }
-catch (InvalidOperationException)
+catch (InvalidOperationException ex)
 {
   // The exception is caught here.
 }
@@ -110,7 +110,7 @@ try
   multiplyBlock.Post(1);
   await subtractBlock.Completion;
 }
-catch (AggregateException)
+catch (AggregateException ex)
 {
   // The exception is caught here.
 }
@@ -156,12 +156,11 @@ multiplyBlock.Post(2);
 link.Dispose();
 ```
 
-
 ### Discussion
 
 Unless you can guarantee that the link is idle, there will be race conditions when you unlink it. However, these race conditions are usually not a concern; data will either flow over the link before the link is broken, or it won't. There are no race conditions that would cause duplication or loss of data.
 
-Unlinking is an advanced scenario, but it can be useful in a handful of situations. As one example, there's no way to change the filter for a link. To change the filter on an existing link, you'd have to unlink the old one and create a new link with the new filter (optionally setting DataflowLinkOptions.Append to false). As another example, unlinking at a strategic point can be used to pause a dataflow mesh.
+Unlinking is an advanced scenario, but it can be useful in a handful of situations. As one example, there's no way to change the filter for a link. To change the filter on an existing link, you'd have to unlink the old one and create a new link with the new filter (optionally setting `DataflowLinkOptions.Append` to false). As another example, unlinking at a strategic point can be used to pause a dataflow mesh.
 
 ### See Also
 
@@ -210,7 +209,7 @@ By default, each dataflow block is independent from each other block. When you l
 
 If you need to go beyond this—for example, if you have one particular block that does heavy CPU computations—then you can instruct that block to operate in parallel on its input data by setting the `MaxDegreeOfParallelism` option. By default, this option is set to 1, so each dataflow block will only process one piece of data at a time.
 
-BoundedCapacity can be set to `DataflowBlockOptions.Unbounded` or any value greater than zero. The following example permits any number of tasks to be multiplying data simultaneously:
+`BoundedCapacity` can be set to `DataflowBlockOptions.Unbounded` or any value greater than zero. The following example permits any number of tasks to be multiplying data simultaneously:
 
 ```C#
 var multiplyBlock = new TransformBlock<int, int>(
@@ -241,7 +240,7 @@ You have reusable logic that you want to place into a custom dataflow block. Doi
 
 ### Solution
 
-You can cut out any part of a dataflow mesh that has a single input and output block by using the Encapsulate method. Encapsulate will create a single block out of the two endpoints. Propagating data and completion between those endpoints is your responsibility. The following code creates a custom dataflow block out of two blocks, propagating data and completion:
+You can cut out any part of a dataflow mesh that has a single input and output block by using the `Encapsulate` method. `Encapsulate` will create a single block out of the two endpoints. Propagating data and completion between those endpoints is your responsibility. The following code creates a custom dataflow block out of two blocks, propagating data and completion:
 
 ```C#
 IPropagatorBlock<int, int> CreateMyCustomBlock()
@@ -249,8 +248,7 @@ IPropagatorBlock<int, int> CreateMyCustomBlock()
   var multiplyBlock = new TransformBlock<int, int>(item => item * 2);
   var addBlock = new TransformBlock<int, int>(item => item + 2);
   var divideBlock = new TransformBlock<int, int>(item => item / 2);
-  var flowCompletion = new DataflowLinkOptions { PropagateCompletion = 
-true };
+  var flowCompletion = new DataflowLinkOptions { PropagateCompletion = true };
   multiplyBlock.LinkTo(addBlock, flowCompletion);
   addBlock.LinkTo(divideBlock, flowCompletion);
   return DataflowBlock.Encapsulate(multiplyBlock, divideBlock);
@@ -270,4 +268,3 @@ These examples all use `Encapsulate` to create a custom block. It is also possib
 Recipe 5.1 covers linking blocks together.
 
 Recipe 5.2 covers propagating errors along block links.
-

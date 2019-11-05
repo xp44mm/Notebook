@@ -49,7 +49,6 @@ namespace Dispatch.Controllers
                 new Product {ProductID = 4, Name = "Thinking Cap", Price = 16M },
             };
 
-
         public IEnumerable<Product> Get()
         {
             return products;

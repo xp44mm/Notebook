@@ -26,13 +26,10 @@ GUI中，主页，更改，操作，查看历史记录
 
 重置(reset)，删除更改(--hard)
 
-
-
 撤销远程服务器的提交：
 
 ```
 $ git push origin HEAD --force
 ```
-
 
 

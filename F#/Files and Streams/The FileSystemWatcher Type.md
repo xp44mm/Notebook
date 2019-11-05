@@ -22,8 +22,6 @@ The `IncludeSubdirectories` property should be set to false if you want to be no
 
 The `Filter` property lets you specify which files you're interested in; for example, use `*.*` to get notifications about all the files in the directory or `*.txt` to watch only files with the .txt extension. The default value for this property is a null string, which means all files (same as `*.*`).
 
-
-
 The `NotifyFilter` property is a bit-coded value that specifies which kind of modifications are announced by means of the component's Changed event. This property can be a combination of one or more `NotifyFilters` enumerated values: `Attributes`, `CreationTime`, `DirectoryName`, `FileName`, `LastAccess`, `LastWrite`, `Security`, and `Size`. The initial value of this property is `LastWrite` or `FileName` or `DirectoryName`, so by default you don't get notifications when an attribute is changed.
 
 Here's an example of how you can set up a `FileSystemWatcher` component to watch for events in the C:\Windows directory and its subdirectories:
@@ -86,8 +84,6 @@ member this.fsw_Renamed(sender : Object, e : RenamedEventArgs) =
 You can also have multiple `FileSystemWatcher` components forward their events to the same event handler. In this case, use the first argument to detect which specific component raised the event.
 
 The `FileSystemWatcher` component raises one event for each file and for each action on the file. For example, if you delete 10 files, you receive 10 distinct `Deleted` events. If you move 10 files from one directory to another, you receive 10 `Deleted` events from the source directory and 10 `Created` events from the destination directory.
-
-
 
 #### The WaitForChanged Method
 

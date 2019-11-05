@@ -245,7 +245,6 @@ The next move of the parser from the configuration above is determined by readin
 
 4. If $\text{ACTION}[s_m, a_i] = \text{error}$, the parser has discovered an error and calls an error recovery routine.
 
-
 The LR-parsing algorithm is summarized below. All LR parsers behave in this fashion; the only difference between one LR parser and another is the information in the ACTION and GOTO fields of the parsing table.
 
 **Algorithm 4.44:** LR-parsing algorithm.
@@ -338,7 +337,6 @@ Then, $*$ becomes the current input symbol, and the action of state 5 on input $
 |  14  | 0 1      | $E$             |                                      \$ | accept                       |
 
 Figure 4.38: Moves of an LR parser on $\textbf{id} * \textbf{id} + \textbf{id}$
-
 
 ### 4.6.4 Constructing SLR-Parsing Tables
 
@@ -523,7 +521,6 @@ E'&\underset{rm}\implies& E \\
 $$
 
 The first derivation shows the validity of $T \to T * \cdot F$, the second the validity of $F \to \cdot(E)$, and the third the validity of $F \to \cdot \textbf{id}$. It can be shown that there are no other valid items for $E + T * $, although we shall not prove that fact here. □
-
 
 ## 4.7 More Powerful LR Parsers
 
@@ -1060,7 +1057,6 @@ $$
 \end{array}
 $$
 
-
 In state 2, we can replace the error entries by r2, so reduction by production 2 will occur on any input but \*. Thus the list for state 2 is
 
 $$
@@ -1115,7 +1111,6 @@ Similarly, a suitable list for column $T$ is
 | 6            |     9     |
 | any          |     2     |
 
-
 For column $E$ we may choose either 1 or 8 to be the default; two entries are necessary in either case. For example, we might create for column $E$ the list
 
 | CURRENTSTATE | NEXTSTATE |
@@ -1123,11 +1118,9 @@ For column $E$ we may choose either 1 or 8 to be the default; two entries are ne
 | 4            |     8     |
 | any          |     1     |
 
-
 □
 
 This space savings in these small examples may be misleading, because the total number of entries in the lists created in this example and the previous one together with the pointers from states to action lists and from nonterminals to next-state lists, result in unimpressive space savings over the matrix implementation of Fig. 4.37. For practical grammars, the space needed for the list representation is typically less than ten percent of that needed for the matrix representation. The table-compression methods for finite automata that were discussed in Section 3.9.8 can also be used to represent LR parsing tables.
-
 
 ## 4.8 Using Ambiguous Grammars
 
@@ -1393,7 +1386,6 @@ On the erroneous input $id\ +\ )$, the sequence of configurations entered by the
 
 Figure 4.54: Parsing and error recovery moves made by an LR parser
 
-
 ## 4.9 Parser Generators
 
 This section shows how a parser generator can be used to facilitate the construction of the front end of a compiler. We shall use the LALR parser generator Yacc as the basis of our discussion, since it implements many of the concepts discussed in the previous two sections and it is widely available. Yacc stands for “yet another compiler-compiler,” reflecting the popularity of parser generators in the early 1970s when the first version of Yacc was created by S. C. Johnson. Yacc is available as a command on the UNIX system, and has been used to help implement many production compilers.
@@ -1602,7 +1594,6 @@ and we can force an operator to be a nonassociative binary operator(i.e., two oc
 ```c
 %nonassoc '<'
 ```
-
 
 The tokens are given precedences in the order in which they appear in the declarations part, lowest first. Tokens in the same declaration have the same precedence. Thus, the declaration
 

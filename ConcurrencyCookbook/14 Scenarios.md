@@ -113,7 +113,6 @@ async Task GetSharedIntegerAsync()
 }
 ```
 
-
 ### Discussion
 
 The final code sample in this recipe is a general code pattern for asynchronous lazy initialization, and it's a bit awkward. The `Nito.AsyncEx` library includes an `AsyncLazy<T>` type that acts just like a `Lazy<Task<T>>` that executes its factory delegate on the thread pool and has an option for retrying on failure. It can also be awaited directly, so the declaration and usage look like the following:
@@ -276,8 +275,7 @@ class BindableTask<T> : INotifyPropertyChanged
   public event PropertyChangedEventHandler PropertyChanged;
   protected virtual void OnPropertyChanged(string propertyName)
   {
-    PropertyChanged?.Invoke(this, new
-PropertyChangedEventArgs(propertyName));
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
   }
 }
 ```
@@ -294,7 +292,7 @@ The `NotifyTask` type is in the `Nito.Mvvm.Async` NuGet package. The `MvxNotifyT
 
 Chapter 1 covers basic async/await programming.
 
-Recipe 2.7 covers using ConfigureAwait.
+Recipe 2.7 covers using `ConfigureAwait`.
 
 ## 14.4 Implicit State
 
@@ -359,8 +357,7 @@ internal sealed class AsyncLocalGuidStack
     }
   }
 }
-private static AsyncLocalGuidStack _operationIds = new
-AsyncLocalGuidStack();
+private static AsyncLocalGuidStack _operationIds = new AsyncLocalGuidStack();
 async Task DoLongOperationAsync()
 {
   using (_operationIds.Push(Guid.NewGuid()))
@@ -371,7 +368,7 @@ async Task DoSomeStepOfOperationAsync()
   await Task.Delay(100); // some async work
   // Do some logging here.
   Trace.WriteLine("In operation: " +
-      string.Join(":", _operationIds.Values));
+      String.Join(":", _operationIds.Values));
 }
 ```
 
@@ -401,11 +398,7 @@ If you can, try to organize your code along modern design guidelines, like Ports
 
 However, that's a very lofty goal, and in The Real World, brownfield code can be messy, and there's rarely time to make it perfect before adopting asynchronous code. Existing APIs often need to be maintained for backwards compatibility, even if they were poorly designed.
 
-There is no perfect solution in this scenario. Many developers attempt to have the synchronous code call the asynchronous code, or have the asynchronous code call the synchronous code, but both of those approaches are anti-patterns.
-
-The Boolean Argument Hack is the one that I tend to prefer in this situation.
-
-It's a way to keep all the logic in a single method while exposing both synchronous and asynchronous APIs.
+There is no perfect solution in this scenario. Many developers attempt to have the synchronous code call the asynchronous code, or have the asynchronous code call the synchronous code, but both of those approaches are anti-patterns. The Boolean Argument Hack is the one that I tend to prefer in this situation. It's a way to keep all the logic in a single method while exposing both synchronous and asynchronous APIs.
 
 The primary idea of the Boolean Argument Hack is that there's a private core method containing the logic. That core method has an asynchronous signature and takes a boolean argument determining whether the core method should be asynchronous or not. If the boolean argument specifies that the core method should be synchronous, then it must return an already-completed task. Then you can write both asynchronous and synchronous API methods that forward to the core method:
 
@@ -456,16 +449,14 @@ By default, if a block encounters an exception when processing a data item, that
 
 This is sometimes called “railway” programming because the items in the mesh can be viewed as traveling on one of two separate tracks. There's the normal “data” track: if everything goes perfectly, the item stays on the “data” track and travels through the mesh, being transformed and operated on, until it reaches the end of the mesh. The second track is the “error” track; in any block, if an exception is raised when processing an item, that exception transfers to the “error” track and travels through the mesh. Exception items aren't processed; they are just passed on from block to block, so they also reach the end of the mesh. The terminal blocks in the mesh end up receiving a sequence of items, each of which is either a data item or exception item; a data item represents data that has completed the entire mesh successfully, and an exception item represents a processing error at some point in the mesh.
 
-In order to set up this kind of “railway” programming, you first need to define a type that represents either a data item or an exception. If you want to use a pre-built one, there are a few available. This kind of type is common in the functional programming community, where it's commonly called Try or Error or Exceptional, and is a special case of the Either monad. I've defined my own Try<T> type that you can use as an example; it's in the Nito.Try NuGet package and the source code is on GitHub.
+In order to set up this kind of “railway” programming, you first need to define a type that represents either a data item or an exception. If you want to use a pre-built one, there are a few available. This kind of type is common in the functional programming community, where it's commonly called `Try` or `Error` or `Exceptional`, and is a special case of the Either monad. I've defined my own `Try<T>` type that you can use as an example; it's in the `Nito.Try` NuGet package and the source code is on GitHub.
 
-Once you have some kind of Try<T> type, setting up the mesh is a bit tedious but not terrible. The type of each dataflow block should be changed from T to Try<T>, and any processing in that block should be done by mapping one Try<T> value to another. With my Try<T> type, this is done by calling Try<T>.Map. I find it helpful to define small factory methods for railway-oriented dataflow blocks instead of having that extra code inline. The following code is an example of a helper method that constructs a TransformBlock that operates on Try<T> values by calling Try<T>.Map:
+Once you have some kind of `Try<T>` type, setting up the mesh is a bit tedious but not terrible. The type of each dataflow block should be changed from T to `Try<T>`, and any processing in that block should be done by mapping one `Try<T>` value to another. With my `Try<T>` type, this is done by calling `Try<T>.Map`. I find it helpful to define small factory methods for railway-oriented dataflow blocks instead of having that extra code inline. The following code is an example of a helper method that constructs a `TransformBlock` that operates on `Try<T>` values by calling `Try<T>.Map`:
 
 ```C#
-private static TransformBlock<Try<TInput>, Try<TOutput>>
-    RailwayTransform<TInput, TOutput>(Func<TInput, TOutput> func)
+private static TransformBlock<Try<TInput>, Try<TOutput>> RailwayTransform<TInput, TOutput>(Func<TInput, TOutput> func)
 {
-  return new TransformBlock<Try<TInput>, Try<TOutput>>(t =>
-t.Map(func));
+  return new TransformBlock<Try<TInput>, Try<TOutput>>(t => t.Map(func));
 }
 ```
 
@@ -527,7 +518,7 @@ private string Solve(IProgress<int> progress)
 }
 ```
 
-You can execute this code from a GUI application by wrapping it in Task.Run and passing in an IProgress<T>. The following example code is for WPF, but the same concepts apply regardless of GUI platform (WPF, Xamarin, or Windows Forms):
+You can execute this code from a GUI application by wrapping it in `Task.Run` and passing in an `IProgress<T>`. The following example code is for WPF, but the same concepts apply regardless of GUI platform (WPF, Xamarin, or Windows Forms):
 
 ```C#
 // For simplicity, this code updates a label directly.
@@ -547,9 +538,9 @@ This code will cause the UI to become unresponsive for quite some time, about 20
 
 The first thing to realize is that we need to throttle the progress reports. It's the only way to ensure the UI has enough time to repaint itself between progress updates. The next thing to realize is that we want to throttle based on time, not the number of reports. While you may be tempted to throttle the progress reports by only sending one out of every hundred or so, this isn't ideal for reasons discussed in the “Discussion” section.
 
-The fact that we want to deal with time indicates that we should consider System.Reactive. And, in fact, System.Reactive has operators specifically designed to throttle on time. So, it sounds like System.Reactive will play a role in this solution.
+The fact that we want to deal with time indicates that we should consider `System.Reactive`. And, in fact, `System.Reactive` has operators specifically designed to throttle on time. So, it sounds like `System.Reactive` will play a role in this solution.
 
-To get started, you can define an IProgress<T> implementation that raises an event for each progress report, and then create an observable that receives those progress reports by wrapping that event:
+To get started, you can define an `IProgress<T>` implementation that raises an event for each progress report, and then create an observable that receives those progress reports by wrapping that event:
 
 ```C#
 public static class ObservableProgress
@@ -570,7 +561,7 @@ public static class ObservableProgress
 }
 ```
 
-The method ObservableProgress.Create<T> will create a pair: one IObservable<T> and one IProgress<T>, where all progress reports sent to the IProgress<T> will be sent to the subscribers of the IObservable<T>. We now have an observable stream for our progress reports; the next step is to throttle it.
+The method `ObservableProgress.Create<T>` will create a pair: one `IObservable<T>` and one `IProgress<T>`, where all progress reports sent to the `IProgress<T>` will be sent to the subscribers of the `IObservable<T>`. We now have an observable stream for our progress reports; the next step is to throttle it.
 
 We want to update the UI slowly enough that it can remain responsive, and we want to update the UI quickly enough that users can see the updates. Human perception is considerably slower than computer displays, so there's a large window of possible values. If you prefer true readability, throttling to one update every second or so may be sufficient. If you prefer more real-time feedback, I find that one update every 100 or 200 milliseconds (ms) is fast enough that the user sees that something is happening fast and gets a general sense of the progress details, while still being slow enough for the UI to remain responsive.
 
@@ -580,8 +571,7 @@ Another point to keep in mind is that progress reports can be raised from other 
 public static class ObservableProgress
 {
   // Note: this must be called from the UI thread.
-  public static (IObservable<T>, IProgress<T>) CreateForUi<T>(
-      TimeSpan? sampleInterval = null)
+  public static (IObservable<T>, IProgress<T>) CreateForUi<T>(TimeSpan? sampleInterval = null)
   {
     var (observable, progress) = Create<T>();
     observable = observable
@@ -610,32 +600,34 @@ private async void StartButton_Click(object sender, RoutedEventArgs e)
 }
 ```
 
-The new code calls our helper method ObservableProgress.CreateForUi, which creates the IObservable<T> and IProgress<T> pair. The code subscribes to the progress updates and keeps that going until Solve is done.
+The new code calls our helper method ObservableProgress.CreateForUi, which creates the `IObservable<T>` and `IProgress<T>` pair. The code subscribes to the progress updates and keeps that going until Solve is done.
 
-Finally, it passes the IProgress<T> to the long-running Solve method. As Solve calls IProgress<T>.Report, those reports are first sampled within a 100 ms time window, with one update every 100-ms being forwarded to the UI thread and used to update the label text. The UI is now fully responsive!
+Finally, it passes the `IProgress<T>` to the long-running Solve method. As Solve calls `IProgress<T>.Report`, those reports are first sampled within a 100 ms time window, with one update every 100-ms being forwarded to the UI thread and used to update the label text. The UI is now fully responsive!
 
 ### Discussion
 
 This recipe is a fun combination of other recipes in this book! No new techniques were introduced; we just walked through which recipes to combine to come up with this solution.
 
-An alternative solution to this problem that you may see a lot in the wild is the “modulus solution.” The idea behind this solution is that Solve itself has to throttle its own progress updates; for example, if the code only wanted to process one update for every 100 actual updates, then the code may use some modulus technique like if (value % 100 == 0) progress?.Report(value);.
+An alternative solution to this problem that you may see a lot in the wild is the “modulus solution.” The idea behind this solution is that Solve itself has to throttle its own progress updates; for example, if the code only wanted to process one update for every 100 actual updates, then the code may use some modulus technique like
+
+```C#
+if (value % 100 == 0) progress?.Report(value);
+```
 
 There are a couple of problems with the modulus approach. The first is that there's no “correct” modulus value; usually, the developer tries various values until it works well on their own laptop. The same code, however, may not behave well when running on a client's massive server or inside an underpowered virtual machine. In addition, different platforms and environments cache very differently, which can make code run much faster (or slower) than expected. And, of course, the capabilities of the “latest” computer hardware do change over time. So the modulus value only ends up being a guess; it's not going to be correct everywhere and throughout all time.
 
-The other problem with the modulus approach is that it's trying to fix the problem in the wrong part of the code. This problem is purely a UI issue; it's the UI that has a problem, and it's the UI layer that should provide the fix for it.
+The other problem with the modulus approach is that it's trying to fix the problem in the wrong part of the code. This problem is purely a UI issue; it's the UI that has a problem, and it's the UI layer that should provide the fix for it. In the example code for this recipe, Solve represents some background business processing logic; it shouldn't be concerned with UI-specific issues. A Console app may want to use a very different modulus than a WPF app.
 
-In the example code for this recipe, Solve represents some background business processing logic; it shouldn't be concerned with UI-specific issues. A Console app may want to use a very different modulus than a WPF app.
-
-The one thing that the modulus approach is correct on is that it's best to throttle the updates before sending the updates to the UI thread. The solution in this recipe also does this: it throttles the updates immediately and synchronously on the background thread before sending them to the UI thread. By injecting its own IProgress<T> implementation, the UI is able to do its own throttling without requiring any changes to the Solve method itself.
+The one thing that the modulus approach is correct on is that it's best to throttle the updates before sending the updates to the UI thread. The solution in this recipe also does this: it throttles the updates immediately and synchronously on the background thread before sending them to the UI thread. By injecting its own `IProgress<T>` implementation, the UI is able to do its own throttling without requiring any changes to the Solve method itself.
 
 ### See Also
 
-Recipe 2.3 covers using IProgress<T> to report progress from long-running operations.
+Recipe 2.3 covers using `IProgress<T>` to report progress from long-running operations.
 
-Recipe 13.1 covers using Task.Run to run synchronous code on a threadpool thread.
+Recipe 13.1 covers using `Task.Run` to run synchronous code on a threadpool thread.
 
-Recipe 6.1 covers using FromEvent to wrap .NET events into observables.
+Recipe 6.1 covers using `FromEvent` to wrap .NET events into observables.
 
-Recipe 6.4 covers using Sample to throttle observables by time.
+Recipe 6.4 covers using `Sample` to throttle observables by time.
 
-Recipe 6.2 covers using ObserveOn to move observable notifications to another context.
+Recipe 6.2 covers using `ObserveOn` to move observable notifications to another context.

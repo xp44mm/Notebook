@@ -300,7 +300,6 @@ Markdown 支持有序列表和无序列表。
 
             <代码写在这>
 
-
 当然，项目列表很可能会不小心产生，像是下面这样的写法：
 
     1986. What a great season.
@@ -373,7 +372,6 @@ Markdown 会转换成：
     - - -
 
     ---------------------------------------
-
 
 ***
 
@@ -572,7 +570,6 @@ Markdown 使用星号（`*`）和底线（`_`）作为标记强调字词的符�
 
     <p>Please don't use any <code>&lt;blink&gt;</code> tags.</p>
 
-
 你也可以这样写：
 
     `&#8212;` is the decimal-encoded equivalent of `&mdash;`.
@@ -610,7 +607,6 @@ Markdown 使用一种和链接很相似的语法来标记图片，同样也允�
 ### 上标与下标
 H~2~O
 mc^2^
-
 
 ## 其它
 

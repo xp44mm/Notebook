@@ -585,24 +585,3 @@ In this chapter, we talked at length about several of the core operators that co
 * The order and type of operators used determine the behavior and the performance characteristics of an observable.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

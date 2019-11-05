@@ -762,7 +762,6 @@ Var subscription2 = publishedObservable.SubscribeConsole("Second");
 
 ```
 
-
 Running this application shows this output:
 
 ```C#

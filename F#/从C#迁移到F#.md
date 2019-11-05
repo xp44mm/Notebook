@@ -20,8 +20,6 @@ C#中的`EventHandler<'T>`在F#中有如下定义：
 type EventHandler<'T> = delegate of obj * 'T -> unit
 ```
 
-
-
 ### 标准事件
 
 C#中有`event`关键字，放在声明事件处理器的前面，定义事件的代码：
@@ -125,7 +123,6 @@ type StockMonitor(ticker:StockTicker) =
 ```F#
     do _ticker.StockTick.Add(OnStockTick)
 ```
-
 
 ### 委托event写法
 
@@ -283,8 +280,6 @@ chatConnection.NotifyClosed()
 subscription.Dispose()
 ```
 
-
-
 ### 锁
 
 C#代码
@@ -300,8 +295,6 @@ F#代码：
 ```F#
 lock _stockTickLocker (fun() -> ...)
 ```
-
-
 
 ### 从事件到可观察
 
@@ -322,8 +315,6 @@ ticker.StockTick :> IObservable<_>
 在F#中，不能从C#中直译代码，而是利用事实`IEvent<>`继承自`IObservable<>`接口，向上强制转换即可。
 
 委托事件转化为Observable，详见  rx.net in action第4章，非标准事件。
-
-
 
 ### 写WPF程序，XAML
 
@@ -367,8 +358,5 @@ let _ = clicks.Subscribe(fun eventPattern ->
     output.Text <-  output.Text + "button clicked" + Environment.NewLine
 )
 ```
-
-
-
 
 

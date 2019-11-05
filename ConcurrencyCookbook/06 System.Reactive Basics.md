@@ -4,7 +4,7 @@ LINQ is a set of language features that enable developers to query sequences. Th
 
 `System.Reactive` (Rx) treats events as sequences of data that arrive over time. As such, you can think of Rx as LINQ to Events (based on `IObservable<T>`). The main difference between observables and other LINQ providers is that Rx is a “push” model, meaning that the query defines how the program reacts as events arrive. Rx builds on top of LINQ, adding some powerful new operators as extension methods.
 
-This chapter looks at some of the more common Rx operations. Bear in mind that all of the LINQ operators are also available, so simple operations, such as filtering (Where) and projection (Select), work conceptually the same as they do with any other LINQ provider. We won't cover these common LINQ operations here; we'll focus on the new capabilities that Rx builds on top of LINQ, particularly those dealing with time.
+This chapter looks at some of the more common Rx operations. Bear in mind that all of the LINQ operators are also available, so simple operations, such as filtering (`Where`) and projection (`Select`), work conceptually the same as they do with any other LINQ provider. We won't cover these common LINQ operations here; we'll focus on the new capabilities that Rx builds on top of LINQ, particularly those dealing with time.
 
 To use `System.Reactive`, install the NuGet package for `System.Reactive` into your application.
 
@@ -24,24 +24,25 @@ Many newer framework types use this event delegate type. For example, the `Progr
 
 ```C#
 var progress = new Progress<int>();
-IObservable<EventPattern<int>> progressReports =
+var progressReports = // as IObservable<EventPattern<int>>
     Observable.FromEventPattern<int>(
         handler => progress.ProgressChanged += handler,
         handler => progress.ProgressChanged -= handler);
 progressReports.Subscribe(data => Trace.WriteLine("OnNext: " + data.EventArgs));
 ```
 
-Note here that the `data.EventArgs` is strongly typed to be an int. The type argument to `FromEventPattern` (int in the previous example) is the same as the type T in `EventHandler<T>`. The two lambda arguments to `FromEventPattern` enable `System.Reactive` to subscribe and unsubscribe from the event.
+Note here that the `data.EventArgs` is strongly typed to be an `int`. The type argument to `FromEventPattern` (int in the previous example) is the same as the type T in `EventHandler<T>`. The two lambda arguments to `FromEventPattern` enable `System.Reactive` to subscribe and unsubscribe from the event.
 
 The newer user interface frameworks use `EventHandler<T>`, and can easily be used with `FromEventPattern`, but older types often define a unique delegate type for each event. These can also be used with `FromEventPattern`, but it takes a bit more work. For example, the `System.Timers.Timer` type defines an `Elapsed` event, which is of type `ElapsedEventHandler`. You can wrap older events like this with `FromEventPattern`:
 
 ```C#
-var timer = new System.Timers.Timer(interval: 1000) { Enabled = true };
-IObservable<EventPattern<ElapsedEventArgs>> ticks =
+using System.Timers;
+var tmr = new Timer(interval: 1000) { Enabled = true };
+var ticks = // as IObservable<EventPattern<ElapsedEventArgs>>
     Observable.FromEventPattern<ElapsedEventHandler, ElapsedEventArgs>(
         handler => (s, a) => handler(s, a),
-        handler => timer.Elapsed += handler,
-        handler => timer.Elapsed -= handler);
+        handler => tmr.Elapsed += handler,
+        handler => tmr.Elapsed -= handler);
 ticks.Subscribe(data => Trace.WriteLine("OnNext: " + data.EventArgs.SignalTime));
 ```
 
@@ -50,9 +51,10 @@ Note that in this example that `data.EventArgs` is still strongly typed. The typ
 That syntax is definitely getting awkward. Here's another option, which uses reflection:
 
 ```C#
-var timer = new System.Timers.Timer(interval: 1000) { Enabled = true };
-IObservable<EventPattern<object>> ticks =
-    Observable.FromEventPattern(timer, nameof(Timer.Elapsed));
+using System.Timers;
+var tmr = new Timer(interval: 1000) { Enabled = true };
+var ticks = // as IObservable<EventPattern<object>>
+    Observable.FromEventPattern(tmr, nameof(Timer.Elapsed));
 ticks.Subscribe(data => Trace.WriteLine("OnNext: " + ((ElapsedEventArgs)data.EventArgs).SignalTime));
 ```
 
@@ -66,7 +68,7 @@ When events are wrapped into an observable, `OnNext` is called each time the eve
 
 ```C#
 var client = new WebClient();
-IObservable<EventPattern<object>> downloadedStrings =
+var downloadedStrings = // as IObservable<EventPattern<object>>
     Observable.
     FromEventPattern(client, nameof(WebClient.DownloadStringCompleted));
 downloadedStrings.Subscribe(
@@ -116,8 +118,8 @@ private void Button_Click(object sender, RoutedEventArgs e)
 {
   Trace.WriteLine($"UI thread is {Environment.CurrentManagedThreadId}");
   Observable.Interval(TimeSpan.FromSeconds(1))
-      .Subscribe(x => Trace.WriteLine(
-          $"Interval {x} on thread {Environment.CurrentManagedThreadId}"));
+      .Subscribe(i => Trace.WriteLine(
+          $"Interval {i} on thread {Environment.CurrentManagedThreadId}"));
 }
 ```
 
@@ -139,7 +141,7 @@ Since `Interval` is based on a timer (without a specific thread), the notificati
 ```C#
 private void Button_Click(object sender, RoutedEventArgs e)
 {
-  SynchronizationContext uiContext = SynchronizationContext.Current;
+  var uiContext = SynchronizationContext.Current; // as SynchronizationContext
   Trace.WriteLine($"UI thread is {Environment.CurrentManagedThreadId}");
   Observable.Interval(TimeSpan.FromSeconds(1))
       .ObserveOn(uiContext)
@@ -151,14 +153,14 @@ private void Button_Click(object sender, RoutedEventArgs e)
 Another common usage of `ObserveOn` is to move off the UI thread when necessary. Consider a situation where you need to do some CPU-intensive computation whenever the mouse moves. By default, all mouse moves are raised on the UI thread, so you can use `ObserveOn` to move those notifications to a threadpool thread, do the computation, and then move the result notifications back to the UI thread:
 
 ```C#
-SynchronizationContext uiContext = SynchronizationContext.Current;
+var uiContext = SynchronizationContext.Current; // as SynchronizationContext
 Trace.WriteLine($"UI thread is {Environment.CurrentManagedThreadId}");
 Observable.FromEventPattern<MouseEventHandler, MouseEventArgs>(
         handler => (s, a) => handler(s, a),
         handler => MouseMove += handler,
         handler => MouseMove -= handler)
     .Select(evt => evt.EventArgs.GetPosition(this))
-    .ObserveOn(Scheduler.Default)
+    .ObserveOn(Scheduler.Default) // threadpool
     .Select(position =>
     {
       // Complex calculation
@@ -204,10 +206,10 @@ You have a sequence of events, and you want to group the incoming events as they
 The following example uses the `Interval` operator to create `OnNext` notifications once a second and then buffers them two at a time:
 
 ```C#
-Observable.Interval(TimeSpan.FromSeconds(1))
+var subscription = Observable.Interval(TimeSpan.FromSeconds(1))
     .Buffer(2)
-    .Subscribe(x => Trace.WriteLine(
-        $"{DateTime.Now.Second}: Got {x[0]} and {x[1]}"));
+    .Subscribe(arr => Trace.WriteLine(
+        $"{DateTime.Now.Second}: Got {arr[0]} and {arr[1]}"));
 ```
 
 On my machine, this code produces a pair of outputs every two seconds:
@@ -225,11 +227,11 @@ The following is a similar example of using `Window` to create groups of two eve
 ```C#
 Observable.Interval(TimeSpan.FromSeconds(1))
     .Window(2)
-    .Subscribe(group =>
+    .Subscribe(grp =>
     {
-      Trace.WriteLine( $"{DateTime.Now.Second}: Starting new group");
-      group.Subscribe(
-          x => Trace.WriteLine($"{DateTime.Now.Second}: Saw {x}"),
+      Trace.WriteLine($"{DateTime.Now.Second}: Starting new group");
+      grp.Subscribe(
+          i => Trace.WriteLine($"{DateTime.Now.Second}: Saw {i}"),
           () => Trace.WriteLine($"{DateTime.Now.Second}: Ending group"));
     });
 ```
@@ -264,8 +266,8 @@ private void Button_Click(object sender, RoutedEventArgs e)
           handler => MouseMove += handler,
           handler => MouseMove -= handler)
       .Buffer(TimeSpan.FromSeconds(1))
-      .Subscribe(x => Trace.WriteLine(
-          $"{DateTime.Now.Second}: Saw {x.Count} items."));
+      .Subscribe(g => Trace.WriteLine(
+          $"{DateTime.Now.Second}: Saw {g.Count} items."));
 }
 ```
 
@@ -389,7 +391,7 @@ void GetWithTimeout(HttpClient client)
   client.GetStringAsync("http://www.example.com/").ToObservable()
       .Timeout(TimeSpan.FromSeconds(1))
       .Subscribe(
-          x => Trace.WriteLine($"{DateTime.Now.Second}: Saw {x.Length}"),
+          t => Trace.WriteLine($"{DateTime.Now.Second}: Saw {t.Length}"),
           ex => Trace.WriteLine(ex));
 }
 ```
@@ -434,7 +436,7 @@ private void Button_Click(object sender, RoutedEventArgs e)
           handler => MouseDown += handler,
           handler => MouseDown -= handler)
       .Select(x => x.EventArgs.GetPosition(this));
-      
+
   Observable.FromEventPattern<MouseEventHandler, MouseEventArgs>(
           handler => (s, a) => handler(s, a),
           handler => MouseMove += handler,

@@ -32,15 +32,11 @@ Update-Package -Safe
 
 升级所有包的第三部分到最新版，`Major.Minor`相同，`Patch`最新。 `-Safe` is an alias of `-ToHighestPatch`.
 
-
-
 ### NuGet找不到资产文件 project.assets.json
 
 解决办法：
 使用 cmd cd 目前 .net core 项目文件夹中
 运行 dotnet build
-
-
 
 # NuGet File Locations
 

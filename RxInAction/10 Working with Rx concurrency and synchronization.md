@@ -32,7 +32,6 @@ public interface IScheduler
 }
 ```
 
-
 The scheduler contains the property `Now`, which returns the scheduler's notion of the current time. Most scheduler implementations return `DateTimeOffset.UtcNow`, but in more advanced cases, as you'll see in appendix C, the scheduler's time abstraction lets you control the time for testing and for revisiting past events.
 
 Along with the `Now` property, the `Scheduler` interface provides a couple of overloads to the `Schedule` methods. Those overloads let you schedule actions to run at an absolute or relative time, or immediately. To schedule actions, you pass a state object of your choice, the scheduling time, and an action of type `Func<IScheduler,TState,IDisposable>`.
@@ -161,7 +160,6 @@ To overcome this, you can change the `Range` emissions to take place on another 
 Observable.Range(1, 5, NewThreadScheduler.Default)
 ```
 
-
 Now the calling thread won't be blocked, and the call to the Dispose method will happen as quickly as possible.
 
 Rx also provides a few implementations of the `IScheduler` interface that's suited for different purposes.
@@ -214,7 +212,6 @@ Creating a new thread for every scheduled action isn't efficient; opening and cl
 TestScheduler(ThreadPoolScheduler.Instance);
 ```
 
-
 The output is as follows (thread numbers could differ):
 
 ```C#
@@ -251,7 +248,6 @@ The example shows that each scheduled action runs on the same thread, and that t
 #### IMMEDIATESCHEDULER
 
 Like `CurrentThreadScheduler`, `ImmediateScheduler` schedules the action on the current thread. But unlike `CurrentThreadScheduler` that queues the scheduled actions and then runs them one after the other, `ImmediateScheduler` runs each action immediately or blocks it until the dueTime comes:
-
 
 ```C#
 var immediateScheduler = ImmediateScheduler.Instance;
@@ -300,7 +296,6 @@ Internally, `EventLoopScheduler` holds an ordered-by-time queue of the action. E
 ```C#
 TestScheduler(new EventLoopScheduler());
 ```
-
 
 The output is as follows (thread numbers could differ):
 
@@ -408,7 +403,6 @@ deviceHeartbeat
     .Timestamp()
     .SubscribeConsole("Heartbeat");
 ```
-
 
 Running this example on my machine shows this output:
 
@@ -669,7 +663,6 @@ Observable.Interval(TimeSpan.FromSeconds(1))
     .SubscribeConsole("Sample");
 ```
 
-
 The example yields this output:
 
 ```C#
@@ -732,7 +725,6 @@ var observable =
     });
 observable.SubscribeConsole("LongOperation");
 ```
-
 
 When running this example, the calling thread will be blocked for 5 seconds, and only afterward do the messages appear. Adding `ObserveOn` to this example won't help because the long operation happens as part of the subscription. What you want is to make the subscription itself on another thread.
 
@@ -947,7 +939,6 @@ Message msg1 exit
 Message msg0 exit
 Message msg2 exit
 ```
-
 
 It's obvious that the messages are received in an unserialized way. To serialize the notifications received in the observer (or in any operator), you need to use the `Synchronize` operator:
 

@@ -16,8 +16,6 @@ Create a local Git repo for your code. If your code is already in a local Git re
 
 3. 在VS中，打开文件夹，执行其他git操作。如果已经打开，将文件夹关闭，重新打开。
 
-
-
 ## 忽略文件
 
 https://docs.microsoft.com/en-us/azure/devops/repos/git/ignore-files
@@ -291,8 +289,6 @@ __pycache__/
 *.pyc
 ```
 
-
-
 在git中如果想忽略掉某个文件，不让这个文件提交到版本库中，可以使用修改根目录中`.gitignore`文件的方法（如无，则需自己手工建立此文件）。这个文件每一行保存了一个匹配的规则，例如：
 
 ```bash
@@ -327,8 +323,6 @@ git rm [path_and_filename] --force
 
 将操作后的文件（此时已经是staged）提交就好了
 
-
-
 ### 1. 关于将已经ignore的文件(夹)重新加入跟踪里面
 
 重新添加已经被忽略过的文件（夹）
@@ -340,8 +334,6 @@ git add -f [文件(夹)名]
 ```
 
 然后再`commit`和`push`就行了
-
-
 
 ### 2. 关于VS中经常出现的error: Your local changes to the following files would be overwritten by merge:
 
@@ -371,8 +363,6 @@ git add -f [文件(夹)名]
 ```
 
 注：其中origin master表示git的主分支。
-
-
 
 ### 删除未提交的推送
 

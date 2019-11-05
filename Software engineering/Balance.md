@@ -306,8 +306,6 @@ connectionString="DefaultEndpointsProtocol=https;AccountName=abacus;AccountKey=3
 </connectionStrings>
 ```
 
-
-
 本项目balance.Functions添加引用：
 
 D:\\Application Data\\Azure\\StorageAccess\\bin\\StorageAccess.dll

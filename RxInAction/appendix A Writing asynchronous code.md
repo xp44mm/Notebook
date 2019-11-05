@@ -153,8 +153,6 @@ httpClient.GetAsync("http://ReactiveX.io")
 
 As you can see, the more asynchronous methods you use on the way to your target, the more continuations you'll need and the less readable your code becomes. To help with that, C# provides language-based support to hide the complexity of continuations by awaiting the tasks while maintaining regular control flow. This is also known as the async-await pattern.
 
-
-
 ## A.4 Simplifying asynchronous code with async-await
 
 Instead of repeating the pattern of continuing a task and getting the result when it finishes and then making another continuation on another task, the async-await pattern lets you write your asynchronous code as if it were simple and sequential. When calling the asynchronous method (which returns a task), you can instruct the compiler that you want to await it, meaning you want the rest of the code to execute when the async-await pattern finishes and its result is returned.
@@ -188,7 +186,6 @@ Suppose the method you wrote needs to return the downloaded string content. asyn
 async Task<string> GetPageAsync()
 ```
 
-
 When you need to return a value inside an async method that returns a task, you don't need to return the task explicitly. You can regularly return the value as if it were a simple synchronous method. The compiler makes the transformations behind the scenes:
 
 ```C#
@@ -200,7 +197,6 @@ private static async Task<string> GetPageAsync()
     return page;
 }
 ```
-
 
 The GetPageAsync method calls to other async methods and then returns the end result that's of type string. The method is asynchronous because it uses other asynchronous methods, but you have no real idea of what's going on inside and whether it's truly asynchronous. Because we haven't discussed how to write methods that run their code inside an asynchronous task, we'll look at that next.
 

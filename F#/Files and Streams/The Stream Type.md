@@ -4,8 +4,6 @@ The `Stream` abstract type represents a sequence of bytes going to or coming fro
 
 Because it's an abstract class, you don't create a `Stream` object directly, and you rarely use a `Stream` variable in your code. Rather, you typically work with types that inherit from it, such as the `FileStream` and the `NetworkStream` types.
 
-
-
 ### Stream Operations
 
 The fundamental operations you can perform on streams are read, write, and seek. Not all types of streams support all these operations—for example, the `NetworkStream` object doesn't support seeking. You can check which operations are allowed by using the stream's `CanRead`, `CanWrite`, and `CanSeek` properties.
@@ -26,8 +24,6 @@ Specific streams can implement additional methods and properties, such as the fo
 - The `MemoryStream` class exposes the `Capacity` property (which returns the number of bytes allocated to the stream), the `WriteTo` method (which copies the entire contents to another stream), and the `GetBuffer` method (which returns the array of unsigned bytes from which the stream was created).
 - The `NetworkStream` class exposes the `DataAvailable` property (which returns true when data is available on the stream for reading).
 
-
-
 ### Stream Readers and Writers
 
 Because the generic `Stream` object can read and write only individual bytes or groups of bytes, most of the time you use auxiliary stream reader and stream writer objects that let you work with more structured data, such as a line of text or a Double value. The .NET Framework offers several stream reader and writer pairs:
@@ -38,8 +34,6 @@ Because the generic `Stream` object can read and write only individual bytes or 
 - `TextReader` and `TextWriter` are abstract types that define how to work with strings of text in Unicode format. `TextReader` is the base type for the `StreamReader` and `StringReader` types; `TextWriter` is the base type for the `StreamWriter` and `StringWriter` types.
 - The `XmlTextReader` and `XmlTextWriter` types work with XML text.
 - The `ResourceReader` and `ResourceWriter` types work with resource files.
-
-
 
 ### Reading and Writing Text Files
 
@@ -250,8 +244,6 @@ Reading back strings requires different techniques as well, depending on how the
 File streams can be opened for asynchronous read and write operations, which can speed up your code's performance significantly. You'll learn about asynchronous file operations in Chapter 20.
 
 ---
-
-
 
 ### Working with Fixed-Length and Delimited Data Files
 

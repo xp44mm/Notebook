@@ -152,13 +152,11 @@ here is how to use the operator to compute the cubes of three numbers:
 [1;2;3] |> List.map (fun x -> x * x * x)
 ```
 
-
 this produces `[1; 8; 27]`, just as if you had written:
 
 ```F#
 List.map (fun x -> x * x * x) [1; 2; 3]
 ```
-
 
 In a sense, |> is function application in reverse. however, using |> has distinct advantages:
 

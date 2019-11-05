@@ -1,7 +1,5 @@
 # SQL Server命令行
 
-
-
 ## 启动及停止SQL服务的方法
 
 在SQL Server中，想要启动或停止SQL Server服务，通过SQL Server命令行操作就可以实现了。
@@ -27,6 +25,5 @@ NET PAUSE MSSQLSERVER
 # 重新启动暂停的SQL Server
 NET CONTINUE MSSQLSERVER
 ```
-
 
 

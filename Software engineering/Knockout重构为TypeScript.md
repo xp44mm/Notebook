@@ -8,8 +8,6 @@
 
 从`    "@types/knockout": "^3.4.45"`找到声明文件.
 
-
-
 ## 重构 knockout/build/
 
 此文件夹描述文件打包的文件:
@@ -61,8 +59,6 @@ export const amdRequire = (<any>window).require
 const Person:any = function(...){...}
 ```
 
-
-
 另外一种除错方法,使用索引法:
 
 ```typescript
@@ -88,8 +84,6 @@ export const JSON = window["JSON"]
 /\bko\./ to `/*$0*/`
 ```
 
-
-
 删除明显的且影响编译的垫片代码,因为重构后的代码只兼容最新的es标准:
 
 ```typescript
@@ -97,8 +91,6 @@ if (!Function.prototype['bind']) {/*...*/}
 ```
 
 此代码是垫片代码,最新标准的代码一定不会进入`if`块中的.
-
-
 
 原有代码的结构形式将如下:
 
@@ -143,21 +135,15 @@ ko.utils = (function () {
 import { jQueryInstance } from './build'
 ```
 
-
 (TS) 对象可能为“未定义”。在名称后面加叹号`!`
 
 ```typescript
 if (ieVersion! <= 7) {
 ```
 
-
-
-
 (TS) 提供的参数与调用目标的任何签名都不匹配。
 
 原因是函数签名列表比较长,将函数定义的最后一个参数改为可选参数试试.
-
-
 
 (TS) 类型“KnockoutVirtualElement”上不存在属性“data”。修改为动态调用:
 

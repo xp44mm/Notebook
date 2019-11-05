@@ -613,7 +613,6 @@ type WifiScanner2() =
     member _.RaiseFound(ssid:string, strength:int) = extendedNetwork.Trigger[|ssid;strength|]
 ```
 
-
 Trying to write the same code you wrote for the one parameter version won't work. Observables can pass only one value when they call the OnNext method of their observers. You need to somehow wrap the two parameters in a single object. The FromEvent overload that you'll use takes a conversion function that converts the Rx event handler to an event handler that can be used with the event. First, let's look at the method signature and then I'll explain what exactly you're seeing.
 
 ```C#

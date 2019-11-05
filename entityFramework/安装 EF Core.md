@@ -23,7 +23,6 @@ Install-Package Microsoft.EntityFrameworkCore.SqlServer
 dotnet add package Microsoft.EntityFrameworkCore.SqlServer
 ```
 
-
 ### 创建模型
 
 模型文件的内容：
@@ -65,7 +64,6 @@ namespace LakeEf
 }
 ```
 
-
 ### 新建测试项目
 
 新建测试项目，【visual F#】【.NET Core】【xUnit 测试项目(.NET Core)】。命名为`LakeEf.Tests`。
@@ -90,9 +88,6 @@ namespace LakeEf
 
 从网站https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Tools.DotNet/查找最新版本号。
 
-
-
-
 ### 创建数据库
 
 迁移(migration):根据模型代码(C#)修改数据库，不使用SQL语句。
@@ -112,7 +107,6 @@ dotnet ef database update -p ..\LakeEf\LakeEf.csproj
 ```
 
 用Microsoft Sql Server Management Studio打开服务器，查看数据库已经生成。
-
 
 ### 使用模型
 
@@ -143,7 +137,6 @@ type Test(output : ITestOutputHelper) =
         for blog in db.Blogs do
             output.WriteLine(" - {0}", blog.Url)
 
-
 ```
 
 运行测试，查看输出，并浏览数据库，看看数据是否被添加。
@@ -157,8 +150,6 @@ type Test(output : ITestOutputHelper) =
 ```
 System.Configuration.ConfigurationManager
 ```
-
-
 
 EF Core Power Tools:
 

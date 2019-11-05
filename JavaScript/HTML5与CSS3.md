@@ -21,11 +21,7 @@ To reference a file in a directory at a higher level of the file hierarchy, use 
 
 by first jumping straight to your site's root and then drilling down from there to the targeted file. A single forward slash at the beginning achieves this.
 
-
-
 网页保存格式:UTF-8, no BOM,UTF-8无签名
-
-
 
 ## 基本HTML结构
 
@@ -190,8 +186,6 @@ The `id` attribute automatically turns the element into a named anchor, to which
 <!-- 这是注释 -->
 ```
 
-
-
 ## 文本
 
 This chapter explains which HTML semantics are appropriate for different types of text, especially (but not solely) for text within a sentence or phrase.
@@ -242,8 +236,6 @@ The [`strong`]() element denotes important text, while [`em`]() conveys **emphas
    Warning: Do not approach the zombies <em>under any circumstances</em>.
 </strong> They may <em>look</em> friendly, but that's just because they want to eat your arm.
 ```
-
-
 
 HTML5 emphasizes that you use [`b`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/b) and [`i`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/i) only as a last resort when another element (such as `strong`, `em`, `cite`, and others) won't do.
 
@@ -419,8 +411,6 @@ a {
    }
 ```
 
-
-
 ## 列表
 
 All lists are formed by a *principal* element to specify what sort of list you want to create (`ul` for unordered list, `ol` for ordered list, and `dl` for description list, known as a definition list before HTML5) and *secondary* elements to specify what sort of list items you want to create (`li` for a list item in an `ol` or `ul`, and `dt` for the term with `dd` for the description in a `dl`).
@@ -471,8 +461,6 @@ You can also specify an ordered list's marker type with the `type` attribute. Th
 
 `type`属性的优先级低于css`list-style-type:`, 如果定义了`list-style-type`, 则`type`属性不起作用.
 
-
-
 ### 选择列表的起始编号
 
 ```html
@@ -507,24 +495,17 @@ ul {
 }
 ```
 
-
-
-
 ### Controlling Where Markers Hang
 
 [list-style-position](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-position)
 
 Type `inside` to display the markers flush with the list item text, or `outside` to display the markers to the left of the list item text (the default).
 
-
-
 ### Setting All List-Style Properties at Once
 
 [list-style](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style)
 
 The **list-style** CSS property is a [shorthand](https://developer.mozilla.org/en-US/docs/Web/CSS/Shorthand_properties) for setting the individual values that define how a list is displayed: [`list-style-type`](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type), [`list-style-image`](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-image), and [`list-style-position`](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-position).
-
-
 
 ### Creating Description Lists
 
@@ -611,8 +592,6 @@ dd + dt {
 }
 ```
 
-
-
 ## 表单
 [HTML 中的表单](https://developer.mozilla.org/zh-CN/docs/Web/Guide/HTML/Forms_in_HTML)
 
@@ -620,14 +599,10 @@ dd + dt {
 
 [HTML &lt;form&gt; 标签](http://www.w3school.com.cn/tags/tag_form.asp)
 
-
-
 ### 对表单元素进行组织
 
 [HTML &lt;fieldset&gt; 标签](http://www.w3school.com.cn/tags/tag_fieldset.asp)
 [HTML &lt;legend&gt; 标签](http://www.w3school.com.cn/tags/tag_legend.asp)
-
-
 
 ### 创建文本框
 
@@ -644,8 +619,6 @@ dd + dt {
 由于`size`属性是一个可视化的设计属性，我们推荐您使用CSS来代替它。
 CSS 语法：`<input style="width:100px" />`
 
-
-
 ### 创建密码框
 
 ```html
@@ -655,8 +628,6 @@ CSS 语法：`<input style="width:100px" />`
 <label for="password">Re-enter Password:</label>
 <input type="password" id="password2" name="password2" />
 ```
-
-
 
 ### 创建电子邮件, 电话, URL框
 
@@ -683,8 +654,6 @@ html5中的`input`的`type`属性总共是新增了13个，分别是`type`的这
 * `tel`定义用于电话号码的文本字段
 * `url`定义用于 URL 的文本字段
 
-
-
 常用的正则表达式[见这里](http://html5pattern.com/)
 
 ### 标签
@@ -698,8 +667,6 @@ label 元素不会向用户呈现任何特殊效果。不过，它为鼠标用�
 `<label>`  标签的 `for` 属性应当与相关元素的 `id` 属性相同。
 
 > If you omit the `for` attribute, no `id` attribute is required in the element being labeled. The label and the element, in that case, are then associated by proximity or perhaps by being placed in a common li element.
-
-
 
 为`<label>`添加css样式:
 
@@ -926,8 +893,6 @@ Type `<th scope="scopetype">` to begin a header cell (where _scopetype_ is `col`
 
 The `thead`, `tfoot`, and `tbody` elements don't affect the layout and are not required (though I recommend using them), except that `tbody` is required whenever you include a `thead` or `tfoot`. Note that a table may have only one `thead` and `tfoot` but may have multiple `tbody` elements. 
 
-
-
 表格样式表:
 
 ```css
@@ -1004,10 +969,5 @@ Without `border-collapse: collapse;` defined on the table, a space would appear 
 Note, too, that the *Time* th has `scope="rowgroup"`, because it is the header for every header in the group of row headers directly beneath it.
 
 `<th scope=rowgroup`可以理解为`<th scope=row`的标题单元格.
-
-
-
-
-
 
 

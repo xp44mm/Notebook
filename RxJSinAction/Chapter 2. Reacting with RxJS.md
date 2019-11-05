@@ -184,8 +184,6 @@ We'll explain this pattern briefly now, and later on you'll see how this applies
 
 You can make any object iterable by manipulating its underlying iterator. We'll be using some ES6-specific syntax to show this. Consider an iterator object that traverses an array of numbers and buffers a set amount of contiguous elements. Here, the business logic performed is the buffering itself, which can be useful to group elements together to form numerical sets of any dimension, like the ones illustrated in figure 2.6.
 
-
-
 Figure 2.6 Using an iterator to display sets of numbers of size 2
 
 Now let's see what the code would look like. The next listing shows the internal implementation of this custom iterator, which contains the buffer logic.
@@ -220,7 +218,6 @@ function BufferIterator(arr, bufferSize = 2) { //*1
 4. Returns an object with a `done` = true property, which causes the iteration mechanism to stop
 5. Creates a temporary buffer array to group contiguous elements
 6. Returns the buffered items and a status of `done` = false, which indicates to the iteration mechanism to continue
-
 
 Any clients of this API need only interact with the `next()` function, as outlined in the class diagram in figure 2.7. The business logic is hidden from the caller, the `for...of` block, which is the main goal of the iterator pattern.
 
@@ -784,6 +781,5 @@ With observers, we've finished introducing the three main parts of RxJS: produce
 * Push-based and pull-based semantics are represented through observables and iterators, respectively. Wrapping data sources is the first step in creating a pipeline/observable.
 * Observables abstract the notion of production and consumption of events such that you can separate production, consumption, and processing into completely self-contained constructs.
 * Observers expose an API with three methods: `next()`, `complete()`, and `error()`. 
-
 
 

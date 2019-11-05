@@ -1,6 +1,5 @@
 ## Regular Expression Types
 
-
 Now that I have illustrated the fundamentals of regular expressions, it's time to examine all the types in the `System.Text.RegularExpressions` namespace.
 
 ### The Regex Type
@@ -279,8 +278,6 @@ Variable: a, Value: 123
 Variable: b, Value: 456
 ```
 
-
-
 The `Result` method takes a replace pattern and returns the string that would result if the match were replaced by that pattern:
 
 ```F#
@@ -288,8 +285,6 @@ The `Result` method takes a replace pattern and returns the string that would re
 for m: Match in re2.Matches(source) do
    Console.WriteLine(m.Result("Variable: ${name}, Value: ${value}"))
 ```
-
-
 
 ### The Group Type
 
@@ -312,8 +307,6 @@ Variable 'a' found at index 0, value is 123
 Variable 'b' found at index 9, value is 456
 ```
 
-
-
 The following example is more complex but also more useful. It shows how you can parse `<A>` tags in an HTML file and display the anchor text (the text that appears underlined on an HTML page) and the URL it points to. As you can see, it's just a matter of a few lines of code:
 
 ```F#
@@ -330,8 +323,6 @@ while m.Success do
 To understand how the preceding code works, you must keep in mind that the `<A>` tag is followed by one or more spaces and then by an HREF attribute, which is followed by an equal sign and then the URL, which can be enclosed in quotation marks. All the text that follows the closing angle bracket up to the ending tag `</A>` is the anchor text. The regular expression uses the `.+?` lazy quantifier so as not to match too many characters and miss the delimiting quotation mark or closing angle bracket.
 
 The regular expression defined in the preceding code defines two unnamed groups—the URL and the anchor text—so displaying details for all the `<A>` tags in the HTML file is just a matter of looping over all the matches. The regular expression syntax is complicated by the fact that quotation mark characters must be doubled when they appear in a Visual Basic string constant.
-
-
 
 A few methods in the `Regex` class can be useful to get information about the groups that the parser finds in the regular expression. The `GetGroupNames` method returns an array with the names of all groups; the `GroupNameFromNumber` returns the name of the group with a given index; and the `GroupNumberFromName` returns the index of a group with a given name. See the MSDN documentation for more information.
 

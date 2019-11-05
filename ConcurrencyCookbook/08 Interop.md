@@ -18,18 +18,17 @@ The OperationAsync and OperationCompleted pattern is called the Event-based Asyn
 
 By using the `TaskCompletionSource<TResult>` type, you can create wrappers for asynchronous operations. The `TaskCompletionSource<TResult>` type controls a `Task<TResult>` and enables you to complete the task at the appropriate time.
 
-This example defines an extension method for WebClient that downloads a string. The WebClient type defines DownloadStringAsync and DownloadStringCompleted. Using those, you can define a DownloadStringTaskAsync method, like this:
+This example defines an extension method for `WebClient` that downloads a string. The `WebClient` type defines `DownloadStringAsync` and `DownloadStringCompleted`. Using those, you can define a `DownloadStringTaskAsync` method, like this:
 
 ```C#
-public static Task<string> DownloadStringTaskAsync(this WebClient client, Uri address)
+static Task<string> DownloadStringTaskAsync(this WebClient client, Uri address)
 {
   var tcs = new TaskCompletionSource<string>();
   // The event handler will complete the task and unregister itself.
-  DownloadStringCompletedEventHandler handler = null;
-  // rec
+  var handler = null as DownloadStringCompletedEventHandler;
   handler = (_, e) =>
   {
-    client.DownloadStringCompleted -= handler;
+    client.DownloadStringCompleted -= handler;// rec:注销自己
     if (e.Cancelled)
       tcs.TrySetCanceled();
     else if (e.Error != null)
@@ -46,15 +45,15 @@ public static Task<string> DownloadStringTaskAsync(this WebClient client, Uri ad
 
 ### Discussion
 
-This particular example is not very useful because WebClient already is defining a DownloadStringTaskAsync, and there's a more async-friendly `HttpClient` that could be used. However, this same technique can be used to interface with older asynchronous code that hasn't yet been updated to use `Task`.
+This particular example is not very useful because `WebClient` already is defining a `DownloadStringTaskAsync`, and there's a more async-friendly `HttpClient` that could be used. However, this same technique can be used to interface with older asynchronous code that hasn't yet been updated to use `Task`.
 
 ##### TIP
 
-For new code, always use `HttpClient`. Only use WebClient if you're working with legacy code.
+For new code, always use `HttpClient`. Only use `WebClient` if you're working with legacy code.
 
-Normally, a TAP method for downloading strings would be named OperationAsync (e.g., DownloadStringAsync); however, that naming convention won't work in this case because EAP already defines a method with that name. Here the convention is to name the TAP method OperationTaskAsync (e.g., DownloadStringTaskAsync).
+Normally, a TAP method for downloading strings would be named `OperationAsync` (e.g., `DownloadStringAsync`); however, that naming convention won't work in this case because EAP already defines a method with that name. Here the convention is to name the TAP method `OperationTaskAsync` (e.g., `DownloadStringTaskAsync`).
 
-When wrapping EAP methods, there's the possibility that the “start” method may throw an exception; in the previous example, DownloadStringAsync may throw. In that case, you'll need to decide whether to allow the exception to propagate or to catch the exception and call TrySetException. Most of the time, exceptions thrown at that point are usage errors, so it doesn't matter which option you choose. If you're unsure whether the exceptions are usage errors, then I recommend catching the exception and calling TrySetException.
+When wrapping EAP methods, there's the possibility that the “start” method may throw an exception; in the previous example, `DownloadStringAsync` may throw. In that case, you'll need to decide whether to allow the exception to propagate or to catch the exception and call `TrySetException`. Most of the time, exceptions thrown at that point are usage errors, so it doesn't matter which option you choose. If you're unsure whether the exceptions are usage errors, then I recommend catching the exception and calling `TrySetException`.
 
 ### See Also
 
@@ -76,7 +75,7 @@ The BeginOperation and EndOperation pattern is called the Asynchronous Programmi
 
 The best approach for wrapping APM is to use one of the `FromAsync` methods on the `TaskFactory` type. `FromAsync` uses `TaskCompletionSource<TResult>` under the hood, but when you're wrapping APM, `FromAsync` is much easier to use.
 
-This example defines an extension method for WebRequest that sends an HTTP request and gets the response. The WebRequest type defines BeginGetResponse and EndGetResponse; you can define a GetResponseAsync method like this:
+This example defines an extension method for `WebRequest` that sends an HTTP request and gets the response. The `WebRequest` type defines `BeginGetResponse` and `EndGetResponse`; you can define a `GetResponseAsync` method like this:
 
 ```C#
 public static Task<WebResponse> GetResponseAsync(this WebRequest client)
@@ -89,9 +88,9 @@ public static Task<WebResponse> GetResponseAsync(this WebRequest client)
 
 `FromAsync` has a downright confusing number of overloads! As a general rule, it's best to call `FromAsync`, as in the example. First, pass the BeginOperation method (without calling it), then pass the EndOperation method (without calling it). Next, pass all arguments that BeginOperation takes except for the last AsyncCallback and object arguments. Finally, pass null.
 
-In particular, do not call the BeginOperation method before calling `FromAsync`. You can call `FromAsync`, passing the IAsyncOperation that you get from BeginOperation, but if you call it that way, `FromAsync` is forced to use a less efficient implementation.
+In particular, do not call the BeginOperation method before calling `FromAsync`. You can call `FromAsync`, passing the `IAsyncOperation` that you get from BeginOperation, but if you call it that way, `FromAsync` is forced to use a less efficient implementation.
 
-You might be wondering why the recommended pattern always passes a null at the end. `FromAsync` was introduced along with the `Task` type in .NET 4.0, before async was around. At the time, it was common to use state objects in asynchronous callbacks, and the `Task` type supports this via its AsyncState member. In the new async pattern, state objects are no longer necessary, so it's normal to always pass null for the state parameter. These days, state is only used to avoid a closure instance when optimizing memory usage.
+You might be wondering why the recommended pattern always passes a null at the end. `FromAsync` was introduced along with the `Task` type in .NET 4.0, before async was around. At the time, it was common to use state objects in asynchronous callbacks, and the `Task` type supports this via its `AsyncState` member. In the new async pattern, state objects are no longer necessary, so it's normal to always pass null for the state parameter. These days, state is only used to avoid a closure instance when optimizing memory usage.
 
 ### See Also
 
@@ -114,12 +113,12 @@ public interface IMyAsyncHttpService
 }
 ```
 
-Methods like these follow the convention that DownloadString will start the (asynchronous) download, and when it completes, the callback is invoked with either the result or the exception. Usually, callback is invoked on a background thread.
+Methods like these follow the convention that `DownloadString` will start the (asynchronous) download, and when it completes, the callback is invoked with either the result or the exception. Usually, callback is invoked on a background thread.
 
 A nonstandard kind of asynchronous method like the previous example can be wrapped using `TaskCompletionSource<T>` so that it naturally works with await, as this next example shows:
 
 ```C#
-public static Task<string> DownloadStringAsync(this IMyAsyncHttpService httpService, Uri address)
+static Task<string> DownloadStringAsync(this IMyAsyncHttpService httpService, Uri address)
 {
   var tcs = new TaskCompletionSource<string>();
   httpService.DownloadString(address, (result, exception) =>
@@ -153,7 +152,7 @@ You have (CPU-bound) parallel processing that you want to consume using await. U
 
 ### Solution
 
-The Parallel type and Parallel LINQ use the thread pool to do parallel processing. They will also include the calling thread as one of the parallel processing threads, so if you call a parallel method from the UI thread, the UI will be unresponsive until the processing completes.
+The `Parallel` type and Parallel LINQ use the thread pool to do parallel processing. They will also include the calling thread as one of the parallel processing threads, so if you call a parallel method from the UI thread, the UI will be unresponsive until the processing completes.
 
 To keep the UI responsive, wrap the parallel processing in a `Task.Run` and await the result:
 
@@ -161,7 +160,7 @@ To keep the UI responsive, wrap the parallel processing in a `Task.Run` and awai
 await Task.Run(() => Parallel.ForEach(...));
 ```
 
-The key behind this recipe is that parallel code includes the calling thread in its pool of threads that it uses to do the parallel processing. This is true for both Parallel LINQ and the Parallel class.
+The key behind this recipe is that parallel code includes the calling thread in its pool of threads that it uses to do the parallel processing. This is true for both Parallel LINQ and the `Parallel` class.
 
 ### Discussion
 
@@ -192,9 +191,9 @@ First, you need to decide which of the observable events in the event stream you
 To capture the last event in the stream, you can either await the result of `LastAsync` or just await the observable directly:
 
 ```C#
-IObservable<int> observable = ...;
-int lastElement = await observable.LastAsync();
-// or:  int lastElement = await observable;
+var observable = ...; /* as IObservable<int> */
+var lastElement = await observable.LastAsync();
+/* or: var lastElement = await observable; */
 ```
 
 When you await an observable or `LastAsync`, the code (asynchronously) waits until the stream completes and then returns the last element. Under the covers, the await is subscribing to the stream.
@@ -202,20 +201,20 @@ When you await an observable or `LastAsync`, the code (asynchronously) waits unt
 To capture the next event in the stream, use `FirstAsync`. In the following code, the await subscribes to the stream and then completes (and unsubscribes) as soon as the first event arrives:
 
 ```C#
-IObservable<int> observable = ...;
-int nextElement = await observable.FirstAsync();
+var observable = ...; // as IObservable<int>
+var nextElement = await observable.FirstAsync();
 ```
 
 To capture all events in the stream, you can use `ToList`:
 
 ```C#
-IObservable<int> observable = ...;
-IList<int> allElements = await observable.ToList();
+var observable = ...; // as IObservable<int>
+var allElements = await observable.ToList(); // as IList<int>
 ```
 
 ### Discussion
 
-The `System.Reactive` library provides all the tools you need to consume streams using await. The only tricky part is that you have to think about whether the awaitable will wait until the stream completes. Of the examples in this recipe, `LastAsync`, `ToList`, and the direct await will wait until the stream completes; `FirstAsync` will only wait for the next event.
+The `System.Reactive` library provides all the tools you need to consume streams using `await`. The only tricky part is that you have to think about whether the awaitable will wait until the stream completes. Of the examples in this recipe, `LastAsync`, `ToList`, and the direct await will wait until the stream completes; `FirstAsync` will only wait for the next event.
 
 If these examples don't satisfy your needs, remember that you have the full power of LINQ as well as the `System.Reactive` manipulators. Operators such as `Take` and `Buffer` can also help you asynchronously wait for the elements you need without having to wait for the entire stream to complete.
 
@@ -239,7 +238,7 @@ You have an asynchronous operation that you want to combine with an observable.
 
 Any asynchronous operation can be treated as an observable stream that does one of two things:
 
-Produces a single element and then completes Faults without producing any elements To implements this transformation, the `System.Reactive` library has a simple conversion from `Task<T>` to `IObservable<T>`. The following code starts an asynchronous download of a web page, treating it as an observable sequence:
+Produces a single element and then completes `Fault`s without producing any elements To implements this transformation, the `System.Reactive` library has a simple conversion from `Task<T>` to `IObservable<T>`. The following code starts an asynchronous download of a web page, treating it as an observable sequence:
 
 ```C#
 IObservable<HttpResponseMessage> GetPage(HttpClient client)
@@ -306,7 +305,8 @@ Consuming a `Channel` as an asynchronous stream is built right into the `Channel
 ```C#
 public static class DataflowExtensions
 {
-  public static bool TryReceiveItem<T>(this ISourceBlock<T> block, out T value)
+  public static bool TryReceiveItem<T>(this ISourceBlock<T> block,
+      out T value)
   {
     if (block is IReceivableSourceBlock<T> receivableSourceBlock)
       return receivableSourceBlock.TryReceive(out value);
@@ -360,9 +360,9 @@ await foreach (int item in multiplyBlock.ReceiveAllAsync())
 It is also possible to use an asynchronous stream as a source of items for a dataflow block. All you need is a loop to pull the items out and place them into the block. There are a couple of assumptions in the following code that may not be appropriate in every scenario. First, the code assumes you want the block to complete when the stream completes. Second, it begins running on its calling thread; some scenarios may want to always run the entire loop on a threadpool thread:
 
 ```C#
-public static async Task WriteToBlockAsync<T>(
-    this IAsyncEnumerable<T> enumerable,
-    ITargetBlock<T> block, CancellationToken token = default)
+public static async Task WriteToBlockAsync<T>(this IAsyncEnumerable<T> enumerable,
+    ITargetBlock<T> block,
+    CancellationToken token = default)
 {
   try
   {
@@ -381,11 +381,11 @@ public static async Task WriteToBlockAsync<T>(
 
 ### Discussion
 
-The extension methods in this recipe are intended as a starting point. In particular, the WriteToBlockAsync extension method does make some assumptions; be sure to consider the behavior of these methods and ensure that their behavior is appropriate for your scenario before using them.
+The extension methods in this recipe are intended as a starting point. In particular, the `WriteToBlockAsync` extension method does make some assumptions; be sure to consider the behavior of these methods and ensure that their behavior is appropriate for your scenario before using them.
 
 ### See Also
 
-Recipe 9.8 covers consuming a Channel as an asynchronous stream.
+Recipe 9.8 covers consuming a `Channel` as an asynchronous stream.
 
 Recipe 3.4 covers canceling asynchronous streams.
 
@@ -407,8 +407,9 @@ First, let's consider using a dataflow block as an input to an observable stream
 
 ```C#
 var buffer = new BufferBlock<int>();
-IObservable<int> integers = buffer.AsObservable();
-integers.Subscribe(data => Trace.WriteLine(data),
+var integers = buffer.AsObservable(); // as IObservable<int>
+integers.Subscribe(
+    data => Trace.WriteLine(data),
     ex => Trace.WriteLine(ex),
     () => Trace.WriteLine("Done"));
 buffer.Post(13);
@@ -462,10 +463,10 @@ Part of your solution uses `System.Reactive` observables, and you want to consum
 The most straightforward solution is already included in the `System.Linq.Async` library:
 
 ```C#
-IObservable<long> observable =
+var observable = // as IObservable<long>
     Observable.Interval(TimeSpan.FromSeconds(1));
 // WARNING: May consume unbounded memory; see discussion!
-IAsyncEnumerable<long> enumerable =
+var enumerable = // as IAsyncEnumerable<long>
     observable.ToAsyncEnumerable();
 ```
 
@@ -477,10 +478,9 @@ However, it's important to recognize that this simple `ToAsyncEnumerable` extens
 
 ```C#
 // WARNING: May consume unbounded memory; see discussion!
-public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(
-    this IObservable<T> observable)
+public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IObservable<T> observable)
 {
-  Channel<T> buffer = Channel.CreateUnbounded<T>();
+  var buffer = Channel.CreateUnbounded<T>(); // as Channel<T>
   using (observable.Subscribe(
       value => buffer.Writer.TryWrite(value),
       error => buffer.Writer.Complete(error),
@@ -498,8 +498,8 @@ You can avoid the memory issue by using a bounded queue. The trade-off is that y
 
 ```C#
 // WARNING: May discard items; see discussion!
-public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(
-    this IObservable<T> observable, int bufferSize)
+public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IObservable<T> observable,
+    int bufferSize)
 {
   var bufferOptions = new BoundedChannelOptions(bufferSize)
   {
@@ -517,7 +517,6 @@ public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(
 }
 ```
 
-
 ### Discussion
 
 When you have a producer that runs faster than a consumer, your options are to either buffer the producer items (assuming that the producer eventually catches up), or limit the producer's items. The second solution in this recipe limits the producer's items by dropping ones that don't fit in the buffer. You can also limit the producer's items by using observable operators designed for that, such as `Throttle` or `Sample`; see Recipe 6.4 for details. Depending on your needs, it may be best to `Throttle` or `Sample` the input observable before converting it to an `IAsyncEnumerable<T>` using one of the techniques in this recipe.
@@ -526,10 +525,8 @@ Aside from bounded queues and unbounded queues, there's a third option not cover
 
 ### See Also
 
-Recipe 6.4 covers System.Reactive operators designed to throttle input.
+Recipe 6.4 covers `System.Reactive` operators designed to throttle input.
 
-Recipe 9.8 covers using Channel as an unbounded producer/consumer queue.
+Recipe 9.8 covers using `Channel` as an unbounded producer/consumer queue.
 
-Recipe 9.10 covers using Channel as a sampling queue, dropping items when it is full.
-
-
+Recipe 9.10 covers using `Channel` as a sampling queue, dropping items when it is full.

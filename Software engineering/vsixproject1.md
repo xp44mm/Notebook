@@ -19,8 +19,6 @@ https://docs.microsoft.com/en-us/visualstudio/extensibility/internals/how-vspack
 
   扩展包的初始化文件。或者说启动文件。
 
-
-
 ### DTE
 
 保存一个静态DTE到扩展包类中，所有命令都可以访问，赋值是异步方式的，其他代码省略：
@@ -40,8 +38,6 @@ public sealed class VSIXProject1Package : AsyncPackage
     }
 }
 ```
-
-
 
 ### 添加命令
 
@@ -126,8 +122,6 @@ internal sealed class Command1
 ```
 
 每个按钮对应一个命令。看符号`<Symbols/>`部分，第一个符号`<GuidSymbol/>`是包guid，第二个符号是菜单命令符号，菜单和所有的命令共用这个符号。第三个符号对应一张图片，每张图片一个符号。
-
-
 
 用模板添加第二个命令时，会新建命令`Command2.cs`类文件，添加一张图片`Command2.png`到`Resources`文件夹。
 
@@ -266,8 +260,6 @@ protected override async Task InitializeAsync(CancellationToken cancellationToke
 
 如果不需要，删除引用：System.Windows.Form
 
-
-
 ### 升级NuGet程序包
 
 注意选择相应的VisualStudio版本，不要变更扩展包相关NuGet项的主要版本号。
@@ -300,7 +292,6 @@ Update-Package -Safe
 
 升级所有包的第三部分到最新版，`Major.Minor`相同，`Patch`最新。 `-Safe` is an alias of `-ToHighestPatch`.
 
-
 ### WPF相关依赖
 
 如果项目需要wpf，添加下面引用：
@@ -311,8 +302,6 @@ PresentationFramework
 System.Xaml
 WindowsBase
 ```
-
-
 
 ### NuGet找不到资产文件 project.assets.json
 

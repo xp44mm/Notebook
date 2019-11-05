@@ -65,8 +65,6 @@ Adding a trace listener to the `Listeners` collection can cause an exception to 
 
 ---
 
-
-
 You can modify the level of indentation using the `Indent` method or the `IndentLevel` property. To modify the indent spacing, use the `IndentSize` property. You can specify whether to automatically flush the output buffer after each write by setting the `AutoFlush` property to `true`.
 
 To set the `AutoFlush` and `IndentSize` for `Debug`, you can edit the configuration file corresponding to the name of your application. The configuration file should be formatted as shown in the following example.
@@ -90,8 +88,6 @@ In Visual Studio C# projects, by default, the "DEBUG" conditional compilation sy
 To define the "DEBUG" conditional compilation symbol in C#, add the `/d:DEBUG` option to the compiler command line when you compile your code using a command line, or add `#define DEBUG` to the top of your file. 
 
 ---
-
-
 
 ## Properties
 
@@ -120,8 +116,6 @@ To define the "DEBUG" conditional compilation symbol in C#, add the `/d:DEBUG` o
 
  `Assert(Boolean, String, String, Object)`
  Checks for a condition; if the condition is `false`, outputs two messages (simple and formatted) and displays a message box that shows the call stack.
-
-
 
  `Close()`
  Flushes the output buffer and then calls the `Close` method on each of the `Listeners`.

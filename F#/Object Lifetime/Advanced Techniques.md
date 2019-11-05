@@ -152,12 +152,8 @@ Even though .NET garbage collection is quite efficient, it can be a major source
 - Gen 0 Heap Size, Gen 1 Heap Size, Gen 2 Heap Size, Large Object Heap Size (the size of the four heaps used by the garbage collector)
 - \# Bytes In All Heaps (the sum of the four heaps used by the application, that is, Generation-0, Generation-1, Generation-2, and Large Object heaps)
 
-
-
 ![Image from book](images/fig389%5F01%5F0%`2Ejpg`) 
 Figure 9-1: Using the Performance utility to monitor .NET memory performance counters 
-
-
 
 If the value of the first two sets of counters is suspiciously high, you can conclude that garbage collections are killing your application's performance and should browse your source code looking for the causes of the higher-than-usual activity of the managed heap. I have compiled a list of issues you should pay attention to and which counters can help you solve your performance problem:
 
@@ -331,8 +327,6 @@ let ra5: RandomArray = RandomArray.Create(30000)
 
 A pooled object might improve performance in other ways, for example, by creating a few instances in advance so that no initialization time is spent when the application asks for them. Object pooling can be useful in cases when performance isn't the main issue—for example, when you have a threshold for the number of objects that can be created.
 
-
-
 ### Garbage Collection on Multi-CPU Computers
 
 When the .NET runtime is executing on a workstation, it's important that the user interface work as smoothly as possible, even at the cost of some loss of overall performance. On the other hand, performance becomes the top priority when an enterprise-level .NET application runs on a server machine. To account for these differences, the .NET Framework comes with two types of garbage collectors: the workstation version and the multi-CPU server version.
@@ -348,8 +342,6 @@ When running on a single-CPU machine, the collector always works in workstation 
 ```
 
 When the server version is used, objects are allocated from multiple heaps; the program freezes during a garbage collection, and each CPU works concurrently to compact one of the heaps. This technique improves overall performance and scales well when you install additional CPUs. The server version can be used only on multi-CPU systems or on systems equipped with a hyperthreaded CPU.
-
-
 
 **Version 2005 of VB or Version 2.0 of .NET** In previous versions of the .NET Framework, the server and the workstation versions of the garbage collector resided in different DLLs (mscorsvr.dll and mscorwks.dll) and you explicitly had to select a different DLL to enable the server version. In .NET Framework 2.0, the two versions have been merged in the mscorwks.dll, and you enable the server version by adding an entry to the configuration file:
 

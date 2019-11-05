@@ -410,8 +410,6 @@ describe('Test Scheduler', function () {
 });
 ```
 
-
-
 9.6. Augmenting virtual reality
 
 ```javascript
@@ -480,8 +478,6 @@ test('Should map multiple values v6', function () {
     });
 });
 ```
-
-
 
 Listing 9.10 Testing the debounceTime operator
 
@@ -568,8 +564,6 @@ test('Should square and add even numbers v6', function () {
     });
 });
 ```
-
-
 
 9.6.3. Refactoring your search stream for testability
 
@@ -663,6 +657,5 @@ describe('Search component', function () {
     });
 });
 ```
-
 
 

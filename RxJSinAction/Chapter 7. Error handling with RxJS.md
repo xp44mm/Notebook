@@ -235,7 +235,6 @@ The structured mechanism of throwing and catching exceptions in imperative JavaS
     }
     ```
 
-
 After reading all these statements, you're probably asking yourself, "Is throwing exceptions completely off the table?" We certainly don't believe so. In practice, they can never be off the table because there are many factors outside your control that you may need to account for, like system or environmental errors or calls to third-party code.
 
 We're not recommending you don't use exceptions at all, because they do serve a purpose—just use them for truly exceptional conditions. When you need to use exceptions or deal with errors, the functional approach is to allow functional data types to abstract them away from your main business logic; this prevents you from creating side effects or code that becomes hard to maintain. 

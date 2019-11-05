@@ -504,7 +504,6 @@ let worstPositions = positionsIndexedByGameValue.[0]
 let bestPositions = positionsIndexedByGameValue.[9]
 ```
 
-
 The output is: 
 
 ```F#
@@ -1014,7 +1013,6 @@ let (|Polar|) (x : Complex) = (x.Magnitude, x.Phase)
 
 ```
 
-
 The key thing to note is that these definitions let you use Rect and Polar as tags in pattern matching. For example, you can now write the following to define addition and multiplication over complex numbers:
 
 ```F#
@@ -1103,7 +1101,6 @@ type System.Type with
     member GenericParameterPosition : int
 ```
 
-
 This type looks very much like one you'd like to pattern match against. There are clearly three or four distinct cases here, and pattern matching helps you isolate them. You can define an active pattern to achieve this, as shown in Listing 9-3.
 
 Listing 9-3.  Defining an active pattern for matching on System.Type values
@@ -1181,7 +1178,6 @@ and internal PropRepr =
     | TrueRepr
 ```
 
-
 What happens, however, if you want to pattern match against values of type `Prop`? Even if you exposed the representation, all you would get is an integer, which you would have to look up in an internal table. You can define an active pattern for restoring matching on that data structure, as shown in Listing 9-4.
 
 Listing 9-4. Extending Listing 9-2 with an active pattern for the optimized representation
@@ -1198,7 +1194,6 @@ module PropOps =
         | TrueRepr -> True
 ```
 
-
 This code defines an active pattern in the auxiliary module PropOps that lets you pattern match against Prop values, despite the fact that they're using optimized unique-integer references under the hood. For example, you can define a pretty-printer for Prop terms as follows, even though they're using optimized representations:
 
 ```F#
@@ -1212,7 +1207,6 @@ let rec showProp precedence prop =
     | Var v -> v
     | True -> "T"
 ```
-
 
 Likewise, you can define functions to place the representation in various normal forms. For example, the following function computes negation normal form (NNF), where all instances of NOT nodes have been pushed to the leaves of the representation:
 
@@ -1232,7 +1226,6 @@ let rec nnf sign prop =
 
 let NNF prop = nnf true prop
 ```
-
 
 The following demonstrates that two terms have equivalent NNF normal forms:
 
@@ -1506,7 +1499,6 @@ let rec deepRecursion n =
     printfn "<-- deepRecursion, n = %d" n
 ```
 
-
 You can see this in F# Interactive:
 
 ```F#
@@ -1568,7 +1560,6 @@ let rec replicateNotTailRecursiveA n x =
     if n <= 0 then []
     else x :: replicateNotTailRecursiveA (n - 1) x
 ```
-
 
 The problem with this function is that work is done after the recursive call. This becomes obvious when you write the function in this fashion:
 

@@ -14,7 +14,6 @@ Both deterministic and nondeterministic finite automata are capable of recognizi
 
 [^4]: There is a small lacuna: as we defined them, regular expressions cannot describe the empty language, since we would never want to use this pattern in practice. However, finite automata can define the empty language. In the theory, Ø is treated as an additional regular expression for the sole purpose of defining the empty language.
 
-
 ### 3.6.1 Nondeterministic Finite Automata
 
 A *nondeterministic finite automaton* (NFA) consists of:
@@ -181,7 +180,6 @@ It is possible that the number of DFA states is exponential in the number of NFA
 
 **METHOD:** Our algorithm constructs a transition table `Dtran` for D. Each state of D is a set of NFA states, and we construct `Dtran` so D will simulate "in parallel" all possible moves N can make on a given input string. Our first problem is to deal with ε-transitions of N properly. In Fig. 3.31 we see the definitions of several functions that describe basic computations on the states of N that are needed in the algorithm. Note that s is a single state of N, while T is a set of states of N. 
 
-
 + ε-closure( s ) ：
   Set of NFA states reachable from NFA state s on ε-transitions alone. 
   
@@ -228,7 +226,6 @@ while ( stack is not empty ) {
 Figure 3.33: Computing ε-closure(T)
 
 **Example 3.21:** Figure 3.34 shows another NFA accepting `(a|b)*abb`; it happens to be the one we shall construct directly from this regular expression in Section 3.9. Let us apply Algorithm 3.20 to Fig. 3.34.
-
 
 | STATE | a    | b    | ε     |
 | ----- | ---- | ---- | ----- |
@@ -563,7 +560,6 @@ start->(7')-a->((8))
 ```
 
 To obtain the NFA for r~7~ = r~5~ r~6~ , we apply the construction of Fig. 3.41. We merge states 7 and 7', yielding the NFA of Fig. 3.46. Continuing in this fashion with new NFA's for the two subexpressions b called r~8~ and r_10 , we eventually construct the NFA for (a|b)*abb that we first met in Fig. 3.34. □
-
 
 ```mermaid
 graph LR
@@ -907,7 +903,6 @@ We can compute `nullable`, `firstpos`, and `lastpos` by a straightforward recurs
 | A cat-node n = c1 c2   | nullable( c1 ) and nullable(c2) | if nullable( c1 ) then firstpos( c1 ) ∪ firstpos(c2) else firstpos(c1) |
 | A star-node n = c1 *   | nullable(n) = true              | firstpos( c1 )                                               |
 
-
 Figure 3.58: Rules for computing nullable and firstpos
 
 **Example 3.34:** Of all the nodes in Fig. 3.56 only the star-node is nullable. We note from the table of Fig. 3.58 that none of the leaves are nullable, because they each correspond to non-ε operands. The or-node is not nullable, because neither of its children is. The star-node is nullable, because every star-node is nullable. Finally, each of the cat-nodes, having at least one non nullable child, is not nullable.
@@ -1125,7 +1120,6 @@ The second is an induction on i that if states s and t are placed in different g
 
 ---
 
-
 ### 3.9.7 State Minimization in Lexical Analyzers
 
 To apply the state minimization procedure to the DFA's generated in Section 3.8.3, we must begin Algorithm 3.39 with the partition that groups together all states that recognize a particular token, and also places in one group all those states that do not indicate any token. An example should make the extension clear.
@@ -1137,7 +1131,6 @@ To apply the state minimization procedure to the DFA's generated in Section 3.8.
 The minimization algorithm sometimes produces a DFA with one dead state one that is not accepting and transfers to itself on each input symbol. This state is technically needed, because a DFA must have a transition from every state on every symbol. However, as discussed in Section 3.8.3, we often want to know when there is no longer any possibility of acceptance, so we can establish that the proper lexeme has already been seen. Thus, we may wish to eliminate the dead state and use an automaton that is missing some transitions. This automaton has one fewer state than the minimum-state DFA, but is strictly speaking not a DFA, because of the missing transitions to the dead state. 
 
 ---
-
 
 **Example 3.41:** For the DFA of Fig. 3.54, the initial partition is
 

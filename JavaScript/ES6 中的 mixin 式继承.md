@@ -70,8 +70,6 @@ test('test mixin Employee', () => {
 })
 ```
 
-
-
 利用 *mixin* 模式，我们还可以实现对原生类的继承，例如： 
 
 ```javascript
@@ -94,8 +92,6 @@ test('test mixin MySet', () => {
 ```
 
 通过 `MySet` 继承 `Serializable(Set)`，我们得到了一个可序列化的 `Set` 类。
-
-
 
 我们还可以定义其他的“修饰符”，然后将它们组合使用，比如： 
 
@@ -131,8 +127,6 @@ test('test mixin Immutable', () => {
 ### 实现多重继承
 
 实际上仍然是一个一个的继承链。
-
-
 
 ## 总结
 

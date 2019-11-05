@@ -219,10 +219,6 @@ Figure 15-3: The solution's Property Pages dialog box, which lets you decide whi
 
 The `NetworkStream` type exposes a few other members of interest. For example the `DataAvailable` property returns True if there is data waiting to be read. Network streams don't support the seek operation; thus, the `CanSeek` property always returns False and the `Seek` method throws an exception, as do the `Length` and `Position` properties.
 
-
-
-
-
 **Version 2005 of VB or Version 2.0 of .NET** The most important feature added in .NET Framework 2.0 is the support for timeouts through the `ReadTimeout` and `WriteTimeout` properties. By default, all read and write operations wait until data can be received or sent, but if you assign a value (in milliseconds) to these properties, any operation that doesn't complete within the specified timeout throws an `IOException` object.
 
 ---

@@ -351,7 +351,6 @@ val it : Vector2DWithOperators = {DX = 6.0; DY = 8.0;}
 
 If you add overloaded operators to your type, you may also have to customize how generic equality, hashing, and comparison are performed. In particular, the behavior of generic operators such as `hash`, `<`, `>`, `<=`, `>=`, `compare`, `min`, and `max` isn't specified by defining new static members with these names, but rather by the techniques that will be described in Chapter 9. 
 
-
 ---
 
 #### how does operator overloading work?
@@ -1153,7 +1152,6 @@ IDEs can help you determine when a type has implemented `IDisposable`. when you 
 
 ---
 
-
 ---
 
 #### When will the runtime clean up for you?
@@ -1173,7 +1171,6 @@ Sometimes, the lifetime of a resource isn't simple in the sense that it doesn't 
 * Design objects that can own one or more resources and that are responsible for cleaning them up. Make sure that these objects implement `System.IDisposable`. 
 
 * Use control constructs that help you capture the kind of computation you're performing. For example, when generating sequences of data (such as from a database connection), you should strongly consider using sequence expressions, as discussed in Chapter 3. These may have internal use bindings, and the resources are disposed of when each sequence iteration finishes. Likewise, when using asynchronous I/O, it may be helpful to write your computation as an asynchronous workflow. Chapter 11 and the following sections will provide examples. 
-
 
 Consider implementing the `IDisposable` interface on objects and types in situations such as: 
 

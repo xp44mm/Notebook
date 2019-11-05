@@ -6,21 +6,19 @@ Concurrency is a key aspect of beautiful software. For decades, concurrency was 
 
 Before continuing, I'd like to clear up some terminology that I'll be using throughout this book. These are my own definitions that I use consistently to disambiguate different programming techniques. Let's start with concurrency. 
 
-> ##### Concurrency
->
+### Concurrency
+
 > Doing more than one thing at a time.
->
 
 I hope it's obvious how concurrency is helpful. End-user applications use concurrency to respond to user input while writing to a database. Server applications use concurrency to respond to a second request while finishing the first request. You need concurrency any time you need an application to do one thing while it's working on something else. Almost every software application in the world can benefit from concurrency.
 
 Most developers hearing the term “concurrency” immediately think of “multithreading.” I'd like to draw a distinction between these two.
 
-> ##### Multithreading
->
-> A form of concurrency that uses multiple threads of execution.
->
+### Multithreading
 
-Multithreading refers to literally using multiple threads. As demonstrated in many recipes in this book, multithreading is one form of concurrency, but certainly not the only one. In fact, direct use of low-level threading types has almost no purpose in a modern application; higher-level abstractions are more powerful and more efficient than old-school multithreading. For that reason, I'll minimize my coverage of outdated techniques. None of the multithreading recipes in this book use the Thread or BackgroundWorker types; they have been replaced with superior alternatives.
+> A form of concurrency that uses multiple threads of execution.
+
+Multithreading refers to literally using multiple threads. As demonstrated in many recipes in this book, multithreading is one form of concurrency, but certainly not the only one. In fact, direct use of low-level threading types has almost no purpose in a modern application; higher-level abstractions are more powerful and more efficient than old-school multithreading. For that reason, I'll minimize my coverage of outdated techniques. None of the multithreading recipes in this book use the `Thread` or `BackgroundWorker` types; they have been replaced with superior alternatives.
 
 ##### WARNING
 
@@ -28,27 +26,25 @@ As soon as you type `new Thread()`, it's over; your project already has legacy c
 
 But don't get the idea that multithreading is dead! Multithreading lives on in the thread pool, a useful place to queue work that automatically adjusts itself according to demand. In turn, the thread pool enables another important form of concurrency: parallel processing.
 
-> ##### Parallel processing
->
+### Parallel processing
+
 > Doing lots of work by dividing it up among multiple threads that run concurrently.
->
 
 Parallel processing (or parallel programming) uses multithreading to maximize the use of multiple processor cores. Modern CPUs have multiple cores, and if there's a lot of work to do, then it makes no sense to make one core do all the work while the others sit idle. Parallel processing splits the work among multiple threads, which can each run independently on a different core. Parallel processing is one type of multithreading, and multithreading is one type of concurrency. There's another type of concurrency that is important in modern applications but isn't as familiar to many developers: asynchronous programming.
 
-> ##### Asynchronous programming
->
+### Asynchronous programming
+
 > A form of concurrency that uses futures or callbacks to avoid unnecessary threads.
->
 
 A future (or promise) is a type that represents some operation that will complete in the future. Some modern future types in .NET are `Task` and `Task<TResult>`. Older asynchronous APIs use callbacks or events instead of futures. Asynchronous programming is centered around the idea of an asynchronous operation: some operation that is started that will complete some time later. While the operation is in progress, it doesn't block the original thread; the thread that starts the operation is free to do other work. When the operation completes, it notifies its future or invokes its callback or event to let the application know the operation is finished.
 
-Asynchronous programming is a powerful form of concurrency, but until recently, it required extremely complex code. The async and await support in modern languages make asynchronous programming almost as easy as synchronous (non-concurrent) programming.
+Asynchronous programming is a powerful form of concurrency, but until recently, it required extremely complex code. The `async` and `await` support in modern languages make asynchronous programming almost as easy as synchronous (non-concurrent) programming.
 
 Another form of concurrency is reactive programming. Asynchronous programming implies that the application will start an operation that will complete once at a later time. Reactive programming is closely related to asynchronous programming but is built on asynchronous events instead of asynchronous operations. Asynchronous events may not have an actual “start,” may happen at any time, and may be raised multiple times. One example is user input.
 
-> ##### Reactive programming
->
-> A declarative style of programming where the application reacts to events. 
+### Reactive programming
+
+> A declarative style of programming where the application reacts to events.
 
 If you consider an application to be a massive state machine, the application's behavior can be described as reacting to a series of events by updating its state at each event. This isn't as abstract or theoretical as it sounds; modern frameworks make this approach quite useful in real-world applications. Reactive programming isn't necessarily concurrent, but it is closely related to concurrency, so this book covers the basics.
 
@@ -60,7 +56,7 @@ Asynchronous programming has two primary benefits. The first benefit is for end-
 
 Both benefits of asynchronous programming derive from the same underlying aspect: asynchronous programming frees up a thread. For GUI programs, asynchronous programming frees up the UI thread; this permits the GUI application to remain responsive to user input. For server applications, asynchronous programming frees up request threads; this permits the server to use its threads to serve more requests.
 
-Modern asynchronous .NET applications use two keywords: `async` and `await`. The `async` keyword is added to a method declaration, and performs a double purpose: it enables the `await` keyword within that method and it signals the compiler to generate a state machine for that method, similar to how `yield return` works. An async method may return `Task<TResult>` if it returns a value, `Task` if it doesn't return a value, or any other “task-like” type, such as `ValueTask`. In addition, an async method may return `IAsyncEnumerable<T>`or `IAsyncEnumerator<T>` if it returns multiple values in an enumeration. The task-like types represent futures; they can notify the calling code when the async method completes.
+Modern asynchronous .NET applications use two keywords: `async` and `await`. The `async` keyword is added to a method declaration, and performs a double purpose: it enables the `await` keyword within that method and it signals the compiler to generate a state machine for that method, similar to how `yield return` works. An async method may return `Task<TResult>` if it returns a value, `Task` if it doesn't return a value, or any other “task-like” type, such as `ValueTask`. In addition, an async method may return `IAsyncEnumerable<T>` or `IAsyncEnumerator<T>` if it returns multiple values in an enumeration. The task-like types represent futures; they can notify the calling code when the async method completes.
 
 ##### WARNING
 
@@ -135,7 +131,7 @@ When an async method throws (or propagates) an exception, the exception is place
 async Task TrySomethingAsync()
 {
   // The exception will end up on the Task, not thrown directly.
-  Task task = PossibleExceptionAsync();
+  var task = PossibleExceptionAsync();
   try
   {
     // The Task's exception will be raised here, at the await.
@@ -161,15 +157,15 @@ async Task WaitAsync()
 void Deadlock()
 {
   // Start the delay.
-  Task task = WaitAsync();
+  var task = WaitAsync();
   // Synchronously block, waiting for the async method to complete.
   task.Wait();
 }
 ```
 
-The code in this example will deadlock if called from a UI or ASP.NET Classic context because both of those contexts only allow one thread in at a time. Deadlock will call WaitAsync, which begins the delay. Deadlock then (synchronously) waits for that method to complete, blocking the context thread.
+The code in this example will deadlock if called from a UI or ASP.NET Classic context because both of those contexts only allow one thread in at a time. `Deadlock` will call WaitAsync, which begins the delay. `Deadlock` then (synchronously) waits for that method to complete, blocking the context thread.
 
-When the delay completes, await attempts to resume WaitAsync within the captured context, but it cannot because there's already a thread blocked in the context, and the context only allows one thread at a time. Deadlock can be prevented two ways: you can use `ConfigureAwait(false)` within WaitAsync (which causes await to ignore its context), or you can await the call to WaitAsync (making Deadlock into an async method).
+When the delay completes, await attempts to resume WaitAsync within the captured context, but it cannot because there's already a thread blocked in the context, and the context only allows one thread at a time. `Deadlock` can be prevented two ways: you can use `ConfigureAwait(false)` within WaitAsync (which causes await to ignore its context), or you can await the call to WaitAsync (making `Deadlock` into an async method).
 
 ##### WARNING
 
@@ -177,7 +173,7 @@ If you use `async`, it's best to use `async` all the way.
 
 For a more complete introduction to `async`, the online documentation that Microsoft has provided for async is fantastic; I recommend reading at least the Asynchronous Programming overview and the Task-based Asynchronous Pattern (TAP) overview. If you want to go a bit deeper, there's also the Async in Depth documentation.
 
-Asynchronous streams take the groundwork of `async` and `await` and extend it to handle multiple values. Asynchronous streams are built around the concept of asynchronous enumerables, which are like regular enumerables, except that they enable asynchronous work to be done when retrieving the next item in the sequence. This is an extremely powerful concept that Chapter 3 covers in more detail. Asynchronous streams are especially useful whenever you have a sequence of data that arrives either one at a time or in chunks. For example, if your application processes the response of an API that uses paging with limit and offset parameters, then asynchronous streams are an ideal abstraction. As of the time of this writing, asynchronous streams are only available on the newest .NET platforms.
+**Asynchronous streams** take the groundwork of `async` and `await` and extend it to handle multiple values. Asynchronous streams are built around the concept of asynchronous enumerables, which are like regular enumerables, except that they enable asynchronous work to be done when retrieving the next item in the sequence. This is an extremely powerful concept that Chapter 3 covers in more detail. Asynchronous streams are especially useful whenever you have a sequence of data that arrives either one at a time or in chunks. For example, if your application processes the response of an API that uses paging with limit and offset parameters, then asynchronous streams are an ideal abstraction. As of the time of this writing, asynchronous streams are only available on the newest .NET platforms.
 
 ## Introduction to Parallel Programming
 
@@ -185,23 +181,23 @@ Parallel programming should be used any time you have a fair amount of computati
 
 There are two forms of parallelism: data parallelism and task parallelism. Data parallelism is when you have a bunch of data items to process, and the processing of each piece of data is mostly independent from the other pieces. Task parallelism is when you have a pool of work to do, and each piece of work is mostly independent from the other pieces. Task parallelism may be dynamic; if one piece of work results in several additional pieces of work, they can be added to the pool of work.
 
-There are a few different ways to do data parallelism. `Parallel.ForEach` is similar to a foreach loop and should be used when possible.
+There are a few different ways to do data parallelism. `Parallel.ForEach` is similar to a `foreach` loop and should be used when possible.
 
-`Parallel.ForEach` is covered in Recipe 4.1. The `Parallel` class also supports `Parallel.For`, which is similar to a for loop, and can be used if the data processing depends on the index. Code that uses `Parallel.ForEach` looks like the following:
+`Parallel.ForEach` is covered in Recipe 4.1. The `Parallel` class also supports `Parallel.For`, which is similar to a `for` loop, and can be used if the data processing depends on the index. Code that uses `Parallel.ForEach` looks like the following:
 
 ```C#
-void RotateMatrices(IEnumerable<Matrix> matrices, float degrees)
+void RotateMatrices(IEnumerable<Matrix> matrices, float rotDegrees)
 {
-  Parallel.ForEach(matrices, matrix => matrix.Rotate(degrees));
+  Parallel.ForEach(matrices, mtrx => mtrx.Rotate(rotDegrees));
 }
 ```
 
-Another option is PLINQ (Parallel LINQ), which provides an `AsParallel` extension method for LINQ queries. Parallel is more resource friendly than PLINQ; Parallel will play more nicely with other processes in the system, while PLINQ will (by default) attempt to spread itself over all CPUs. The downside to `Parallel` is that it's more explicit; PLINQ in many cases has more elegant code. PLINQ is covered in Recipe 4.5 and looks like this:
+Another option is PLINQ (Parallel LINQ), which provides an `AsParallel` extension method for LINQ queries. `Parallel` is more resource friendly than PLINQ; `Parallel` will play more nicely with other processes in the system, while PLINQ will (by default) attempt to spread itself over all CPUs. The downside to `Parallel` is that it's more explicit; PLINQ in many cases has more elegant code. PLINQ is covered in Recipe 4.5 and looks like this:
 
 ```C#
 IEnumerable<bool> PrimalityTest(IEnumerable<int> values)
 {
-  return values.AsParallel().Select(value => IsPrime(value));
+  return values.AsParallel().Select(x => IsPrime(x));
 }
 ```
 
@@ -209,7 +205,7 @@ Regardless of the method you choose, one guideline stands out when doing paralle
 
 ##### TIP
 
-The chunks of work should be as independent from one another as possible. 
+The chunks of work should be as independent from one another as possible.
 
 As long as your chunk of work is independent from all other chunks, you maximize your parallelism. As soon as you start sharing state between multiple threads, you have to synchronize access to that shared state, and your application becomes less parallel. Chapter 12 covers synchronization in more detail.
 
@@ -222,9 +218,10 @@ Now let's turn to task parallelism. Data parallelism is focused on processing da
 ```C#
 void ProcessArray(double[] array)
 {
+  var middle = array.Length / 2;
   Parallel.Invoke(
-      () => ProcessPartialArray(array, 0, array.Length / 2),
-      () => ProcessPartialArray(array, array.Length / 2, array.Length)
+      () => ProcessPartialArray(array, 0, middle),
+      () => ProcessPartialArray(array, middle, array.Length)
   );
 }
 void ProcessPartialArray(double[] array, int begin, int end)
@@ -233,7 +230,7 @@ void ProcessPartialArray(double[] array, int begin, int end)
 }
 ```
 
-The Task type was originally introduced for task parallelism, though these days it's also used for asynchronous programming. A `Task` instance—as used in task parallelism—represents some work. You can use the `Wait` method to wait for a task to complete, and you can use the `Result` and `Exception` properties to retrieve the results of that work. Code using `Task` directly is more complex than code using `Parallel`, but it can be useful if you don't know the structure of the parallelism until runtime. With this kind of dynamic parallelism, you don't know how many pieces of work you need to do at the beginning of the processing; you find out as you go along. Generally, a dynamic piece of work should start whatever child tasks it needs and then wait for them to complete. The `Task` type has a special flag, `TaskCreationOptions.AttachedToParent`, which you could use for this. Dynamic parallelism is covered in Recipe 4.4.
+The `Task` type was originally introduced for task parallelism, though these days it's also used for asynchronous programming. A `Task` instance—as used in task parallelism—represents some work. You can use the `Wait` method to wait for a task to complete, and you can use the `Result` and `Exception` properties to retrieve the results of that work. Code using `Task` directly is more complex than code using `Parallel`, but it can be useful if you don't know the structure of the parallelism until runtime. With this kind of dynamic parallelism, you don't know how many pieces of work you need to do at the beginning of the processing; you find out as you go along. Generally, a dynamic piece of work should start whatever child tasks it needs and then wait for them to complete. The `Task` type has a special flag, `TaskCreationOptions.AttachedToParent`, which you could use for this. Dynamic parallelism is covered in Recipe 4.4.
 
 Task parallelism should strive to be independent, just like data parallelism. The more independent your delegates can be, the more efficient your program can be. Also, if your delegates aren't independent, then they need to be synchronized, and it's harder to write correct code if that code needs synchronization. With task parallelism, be especially careful of variables captured in closures. Remember that closures capture references (not values), so you can end up with sharing that isn't obvious.
 
@@ -247,8 +244,8 @@ try
 }
 catch (AggregateException ex)
 {
-  ex.Handle(exception => {
-    Trace.WriteLine(exception);
+  ex.Handle(e => {
+    Trace.WriteLine(e);
     return true; // "handled"
   });
 }
@@ -281,9 +278,11 @@ interface IObserver<in T>
 }
 interface IObservable<out T>
 {
-  IDisposable Subscribe(IObserver<TResult> observer);
+  IDisposable Subscribe(IObserver<T> observer);
 }
 ```
+
+提示：`in`和`out`用在范型`interface`和`delegate`中, 用来支持逆变和协变（`in`是逆变，`out`是协变）。协变保留赋值兼容性，逆变与之相反。
 
 However, you should never implement these interfaces. The `System.Reactive` (Rx) library by Microsoft has all the implementations you should ever need. Reactive code ends up looking very much like LINQ; you can think of it as “LINQ to Events.” `System.Reactive` has everything that LINQ does and adds in a large number of its own operators, particularly ones that deal with time. The following code starts with some unfamiliar operators (`Interval` and `Timestamp`) and ends with a `Subscribe`, but in the middle are some `Where` and `Select` operators that should be familiar from LINQ:
 
@@ -310,7 +309,7 @@ It is normal for a type to define the observable streams and make them available
 
 A `System.Reactive` subscription is also a resource. The `Subscribe` operators return an `IDisposable` that represents the subscription. When your code is done listening to an observable stream, it should dispose its subscription. Subscriptions behave differently with hot and cold observables. A hot observable is a stream of events that is always going on, and if there are no subscribers when the events come in, they are lost. For example, mouse movement is a hot observable. A cold observable is an observable that doesn't have incoming events all the time. A cold observable will react to a subscription by starting the sequence of events. For example, an HTTP download is a cold observable; the subscription causes the HTTP request to be sent.
 
-The Subscribe operator should always take an error handling parameter as well. The preceding examples do not; the following is a better example that will respond appropriately if the observable stream ends in an error:
+The `Subscribe` operator should always take an error handling parameter as well. The preceding examples do not; the following is a better example that will respond appropriately if the observable stream ends in an error:
 
 ```C#
 Observable.Interval(TimeSpan.FromSeconds(1))
@@ -331,7 +330,7 @@ TPL Dataflow is an interesting mix of asynchronous and parallel technologies. It
 
 The basic building unit of a dataflow mesh is a dataflow block. A block can either be a target block (receiving data), a source block (producing data), or both. Source blocks can be linked to target blocks to create the mesh; linking is covered in Recipe 5.1. Blocks are semi-independent; they will attempt to process data as it arrives and push the results downstream. The usual way of using TPL Dataflow is to create all the blocks, link them together, and then start putting data in at one end. The data then comes out of the other end by itself. Again, Dataflow is more powerful than this; it's possible to break links and create new blocks and add them to the mesh while there is data flowing through it, but that is a very advanced scenario.
 
-Target blocks have buffers for the data they receive. Having buffers enables them to accept new data items even if they aren't ready to process them yet; this keeps data flowing through the mesh. This buffering can cause problems in fork scenarios, where one source block is linked to two target blocks. When the source block has data to send downstream, it starts offering it to its linked blocks one at a time. By default, the first target block would just take the data and buffer it, and the second target block would never get any. The fix for this situation is to limit the target block buffers by making them nongreedy; Recipe 5.4 covers this.
+Target blocks have buffers for the data they receive. Having buffers enables them to accept new data items even if they aren't ready to process them yet; this keeps data flowing through the mesh. This buffering can cause problems in fork scenarios, where one source block is linked to two target blocks. When the source block has data to send downstream, it starts offering it to its linked blocks one at a time. By default, the first target block would just take the data and buffer it, and the second target block would never get any. The fix for this situation is to limit the target block buffers by making them non-greedy; Recipe 5.4 covers this.
 
 A block will fault when something goes wrong, for example, if the processing delegate throws an exception when processing a data item. When a block faults, it will stop receiving data. By default, it won't take down the whole mesh; this enables you to rebuild that part of the mesh or redirect the data. However, this is an advanced scenario; most times, you want the faults to propagate along the links to the target blocks. Dataflow supports this option as well; the only tricky part is that when an exception is propagated along a link, it is wrapped in an `AggregateException`. So, if you have a long pipeline, you could end up with a deeply nested exception; the method `AggregateException.Flatten` can be used to work around this:
 
@@ -349,9 +348,9 @@ try {
   multiplyBlock.Post(1);
   subtractBlock.Completion.Wait();
 }
-catch (AggregateException exception) {
-  AggregateException ex = exception.Flatten();
-  Trace.WriteLine(ex.InnerException);
+catch (AggregateException ex) {
+  AggregateException ex1 = ex.Flatten();
+  Trace.WriteLine(ex1.InnerException);
 }
 ```
 
@@ -361,7 +360,7 @@ At first glance, dataflow meshes sound very much like observable streams, and th
 
 If you're familiar with actor frameworks, TPL Dataflow will seem to share similarities with them. Each dataflow block is independent, in the sense that it will spin up tasks to do work as needed, like executing a transformation delegate or pushing output to the next block. You can also set up each block to run in parallel, so that it'll spin up multiple tasks to deal with additional input. Due to this behavior, each block does have a certain similarity to an actor in an actor framework. However, TPL Dataflow is not a full actor framework; in particular, there's no built-in support for clean error recovery or retries of any kind. TPL Dataflow is a library with an actor-like feel, but it isn't a full-featured actor framework.
 
-The most common TPL Dataflow block types are `TransformBlock<TInput, TOutput>` (similar to LINQ's Select), `TransformManyBlock<TInput, TOutput>` (similar to LINQ's SelectMany), and `ActionBlock<TResult>`, which executes a delegate for each data item. For more information on TPL Dataflow, I recommend the MSDN documentation and the “Guide to Implementing Custom TPL Dataflow Blocks”.
+The most common TPL Dataflow block types are `TransformBlock<TInput, TOutput>` (similar to LINQ's `Select`), `TransformManyBlock<TInput, TOutput>` (similar to LINQ's `SelectMany`), and `ActionBlock<TResult>`, which executes a delegate for each data item. For more information on TPL Dataflow, I recommend the MSDN documentation and the “Guide to Implementing Custom TPL Dataflow Blocks”.
 
 ## Introduction to Multithreaded Programming
 
@@ -377,7 +376,9 @@ For this reason, the `Thread` and `BackgroundWorker` types are not covered at al
 
 ## Collections for Concurrent Applications
 
-There are a couple of collection categories that are useful for concurrent programming: concurrent collections and immutable collections. Both of these collection categories are covered in Chapter 9. Concurrent collections allow multiple threads to update them simultaneously in a safe way. Most concurrent collections use snapshots to enable one thread to enumerate the values while another thread may be adding or removing values. Concurrent collections are usually more efficient than just protecting a regular collection with a lock. Immutable collections are a bit different. An immutable collection cannot actually be modified; instead, to modify an immutable collection, you create a new collection that represents the modified collection. This sounds horribly inefficient, but immutable collections share as much memory as possible between collection instances, so it's not as bad as it sounds. The nice thing about immutable collections is that all operations are pure, so they work very well with functional code.
+There are a couple of collection categories that are useful for concurrent programming: concurrent collections and immutable collections. Both of these collection categories are covered in Chapter 9. Concurrent collections allow multiple threads to update them simultaneously in a safe way. Most concurrent collections use snapshots to enable one thread to enumerate the values while another thread may be adding or removing values. Concurrent collections are usually more efficient than just protecting a regular collection with a lock.
+
+Immutable collections are a bit different. An immutable collection cannot actually be modified; instead, to modify an immutable collection, you create a new collection that represents the modified collection. This sounds horribly inefficient, but immutable collections share as much memory as possible between collection instances, so it's not as bad as it sounds. The nice thing about immutable collections is that all operations are pure, so they work very well with functional code.
 
 ## Modern Design
 

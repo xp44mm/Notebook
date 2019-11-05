@@ -145,7 +145,6 @@ void Subscribe<T>(
 
 ```
 
-
 These variations of `Subscribe` return void instead of `IDisposable`, so the ability to unsubscribe the observer needs to be provided in some other way. This is the job of `CancellationToken`. As figure 6.4 shows, Rx monitors `CancellationToken` for cancellation and, when this happens, it disposes of the inner subscription and disconnects the observer from the observable.
 
 Figure 6.4 Rx monitors the `CancellationToken` for cancellation. When this happens, it will dispose of the inner subscription.
@@ -248,7 +247,6 @@ Observable.Range(1, 5)
     .SubscribeConsole();
 ```
 
-
 Here's the output:
 
 ```C#
@@ -340,7 +338,6 @@ IObservable<TSource> TakeUntil<TSource>(
     this IObservable<TSource> source,
     DateTimeOffset endTime)
 ```
-
 
 ### 6.2.3 Discarding items when another observable emits
 
@@ -513,7 +510,6 @@ Observable.Range(1, 3)
     .Repeat(2)
     .SubscribeConsole("Repeat(2)");
 ```
-
 
 This example generates this output
 
@@ -731,7 +727,6 @@ movements
     .Repeat()
     .Subscribe(pos => line.Points.Add(pos));
 ```
-
 
 This example shows the beauty of the operator composability you have in Rx. Each operator logically follows another to create a clear chain of execution, in which one observable created by an operator becomes the source observable of the next operator. You created a complete drawing application with just a few lines of code, and modifying our pipeline as you built it was simple.
 

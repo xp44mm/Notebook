@@ -37,8 +37,6 @@ ncu -u
 
 执行完命令，`package.json`依赖包的版本号就被更新到最新版了。 
 
-
-
 删除同目录下的`npm-shrinkwrap.json`文件. 以及`package-lock.json`, 
 
 然后可以为项目安装包:
@@ -48,8 +46,6 @@ npm install
 ```
 
 安装成功
-
-
 
 #### 修改项目文件
 
@@ -66,7 +62,6 @@ const nonTreeShakableModules = [
     //'jquery',
 ];
 ```
-
 
 打开文件`/ClientApp/boot.browser.ts`，删除如下：
 
@@ -110,11 +105,7 @@ const nonTreeShakableModules = [
 
 ```
 
-
-
 文件`$(ProjectDir)\ClientApp\app\app.module.shared.ts`, 为服务器和浏览器的共享根文件.修改配置在此根文件中修改.
-
-
 
 **特征模块**,特征模块相比主模块主要不同有:
 
@@ -143,11 +134,6 @@ const routes: Routes = [];
 export class StoreModule { }
 ```
 
-
-
-
-
 执行`Ctrl+F5`,或[调试],[开始执行(不调试)].
-
 
 
