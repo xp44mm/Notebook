@@ -134,7 +134,7 @@ You need to control how the individual pieces of code are executed in parallel c
 Once you create an appropriate `TaskScheduler` instance (see Recipe 13.2), you can include it in the options that you pass to a Parallel method. The following code takes a sequence of sequences of matrices. It starts a bunch of parallel loops and wants to limit the total parallelism of all loops simultaneously, regardless of how many matrices are in each sequence:
 
 ```C#
-void RotateMatrices(IEnumerable<IEnumerable<Matrix>> collections, float degrees)
+void RotateMatrices(IEnumerable<IEnumerable<Matrix>> collections, float angles)
 {
   var schedulerPair = new ConcurrentExclusiveSchedulerPair(
       TaskScheduler.Default, maxConcurrencyLevel: 8);
@@ -142,7 +142,7 @@ void RotateMatrices(IEnumerable<IEnumerable<Matrix>> collections, float degrees)
   ParallelOptions options = new ParallelOptions { TaskScheduler = scheduler };
   Parallel.ForEach(collections, options,
       matrices => Parallel.ForEach(matrices, options,
-          matrix => matrix.Rotate(degrees)));
+          mtrx => mtrx.Rotate(angles)));
 }
 ```
 

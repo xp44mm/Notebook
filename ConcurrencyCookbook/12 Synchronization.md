@@ -8,7 +8,7 @@ The synchronization explanations in this section are slightly simplified, but th
 
 There are two major types of synchronization: communication and data protection. Communication is used when one piece of code needs to notify another piece of code of some condition (e.g., a new message has arrived). I'll cover communication more thoroughly in this chapter's recipes; the remainder of this introduction discusses data protection.
 
-You need to use synchronization to protect shared data when all three of these conditions are true:
+You need to use synchronization to protect shared data when **all** three of these conditions are true:
 
   - Multiple pieces of code are running concurrently.
 
@@ -25,7 +25,7 @@ It takes some practice to learn when synchronization is necessary, so we'll walk
 ```C#
 async Task MyMethodAsync()
 {
-  int value = 10;
+  var value = 10;
   await Task.Delay(TimeSpan.FromSeconds(1));
   value = value + 1;
   await Task.Delay(TimeSpan.FromSeconds(1));
@@ -35,7 +35,7 @@ async Task MyMethodAsync()
 }
 ```
 
-If the MyMethodAsync method is called from a threadpool thread (e.g., from within `Task.Run`), then the lines of code accessing value may run on separate threadpool threads. But does it need synchronization? No, because none of them can be running at the same time. The method is asynchronous, but it's also sequential (meaning it progresses one part at a time).
+If the `MyMethodAsync` method is called from a threadpool thread (e.g., from within `Task.Run`), then the lines of code accessing `value` may run on separate threadpool threads. But does it need synchronization? No, because none of them can be running at the same time. The method is asynchronous, but it's also sequential (meaning it progresses one part at a time).
 
 OK, let's complicate the example a bit. This time we'll run concurrent asynchronous code:
 
@@ -58,7 +58,7 @@ async Task<int> ModifyValueConcurrentlyAsync()
 }
 ```
 
-This code above is starting three modifications that run concurrently. Does it need synchronization? It depends. If you know that the method is called from a GUI or ASP.NET context (or any context that only allows one piece of code to run at a time), synchronization won't be necessary because when the actual data modification code runs, it runs at a different time than the other two data modifications. For example, if the preceding code is run in a GUI context, there's only one UI thread that will execute each of the data modifications, so it must do them one at a time. So, if you know the context is a one-at-a-time context, then there's no synchronization needed. However, if that same method is called from a threadpool thread (e.g., from `Task.Run`), then synchronization would be necessary. In that case, the three data modifications could run on separate threadpool threads and update data.Value simultaneously, so you would need to synchronize access to data.Value.
+This code above is starting three modifications that run concurrently. Does it need synchronization? It depends. If you know that the method is called from a GUI or ASP.NET context (or any context that only allows one piece of code to run at a time), synchronization won't be necessary because when the actual data modification code runs, it runs at a different time than the other two data modifications. For example, if the preceding code is run in a GUI context, there's only one UI thread that will execute each of the data modifications, so it must do them one at a time. So, if you know the context is a one-at-a-time context, then there's no synchronization needed. However, if that same method is called from a threadpool thread (e.g., from `Task.Run`), then synchronization would be necessary. In that case, the three data modifications could run on separate threadpool threads and update data.Value simultaneously, so you would need to synchronize access to `value`.
 
 Now let's consider one more wrinkle:
 
@@ -66,13 +66,15 @@ Now let's consider one more wrinkle:
 private int value;
 async Task ModifyValueAsync()
 {
-  int originalValue = value;
+  var originalValue = value;
   await Task.Delay(TimeSpan.FromSeconds(1));
   value = originalValue + 1;
 }
 ```
 
-Consider what happens if ModifyValueAsync is called multiple times concurrently. Even if it is called from a one-at-a-time context, the data member is shared between each invocation of ModifyValueAsync, and the value may change any time that method does an await. You may want to apply synchronization even in a one-at-a-time context if you want to avoid that kind of sharing. Put another way, to make it so that each call to ModifyValueAsync waits until all previous calls have completed, you'll need to add synchronization. This is true even if the context ensures that only one thread is used for all the code (i.e., the UI thread). Synchronization in this scenario is a kind of throttling for asynchronous methods (see Recipe 12.2).
+Consider what happens if `ModifyValueAsync` is called multiple times concurrently. Even if it is called from a one-at-a-time context, the data member is shared between each invocation of `ModifyValueAsync`, and the value may change any time that method does an await. You may want to apply synchronization even in a one-at-a-time context if you want to avoid that kind of sharing. Put another way, to make it so that each call to `ModifyValueAsync` waits until all previous calls have completed, you'll need to add synchronization. This is true even if the context ensures that only one thread is used for all the code (i.e., the UI thread). Synchronization in this scenario is a kind of throttling for asynchronous methods (see Recipe 12.2).
+
+读书笔记：这里说的是更新方法是非原子的，在保存`originalValue`与修改`value`之间可能会插入其他同时发生代码的写操作，导致保存的原始值过期，结果导致覆盖了其他代码所作的修改。这是C#的运行原理，而`JavaScript`则不同，它会一口气运行完整片代码（叫做一个事件），再运行队列中的下一事件。
 
 Let's look at one more async example. You can use `Task.Run` to do what I call “simple parallelism”—a basic kind of parallel processing that doesn't provide the efficiency and configurability that the true parallelism of Parallel/PLINQ does. The following code updates a shared value using simple parallelism:
 
@@ -80,10 +82,10 @@ Let's look at one more async example. You can use `Task.Run` to do what I call �
 // BAD CODE!!
 async Task<int> SimpleParallelismAsync()
 {
-  int value = 0;
-  Task task1 = Task.Run(() => { value = value + 1; });
-  Task task2 = Task.Run(() => { value = value + 1; });
-  Task task3 = Task.Run(() => { value = value + 1; });
+  var value = 0;
+  var task1 = Task.Run(() => { value = value + 1; });
+  var task2 = Task.Run(() => { value = value + 1; });
+  var task3 = Task.Run(() => { value = value + 1; });
   await Task.WhenAll(task1, task2, task3);
   return value;
 }
@@ -132,10 +134,10 @@ For example, the following code doesn't require synchronization because when eac
 ```C#
 async Task<bool> PlayWithStackAsync()
 {
-  ImmutableStack<int> stack = ImmutableStack<int>.Empty;
-  Task task1 = Task.Run(() => Trace.WriteLine(stack.Push(3).Peek()));
-  Task task2 = Task.Run(() => Trace.WriteLine(stack.Push(5).Peek()));
-  Task task3 = Task.Run(() => Trace.WriteLine(stack.Push(7).Peek()));
+  var stack = ImmutableStack<int>.Empty;
+  var task1 = Task.Run(() => Trace.WriteLine(stack.Push(3).Peek()));
+  var task2 = Task.Run(() => Trace.WriteLine(stack.Push(5).Peek()));
+  var task3 = Task.Run(() => Trace.WriteLine(stack.Push(7).Peek()));
   await Task.WhenAll(task1, task2, task3);
   return stack.IsEmpty; // Always returns true.
 }
@@ -147,26 +149,24 @@ When your code uses immutable collections, it's common to have a shared “root�
 // BAD CODE!!
 async Task<bool> PlayWithStackAsync()
 {
-  ImmutableStack<int> stack = ImmutableStack<int>.Empty;
-  Task task1 = Task.Run(() => { stack = stack.Push(3); });
-  Task task2 = Task.Run(() => { stack = stack.Push(5); });
-  Task task3 = Task.Run(() => { stack = stack.Push(7); });
+  var stack = ImmutableStack<int>.Empty;
+  var task1 = Task.Run(() => { stack = stack.Push(3); });
+  var task2 = Task.Run(() => { stack = stack.Push(5); });
+  var task3 = Task.Run(() => { stack = stack.Push(7); });
   await Task.WhenAll(task1, task2, task3);
   return stack.IsEmpty;
 }
 ```
 
-Threadsafe collections (e.g., `ConcurrentDictionary`) are quite different.
-
-Unlike immutable collections, threadsafe collections can be updated. But they have all the synchronization they need built in, so you don't have to worry about synchronizing collection changes. If the following code updated a `Dictionary` instead of a `ConcurrentDictionary`, it would need synchronization; but since it's updating a `ConcurrentDictionary`, it doesn't need synchronization:
+Threadsafe collections (e.g., `ConcurrentDictionary`) are quite different. Unlike immutable collections, threadsafe collections can be updated. But they have all the synchronization they need built in, so you don't have to worry about synchronizing collection changes. If the following code updated a `Dictionary` instead of a `ConcurrentDictionary`, it would need synchronization; but since it's updating a `ConcurrentDictionary`, it doesn't need synchronization:
 
 ```C#
 async Task<int> ThreadsafeCollectionsAsync()
 {
   var dictionary = new ConcurrentDictionary<int, int>();
-  Task task1 = Task.Run(() => { dictionary.TryAdd(2, 3); });
-  Task task2 = Task.Run(() => { dictionary.TryAdd(3, 5); });
-  Task task3 = Task.Run(() => { dictionary.TryAdd(5, 7); });
+  var task1 = Task.Run(() => { dictionary.TryAdd(2, 3); });
+  var task2 = Task.Run(() => { dictionary.TryAdd(3, 5); });
+  var task3 = Task.Run(() => { dictionary.TryAdd(5, 7); });
   await Task.WhenAll(task1, task2, task3);
   return dictionary.Count; // Always returns 3.
 }
@@ -180,7 +180,7 @@ You have some shared data and need to safely read and write it from multiple thr
 
 ### Solution
 
-The best solution for this situation is to use the lock statement. When a thread enters a lock, it'll prevent any other threads from entering that lock until the lock is released:
+The best solution for this situation is to use the `lock` statement. When a thread enters a lock, it'll prevent any other threads from entering that lock until the lock is released:
 
 ```C#
 class MyClass
@@ -200,6 +200,8 @@ class MyClass
 
 ### Discussion
 
+读书笔记：`lock`锁住一片代码具有原子性，不可分割。要么一次性全部执行，或者全部不执行。不能执行一条，插入执行外部代码，改变了状态，执行剩下的代码。在相当于javascript的运行到完成。
+
 There are many other kinds of locks in the .NET framework, such as `Monitor`, `SpinLock`, and `ReaderWriterLockSlim`. In most applications, these lock types should almost never be used directly. In particular, it's natural for developers to jump to `ReaderWriterLockSlim` when there is no need for that level of complexity. The basic lock statement handles 99% of cases quite well.
 
 There are four important guidelines when using locks:
@@ -212,7 +214,7 @@ There are four important guidelines when using locks:
 
   - Never execute arbitrary code while holding a lock.
 
-First, you should strive to restrict lock visibility. The object used in the lock statement should be a private field and never should be exposed to any method outside the class. There's usually at most one lock member per type; if you have more than one, consider refactoring that type into separate types. You can lock on any reference type, but I prefer to have a field specifically for use with the lock statement, as in the last example. If you do lock on another instance, be sure that it is private to your class; it should not have been passed in to the constructor or returned from a property getter. You should never `lock(this)` or lock on any instance of Type or string; these locks can cause deadlocks because they are accessible from other code.
+First, you should strive to restrict lock visibility. The object used in the lock statement should be a private field and never should be exposed to any method outside the class. There's usually at most one `lock` member per type; if you have more than one, consider refactoring that type into separate types. You can lock on any reference type, but I prefer to have a field specifically for use with the `lock` statement, as in the last example. If you do lock on another instance, be sure that it is private to your class; it should not have been passed in to the constructor or returned from a property getter. You should never `lock(this)` or lock on any instance of Type or string; these locks can cause deadlocks because they are accessible from other code.
 
 Second, document what the lock protects. This step is easy to overlook when initially writing the code but becomes more important as the code grows in complexity.
 
@@ -232,7 +234,7 @@ Recipe 12.5 covers throttling, which is a generalization of locking. A lock can 
 
 ### Problem
 
-You have some shared data and need to safely read and write it from multiple code blocks, which may be using await.
+You have some shared data and need to safely read and write it from multiple code blocks, which may be using `await`.
 
 ### Solution
 
@@ -249,7 +251,7 @@ class MyClass
     await _mutex.WaitAsync();
     try
     {
-      int oldValue = _value;
+      var oldValue = _value;
       await Task.Delay(TimeSpan.FromSeconds(oldValue));
       _value = oldValue + 1;
     }
@@ -273,7 +275,7 @@ class MyClass
   {
     using (await _mutex.LockAsync())
     {
-      int oldValue = _value;
+      var oldValue = _value;
       await Task.Delay(TimeSpan.FromSeconds(oldValue));
       _value = oldValue + 1;
     }
@@ -341,7 +343,7 @@ class MyClass
 
 There are other thread synchronization signal types in the .NET framework that are less commonly used. If `ManualResetEventSlim` doesn't suit your needs, consider `AutoResetEvent`, `CountdownEvent`, or `Barrier`.
 
-`ManualResetEventSlim` is a synchronous signal, so WaitForInitialization will block the calling thread until the signal is sent. If you want to wait for a signal without blocking a thread, then you want an asynchronous signal, as described in Recipe 12.4.
+`ManualResetEventSlim` is a synchronous signal, so `WaitForInitialization` will block the calling thread until the signal is sent. If you want to wait for a signal without blocking a thread, then you want an asynchronous signal, as described in Recipe 12.4.
 
 ### See Also
 
@@ -381,9 +383,7 @@ class MyClass
 }
 ```
 
-The `TaskCompletionSource<T>` type can be used to asynchronously wait for any kind of situation—in this case, a notification from another part of the code.
-
-This works well if the signal is only sent once, but doesn't work as well if you need to turn the signal off as well as on.
+The `TaskCompletionSource<T>` type can be used to asynchronously wait for any kind of situation—in this case, a notification from another part of the code. This works well if the signal is only sent once, but doesn't work as well if you need to turn the signal off as well as on.
 
 The `Nito.AsyncEx` library contains a type `AsyncManualResetEvent`, which is an approximate equivalent of `ManualResetEvent` for asynchronous code. The following example is fabricated, but it shows how to use the `AsyncManualResetEvent` type:
 
@@ -452,13 +452,13 @@ IEnumerable<int> ParallelMultiplyBy2(IEnumerable<int> values)
       .Select(item => item * 2);
 }
 // Using the Parallel class
-void ParallelRotateMatrices(IEnumerable<Matrix> matrices, float degrees)
+void ParallelRotateMatrices(IEnumerable<Matrix> matrices, float angles)
 {
   var options = new ParallelOptions
   {
     MaxDegreeOfParallelism = 10
   };
-  Parallel.ForEach(matrices, options, matrix => matrix.Rotate(degrees));
+  Parallel.ForEach(matrices, options, mtrx => mtrx.Rotate(angles));
 }
 ```
 
@@ -468,8 +468,8 @@ Concurrent asynchronous code can be throttled by using `SemaphoreSlim`:
 async Task<string[]> DownloadUrlsAsync(HttpClient client, IEnumerable<string> urls)
 {
   using var semaphore = new SemaphoreSlim(10);
-  Task<string>[] tasks = urls.Select(async url =>
-  {
+  var tasks = // as Task<string>[]
+  urls.Select(async url => {
     await semaphore.WaitAsync();
     try
     {

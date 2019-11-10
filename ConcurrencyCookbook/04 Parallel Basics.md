@@ -13,9 +13,9 @@ You have a collection of data, and you need to perform the same operation on eac
 The `Parallel` type contains a `ForEach` method specifically designed for this problem. The following example takes a collection of matrices and rotates them all:
 
 ```C#
-void RotateMatrices(IEnumerable<Matrix> matrices, float angles) // degrees
+void RotateMatrices(IEnumerable<Matrix> matrices, float angles)
 {
-  Parallel.ForEach(matrices, mtx => mtx.Rotate(angles));
+  Parallel.ForEach(matrices, mtrx => mtrx.Rotate(angles));
 }
 ```
 
@@ -24,13 +24,13 @@ There are some situations where you'll want to stop the loop early, such as if y
 ```C#
 void InvertMatrices(IEnumerable<Matrix> matrices)
 {
-  Parallel.ForEach(matrices, (mtx, state) =>
+  Parallel.ForEach(matrices, (mtrx, state) =>
   {
 
-    if (!mtx.IsInvertible)
+    if (!mtrx.IsInvertible)
       state.Stop();
     else
-      mtx.Invert();
+      mtrx.Invert();
   });
 }
 ```
@@ -44,7 +44,7 @@ void RotateMatrices(IEnumerable<Matrix> matrices, float angles, CancellationToke
 {
   Parallel.ForEach(matrices,
       new ParallelOptions { CancellationToken = tok },
-      mtx => mtx.Rotate(angles));
+      mtrx => mtrx.Rotate(angles));
 }
 ```
 
@@ -57,11 +57,11 @@ int InvertMatrices(IEnumerable<Matrix> matrices)
 {
   var mutex = new object();
   int nonInvertibleCount = 0;
-  Parallel.ForEach(matrices, mtx =>
+  Parallel.ForEach(matrices, mtrx =>
   {
-    if (mtx.IsInvertible)
+    if (mtrx.IsInvertible)
     {
-      mtx.Invert();
+      mtrx.Invert();
     }
     else
     {

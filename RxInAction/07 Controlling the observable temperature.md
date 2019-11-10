@@ -302,6 +302,9 @@ Your subject was compromised because you returned an inner object that has acces
 
 For that purpose, Rx provides the `AsObservable` operator. `AsObservable` creates a proxy that wraps your subject and exposes only the `IObservable` interface, so the observer can still subscribe, but no code can cast the observer to a subject, and no code can access the observers. This is demonstrated in figure 7.7.
 
+实践：`AsObservable`位于名字空间`System.Reactive.Linq`，NuGet包`System.Reactive`。
+
+
 Figure 7.7 Instead of exposing your subject, use the AsObservable operator to create a proxy that hides the inner subject.
 
 The following example proves that the observable returned by the `AsObservable` operator (the proxy) can't be cast to a subject:

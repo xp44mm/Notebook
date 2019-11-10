@@ -2,9 +2,7 @@
 
 Modern programs require asynchronous programming; these days servers must scale better than ever, and end-user applications must be more responsive than ever. Developers are finding that they must learn asynchronous programming, and as they explore this world, they find that it often clashes with the traditional object-oriented programming that they're accustomed to.
 
-The core reason for this is because asynchronous programming is functional.
-
-By “functional,” I don't mean “it works”; I mean it's a functional style of programming instead of a procedural style of programming. A lot of developers learned basic functional programming in college and have hardly touched it since. If code like `(car (cdr '(3 5 7)))` gives you a chill as repressed memories come flooding back, then you may be in that category. But don't fear; modern asynchronous programming isn't that hard once you get used to it.
+The core reason for this is because **asynchronous programming is functional**. By “functional,” I don't mean “it works”; I mean it's a functional style of programming instead of a procedural style of programming. A lot of developers learned basic functional programming in college and have hardly touched it since. If code like `(car (cdr '(3 5 7)))` gives you a chill as repressed memories come flooding back, then you may be in that category. But don't fear; modern asynchronous programming isn't that hard once you get used to it.
 
 The major breakthrough with async is that you can still think procedurally while programming asynchronously. This makes asynchronous methods easier to write and understand. However, under the covers, asynchronous code is still functional in nature, and this causes some problems when people try to force async methods into classical object-oriented designs. The recipes in this chapter deal with those friction points where asynchronous code clashes with object-oriented programming.
 
@@ -20,9 +18,9 @@ You have a method in your interface or base class that you want to make asynchro
 
 The key to understanding this problem and its solution is to realize that async is an implementation detail. The `async` keyword can only be applied to methods with implementations; it isn't possible to apply it to abstract methods or interface methods (unless they have default implementations). However, you can define a method with the same signature as an async method, just without the `async` keyword.
 
-Remember that types are awaitable, not methods. You can await a `Task` returned by a method, whether or not that method is implemented using async. So, an interface or abstract method can just return a `Task` (or `Task<T>`), and the return value of that method is awaitable.
+Remember that types are awaitable, not methods. You can await a `Task` returned by a method, whether or not that method is implemented using `async`. So, an interface or abstract method can just return a `Task` (or `Task<T>`), and the return value of that method is awaitable.
 
-The following code defines an interface with an asynchronous method (without the `async` keyword), an implementation of that interface (with async), and an independent method that consumes a method of the interface (via `await`):
+The following code defines an interface with an asynchronous method (without the `async` keyword), an implementation of that interface (with `async`), and an independent method that consumes a method of the interface (via `await`):
 
 ```C#
 interface IMyAsyncInterface
@@ -46,7 +44,7 @@ async Task UseMyInterfaceAsync(HttpClient client, IMyAsyncInterface service)
 
 This same pattern works for abstract methods in base classes.
 
-An asynchronous method signature only means that the implementation may be asynchronous. It is possible for the actual implementation to be synchronous if it has no real asynchronous work to do. For example, a test stub may implement the same interface (without async) by using something like `FromResult`:
+An asynchronous method signature only means that the implementation may be asynchronous. It is possible for the actual implementation to be synchronous if it has no real asynchronous work to do. For example, a test stub may implement the same interface (without `async`) by using something like `FromResult`:
 
 ```C#
 class MyAsyncClassStub : IMyAsyncInterface
@@ -60,7 +58,7 @@ class MyAsyncClassStub : IMyAsyncInterface
 
 ### Discussion
 
-At the time of this writing, async and await are still gaining traction. As asynchronous methods become more common, asynchronous methods on interfaces and base classes will become more common as well. They're not that hard to work with if you keep in mind that it is the return type that is awaitable (not the method), and that an asynchronous method definition may be implemented either asynchronously or synchronously.
+At the time of this writing, `async` and `await` are still gaining traction. As asynchronous methods become more common, asynchronous methods on interfaces and base classes will become more common as well. They're not that hard to work with if you keep in mind that it is the return type that is awaitable (not the method), and that an asynchronous method definition may be implemented either asynchronously or synchronously.
 
 ### See Also
 
@@ -83,7 +81,7 @@ var instance = new MyAsyncClass();
 await instance.InitializeAsync();
 ```
 
-This approach has some disadvantages. It can be easy to forget to call the InitializeAsync method, and the instance isn't usable immediately after it's constructed.
+This approach has some disadvantages. It can be easy to forget to call the `InitializeAsync` method, and the instance isn't usable immediately after it's constructed.
 
 A better solution is to make the type its own factory. The following type illustrates the asynchronous factory method pattern:
 
@@ -106,17 +104,17 @@ class MyAsyncClass
 }
 ```
 
-The constructor and InitializeAsync method are private so that other code cannot possibly misuse them; so the only way of creating an instance is via the static CreateAsync factory method. Calling code cannot access the instance until after the initialization is complete.
+The constructor and `InitializeAsync` method are private so that other code cannot possibly misuse them; so the only way of creating an instance is via the static `CreateAsync` factory method. Calling code cannot access the instance until after the initialization is complete.
 
 Other code can create an instance like this:
 
 ```C#
-MyAsyncClass instance = await MyAsyncClass.CreateAsync();
+var instance = await MyAsyncClass.CreateAsync();
 ```
 
 ### Discussion
 
-The primary advantage of this pattern is that there's no way that other code can get an uninitialized instance of MyAsyncClass. That's why I prefer this pattern over other approaches whenever I can use it.
+The primary advantage of this pattern is that there's no way that other code can get an uninitialized instance of `MyAsyncClass`. That's why I prefer this pattern over other approaches whenever I can use it.
 
 Unfortunately, this approach does not work in some scenarios—in particular, when your code is using a dependency injection provider. No major dependency injection or inversion of control library works with async code. If you find yourself in one of these scenarios, there are a couple of alternatives that you can consider.
 
@@ -139,7 +137,7 @@ class MyAsyncClass
 }
 ```
 
-At first glance, this seems like a reasonable approach: you get a regular constructor that kicks off an asynchronous operation; however, there are several drawbacks that are due to the use of async void. The first problem is that when the constructor completes, the instance is still being asynchronously initialized, and there isn't an obvious way to determine when the asynchronous initialization has completed. The second problem is with error handling: any exceptions raised from InitializeAsync can't be caught by any catch clauses surrounding the object construction.
+At first glance, this seems like a reasonable approach: you get a regular constructor that kicks off an asynchronous operation; however, there are several drawbacks that are due to the use of async void. The first problem is that when the constructor completes, the instance is still being asynchronously initialized, and there isn't an obvious way to determine when the asynchronous initialization has completed. The second problem is with error handling: any exceptions raised from `InitializeAsync` can't be caught by any catch clauses surrounding the object construction.
 
 ### See Also
 
@@ -177,7 +175,7 @@ public interface IAsyncInitialization
 }
 ```
 
-When you implement this pattern, you should start the initialization (and assign the Initialization property) in the constructor. The results of the asynchronous initialization (including any exceptions) are exposed via that Initialization property. Here's an example implementation of a simple type using asynchronous initialization:
+When you implement this pattern, you should start the initialization (and assign the Initialization property) in the constructor. The results of the asynchronous initialization (including any exceptions) are exposed via that `Initialization` property. Here's an example implementation of a simple type using asynchronous initialization:
 
 ```C#
 class MyFundamentalType : IMyFundamentalType, IAsyncInitialization
@@ -191,6 +189,7 @@ class MyFundamentalType : IMyFundamentalType, IAsyncInitialization
   {
     // Asynchronously initialize this instance.
     await Task.Delay(TimeSpan.FromSeconds(1));
+    //应该以此结束: return anyTask;
   }
 }
 ```
@@ -198,13 +197,13 @@ class MyFundamentalType : IMyFundamentalType, IAsyncInitialization
 If you're using a dependency injection/inversion of control library, you can create and initialize an instance of this type using code like the following:
 
 ```C#
-IMyFundamentalType instance = UltimateDIFactory.Create<IMyFundamentalType>();
+var instance = UltimateDIFactory.Create<IMyFundamentalType>();
 var instanceAsyncInit = instance as IAsyncInitialization;
 if (instanceAsyncInit != null)
   await instanceAsyncInit.Initialization;
 ```
 
-You can extend this pattern to allow composition of types with asynchronous initialization. In the following example another type that depends on an IMyFundamentalType is defined:
+You can extend this pattern to allow composition of types with asynchronous initialization. In the following example another type that depends on an `IMyFundamentalType` is defined:
 
 ```C#
 class MyComposedType : IMyComposedType, IAsyncInitialization
@@ -225,19 +224,20 @@ class MyComposedType : IMyComposedType, IAsyncInitialization
       await fundamentalAsyncInit.Initialization;
     // Do our own initialization (synchronous or asynchronous).
     ...
+    //应该以此结束: return anyTask;
   }
 }
 ```
 
-The composed type waits for all of its components to initialize before it proceeds with its initialization. The rule to follow is that every component should be initialized by the end of InitializeAsync. This ensures that all dependent types are initialized as part of the composed initialization. Any exceptions from a component initialization are propagated to the composed type's initialization.
+The composed type waits for all of its components to initialize before it proceeds with its initialization. The rule to follow is that every component should be initialized by the end of `InitializeAsync`. This ensures that all dependent types are initialized as part of the composed initialization. Any exceptions from a component initialization are propagated to the composed type's initialization.
 
 ### Discussion
 
 If you can, I recommend using asynchronous factories (Recipe 11.2) or asynchronous lazy initialization (Recipe 14.1) instead of this solution. Those are the best approaches because you never expose an uninitialized instance. However, if your instances are created by dependency injection/inversion of control, data binding, and so on, then you're forced to expose an uninitialized instance, and in that case I recommend using the asynchronous initialization pattern in this recipe.
 
-Remember from the recipe on asynchronous interfaces (Recipe 11.1) that an asynchronous method signature only means that the method may be asynchronous. The MyComposedType.InitializeAsync code is a good example of this: if the IMyFundamentalType instance does not also implement IAsyncInitialization and MyComposedType has no asynchronous initialization of its own, then its InitializeAsync method completes synchronously.
+Remember from the recipe on asynchronous interfaces (Recipe 11.1) that an asynchronous method signature only means that the method may be asynchronous. The `MyComposedType.InitializeAsync` code is a good example of this: if the `IMyFundamentalType` instance does not also implement `IAsyncInitialization` and `MyComposedType` has no asynchronous initialization of its own, then its `InitializeAsync` method completes synchronously.
 
-The code for checking whether an instance implements IAsyncInitialization and initializing it is a bit awkward, and it becomes more so when you have a composed type that depends on a larger number of components. It's easy enough to create a helper method that can be used to simplify the code:
+The code for checking whether an instance implements `IAsyncInitialization` and initializing it is a bit awkward, and it becomes more so when you have a composed type that depends on a larger number of components. It's easy enough to create a helper method that can be used to simplify the code:
 
 ```C#
 public static class AsyncInitialization
@@ -251,7 +251,7 @@ public static class AsyncInitialization
 }
 ```
 
-You can call InitializeAllAsync and pass in whatever instances you want initialized; the method will ignore instances that don't implement IAsyncInitialization. The initialization code for a composed type that depends on three injected instances can then look like the following:
+You can call `InitializeAllAsync` and pass in whatever instances you want initialized; the method will ignore instances that don't implement `IAsyncInitialization`. The initialization code for a composed type that depends on three injected instances can then look like the following:
 
 ```C#
 private async Task InitializeAsync()
@@ -338,6 +338,7 @@ public AsyncLazy<int> Data
 {
   get { return _data; }
 }
+// AsyncLazy is awaitable.
 private readonly AsyncLazy<int> _data =
     new AsyncLazy<int>(async () =>
     {
@@ -346,10 +347,10 @@ private readonly AsyncLazy<int> _data =
     });
 ```
 
-The code will only execute the asynchronous evaluation once and then return that same value to all callers. Calling code looks like the following: 
+The code will only execute the asynchronous evaluation once and then return that same value to all callers. Calling code looks like the following:
 
 ```C#
-int value = await instance.Data;
+var res = await instance.Data;
 ```
 
 In this case, the property syntax is appropriate since there's only one evaluation happening.
@@ -358,7 +359,7 @@ In this case, the property syntax is appropriate since there's only one evaluati
 
 One of the important questions to ask yourself is whether reading the property should start a new asynchronous operation; if the answer is yes, then use an asynchronous method instead of a property. If the property should act as a lazy-evaluated cache, then use asynchronous initialization (see Recipe 14.1). In this recipe I didn't cover properties that are used in data binding; I cover those in Recipe 14.3.
 
-When you're converting a synchronous property to an “asynchronous property,” here's an example of what not to do:
+When you're converting a synchronous property to an “asynchronous property,” here's an example of what **not** to do:
 
 ```C#
 private async Task<int> GetDataAsync()
@@ -375,9 +376,9 @@ public int Data
 
 While we're on the subject of properties in async code, it's worth thinking about how state relates to asynchronous code. This is especially true if you're converting a synchronous code base to asynchronous. Consider any state that you expose in your API (e.g., via properties); for each piece of state, ask yourself, what is the current state of an object that has an asynchronous operation in progress? There's no right answer, but it's important to think about the semantics you want and to document them.
 
-For example, consider Stream.Position, which represents the current offset of the stream pointer. With the synchronous API, when you call Stream.Read or Stream.Write, the reading/writing is done and Stream.Position is updated to reflect the new position before the Read or Write method returns. The semantics are clear for synchronous code.
+For example, consider `Stream.Position`, which represents the current offset of the stream pointer. With the synchronous API, when you call `Stream.Read` or `Stream.Write`, the reading/writing is done and `Stream.Position` is updated to reflect the new position before the `Read` or `Write` method returns. The semantics are clear for synchronous code.
 
-Now, consider Stream.ReadAsync and Stream.WriteAsync: when should Stream.Position be updated? When the read/write operation is complete, or before it actually happens? If it's updated before the operation completes, is it updated synchronously by the time ReadAsync/WriteAsync returns, or could it happen shortly after that?
+Now, consider `Stream.ReadAsync` and `Stream.WriteAsync`: when should `Stream.Position` be updated? When the read/write operation is complete, or before it actually happens? If it's updated before the operation completes, is it updated synchronously by the time `ReadAsync` or `WriteAsync` returns, or could it happen shortly after that?
 
 This is a great example of how a property that exposes state has perfectly clear semantics for synchronous code but no obviously correct semantics for asynchronous code. It's not the end of the world—you just need to think about your entire API when async-enabling your types and document the semantics you choose.
 
@@ -450,7 +451,7 @@ This is slightly different than how Universal Windows deferrals work. In the Uni
 
 There are logically two different kinds of events used in .NET, with very different semantics. I call these notification events and command events; this isn't official terminology, just some terms that I chose for clarity. A notification event is an event that is raised to notify other components of some situation. A notification is purely one-way; the sender of the event doesn't care whether there are any receivers of the event. With notifications, the sender and receiver can be entirely disconnected. Most events are notification events; one example is a button click.
 
-In contrast, a command event is an event that is raised to implement some functionality on behalf of the sending component. Command events aren't “events” in the true sense of the term, though they are often implemented as.NET events. The sender of a command must wait until the receiver handles it before moving on. If you use events to implement the Visitor pattern, then those are command events. Lifecycle events are also command events, so ASP.NET page lifecycle events and many UI framework events, such as Xamarin's Application.PageAppearing, fall into this category. Any UI framework event that is actually an implementation is also a command event (e.g., `BackgroundWorker.DoWork`).
+In contrast, a command event is an event that is raised to implement some functionality on behalf of the sending component. Command events aren't “events” in the true sense of the term, though they are often implemented as.NET events. The sender of a command must wait until the receiver handles it before moving on. If you use events to implement the `Visitor` pattern, then those are command events. Lifecycle events are also command events, so ASP.NET page lifecycle events and many UI framework events, such as Xamarin's `Application.PageAppearing`, fall into this category. Any UI framework event that is actually an implementation is also a command event (e.g., `BackgroundWorker.DoWork`).
 
 Notification events don't require any special code to enable asynchronous handlers; the event handlers can be async void and work just fine. When the event sender raises the event, the asynchronous event handlers aren't completed immediately, but that doesn't matter because they're just notification events. So, if your event is a notification event, the grand total amount of work you need to do to support asynchronous handlers is: nothing.
 
@@ -474,7 +475,7 @@ You have a type that has asynchronous operations but also needs to enable dispos
 
 There are a couple of common options for dealing with existing operations when disposing of an instance: you can either treat the disposal as a cancellation request that is applied to all existing operations, or you can implement an actual asynchronous disposal.
 
-Treating disposal as a cancellation has a historic precedence on Windows; types such as file streams and sockets cancel any existing reads or writes when they are closed. By defining your own private `CancellationTokenSource` and passing that token to your internal operations, you can do something very similar in .NET. With the following code, Dispose will cancel the operations but won't wait for those operations to complete:
+Treating disposal as a cancellation has a historic precedence on Windows; types such as file streams and sockets cancel any existing reads or writes when they are closed. By defining your own private `CancellationTokenSource` and passing that token to your internal operations, you can do something very similar in .NET. With the following code, `Dispose` will cancel the operations but won't wait for those operations to complete:
 
 ```C#
 class MyClass : IDisposable
@@ -497,7 +498,7 @@ The code shows the basic pattern around `Dispose`. In a real-world app, you shou
 ```C#
 public async Task<int> CalculateValueAsync(CancellationToken cancellationToken)
 {
-  using CancellationTokenSource combinedCts =
+  using var combinedCts =
     CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disposeCts.Token);
   await Task.Delay(TimeSpan.FromSeconds(2), combinedCts.Token);
   return 13;
@@ -521,7 +522,7 @@ async Task UseMyClassAsync()
 
 For some types, implementing `Dispose` as a cancellation request works just fine (e.g., `HttpClient` has these semantics). However, other types need to know when all the operations have completed. For these types, you need some kind of asynchronous disposal.
 
-Asynchronous disposal is a technique introduced with C# 8.0 and .NET Core 3.0. The BCL introduced a new `IAsyncDisposable` interface that is an asynchronous equivalent of IDisposable. The language simultaneously introduced an `await using` statement that is the asynchronous equivalent of using. So types that would like to do asynchronous work during disposal now have that capability:
+Asynchronous disposal is a technique introduced with C# 8.0 and .NET Core 3.0. The BCL introduced a new `IAsyncDisposable` interface that is an asynchronous equivalent of `IDisposable`. The language simultaneously introduced an `await using` statement that is the asynchronous equivalent of `using`. So types that would like to do asynchronous work during disposal now have that capability:
 
 ```C#
 class MyClass : IAsyncDisposable
@@ -566,6 +567,6 @@ Recipe 10.8 covers linked cancellation tokens.
 
 Recipe 11.1 covers asynchronous interfaces.
 
-Recipe 2.10 discusses implementing methods returning ValueTask.
+Recipe 2.10 discusses implementing methods returning `ValueTask`.
 
-Recipe 2.7 covers avoiding context using ConfigureAwait(false).
+Recipe 2.7 covers avoiding context using `ConfigureAwait(false)`.

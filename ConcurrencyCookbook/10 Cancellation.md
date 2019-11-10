@@ -148,12 +148,12 @@ You have a loop in your code that needs to support cancellation.
 When you have a processing loop in your code, then there isn't a lower-level API to which you can pass the `CancellationToken`. In this case, you should periodically check whether the token has been canceled. The following code observes the token periodically while executing a CPU-bound loop:
 
 ```C#
-public int CancelableMethod(CancellationToken cancellationToken)
+public int CancelableMethod(CancellationToken token)
 {
   for (int i = 0; i != 100; ++i)
   {
     Thread.Sleep(1000); // Some calculation goes here.
-    cancellationToken.ThrowIfCancellationRequested();
+    token.ThrowIfCancellationRequested();
   }
   return 42;
 }
@@ -162,13 +162,13 @@ public int CancelableMethod(CancellationToken cancellationToken)
 If your loop is very tight (i.e., if the body of your loop executes very quickly), then you may want to limit how often you check your cancellation token. As always, measure your performance before and after a change like this before deciding which way is best. The following code is similar to the previous example, but it has more iterations of a faster loop, so I added a limit to how often the token is checked:
 
 ```C#
-public int CancelableMethod(CancellationToken cancellationToken)
+public int CancelableMethod(CancellationToken token)
 {
   for (int i = 0; i != 100000; ++i)
   {
     Thread.Sleep(1); // Some calculation goes here.
     if (i % 1000 == 0)
-      cancellationToken.ThrowIfCancellationRequested();
+      token.ThrowIfCancellationRequested();
   }
   return 42;
 }
@@ -180,9 +180,7 @@ The proper limit to use depends entirely on how much work you're doing and how r
 
 The majority of the time, your code should just pass through the `CancellationToken` to the next layer. There are examples of this in Recipes 10.4, 10.5, 10.6, and 10.7. The polling technique in this recipe should only be used if you have a processing loop that needs to support cancellation.
 
-There's another member on `CancellationToken` called `IsCancellationRequested`, which starts returning true when the token is canceled. Some people use this member to respond to cancellation, usually by returning a default or null value. I do not recommend this approach for most code. The standard cancellation pattern is to raise an `OperationCanceledException`, which is taken care of by `ThrowIfCancellationRequested`. If code further up the stack wants to catch the exception and act like the result is null, then that's fine, but any code taking a `CancellationToken` should follow the standard cancellation pattern.
-
-If you do decide not to follow the cancellation pattern, at least document it clearly.
+There's another member on `CancellationToken` called `IsCancellationRequested`, which starts returning true when the token is canceled. Some people use this member to respond to cancellation, usually by returning a default or null value. I do not recommend this approach for most code. The standard cancellation pattern is to raise an `OperationCanceledException`, which is taken care of by `ThrowIfCancellationRequested`. If code further up the stack wants to catch the exception and act like the result is null, then that's fine, but any code taking a `CancellationToken` should follow the standard cancellation pattern. If you do decide not to follow the cancellation pattern, at least document it clearly.
 
 `ThrowIfCancellationRequested` works by polling the cancellation token; your code has to call it at regular intervals. There's also a way to register a callback that is invoked when cancellation is requested. The callback approach is more about interoperating with other cancellation systems; Recipe 10.9 covers using callbacks with cancellation.
 
@@ -227,7 +225,7 @@ Alternatively, if you already have a `CancellationTokenSource` instance, you can
 async Task IssueTimeoutAsync()
 {
   using var cts = new CancellationTokenSource();
-  CancellationToken token = cts.Token;
+  var token = cts.Token; // as CancellationToken
   cts.CancelAfter(TimeSpan.FromSeconds(5));
   await Task.Delay(TimeSpan.FromSeconds(10), token);
 }
@@ -260,9 +258,9 @@ You are using async code and need to support cancellation.
 The simplest way to support cancellation in asynchronous code is to just pass the `CancellationToken` through to the next layer. The following example code performs an asynchronous delay and then returns a value; it supports cancellation by passing the token to `Task.Delay`:
 
 ```C#
-public async Task<int> CancelableMethodAsync(CancellationToken cancellationToken)
+async Task<int> CancelableMethodAsync(CancellationToken token)
 {
-  await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+  await Task.Delay(TimeSpan.FromSeconds(2), token);
   return 42;
 }
 ```
@@ -292,24 +290,24 @@ You are using parallel code and need to support cancellation.
 The easiest way to support cancellation is to pass the `CancellationToken` through to the parallel code. Parallel methods support this by taking a `ParallelOptions` instance. You can set the `CancellationToken` on a `ParallelOptions` instance in the following manner:
 
 ```C#
-void RotateMatrices(IEnumerable<Matrix> matrices, float degrees, CancellationToken token)
+void RotateMatrices(IEnumerable<Matrix> matrices, float angles, CancellationToken tok)
 {
   Parallel.ForEach(matrices,
-      new ParallelOptions { CancellationToken = token },
-      matrix => matrix.Rotate(degrees));
+      new ParallelOptions { CancellationToken = tok },
+      mtrx => mtrx.Rotate(angles));
 }
 ```
 
 Alternatively, it's possible to observe the `CancellationToken` directly in your loop body:
 
 ```C#
-void RotateMatrices2(IEnumerable<Matrix> matrices, float degrees, CancellationToken token)
+void RotateMatrices(IEnumerable<Matrix> matrices, float angles, CancellationToken tok)
 {
   // Warning: not recommended; see below.
-  Parallel.ForEach(matrices, matrix =>
+  Parallel.ForEach(matrices, mtrx =>
   {
-    matrix.Rotate(degrees);
-    token.ThrowIfCancellationRequested();
+    mtrx.Rotate(angles);
+    tok.ThrowIfCancellationRequested();
   });
 }
 ```
@@ -319,11 +317,11 @@ The alternative method is more work and doesn't compose as well because the para
 Parallel LINQ (PLINQ) also has built-in support for cancellation, using the `WithCancellation` operator:
 
 ```C#
-IEnumerable<int> MultiplyBy2(IEnumerable<int> values, CancellationToken cancellationToken)
+IEnumerable<int> MultiplyBy2(IEnumerable<int> values, CancellationToken tok)
 {
   return values.AsParallel()
-      .WithCancellation(cancellationToken)
-      .Select(item => item * 2);
+      .WithCancellation(tok)
+      .Select(i => i * 2);
 }
 ```
 
@@ -349,23 +347,23 @@ The `System.Reactive` library has a notion of a subscription to an observable st
 
 ```C#
 private IDisposable _mouseMovesSubscription;
-private void StartButton_Click(object sender, RoutedEventArgs e)
+void StartButton_Click(object sender, RoutedEventArgs e)
 {
-  IObservable<Point> mouseMoves = Observable
-      .FromEventPattern<MouseEventHandler, MouseEventArgs>(
+  var mouseMoves = // as IObservable<Point>
+      Observable.FromEventPattern<MouseEventHandler, MouseEventArgs>(
           handler => (s, a) => handler(s, a),
           handler => MouseMove += handler,
           handler => MouseMove -= handler)
       .Select(x => x.EventArgs.GetPosition(this));
-  _mouseMovesSubscription = mouseMoves.Subscribe(value =>
+  this._mouseMovesSubscription = mouseMoves.Subscribe(value =>
   {
-    MousePositionLabel.Content = "(" + value.X + ", " + value.Y + ")";
+    this.MousePositionLabel.Content = "(" + value.X + ", " + value.Y + ")";
   });
 }
-private void CancelButton_Click(object sender, RoutedEventArgs e)
+void CancelButton_Click(object sender, RoutedEventArgs e)
 {
-  if (_mouseMovesSubscription != null)
-    _mouseMovesSubscription.Dispose();
+  if (this._mouseMovesSubscription != null)
+    this._mouseMovesSubscription.Dispose();
 }
 ```
 
@@ -374,26 +372,28 @@ It's quite convenient to make `System.Reactive` work with the `CancellationToken
 The first major use case is when the observable code is wrapped in asynchronous code. The basic approach was covered in Recipe 8.5, and now you want to add `CancellationToken` support. In general, the easiest way to do this is to perform all operations using reactive operators and then call `ToTask` to convert the last resulting element to an awaitable task. The following code shows how to asynchronously take the last element in a sequence:
 
 ```C#
-CancellationToken cancellationToken = ...
-IObservable<int> observable = ...
-int lastElement = await observable.TakeLast(1).ToTask(cancellationToken);
-/* or: int lastElement = await observable.ToTask(cancellationToken); */
+var tok = cts.Token;
+var observable = ... // as IObservable<int>
+var lastElement = await observable.TakeLast(1).ToTask(tok);
+// or:
+//var lastElement = await observable.ToTask(tok);
 ```
 
-Taking the first element is very similar; just modify the observable before calling ToTask:
+Taking the first element is very similar; just modify the observable before calling `ToTask`:
 
 ```C#
-CancellationToken cancellationToken = ...
-IObservable<int> observable = ...
-int firstElement = await observable.Take(1).ToTask(cancellationToken);
+var tok = ... // as CancellationToken
+var observable = ... // as IObservable<int>
+var firstElement = await observable.Take(1).ToTask(tok);
 ```
 
 Asynchronously converting the entire observable sequence to a task is likewise similar:
 
 ```C#
-CancellationToken cancellationToken = ...
-IObservable<int> observable = ...
-IList<int> allElements = await observable.ToList().ToTask(cancellationToken);
+var tok = ... // as CancellationToken
+var observable = ... // as IObservable<int>
+var allElements = // as IList<int>
+    await observable.ToList().ToTask(tok);
 ```
 
 Finally, let's consider the reverse situation. We've looked at several ways to handle situations where `System.Reactive` code responds to `CancellationToken`—that is, where a `CancellationTokenSource` cancel request is translated into a disposal of that subscription. It's also possible to go the other way: issuing a cancellation request as a response to disposal.
@@ -403,7 +403,7 @@ The `FromAsync`, `StartAsync`, and `SelectMany` operators all support cancellati
 ```C#
 using (var cancellation = new CancellationDisposable())
 {
-  CancellationToken token = cancellation.Token;
+  var token = cancellation.Token; // as CancellationToken
   // Pass the token to methods that respond to it.
 }
 // At this point, the token is canceled.
@@ -432,11 +432,11 @@ You are using dataflow meshes and need to support cancellation.
 The best way to support cancellation in your code is to pass the `CancellationToken` through to a cancelable API. Each block in a dataflow mesh supports cancellation as a part of its `DataflowBlockOptions`. If you want to extend your custom dataflow block with cancellation support, set the `CancellationToken` property on the block options:
 
 ```C#
-IPropagatorBlock<int, int> CreateMyCustomBlock(CancellationToken cancellationToken)
+IPropagatorBlock<int, int> CreateMyCustomBlock(CancellationToken tok)
 {
   var blockOptions = new ExecutionDataflowBlockOptions
   {
-    CancellationToken = cancellationToken
+    CancellationToken = tok
   };
   var multiplyBlock = new TransformBlock<int, int>(item => item * 2, blockOptions);
   var addBlock = new TransformBlock<int, int>(item => item + 2, blockOptions);
@@ -475,26 +475,29 @@ You have a layer of your code that needs to respond to cancellation requests and
 
 The .NET 4.0 cancellation system has built-in support for this scenario, known as linked cancellation tokens. A cancellation token source can be created linked to one (or many) existing tokens. When you create a linked cancellation token source, the resulting token is canceled when any of the existing tokens is canceled or when the linked source is explicitly canceled.
 
-The following code performs an asynchronous HTTP request. The token passed into the GetWithTimeoutAsync method represents cancellation requested by the end user, and the GetWithTimeoutAsync method also applies a timeout to the request:
+The following code performs an asynchronous HTTP request. The token passed into the `GetWithTimeoutAsync` method represents cancellation requested by the end user, and the `GetWithTimeoutAsync` method also applies a timeout to the request:
 
 ```C#
-public async Task<HttpResponseMessage> GetWithTimeoutAsync(HttpClient client, string url, CancellationToken cancellationToken)
+public async Task<HttpResponseMessage> GetWithTimeoutAsync(
+    HttpClient client,
+    string url,
+    CancellationToken tok)
 {
-  using CancellationTokenSource cts = CancellationTokenSource
-      .CreateLinkedTokenSource(cancellationToken);
+  using var cts = // as CancellationTokenSource
+      CancellationTokenSource.CreateLinkedTokenSource(tok);
   cts.CancelAfter(TimeSpan.FromSeconds(2));
-  CancellationToken combinedToken = cts.Token;
+  var combinedToken = cts.Token;
   return await client.GetAsync(url, combinedToken);
 }
 ```
 
-The resulting combinedToken is canceled when either the user cancels the existing cancellationToken or when the linked source is canceled by `CancelAfter`.
+The resulting `combinedToken` is canceled when either the user cancels the existing `tok` or when the linked source is canceled by `CancelAfter`.
 
 ### Discussion
 
 Although the preceding example only used a single `CancellationToken` source, the `CreateLinkedTokenSource` method can take any number of cancellation tokens as parameters. This enables you to create a single combined token from which you can implement your logical cancellation. For example, ASP.NET provides a cancellation token that represents the user disconnecting (`HttpContext.RequestAborted`); handler code may create a linked token that responds to either a user disconnecting or its own cancellation reason, such as a timeout.
 
-Keep in mind the lifetime of the linked cancellation token source. The previous example is the usual use case, where one or more cancellation tokens are passed into the method, which then links them together and passes them on as a combined token. Note also that the example code uses the using statement, which ensures that the linked cancellation token source is disposed of when the operation is complete (and the combined token is no longer being used).
+Keep in mind the lifetime of the linked cancellation token source. The previous example is the usual use case, where one or more cancellation tokens are passed into the method, which then links them together and passes them on as a combined token. Note also that the example code uses the `using` statement, which ensures that the linked cancellation token source is disposed of when the operation is complete (and the combined token is no longer being used).
 
 Consider what would happen if the code didn't dispose of the linked cancellation token source: it's possible that the `GetWithTimeoutAsync` method may be called multiple times with the same (long-lived) existing token, in which case the code would link a new token source each time the method is invoked. Even after the HTTP requests complete (and nothing is using the combined token), that linked source is still attached to the existing token. To prevent memory leaks like this, dispose of the linked cancellation token source when you no longer need the combined token.
 
@@ -517,12 +520,12 @@ The `CancellationToken` has two primary ways to respond to a cancellation reques
 For example, let's say you're wrapping the `System.Net.NetworkInformation.Ping` type and you want to be able to cancel a ping. The `Ping` class already has a Task-based API but does not support `CancellationToken`. Instead, the `Ping` type has its own `SendAsyncCancel` method that you can use to cancel a ping. To do this, register a callback that invokes that method:
 
 ```C#
-async Task<PingReply> PingAsync(string hostNameOrAddress, CancellationToken cancellationToken)
+async Task<PingReply> PingAsync(string hostNameOrAddress, CancellationToken tok)
 {
   using var ping = new Ping();
-  Task<PingReply> task = ping.SendPingAsync(hostNameOrAddress);
-  using CancellationTokenRegistration _ = cancellationToken
-      .Register(() => ping.SendAsyncCancel());
+  var task = ping.SendPingAsync(hostNameOrAddress); // as Task<PingReply>
+  using var _ = // as CancellationTokenRegistration
+      tok.Register(() => ping.SendAsyncCancel());
   return await task;
 }
 ```
@@ -533,7 +536,7 @@ Now, when a cancellation is requested, the `CancellationToken` will invoke the `
 
 The `CancellationToken.Register` method can be used to interoperate with any kind of alternative cancellation system. But do bear in mind that when a method takes a `CancellationToken`, a cancellation request should only cancel that one operation. Some alternative cancellation systems implement a cancel by closing some resource, which can cancel multiple operations; this kind of cancellation system doesn't map well to a `CancellationToken`. If you do decide to wrap that kind of cancellation in a `CancellationToken`, you should document its unusual cancellation semantics.
 
-Keep in mind the lifetime of the callback registration. The `Register` method returns a disposable that should be disposed of when that callback is no longer needed. The preceding example code uses a using statement to clean up when the asynchronous operation completes. If the code didn't have that using statement, then each time the code is called with the same (long-lived) `CancellationToken`, it would add another callback (which in turn keeps the `Ping` object alive). To avoid memory and resource leaks, dispose of the callback registration when you no longer need the callback.
+Keep in mind the lifetime of the callback registration. The `Register` method returns a disposable that should be disposed of when that callback is no longer needed. The preceding example code uses a `using` statement to clean up when the asynchronous operation completes. If the code didn't have that `using` statement, then each time the code is called with the same (long-lived) `CancellationToken`, it would add another callback (which in turn keeps the `Ping` object alive). To avoid memory and resource leaks, dispose of the callback registration when you no longer need the callback.
 
 ### See Also
 

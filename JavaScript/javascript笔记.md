@@ -19,7 +19,7 @@ console.log(Array)
 由关键字`new`调用构造函数创造的对象,其原型为构造函数的原型属性:
 
 ```javascript
-let o = new Object(); 
+let o = new Object();
 o.prototype === Object.prototype //Object是构造函数
 let a = new Array();
 a.prototype === Array.prototype//Array是构造函数
@@ -525,16 +525,310 @@ Set.prototype.equals = function (that) {
 
 # 16. 模块
 
-准则：
-
-- 不要导入可变量。
+- 导出`const`，尽量不可变。不要导出可变量`let`、`var`。
 - 不要将循环依赖分离到两个文件（模块）中。
-- 不要使用空导入，导出模块中的所有代码，包裹起来，放到默认导出函数中，函数没有输入参数。导入函数后，显示调用函数执行。
-- 不要使用默认导出，即使只导出一个函数、类、对象。使用命名导出。
+- 不要编写只在被空导入时执行一次的模块，应该导出一个执行函数供其他部分显式调用。
+- 不要使用默认导出，即使只导出一个成员（函数、类、对象）。使用命名导出。
+- 再导出仅用于文件夹下的`index.js`文件。`index.js`把文件夹下的其他的js文件导入进来，作为了唯一的对外的接口。
 
-陈述总结：
 
-- 文件夹下的`index.js`，是入口文件。导入路径。
-- 导入的`*`包括所有命名导出成员，不包括默认导出成员。
-- 有三种导入方法：默认导入、命名导入、名字空间导入，默认导入可以和后两者结合在一个导入语句中。
-- 默认导入时为导入的默认成员起名字。
+导入一个文件目录作为 Node 模块的情况。如果文件目录下有 `package.json`，就根据它的 main 字段找到 js 文件。如果没有 package.json，那就取文件夹下的`index.js`。
+
+## 16.4 Importing and exporting in detail
+
+### 16.4.1 Importing styles
+
+ECMAScript 6 provides several styles of importing:
+
+Default import:
+
+```javascript
+import localName from 'src/my_lib';
+```
+
+Namespace import: imports the module as an object (with one property per named export).
+
+```javascript
+import * as my_lib from 'src/my_lib';
+```
+
+Named imports:
+
+```javascript
+import { name1, name2 } from 'src/my_lib';
+```
+
+You can rename named imports:
+
+```javascript
+// Renaming: import `name1` as `localName1`
+import { name1 as localName1, name2 } from 'src/my_lib';
+
+// Renaming: import the default export as `foo`
+import { default as foo } from 'src/my_lib';
+```
+
+Empty import: only loads the module, doesn't import anything. The first such import in a program executes the body of the module.
+
+```javascript
+import 'src/my_lib';
+```
+
+There are only two ways to combine these styles and the order in which they appear is fixed; the default export always comes first.
+
+Combining a default import with a namespace import:
+
+```javascript
+  import theDefault, * as my_lib from 'src/my_lib';
+```
+
+Combining a default import with named imports
+
+```javascript
+import theDefault, { name1, name2 } from 'src/my_lib';
+```
+
+### 16.4.2 Named exporting styles: inline versus clause
+
+There are two ways in which you can export named things inside modules.
+
+On one hand, you can mark declarations with the keyword `export`.
+
+```javascript
+export var myVar1 = ···;
+export let myVar2 = ···;
+export const MY_CONST = ···;
+
+export function myFunc() {
+    ···
+}
+export function* myGeneratorFunc() {
+    ···
+}
+export class MyClass {
+    ···
+}
+```
+
+On the other hand, you can list everything you want to export at the end of the module (which is similar in style to the revealing module pattern).
+
+```javascript
+const MY_CONST = ···;
+function myFunc() {
+    ···
+}
+
+export { MY_CONST, myFunc };
+```
+
+You can also export things under different names:
+
+```javascript
+export { MY_CONST as FOO, myFunc };
+```
+
+### 16.4.3 Re-exporting
+
+Re-exporting means adding another module's exports to those of the current module. You can either add all of the other module's exports:
+
+```javascript
+export * from 'src/other_module';
+```
+
+Default exports are ignored by `export *`.
+
+Or you can be more selective (optionally while renaming):
+
+```javascript
+export { foo, bar } from 'src/other_module';
+
+// Renaming: export other_module's foo as myFoo
+export { foo as myFoo, bar } from 'src/other_module';
+```
+
+#### 16.4.3.1 Making a re-export the default export
+
+The following statement makes the default export of another module foo the default export of the current module:
+
+```javascript
+export { default } from 'foo';
+```
+
+The following statement makes the named export `myFunc` of module `foo` the default export of the current module:
+
+```javascript
+export { myFunc as default } from 'foo';
+```
+
+### 16.4.4 All exporting styles
+
+ECMAScript 6 provides several styles of exporting:
+
+Re-exporting:
+
+Re-export everything (except for the default export):
+
+```javascript
+export * from 'src/other_module';
+```
+
+Re-export via a clause:
+
+```javascript
+export { foo as myFoo, bar } from 'src/other_module';
+
+export { default } from 'src/other_module';
+export { default as foo } from 'src/other_module';
+export { foo as default } from 'src/other_module';
+```
+
+Named exporting via a clause:
+
+```javascript
+export { MY_CONST as FOO, myFunc };
+export { foo as default };
+```
+
+Inline named exports:
+
+Variable declarations:
+
+```javascript
+export var foo;
+export let foo;
+export const foo;
+```
+
+Function declarations:
+
+```javascript
+export function myFunc() {}
+export function* myGenFunc() {}
+```
+
+Class declarations:
+
+```javascript
+export class MyClass {}
+```
+
+Default export:
+
+Function declarations (can be anonymous here):
+
+```javascript
+export default function myFunc() {}
+export default function () {}
+
+export default function* myGenFunc() {}
+export default function* () {}
+```
+
+Class declarations (can be anonymous here):
+
+```javascript
+  export default class MyClass {}
+  export default class {}
+```
+
+Expressions: export values. Note the semicolons at the end.
+
+```javascript
+  export default foo;
+  export default 'Hello world!';
+  export default 3 * 7;
+  export default (function () {});
+```
+
+### 16.4.5 Having both named exports and a default export in a module
+
+The following pattern is surprisingly common in JavaScript: A library is a single function, but additional services are provided via properties of that function. Examples include jQuery and Underscore.js. The following is a sketch of Underscore as a CommonJS module:
+
+```javascript
+//------ underscore.js ------
+var _ = function (obj) {
+    ···
+};
+var each = _.each = _.forEach =
+    function (obj, iterator, context) {
+        ···
+    };
+module.exports = _;
+
+//------ main.js ------
+var _ = require('underscore');
+var each = _.each;
+···
+```
+
+With ES6 glasses, the function `_` is the default export, while `each` and `forEach` are named exports. As it turns out, you can actually have named exports and a default export at the same time. As an example, the previous CommonJS module, rewritten as an ES6 module, looks like this:
+
+```javascript
+//------ underscore.js ------
+export default function (obj) {
+    ···
+}
+export function each(obj, iterator, context) {
+    ···
+}
+export { each as forEach };
+
+//------ main.js ------
+import _, { each } from 'underscore';
+···
+```
+
+Note that the CommonJS version and the ECMAScript 6 version are only roughly similar. The latter has a flat structure, whereas the former is nested.
+
+#### 16.4.5.1 Recommendation: avoid mixing default exports and named exports
+
+I generally recommend to keep the two kinds of exporting separate: per module, either only have a default export or only have named exports.
+
+However, that is not a very strong recommendation; it occasionally may make sense to mix the two kinds. One example is a module that default-exports an entity. For unit tests, one could additionally make some of the internals available via named exports.
+
+#### 16.4.5.2 The default export is just another named export
+
+The default export is actually just a named export with the special name default. That is, the following two statements are equivalent:
+
+```javascript
+import { default as foo } from 'lib';
+import foo from 'lib';
+```
+
+Similarly, the following two modules have the same default export:
+
+```javascript
+//------ module1.js ------
+export default function foo() {} // function declaration!
+
+//------ module2.js ------
+function foo() {}
+export { foo as default };
+```
+
+#### 16.4.5.3 default: OK as export name, but not as variable name
+
+You can't use reserved words (such as `default` and `new`) as variable names, but you can use them as names for exports (you can also use them as property names in ECMAScript 5). If you want to directly import such named exports, you have to rename them to proper variables names.
+
+That means that default can only appear on the left-hand side of a renaming import:
+
+```javascript
+import { default as foo } from 'some_module';
+```
+
+And it can only appear on the right-hand side of a renaming export:
+
+```javascript
+export { foo as default };
+```
+
+In re-exporting, both sides of the as are export names:
+
+```javascript
+export { myFunc as default } from 'foo';
+export { default as otherFunc } from 'foo';
+
+// The following two statements are equivalent:
+export { default } from 'foo';
+export { default as default } from 'foo';
+```
