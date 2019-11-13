@@ -1,25 +1,26 @@
-﻿Appendix A DOM Reference
+# Appendix A DOM Reference
 
 This appendix serves as a reference for the functionality provided by the Document Object Model discussed in Chapter 5.
 
-Resources
+## Resources
 
 DOM functionality has come in a variety of flavors, starting with the original prespecification DOM Level 0 on up to DOM Level 3. One of the things to understand about the DOM is that it is considered a living standard. Each level is describes the features and behaviors that are added. The DOM itself is a representation of the document with nodes and properties the can have events associated with them.
 
-If you wanted to understand some of the details of DOM the W3C’s web sites serve as an excellent reference for learning how the DOM should work as well as the Web Hypertext Application Technology Working Group (WHATWG):
+If you wanted to understand some of the details of DOM the W3C's web sites serve as an excellent reference for learning how the DOM should work as well as the Web Hypertext Application Technology Working Group (WHATWG):
 
 • HTML DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/
 
 • WHATWG DOM: https://dom.spec.whatwg.org/
 
-Additionally, there exist a number of excellent references for learning how DOM functionality works, but none is better than the resources that exist at Quirksmode.org, a site run by Peter-Paul Koch. He has comprehensively looked at every available DOM method and compared its results in all modern browsers (plus some). It’s an invaluable resource for figuring out what is, or is not, possible in the browsers that you’re developing for. Another source is also caniuse.com created by Alexis Devera. Here you can search for a feature you would like to use and see a compatibioity table for witch browsers support that feature.
+Additionally, there exist a number of excellent references for learning how DOM functionality works, but none is better than the resources that exist at Quirksmode.org, a site run by Peter-Paul Koch. He has comprehensively looked at every available DOM method and compared its results in all modern browsers (plus some). It's an invaluable resource for figuring out what is, or is not, possible in the browsers that you're developing for. Another source is also caniuse.com created by Alexis Devera. Here you can search for a feature you would like to use and see a compatibioity table for witch browsers support that feature.
 
-Terminology
+## Terminology
 
 In Chapter 5 on the Document Object Model and in this appendix, I use common XML and DOM terminology to describe the different aspects of a DOM representation of an XML document. The following words and phrases are terminology that relate to the Document Object Model and XML documents in general. All of the terminology examples will relate to the sample HTML document shown in Listing A-1.
 
 Listing A-1. A Reference Point for Discussing DOM and XML Terminology
 
+```html
 <!doctype html>
 <html>
 <head>
@@ -36,10 +37,11 @@ Listing A-1. A Reference Point for Discussing DOM and XML Terminology
     </ul>
 </body>
 </html>
+```
 
 Ancestor
 
-Very similar to the genealogical term, ancestor refers to the parent of the current element, and that parent’s parent, and that parent’s parent, and so on. In Listing A-1 the ancestor elements of the <ul> element are the<body> element and the <html> element.
+Very similar to the genealogical term, ancestor refers to the parent of the current element, and that parent's parent, and that parent's parent, and so on. In Listing A-1 the ancestor elements of the <ul> element are the<body> element and the <html> element.
 
 Attribute
 
@@ -55,7 +57,7 @@ An XML document consists of one element (called the root node or document elemen
 
 Descendant
 
-An element’s descendants include its child nodes, its children’s children, and their children, and so on. In Listing A-1 the <body> element’s descendants include <h1>, <p>, <ul>, all the <li> elements, and all the text nodes contained inside all of them.
+An element's descendants include its child nodes, its children's children, and their children, and so on. In Listing A-1 the <body> element's descendants include <h1>, <p>, <ul>, all the <li> elements, and all the text nodes contained inside all of them.
 
 Element
 
@@ -75,37 +77,41 @@ A sibling node is a child of the same parent node. Generally this term is used i
 
 Text Node
 
-A text node is a special node that contains only text; this includes visible text and all forms of white space. So when you’re seeing text inside of an element (for example, <b>hello world!</b>), there is actually a separate text node inside of the <b> element that contains the “hello world!” text. In Listing A-1, the text “It’s easy to use” inside of the second <li> element is contained within a text node.
+A text node is a special node that contains only text; this includes visible text and all forms of white space. So when you're seeing text inside of an element (for example, <b>hello world!</b>), there is actually a separate text node inside of the <b> element that contains the “hello world!” text. In Listing A-1, the text “It's easy to use” inside of the second <li> element is contained within a text node.
 
-Global Variables
+## Global Variables
 
 Global variables exist within the global scope of your code, but they exist to help you work with common DOM operations.
 
 document
 
-This variable contains the active HTML DOM document, which is viewed in the browser. However, just because this variable exists and has a value, doesn’t mean that its contents have been fully loaded and parsed. See Chapter 5 for more information on waiting for the DOM to load. Listing A-2 shows some examples of using the document variable that holds a representation of the HTML DOM to access document elements.
+This variable contains the active HTML DOM document, which is viewed in the browser. However, just because this variable exists and has a value, doesn't mean that its contents have been fully loaded and parsed. See Chapter 5 for more information on waiting for the DOM to load. Listing A-2 shows some examples of using the document variable that holds a representation of the HTML DOM to access document elements.
 
 Listing A-2. Using the Document Variable to Access Document Elements
 
+```js
 // Locate the element with the ID of 'body'
 document.getElementById("body")
 
 // Locate all the elements with the tag name of <div>.
 document.getElementsByTagName("div")
+```
 
 HTMLElement
 
-This variable is the superclass object for all HTML DOM elements. Extending the prototype of this element extends all HTML DOM elements. This superclass is available by default in Mozilla-based browsers and Opera. It’s possible to add it to Internet Explorer and Safari. Listing A-3 shows an example of binding new functions to a global HTML element superclass. Attaching a hasClass function provides the ability to see whether an element has a specific class.
+This variable is the superclass object for all HTML DOM elements. Extending the prototype of this element extends all HTML DOM elements. This superclass is available by default in Mozilla-based browsers and Opera. It's possible to add it to Internet Explorer and Safari. Listing A-3 shows an example of binding new functions to a global HTML element superclass. Attaching a hasClass function provides the ability to see whether an element has a specific class.
 
 Listing A-3. Binding New Functions to a Global HTML Element SuperClass
 
+```js
 // Add a new method to all HTML DOM Elements
 // that can be used to see if an Element has a specific class, or not.
 HTMLElement.prototype.hasClass = function( class ) {
     return new RegExp("(^|\\s)" + class + "(\\s|$)").test( this.className );
 };
+```
 
-DOM Navigation
+## DOM Navigation
 
 The following properties are a part of all DOM elements and can be used to traverse DOM documents.
 
@@ -115,11 +121,13 @@ This property of the global HTML DOM document (the document variable) points dir
 
 Listing A-4. Accessing the <body> Element Inside of an HTML DOM Document
 
+```js
 // Change the margins of the <body>
 document.body.style.margin = "0px";
 
 // document.body is equivalent to:
 document.getElementsByTagName("body")[0]
+```
 
 childNodes
 
@@ -127,6 +135,7 @@ This is a property of all DOM elements, containing an array of all child nodes (
 
 Listing A-5. Adding a Red Border Around Child Elements of the <body> Element Using the childNodes Property
 
+```js
 // Add a border to all child elements of <body>
 var c = document.body.childNodes;
 for ( var i = 0; i < c.length; i++ ) {
@@ -134,6 +143,7 @@ for ( var i = 0; i < c.length; i++ ) {
     if ( c[i].nodeType == 1 )
         c[i].style.border = "1px solid red";
 }
+```
 
 documentElement
 
@@ -141,8 +151,10 @@ This is a property of all DOM nodes acting as a reference to the root element of
 
 Listing A-6. Example of Locating the Root Document Element From Any DOM Node
 
+```js
 // Find the documentElement, to find an Element by ID
 someRandomNode.documentElement.getElementById("body")
+```
 
 firstChild
 
@@ -150,35 +162,40 @@ This is a property of all DOM elements, pointing to the first child node of that
 
 Listing A-7. Removing All Child Nodes From an Element
 
+```js
 // Remove all child nodes from an element
 var e = document.getElementById("body");
 while ( e.firstChild )
     e.removeChild( e.firstChild );
+```
 
 getElementById( elemID )
 
 This is a powerful function that locates the one element in the document that has the specified ID. The function is only available on the document element. Additionally, the function may not work as intended in non-HTML DOM documents; generally with XML DOM documents you have to explicitly specify the ID attribute in a DTD (Document Type Definition) or schema.
 
-This function takes a single argument: the name of the ID that you’re searching for, as demonstrated in Listing A-8.
+This function takes a single argument: the name of the ID that you're searching for, as demonstrated in Listing A-8.
 
 Listing A-8. Two Examples of Locating HTML Elements by Their ID Attributes
 
+```js
 // Find the Element with an ID of body
 document.getElementById("body")
 
 // Hide the Element with an ID of notice
 document.getElementById("notice").style.display = 'none';
+```
 
 getElementsByTagName( tagName )
 
 This property finds all descendant elements—beginning at the current element—that have the specified tag name. This function works identically in XML DOM and HTML DOM documents.
 
-In all modern browsers, you can specify * as the tag name and find all descendant elements, which is much faster than using a pure-JavaScript recursive function.
+In all modern browsers, you can specify `*` as the tag name and find all descendant elements, which is much faster than using a pure-JavaScript recursive function.
 
-This function takes a single argument: the tag name of the elements that you’re searching for. Listing A-9 shows examples of getElementsByTagName. The first block adds a highlight class to all <div> elements in the document. The second block finds all the elements inside of the element with an ID of body, and hides any that have a class of highlight.
+This function takes a single argument: the tag name of the elements that you're searching for. Listing A-9 shows examples of getElementsByTagName. The first block adds a highlight class to all <div> elements in the document. The second block finds all the elements inside of the element with an ID of body, and hides any that have a class of highlight.
 
 Listing A-9. Two Code Blocks That Demonstrate How getElementsByTagName Is Used
 
+```js
 // Find all <div> Elements in the current HTML document
 // and set their class to 'highlight'
 var d = document.getElementsByTagName("div");
@@ -193,6 +210,7 @@ for ( var i = 0; i < all.length; i++ ) {
     if ( all[i].className == 'hilite' )
         all[i].style.display = 'none';
 }
+```
 
 lastChild
 
@@ -200,17 +218,20 @@ This is a reference available on all DOM elements, pointing to the last child no
 
 Listing A-10. Creating a New <div> Element and Inserting It Before the Last Element in the <body>
 
+```js
 // Insert a new Element just before the last element in the <body>
 var n = document.createElement("div");
 n.innerHTML = "Thanks for visiting!";
 document.body.insertBefore( n, document.body.lastChild );
+```
 
 nextSibling
 
-This is a reference available on all DOM nodes, pointing to the next sibling node. If the node is the last sibling, nextSibling will be null. It’s important to remember that nextSibling may point to a DOM element, a comment, or even a text node; it does not serve as an exclusive way to navigate DOM elements. Listing A-11 is an example of using the nextSibling property to create an interactive definition list.
+This is a reference available on all DOM nodes, pointing to the next sibling node. If the node is the last sibling, nextSibling will be null. It's important to remember that nextSibling may point to a DOM element, a comment, or even a text node; it does not serve as an exclusive way to navigate DOM elements. Listing A-11 is an example of using the nextSibling property to create an interactive definition list.
 
 Listing A-11. Making All <dt> Elements Expand Their Sibling <dd> Elements Once Clicked
 
+```js
 // Find all <dt> (Defintion Term) elements
 var dt = document.getElementsByTagName("dt");
 for ( var i = 0; i < dt.length; i++ ) {
@@ -223,31 +244,36 @@ for ( var i = 0; i < dt.length; i++ ) {
         this.nextSibling.style.display = 'block';
     };
 }
+```
 
 parentNode
 
-This is a property of all DOM nodes. Every DOM node’s parentNode points to the element that contains it, except for the document element, which points to null (since nothing contains the root element). Listing A-12 is an example of using the parentNode property to create a custom interaction. Clicking the Cancel button hides the parent element.
+This is a property of all DOM nodes. Every DOM node's parentNode points to the element that contains it, except for the document element, which points to null (since nothing contains the root element). Listing A-12 is an example of using the parentNode property to create a custom interaction. Clicking the Cancel button hides the parent element.
 
 Listing A-12. Using the parentNode Property to Create a Custom Interaction
 
+```js
 // Watch for when a link is clicked (e.g. a Cancel link)
 // and hide the parent element
 document.getElementById("cancel").onclick = function(){
     this.parentNode.style.display = 'none';
 };
+```
 
 previousSibling
 
-This is a reference available on all DOM nodes, pointing to the previous sibling node. If the node is the first sibling, the previousSibling will be null. It’s important to remember that previousSibling may point to a DOM element, a comment, or even a text node; it does not serve as an exclusive way to navigate DOM elements. Listing A-13 shows an example of using the previousSibling property to hide elements.
+This is a reference available on all DOM nodes, pointing to the previous sibling node. If the node is the first sibling, the previousSibling will be null. It's important to remember that previousSibling may point to a DOM element, a comment, or even a text node; it does not serve as an exclusive way to navigate DOM elements. Listing A-13 shows an example of using the previousSibling property to hide elements.
 
 Listing A-13. Hiding All Elements Before the Current Element
 
+```js
 // Find all elements before this one and hide them
 var cur = this.previousSibling;
 while ( cur != null ) {
     cur.style.display = 'none';
     cur = this.previousSibling;
 }
+```
 
 Node Information
 
@@ -255,10 +281,11 @@ These properties exist on most DOM elements in order to give you easy access to 
 
 innerText
 
-This is a property of all DOM elements (which only exists in non-Mozilla-based browsers, as it’s not part of a W3C standard). This property returns a string containing all the text inside of the current element. Since this property is not supported in Mozilla-based browsers, you can utilize a workaround (where you use a function to collect the values of descendant text nodes). Listing A-14 shows an example of using the innerText property and the text( ) function from Chapter 5.
+This is a property of all DOM elements (which only exists in non-Mozilla-based browsers, as it's not part of a W3C standard). This property returns a string containing all the text inside of the current element. Since this property is not supported in Mozilla-based browsers, you can utilize a workaround (where you use a function to collect the values of descendant text nodes). Listing A-14 shows an example of using the innerText property and the text( ) function from Chapter 5.
 
 Listing A-14. Using the innerText Property to Extract Text Information From an Element
 
+```js
 // Let's assume that we have an <li> element like this, stored in the variable 'li':
 // <li>Please visit <a href="http://mysite.com/">my web site</a>.</li>
 
@@ -270,6 +297,7 @@ text( li )
 
 // The result of either the property or the function is:
 "Please visit my web site."
+```
 
 nodeName
 
@@ -277,6 +305,7 @@ This is a property available on all DOM elements that contains an uppercase vers
 
 Listing A-15. Locating All Parent <li> Elements and Setting Their Class to current
 
+```js
 // Find all the parents of this node, that are an <li> element
 var cur = this.parentNode;
 while ( cur != null ) {
@@ -285,6 +314,7 @@ while ( cur != null ) {
         cur.className += " current";
     cur = this.parentNode;
 }
+```
 
 nodeType
 
@@ -296,10 +326,11 @@ This is a common property of all DOM nodes, containing a number corresponding to
 
 • Document node (a value of 9 or document.DOCUMENT_NODE)
 
-Using the nodeType property is a reliable way of making sure that the node that you’re trying to access has all the properties that you think it does (e.g., a nodeName property is only useful on a DOM element; so you could use nodeType to make sure that it’s equal to 1 before accessing it). Listing A-16 shows an example of using the nodeType property to add a class to a number of elements.
+Using the nodeType property is a reliable way of making sure that the node that you're trying to access has all the properties that you think it does (e.g., a nodeName property is only useful on a DOM element; so you could use nodeType to make sure that it's equal to 1 before accessing it). Listing A-16 shows an example of using the nodeType property to add a class to a number of elements.
 
 Listing A-16. Locating the First Element in the HTML <body> and Applying a header Class to It
 
+```js
 // Find the first element in the <body>
 var cur = document.body.firstChild;
 while ( cur != null ) {
@@ -312,6 +343,7 @@ while ( cur != null ) {
         cur = cur.nextSibling;
     }
 }
+```
 
 nodeValue
 
@@ -319,6 +351,7 @@ This is a useful property of text nodes that can be used to access and manipulat
 
 Listing A-17. A Function That Accepts an Element and Returns the Text Contents of It and All Its Descendant Elements
 
+```js
 function text(e) {
     var t = " ";
     // If an element was passed, get its children,
@@ -336,17 +369,19 @@ function text(e) {
     // Return the matched text
     return t;
 }
+```
 
 Attributes
 
-Most attributes are available as properties of their containing element. For example, the attribute ID can be accessed using the simple element.id. This feature is residual from the DOM 0 days, but it’s very likely that it’s not going anywhere, due to its simplicity and popularity.
+Most attributes are available as properties of their containing element. For example, the attribute ID can be accessed using the simple element.id. This feature is residual from the DOM 0 days, but it's very likely that it's not going anywhere, due to its simplicity and popularity.
 
 className
 
-This property allows you to add and remove classes from a DOM element. This property exists on all DOM elements. The reason I’m mentioning this specifically is that its name, className, is very different from the expected name of class. The strange naming is due to the fact that the word class is a reserved word in most object-oriented programming languages; so its use is avoided to limit difficulties in programming a web browser. Listing A-18 shows an example of using the className property to hide a number of elements.
+This property allows you to add and remove classes from a DOM element. This property exists on all DOM elements. The reason I'm mentioning this specifically is that its name, className, is very different from the expected name of class. The strange naming is due to the fact that the word class is a reserved word in most object-oriented programming languages; so its use is avoided to limit difficulties in programming a web browser. Listing A-18 shows an example of using the className property to hide a number of elements.
 
 Listing A-18. Finding All <div> Elements That Have a Class of special and Hiding Them
 
+```js
 // Find all the <div> elements in the document
 var div = document.getElementsByTagName("div");
 for ( var i = 0; i < div.length; i++ ) {
@@ -356,6 +391,7 @@ for ( var i = 0; i < div.length; i++ ) {
         div[i].style.display = 'none';
     }
 }
+```
 
 getAttribute( attrName )
 
@@ -363,6 +399,7 @@ This is a function that serves as the proper way of accessing an attribute value
 
 Listing A-19. Finding the <input> Element Named text and Copying Its Value Into an Element With an ID of preview
 
+```js
 // Find all the form input elements
 var input = document.getElementsByTagName("input");
 for ( var i = 0; i < input.length; i++ ) {
@@ -375,6 +412,7 @@ for ( var i = 0; i < input.length; i++ ) {
             input[i].getAttribute("value");
     }
 }
+```
 
 removeAttribute( attrName )
 
@@ -384,6 +422,7 @@ This function takes a single argument: the name of the attribute that you wish t
 
 Listing A-20. Finding All Check Boxes in a Document and Unchecking Them
 
+```js
 // Find all the form input elements
 var input = document.getElementsByTagName("input");
 for ( var i = 0; i < input.length; i++ ) {
@@ -393,17 +432,17 @@ for ( var i = 0; i < input.length; i++ ) {
 
         // Uncheck the checkbox
         input[i].removeAttribute("checked");
-
     }
-
 }
+```
 
 setAttribute( attrName, attrValue )
 
-This is a function that serves as a way of setting the value of an attribute contained within a DOM element. Additionally, it’s possible to add in custom attributes that can be accessed again later while leaving the appearance of the DOM elements unaffected. setAttribute tends to behave rather strangely in Internet Explorer, keeping you from setting particular attributes (such as class or maxlength). This is explained more in Chapter 5. The function takes two arguments. The first is the name of the attribute. The second is the value to set the attribute to. Listing A-21 shows an example of setting the value of an attribute on a DOM element.
+This is a function that serves as a way of setting the value of an attribute contained within a DOM element. Additionally, it's possible to add in custom attributes that can be accessed again later while leaving the appearance of the DOM elements unaffected. setAttribute tends to behave rather strangely in Internet Explorer, keeping you from setting particular attributes (such as class or maxlength). This is explained more in Chapter 5. The function takes two arguments. The first is the name of the attribute. The second is the value to set the attribute to. Listing A-21 shows an example of setting the value of an attribute on a DOM element.
 
 Listing A-21. Using the setAttribute Function to Create an <a> Link to Google
 
+```js
 // Create a new <a> element
 var a = document.createElement("a").
 
@@ -415,6 +454,7 @@ a.appendChild( document.createTextNode( "Visit Google!" ) );
 
 // Add the link at the end of the document
 document.body.appendChild( a );
+```
 
 DOM Modification
 
@@ -422,12 +462,13 @@ The following are all the properties and functions that are available to manipul
 
 appendChild( nodeToAppend )
 
-This is a function that can be used to add a child node to a containing element. If the node that’s being appended already exists in the document, it is moved from its current location and appended to the current element. The appendChild function must be called on the element that you wish to append into.
+This is a function that can be used to add a child node to a containing element. If the node that's being appended already exists in the document, it is moved from its current location and appended to the current element. The appendChild function must be called on the element that you wish to append into.
 
 The function takes one argument: a reference to a DOM node (this could be one that you just created or a reference to a node that exists elsewhere in the document). Listing A-22 shows an example of creating a new <ul> element and moving all <li> elements into it from their original location in the DOM, then appending the new <ul> to the document body.
 
 Listing A-22. Appending a Series of <li> Elements to a Single <ul>
 
+```js
 // Create a new <ul> element
 var ul = document.createElement("ul");
 
@@ -441,6 +482,7 @@ for ( var i = 0; i < li.length; i++ ) {
 
 // Append our new <ul> element at the end of the body
 document.body.appendChild( ul );
+```
 
 cloneNode( true|false )
 
@@ -450,22 +492,25 @@ The function takes one true or false argument. If the argument is true, the node
 
 Listing A-23. Finding the First <ul> Element in a Document, Making a Complete Copy of It, and Appending It to Itself
 
+```js
 // Find the first <ul> element
 var ul = document.getElementsByTagName("ul")[0];
 
 // Clone the node and append it after the old one
 ul.parentNode.appendChild( ul.cloneNode( true ) );
+```
 
 createElement( tagName )
 
 This is the primary function used for creating new elements within a DOM structure. The function exists as a property of the document within which you wish to create the element.
 
- ■ Note if you’re using xHTML served with a content-type of application/xhtml+xml instead of regular HTML served with a content-type of text/html, you should use the createelementnS function instead of the createelement function.
+ ■ Note if you're using xHTML served with a content-type of application/xhtml+xml instead of regular HTML served with a content-type of text/html, you should use the createelementnS function instead of the createelement function.
 
 This function takes one argument: the tag name of the element to create. Listing A-24 shows an example of using this function to create an element and wrap it around some other elements.
 
 Listing A-24. Wrapping the Contents of a <p> Element in a <strong> Element
 
+```js
 // Create a new <strong> element
 var s = document.createElement("strong");
 
@@ -480,15 +525,17 @@ while ( p.firstChild ) {
 // Put the <strong> element (containing the old <p> contents)
 // back into the <p> element
 p.appendChild( s );
+```
 
 createElementNS( namespace, tagName )
 
-This function is very similar to the createElement function, in that it creates a new element; however, it also provides the ability to specify a namespace for the element (for example, if you’re adding an item to an XML or XHTML document).
+This function is very similar to the createElement function, in that it creates a new element; however, it also provides the ability to specify a namespace for the element (for example, if you're adding an item to an XML or XHTML document).
 
-This function takes two arguments: the namespace of the element that you’re adding, and the tag name of the element. Listing A-25 shows an example of using this function to create a DOM element in a valid XHTML document.
+This function takes two arguments: the namespace of the element that you're adding, and the tag name of the element. Listing A-25 shows an example of using this function to create a DOM element in a valid XHTML document.
 
 Listing A-25. Creating a New XHTML <p> Element, Filling It With Some Text, and Appending It to the Document Body
 
+```js
 // Create a new XHTML-compliant <p>
 var p = document.createElementNS("http://www.w3.org/1999/xhtml", "p");
 
@@ -497,6 +544,7 @@ p.appendChild( document.createTextNode( "Welcome to my site." ) );
 
 // Add the <p> element into the document
 document.body.insertBefore( p, document.body.firstChild );
+```
 
 createTextNode( textString )
 
@@ -506,6 +554,7 @@ The function takes one argument: the string that will become the contents of the
 
 Listing A-26. Creating an <h1> Element and Appending a New Text Node
 
+```js
 // Create a new <h1> element
 var h = document.createElement("h1");
 
@@ -514,13 +563,15 @@ h.appendChild( document.createTextNode("Main Page") );
 
 // Add the header to the start of the <body>
 document.body.insertBefore( h, document.body.firstChild );
+```
 
 innerHTML
 
-This is an HTML DOM–specific property for accessing and manipulating a string version of the HTML contents of a DOM element. If you’re only working with an HTML document (and not an XML one), this method can be incredibly useful, as the code it takes to generate a new DOM element can be cut down drastically (not to mention it is a faster alternative to traditional DOM methods). While this property is not part of any particular W3C standard, it still exists in every modern browser. Listing A-27 shows an example of using the innerHTML property to change the contents of an element whenever the contents of a <textarea>are changed.
+This is an HTML DOM–specific property for accessing and manipulating a string version of the HTML contents of a DOM element. If you're only working with an HTML document (and not an XML one), this method can be incredibly useful, as the code it takes to generate a new DOM element can be cut down drastically (not to mention it is a faster alternative to traditional DOM methods). While this property is not part of any particular W3C standard, it still exists in every modern browser. Listing A-27 shows an example of using the innerHTML property to change the contents of an element whenever the contents of a <textarea>are changed.
 
 Listing A-27. Watching a <textarea> for Changes and Updating a Live Preview With Its Value
 
+```js
 // Get the textarea to watch for updates
 var t = document.getElementsByTagName("textarea")[0];
 
@@ -529,15 +580,17 @@ var t = document.getElementsByTagName("textarea")[0];
 t.onkeypress = function() {
     document.getElementById("preview").innerHTML = this.value;
 };
+```
 
 insertBefore( nodeToInsert, nodeToInsertBefore )
 
 This function is used to insert a DOM node anywhere into a document. The function must be called on the parent element of the node that you wish to insert it before. This is done so that you can specify null for nodeToInsertBefore and have your node inserted as the last child node.
 
-The function takes two arguments. The first argument is the node that you wish to insert into the DOM; the second is the DOM node that you’re inserting before. This should be a reference to a valid node. Listing A-28 shows an example of using this function to insert the favicon (the icon that you see next to a URL in the address bar of a browser) of a site next to a set of URLs on a page.
+The function takes two arguments. The first argument is the node that you wish to insert into the DOM; the second is the DOM node that you're inserting before. This should be a reference to a valid node. Listing A-28 shows an example of using this function to insert the favicon (the icon that you see next to a URL in the address bar of a browser) of a site next to a set of URLs on a page.
 
-Listing A-28. Going Through All <a> Elements and Adding an Icon Consisting of the Site’s Favicon
+Listing A-28. Going Through All <a> Elements and Adding an Icon Consisting of the Site's Favicon
 
+```js
 // Find all the <a> links within the document
 var a = document.getElementsByTagName("a");
 for ( var i = 0; i < a.length; i++ ) {
@@ -549,6 +602,7 @@ for ( var i = 0; i < a.length; i++ ) {
     // Insert the image before the link
     a[i].parentNode.insertBefore( img, a[i] );
 }
+```
 
 removeChild( nodeToRemove )
 
@@ -558,6 +612,7 @@ The function takes one argument: a reference to the DOM node to remove from the 
 
 Listing A-29. Removing All Elements That Have a Particular Class Name
 
+```js
 // Find all <div> elements
 var div = document.getElementsByTagName("div");
 for ( var i = 0; i < div.length; i++ ) {
@@ -568,6 +623,7 @@ for ( var i = 0; i < div.length; i++ ) {
         div[i].parentNode.removeChild( div[i] );
     }
 }
+```
 
 replaceChild( nodeToInsert, nodeToReplace )
 
@@ -577,6 +633,7 @@ This function takes two arguments: the node that you wish to insert into the DOM
 
 Listing A-30. Converting a Set of Links Into Plain URLs
 
+```js
 // Convert all links to visible URLs (good for printing
 // Find all <a> links in the document
 var a = document.getElementsByTagName("a");
@@ -591,4 +648,5 @@ while ( a.length ) {
     // Replace the original <a> with the new <strong> element
     a[i].replaceChild( s, a[i] );
 }
+```
 
