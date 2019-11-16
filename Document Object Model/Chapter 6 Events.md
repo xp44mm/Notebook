@@ -237,6 +237,8 @@ The W3C's method of binding event handlers to DOM elements is the only truly sta
 
 The code for attaching a new handler function is simple. It exists as a function available on every DOM element. The function is named `addEventListener` and takes three parameters: the name of the event (such as click; note the lack of the prefix on), the function that will handle the event, and a Boolean flag to enable or disable event capturing. An example of `addEventListener` in use is shown in Listing 6-6.
 
+参考：https://wiki.developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+
 Listing 6-6. Sample Code That Uses the W3C Way of Binding Event Handlers
 
 ```js
@@ -283,6 +285,8 @@ document.getElementById('welcome-content').onclick = null;
 Not too difficult, right?
 
 The situation with W3C event handling is somewhat more complex. The relevant function is `removeEventListener`. Its three arguments are the same: the type of event to remove, the associated handler, and a true/false value for capture or bubble mode. There is a catch, though. First and foremost, the function must be a reference to the same function that was assigned with `addEventListener`. Not just the same lines of code, but the same reference. So if you assigned an anonymous, in-line function with `addEventListener`, you cannot remove it.
+
+
 
  ■ Tip You should always use a named function for an event handler if you think you might need to remove that handler later on.
 
@@ -607,6 +611,8 @@ Common JavaScript events can be grouped into several categories. Probably the mo
 - Keyboard events: These are responsible for tracking when keyboard keys are pressed and within what context—for example, tracking keystrokes inside form elements as opposed to keystrokes that occur within the entire page. As with the mouse, three event types are used to track the keyboard: `keyup`, `keydown`, and `keypress`.
 
 - Form events: These relate directly to interactions that occur only with forms and form input elements. The `submit` event is used to track when a form is submitted; the `change` event watches for user input into an element; and the `select` event fires when a `<select>` element has been updated.
+
+事件类型可以参考：https://wiki.developer.mozilla.org/en-US/docs/Web/Events
 
 ### Page Events
 

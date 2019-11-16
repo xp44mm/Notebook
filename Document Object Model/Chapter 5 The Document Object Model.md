@@ -1,5 +1,8 @@
 # Chapter 5 The Document Object Model
 
+Document Object Model (DOM) Level 3 Core Specification
+https://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/introduction.html
+
 Working with the Document Object Model (the DOM) is a critical component of the professional JavaScript programmer's toolkit. A comprehensive understanding of DOM scripting yields benefits not only in the range of applications we can build, but also in the quality of those applications. Like most features of JavaScript, the DOM has a somewhat checkered history. But with modern browsers, it is easier than ever to manipulate and interact with the DOM unobtrusively. Understanding how to use this technology and how best to wield it can give you a head start toward developing your next web application. In this chapter we discuss a number of topics related to the DOM. For readers new to the DOM, we will start out with the basics and move through all the important concepts. For those of you already familiar with the DOM, we provide a number of cool techniques that we are sure you will enjoy and start using in your own web pages.
 
 The DOM is also at a crossroads. Historically, because DOM interface updates were not in sync with browser or JavaScript updates, there was a disconnect between browsers and DOM support. This disconnect was only exacerbated by buggy implementations. Popular libraries like jQuery and Dojo have arisen to address these problems. But with modern browsers, the DOM has normalized and the interface has settled quite a bit. We will need to address the issue of whether to use libraries to help in our access of the DOM or to do everything with the standard DOM interface.
@@ -304,6 +307,8 @@ Let's look at how to get the text of each of these elements. The `<strong>` elem
 
 > It should be noted that there exists a property called `innerText` that captures the text inside an element in all non–Mozilla-based browsers. It's incredibly handy in that respect. Unfortunately, because it doesn't work in a noticeable portion of the browser market, and it doesn't work in XML DOM documents, you still need to explore viable alternatives.
 
+读书笔记：`innerText`于 2016 年正式进入 HTML 标准。应该使用W3C标准的`textContent`代替。
+
 The trick with getting the text contents of an element is that you need to remember that text is not contained within the element directly; it's contained within the child text node, which may seem a bit strange. For example, Listing 5-7 shows how to extract text from inside an element using the DOM; it is assumed that the variable `strongElem` contains a reference to the `<strong>` element.
 
 Listing 5-7. Getting the Text Contents of the `<strong>` Element
@@ -322,10 +327,11 @@ Listing 5-8. A Generic Function for Retreiving the Text Contents of an Element
 
 ```js
 function text(e) {
-    let t = '' ;
     // If an element was passed, get its children,
     // otherwise assume it's an array
     e = e.childNodes || e;
+    
+    let t = '' ;
     // Look through all child nodes
     for (let j = 0; j < e.length; j++ ) {
         // If it's not an element, append its text value
@@ -353,6 +359,8 @@ The particularly nice thing about this function is that it's guaranteed to work 
 ### Getting the HTML of an Element
 
 Unlike getting the text inside an element, getting an element's HTML is one of the easiest DOM tasks that can be performed. Thanks to a feature developed by the Internet Explorer team, all modern browsers now include an extra property on every HTML DOM element: `innerHTML`. With this property you can get all the HTML and text inside of an element. Additionally, using the `innerHTML` property is very fast—often much faster than doing a recursive search to find all the text contents of an element. However, it isn't all roses.
+
+链接：`outerHTML`
 
 It's up to the browser to figure out how to implement the `innerHTML` property, and because there's no true standard for that, the browser can return whatever content it deems worthy. For example, here are some of the weird bugs you can look forward to when using the `innerHTML` property:
 
@@ -585,7 +593,7 @@ The mnemonic that we use to remember the order of the arguments is the phrase �
 Now that you have a function to insert nodes (including both elements and text nodes) before other nodes, you should be asking yourself: “How do I insert a node as the last child of a parent?” There is another function you can use, called `appendChild`, that allows you to do just that. `appendChild` is called on an element, appending the specified node to the end of the list of child nodes. Using the function looks something like this:
 
 ```js
-parentElem.appendChild( nodeToInsert );
+ParentNode.appendChild( NodeToInsert );
 ```
 
 Listing 5-15 is an example of how you can use both `insertBefore` and `appendChild` in your application.
@@ -593,21 +601,20 @@ Listing 5-15 is an example of how you can use both `insertBefore` and `appendChi
 Listing 5-15.  A Function for Inserting an Element Before Another Element
 
 ```js
-document.addEventListener(DOMContentLoaded, 'addElement');
+document.addEventListener('DOMContentLoaded', addElement);
 
 function addElement(){
-  //Grab the ordered list that is in the document
-  //Remember that getElementById returns an array like object
+  //Grab the ordered list <ol id='myList'/> that is in the document
   const orderedList = document.getElementById('myList');
 
   //Create an <li>, add a text node then append it to <li>
   const li = document.createElement('li');
   li.appendChild(document.createTextNode('Thanks for visiting'));
-
-  //element [0] is how we access what is inside the orderedList
-  orderedList.insertBefore(li, orderedList[0]);
+  orderedList.insertBefore(li, orderedList.firstChild);
 }
 ```
+
+如果`insertBefore`的参照节点为 null，则将指定的节点添加到指定父节点的子节点列表的末尾。
 
 The instant you “insert” this information into the DOM (with either `insertBefore` or `appendChild`) it will be immediately rendered and seen by the user. Because of this, you can use it to provide instantaneous feedback. This is especially helpful in interactive applications that require user input.
 
@@ -678,7 +685,7 @@ Using this example you can see that it is not very difficult to make changes to 
 Removing nodes from the DOM occurs nearly as frequently as creating and inserting them. When you're creating a dynamic form asking for an unlimited number of items, for example, it becomes important to allow the user to be able to remove portions of the page that they no longer wish to deal with. The ability to remove a node is encapsulated into one function: `removeChild`. It's used just like `appendChild`, but it has the opposite effect. The function in action looks something like this:
 
 ```js
-NodeParent.removeChild( NodeToRemove );
+nodeToRemove.parentNode.removeChild( nodeToRemove );
 ```
 
 With this in mind, you can create two separate functions to quickly remove nodes. The first removes a single node, as shown in Listing 5-17.
@@ -798,7 +805,7 @@ Document (`nodeType` = 9): This matches the root element of a document. For exam
 
 Additionally, you can use constants to refer to the different DOM node types (in version 9 of IE and later). For example, instead of having to remember 1, 3, or 9, you could just use `document.ELEMENT_NODE`, `document.TEXT_NODE`, or `document.DOCUMENT_NODE`. Since constantly cleaning the DOM's white space has the potential to be cumbersome, you should explore other ways to navigate a DOM structure.
 
-### Simple DOM Navigation
+## Simple DOM Navigation
 
 Using the principle of pure DOM navigation (having pointers in every navigable direction), you can develop functions that might better suit you when navigating an HTML DOM document. This particular principle reflects the fact that most web developers only need to navigate around DOM elements and very rarely navigate through sibling text nodes. To aid you, there are a number of helpful functions that can be used in place of the standard `previousSibling`, `nextSibling`, `firstChild`, `lastChild`, and `parentNode`. Listing 5-21 shows a function that returns the element previous to the current element, or null if no previous element is found, similar to the `previousSibling` element property.
 
