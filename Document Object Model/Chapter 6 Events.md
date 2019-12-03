@@ -287,8 +287,9 @@ Not too difficult, right?
 The situation with W3C event handling is somewhat more complex. The relevant function is `removeEventListener`. Its three arguments are the same: the type of event to remove, the associated handler, and a true/false value for capture or bubble mode. There is a catch, though. First and foremost, the function must be a reference to the same function that was assigned with `addEventListener`. Not just the same lines of code, but the same reference. So if you assigned an anonymous, in-line function with `addEventListener`, you cannot remove it.
 
 
-
  ■ Tip You should always use a named function for an event handler if you think you might need to remove that handler later on.
+
+读书笔记：事件处理函数定义在顶层，有名称。不要嵌套在函数内，作为lambda表达式，防止误引用局部变量。
 
 In a similar vein, if you set the third argument when you originally invoked `addEventListener`, you must set it again in `removeEventListener`. If you leave the argument off, or give it the wrong value, `removeEventListener` will silently fail. Listing 6-7 has an example of unbinding an event handler.
 
@@ -314,6 +315,7 @@ function barHandler() {
 
 bar.addEventListener( 'click', barHandler );
 ```
+
 
 ## Common Event Features
 
@@ -453,6 +455,8 @@ navbar.addEventListener( 'click', clickHandler );
 ```
 
 The `clickHandler` function handles events at the `<nav>` level, but it receives events emitted from a variety of list items under the `<nav>` element.
+
+读书笔记：点击事件会在被添加侦听器的当前目标的所有后代元素的每一层都触发，应该对`event.target`进行识别，过滤，不触发不该触发的事件。
 
 ## The Event Object
 

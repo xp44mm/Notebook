@@ -1,8 +1,5 @@
 # Chapter 5 The Document Object Model
 
-Document Object Model (DOM) Level 3 Core Specification
-https://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/introduction.html
-
 Working with the Document Object Model (the DOM) is a critical component of the professional JavaScript programmer's toolkit. A comprehensive understanding of DOM scripting yields benefits not only in the range of applications we can build, but also in the quality of those applications. Like most features of JavaScript, the DOM has a somewhat checkered history. But with modern browsers, it is easier than ever to manipulate and interact with the DOM unobtrusively. Understanding how to use this technology and how best to wield it can give you a head start toward developing your next web application. In this chapter we discuss a number of topics related to the DOM. For readers new to the DOM, we will start out with the basics and move through all the important concepts. For those of you already familiar with the DOM, we provide a number of cool techniques that we are sure you will enjoy and start using in your own web pages.
 
 The DOM is also at a crossroads. Historically, because DOM interface updates were not in sync with browser or JavaScript updates, there was a disconnect between browsers and DOM support. This disconnect was only exacerbated by buggy implementations. Popular libraries like jQuery and Dojo have arisen to address these problems. But with modern browsers, the DOM has normalized and the interface has settled quite a bit. We will need to address the issue of whether to use libraries to help in our access of the DOM or to do everything with the standard DOM interface.
@@ -166,7 +163,7 @@ These two functions allow us to access multiple elements at once. Putting aside 
 It is odd that these two methods, similar in function, return two different types. First, let's consider the simple parts: Both types have array-like positional access. That is, for the following:
 
 ```js
-const lis = document.getElementsByTagName('li');
+let lis = document.getElementsByTagName('li');
 ```
 
 you can access the second list item in the lis collection via `lis[1]`. Both collections have a `length` property, which tells you how many items are in the collection. They also have an `item` method, which takes as its argument the position to access and returns the element at that position. The `item` method is a functional way to access elements positionally. Finally, neither collection has any of the higher-order Array methods, like `push`, `pop`, `map`, or `filter`.
@@ -182,12 +179,12 @@ function filterForListItems(el) {
     return el.nodeName === 'LI';
 }
 
-const testElements = document.getElementsByClassName( 'test' );
+let testElements = document.getElementsByClassName( 'test' );
 console.log( 'There are ' + testElements.length + ' elements in testElements.');
 
 // Generating an array from the elements gathered from testElements
 // based on whether they pass the filtering proccess set up by filterForListItems
-const liElements = Array.prototype.filter.call(testElements, filterForListItems);
+let liElements = Array.prototype.filter.call(testElements, filterForListItems);
 console.log( 'There are ' +  liElements.length + ' elements in liElements.');
 ```
 
@@ -200,8 +197,8 @@ When using either `getElementsByClassName` or `getElementsByTagName`, it is wort
 Listing 5-3. Limiting Search Scope
 
 ```js
-const ul = document.getElementById( 'items' );
-const liElements = ul.getElementsByClassName( 'test' );
+let ul = document.getElementById( 'items' );
+let liElements = ul.getElementsByClassName( 'test' );
 console.log( 'There are ' +  liElements.length + ' elements in liElements.');
 ```
 
@@ -268,7 +265,7 @@ Listing 5-4. The `addEventListener` Function for Attaching a Callback to the Win
 // (Uses addEventListener, described in the next chapter)
 window.addEventListener('load', function() {
     // Perform HTML DOM operations
-    const theSquare = document.getElementById('square');
+    let theSquare = document.getElementById('square');
     theSquare.style.background = 'blue';
 });
 ```
@@ -307,7 +304,7 @@ Let's look at how to get the text of each of these elements. The `<strong>` elem
 
 > It should be noted that there exists a property called `innerText` that captures the text inside an element in all non–Mozilla-based browsers. It's incredibly handy in that respect. Unfortunately, because it doesn't work in a noticeable portion of the browser market, and it doesn't work in XML DOM documents, you still need to explore viable alternatives.
 
-读书笔记：`innerText`于 2016 年正式进入 HTML 标准。应该使用W3C标准的`textContent`代替。
+读书笔记：`innerText`于 2016 年正式进入 HTML 标准。
 
 The trick with getting the text contents of an element is that you need to remember that text is not contained within the element directly; it's contained within the child text node, which may seem a bit strange. For example, Listing 5-7 shows how to extract text from inside an element using the DOM; it is assumed that the variable `strongElem` contains a reference to the `<strong>` element.
 
@@ -330,7 +327,7 @@ function text(e) {
     // If an element was passed, get its children,
     // otherwise assume it's an array
     e = e.childNodes || e;
-    
+
     let t = '' ;
     // Look through all child nodes
     for (let j = 0; j < e.length; j++ ) {
@@ -350,7 +347,7 @@ contents of the `<p>` element, used in the previous example. The code to do so w
 
 ```js
 // Get the text contents of the <p> Element
-const pElm = document.getElementsByTagName ('p');
+let pElm = document.getElementsByTagName ('p');
 console.log(text( pElem ));
 ```
 
@@ -396,7 +393,7 @@ Next to retrieving the contents of an element, getting and setting the value of 
 </form>
 ```
 
-Once loaded into the DOM and the variable formElem, the HTML form element would have an associative array from which you could collect name/value attribute pairs. The result would look something like this:
+Once loaded into the DOM and the variable `formElem`, the HTML form element would have an associative array from which you could collect name/value attribute pairs. The result would look something like this:
 
 ```js
 formElem.attributes = {
@@ -416,6 +413,8 @@ function hasAttribute( elem, name ) {
 }
 ```
 
+标准已经有`Element.hasAttribute()`方法。
+
 With this function in hand, and knowing how attributes are used, you are now ready to begin retrieving and setting attribute values.
 
 ### Getting and Setting an Attribute Value
@@ -423,10 +422,13 @@ With this function in hand, and knowing how attributes are used, you are now rea
 There are two methods to retrieve attribute data from an element, depending on the type of DOM document you're using. If you want to be safe and always use generic XML DOM–compatible methods, there are `getAttribute()` and `setAttribute()`. They can be used in this manner:
 
 ```js
+let elem = document.getElementById('everywhere')
 // Get an attribute
-document.getElementById('everywhere').getAttribute('id');
+elem.getAttribute('id');
+
+let input = document.getElementsByTagName('input')[0]
 // Set an attribute value
-document.getElementsByTagName('input')[0].setAttribute('value', 'Your Name');
+input.setAttribute('value', 'Your Name');
 ```
 
 In addition to this standard `getAttribute`/`setAttribute` pair, HTML DOM documents have an extra set of properties that act as quick getters/setters for your attributes. These are universally available in modern DOM implementations (but only guaranteed for HTML DOM documents), so using them can give you a big advantage when writing short code. The following example shows how you can use DOM properties to both access and set DOM attributes:
@@ -439,7 +441,7 @@ document.getElementsByTagName('input')[0].value;
 document.getElementsByTagName('div')[0].id = 'main';
 ```
 
-There are a couple of strange cases with attributes that you should be aware of. The one that's most frequently encountered is that of accessing the class name attribute. If you are referencing the name of a class directly, `elem.className` will let you set and get the name. However, if you're using the `getAttribute`/`setAttribute` method, you can refer to it as `getAttribute('class')`. To work with class names consistently in all browsers you must access the `className` attribute using `elem.className`, instead of using the more appropriately named `getAttribute('class')`. This problem also occurs with the for attribute, which gets renamed to `htmlFor`. Additionally, it is also the case with a couple of CSS attributes: `cssFloat` and `cssText`. This particular naming convention arose because words such as `class`, `for`, `float`, and `text` are all reserved words in JavaScript.
+There are a couple of strange cases with attributes that you should be aware of. The one that's most frequently encountered is that of accessing the class name attribute. If you are referencing the name of a class directly, `elem.className` will let you set and get the name. However, if you're using the `getAttribute`/`setAttribute` method, you can refer to it as `getAttribute('class')`. To work with class names consistently in all browsers you must access the `className` attribute using `elem.className`, instead of using the more appropriately named `getAttribute('class')`. This problem also occurs with the `for` attribute, which gets renamed to `htmlFor`. Additionally, it is also the case with a couple of CSS attributes: `cssFloat` and `cssText`. This particular naming convention arose because words such as `class`, `for`, `float`, and `text` are all reserved words in JavaScript.
 
 To work around all these strange cases and simplify the process of dealing with getting and setting the right attributes, you should use a function that will take care of all those particulars for you. Listing 5-10 shows a function for getting and setting the values of element attributes. Calling the function with two parameters, such as `attr(element, id)`, returns that value of that attribute. Calling the function with three parameters, such as `attr(element, class, test)`, will set the value of the attribute and return its new value.
 
@@ -476,7 +478,7 @@ Listing 5-11. Using the `attr` Function to Set and Retrieve Attribute Values fro
 // Set the class for the first <h1> Element
 attr( document.getElementByTagName('h1')[0], 'class', 'header' );
 
-const input = document.getElementByTagName('input');
+let input = document.getElementByTagName('input');
 
 // Set the value for each <input> element
 for ( let i = 0; i < input.length; i++ ) {
@@ -525,7 +527,7 @@ document.addEventListener('DOMContentLoaded', addEventClickToTerms);
 
 // Watch for a user click on the term
 function addEventClickToTerms(){
-    const dt = document.getElementsByTagName('dt');
+    let dt = document.getElementsByTagName('dt');
     for ( let i = 0; i < dt.length; i++ ) {
         dt[i].addEventListener('click', checkIfOpen);
     }
@@ -533,7 +535,7 @@ function addEventClickToTerms(){
 
 // See if the definition is already open or not
 function checkIfOpen(e){
-    const dd = e.target.nextSibling.nextSibling
+    let dd = e.target.nextSibling.nextSibling
     if(dd.style.display == '' || dd.style.display == 'none'){
         dd.style.display = 'block';
     } else {
@@ -542,7 +544,7 @@ function checkIfOpen(e){
 }
 ```
 
-Binding `<dd>` need two nextSiblings because the first sibling is a text node (the words that were clicked on). If the dt's never been clicked, the style will be blank ''. or if it has been, the style will be 'none', so we check for both with an if statement.
+Binding `<dd>` need two `nextSibling`s because the first sibling is a text node (the words that were clicked on). If the dt's never been clicked, the style will be blank `''`. or if it has been, the style will be `'none'`, so we check for both with an if statement.
 
 Now that you know how to traverse the DOM and how to examine and modify attributes, you need to learn how to create new DOM elements, insert them where they are needed, and remove elements that you no longer need.
 
@@ -569,7 +571,7 @@ function create( elem ) {
 For example, using the previous function you can create a simple `<div>` element and attach some additional information to it:
 
 ```js
-const div = create('div');
+let div = create('div');
 div.className = 'items';
 div.id = 'all';
 ```
@@ -605,10 +607,10 @@ document.addEventListener('DOMContentLoaded', addElement);
 
 function addElement(){
   //Grab the ordered list <ol id='myList'/> that is in the document
-  const orderedList = document.getElementById('myList');
+  let orderedList = document.getElementById('myList');
 
   //Create an <li>, add a text node then append it to <li>
-  const li = document.createElement('li');
+  let li = document.createElement('li');
   li.appendChild(document.createTextNode('Thanks for visiting'));
   orderedList.insertBefore(li, orderedList.firstChild);
 }
@@ -646,17 +648,17 @@ document.addEventListener('DOMContentLoaded', activateButtons);
 
 function activateButtons(){
     //ad event listeners to buttons
-    const appendBtn = document.querySelector('#appendButon');
+    let appendBtn = document.querySelector('#appendButon');
     appendBtn.addEventListener('click', appendNode);
 
-    const addBtn = document.querySelector('#addButton');
+    let addBtn = document.querySelector('#addButton');
     addBtn.addEventListener('click', addNode);
 }
 
 function appendNode(e){
     //get the <li>s that exist and make a new one.
-    const listItems = document.getElementsByTagName('li');
-    const newListItem = document.createElement('li');
+    let listItems = document.getElementsByTagName('li');
+    let newListItem = document.createElement('li');
     //append a new text node
     newListItem.appendChild(document.createTextNode('Mouse trap.'));
 
@@ -666,12 +668,12 @@ function appendNode(e){
 
 function addNode(e){
     //get the whole list
-    const orderedList = document.getElementById('myList');
+    let orderedList = document.getElementById('myList');
 
     //get all the <li>s
-    const listItems = document.getElementsByTagName('li');
+    let listItems = document.getElementsByTagName('li');
     //make a new <li> and attach text node
-    const newListItem = document.createElement('li');
+    let newListItem = document.createElement('li');
     newListItem.appendChild(document.createTextNode('Zebra.'));
     //add to list, pushing the 2nd one down to 3rd
     orderedList.insertBefore(newListItem, listItems[1]);
@@ -717,7 +719,7 @@ Listing 5-19. Removing Either a Single Element or All Elements from the DOM
 
 ```js
 // Remove the last <li> from an <ol>
-const listItems = document.getElementsByTagName('li');
+let listItems = document.getElementsByTagName('li');
 remove(listItems[2]);
 ```
 
@@ -743,7 +745,7 @@ Into this:
 If we were to run the `empty()` function instead of `remove()`
 
 ```js
-const orderedList = document.getElementById('myList');
+let orderedList = document.getElementById('myList');
 empty(orderedList);
 ```
 
@@ -877,7 +879,7 @@ function parent( elem, num ) {
 Using these new functions you can quickly browse through a DOM document without having to worry about the text in between each element. For example, to find the element next to the `<h1>` element, as before, you can now do the following:
 
 ```js
-const h1 = first( document.body )
+let h1 = first( document.body )
 // Find the Element next to the <h1> Element
 next( h1 )
 ```

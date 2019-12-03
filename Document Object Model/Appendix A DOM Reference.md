@@ -575,7 +575,7 @@ document.body.insertBefore( h, document.body.firstChild );
 
 ### innerHTML
 
-This is an HTML DOM–specific property for accessing and manipulating a string version of the HTML contents of a DOM element. If you're only working with an HTML document (and not an XML one), this method can be incredibly useful, as the code it takes to generate a new DOM element can be cut down drastically (not to mention it is a faster alternative to traditional DOM methods). While this property is not part of any particular W3C standard, it still exists in every modern browser. Listing A-27 shows an example of using the `innerHTML` property to change the contents of an element whenever the contents of a `<textarea>` are changed.
+This is an HTML DOM-specific property for accessing and manipulating a string version of the HTML contents of a DOM element. If you're only working with an HTML document (and not an XML one), this method can be incredibly useful, as the code it takes to generate a new DOM element can be cut down drastically (not to mention it is a faster alternative to traditional DOM methods). While this property is not part of any particular W3C standard, it still exists in every modern browser. Listing A-27 shows an example of using the `innerHTML` property to change the contents of an element whenever the contents of a `<textarea>` are changed.
 
 Listing A-27. Watching a `<textarea>` for Changes and Updating a Live Preview With Its Value
 
@@ -586,7 +586,7 @@ const t = document.getElementsByTagName("textarea")[0];
 // Grab the current value of a <textarea> and update a live preview,
 // everytime that it's changed
 t.addEventListener('onkeypress', function ( e ) {
-    document.getElementById("preview").innerHTML = this.value;
+    document.getElementById("preview").innerHTML = e.target.value;
 });
 ```
 
