@@ -190,7 +190,7 @@ console.log( 'There are ' +  liElements.length + ' elements in liElements.');
 
 The difference between methods in the return type is caused by the vagaries of DOM implementation in browsers. In the future, both should return `HTMLCollection` instances, but that future is not yet here. Because the access patterns for `NodeLists` and `HTMLCollections` are virtually identical, we do not have to concern ourselves too much with which method returns which type.
 
-读书笔记：`getElementsByTagName`现在返回的类型已经改为`HTMLCollections`类型。
+读书笔记：`getElementsByTagName`的返回类型为`HTMLCollections`类型。
 
 When using either `getElementsByClassName` or `getElementsByTagName`, it is worth remembering that they belong not only to `Document` instances, but also `Element` instances. When called from the document, they will conduct searches over the entire document. Consider that your `<head>` section will be searched for `<li>` tags or that you will be looking there for elements with the class `foo`. This is, as you can imagine, somewhat inefficient. Imagine that you are searching through your house for your keys. You would probably not search in the refrigerator, or in the shower, as they are not likely spots to have left your keys. So you will look in the bedroom, the living room, the entryway, and so on. Wherever possible, limit the scope of your search to the appropriate containing element. Take a look at Listing 5-3, which gets the same results as Listing 5-2 but limits its scope to a specific parent element.
 
@@ -212,7 +212,7 @@ document.getElementsByTagName('h1')[0];
 
 This code is guaranteed to work and will always return the first `<h1>` element in the document.
 
-读书笔记：`document.getElementsByName(name)`是书中没有提到的另一个获取元素方法。可能是新增的。用于根据属性`name`的值获取元素集合`NodeList`。
+读书笔记：`document.getElementsByName(name)`是书中没有提到的另一个获取元素方法。Extension for HTML documents。用于根据属性`name`的值获取元素集合`NodeList`。
 
 ### Finding Elements by CSS Selector
 

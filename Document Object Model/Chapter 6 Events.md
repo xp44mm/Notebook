@@ -235,7 +235,7 @@ Knowing that it's possible to blindly override other events, you should probably
 
 The W3C's method of binding event handlers to DOM elements is the only truly standardized means of doing so. With that in mind, every modern browser supports this way of attaching events. Internet Explorer 8 and older do not, but old versions of Internet Explorer are hardly modern browsers. If you must design for those, consider using traditional binding.
 
-The code for attaching a new handler function is simple. It exists as a function available on every DOM element. The function is named `addEventListener` and takes three parameters: the name of the event (such as click; note the lack of the prefix on), the function that will handle the event, and a Boolean flag to enable or disable event capturing. An example of `addEventListener` in use is shown in Listing 6-6.
+The code for attaching a new handler function is simple. It exists as a function available on every DOM element. The function is named `addEventListener` and takes three parameters: the name of the event (such as `click`; note the lack of the prefix `on`), the function that will handle the event, and a Boolean flag to enable or disable event capturing. An example of `addEventListener` in use is shown in Listing 6-6.
 
 参考：https://wiki.developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
 
