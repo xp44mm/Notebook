@@ -1,4 +1,4 @@
-# 01 Thinking reactively
+# 1 Thinking reactively
 
 This chapter covers
 
@@ -32,6 +32,8 @@ But the world of computing doesn't grant such luxuries. In this world of highly 
 
 Synchronous execution occurs when each block of code must wait for the previous block to complete before running. Without a doubt, this is by far the easiest way to implement code because you put the burden on your users to wait for their processes to complete. Many systems still work this way today, such as ATMs, point of sale systems, and other dumb terminals. Writing code this way is much easier to grasp, maintain, and debug; unfortunately, because of JavaScript's single-threaded nature, any long-running tasks such as waiting for an AJAX call to return or a database operation to complete shouldn't be done synchronously. Doing so creates an awful experience for your users because it causes the entire application to sit idle waiting for the data to be loaded and wasting precious computing cycles that could easily be executing other code. This will block further progress on any other tasks that you might want to execute, which in turn leads to artificially long load times, as shown in figure 1.1.
 
+Figure 1.1 A program that invokes two processes synchronously. A process in this case can be as simple as a function call, an I/O process, or a network transaction. When process 1 runs, it blocks anything else from running.
+
 In this case, the program makes a blocking call to process 1, which means it must wait for it to return control to the caller, so that it can proceed with process 2. This might work well for kiosks and dumb terminals, but browser UIs should never be implemented in this way. Not only would it create a terrible user experience (UX), but also browsers may deem your scripts unresponsive after a certain period of inactivity and terminate them. Here's an example of making an HTTP call that will cause your application to block, waiting on the server to respond:
 
 ```js
@@ -41,7 +43,6 @@ items.forEach(item => {
 });
 ```
 
-Figure 1.1 A program that invokes two processes synchronously. A process in this case can be as simple as a function call, an I/O process, or a network transaction. When process 1 runs, it blocks anything else from running.
 
 A better approach would be to invoke the HTTP call and perform other actions while you're waiting on the response. Long-running tasks aren't the only problem; as we said earlier, mouse movement generates a rapid succession of very quick, fine-grained events. Waiting to process each of these synchronously will cause the entire application to become unresponsive, whether it's long wait times or handling hundreds of smaller waits quickly. So what can you do to handle these types of events in a non-blocking manner? Luckily, JavaScript provides callback functions.
 
@@ -147,7 +148,7 @@ This is why in RxJS—and FP in general, for that matter—all loops are virtual
 
 ### 1.1.5 Event emitters
 
-Event emitters are popular mechanisms for asynchronous event-based architectures. The DOM, for instance, is probably one of the most widely known event emitters. On a server like Node.js, certain kinds of objects periodically produce events that cause functions to be called. In Node.js, the EventEmitter class is used to implement APIs for things like WebSocket I/O or file reading/writing so that if you're iterating through directories and you find a file of interest, an object can emit an event referencing this file for you to execute any additional code.
+Event emitters are popular mechanisms for asynchronous event-based architectures. The DOM, for instance, is probably one of the most widely known event emitters. On a server like Node.js, certain kinds of objects periodically produce events that cause functions to be called. In Node.js, the `EventEmitter` class is used to implement APIs for things like WebSocket I/O or file reading/writing so that if you're iterating through directories and you find a file of interest, an object can emit an event referencing this file for you to execute any additional code.
 
 Let's implement a simple object to show this API a bit. Consider a simple calculator object that can emit events like add and subtract, which you can hook any custom logic into; see figure 1.6.
 
@@ -276,18 +277,18 @@ This long list of problems can certainly overwhelm even the brightest developers
 
 You learned that Promises certainly move the needle in the right direction (and RxJS integrates with Promises seamlessly if you feel the need to do so). But what you really need is a solution that abstracts out the notion of latency away from your code while allowing you to model your solutions using a linear sequence of steps through which data can flow over time, as shown in figure 1.8.
 
-In essence, you need to combine the ability to decouple functionality like event emitters with the fluent design pattern of Promises, all into a single abstraction. Moreover, you need to work with both synchronous and asynchronous code, handle errors, discourage side effects, and scale out from one to a deluge of events. This is certainly a long laundry list of things to take care of.
-
-As you think about this, ask yourself these questions: How can you write code as a linear sequence of steps that acts only after some event has occurred in the future? How do you combine it with other code that might have its own set of constraints? Your desire for synchronicity isn't just about convenience; it's what you're used to. Unfortunately, most of the common language constructs that you use in synchronous code aren't well suited for asynchronous execution. This lack of language support for things like async try/catch, async loops, and async conditionals means that developers must often roll their own. It's not surprising that in the past few years, other people have asked the same questions and come together with the community at large to address these challenges, emerging as what's known as the Reactive Extensions—we have arrived!
-
 ```
-() == Event
-[step 1] --()()--> [step 2] --()--> [step 3]
+o == Event
+[step 1] --o--o--> [step 2] --o--> [step 3]
             Latency           Latency
 -------- program execution ---------------->
 ```
 
 Figure 1.8 RxJS can treat asynchronous data flows with a programming model that resembles a simple chain of sequential steps.
+
+In essence, you need to combine the ability to decouple functionality like event emitters with the fluent design pattern of Promises, all into a single abstraction. Moreover, you need to work with both synchronous and asynchronous code, handle errors, discourage side effects, and scale out from one to a deluge of events. This is certainly a long laundry list of things to take care of.
+
+As you think about this, ask yourself these questions: How can you write code as a linear sequence of steps that acts only after some event has occurred in the future? How do you combine it with other code that might have its own set of constraints? Your desire for synchronicity isn't just about convenience; it's what you're used to. Unfortunately, most of the common language constructs that you use in synchronous code aren't well suited for asynchronous execution. This lack of language support for things like async try/catch, async loops, and async conditionals means that developers must often roll their own. It's not surprising that in the past few years, other people have asked the same questions and come together with the community at large to address these challenges, emerging as what's known as the Reactive Extensions—we have arrived!
 
 ## 1.4 The Reactive Extensions for JavaScript
 
@@ -344,10 +345,10 @@ Let's see what thinking in streams looks like more concretely in RxJS. In figure
 
 ```
                    Streams are transformed
-Mouse clicks ----\         |
+Mouse clicks ----|         |
 Keyboard input --+--> [Pipeline] --> Consumer
-HTTP requests ---/                      |
-      ^.............Subscribes..........|
+HTTP requests ---|                      :
+      ^.............Subscribes..........:
 ```
 Figure 1.9 A generic data-processing pipeline deals with a constant stream of asynchronous data, moving it from a producer (for example, a user clicking the mouse) to a consumer (code that reacts to the click). The pipeline will process data before it's passed to the consumer for consumption.
 
@@ -431,9 +432,9 @@ Indeed, time is of the essence. The hardest part of asynchronous code is dealing
 Looking at figure 1.11, you can see that streams are analogous to a real-world monthly magazine subscription. Your subscription to the magazine is actually a collection of magazines that are separated by time; that is, there are 12 magazines annually, but you receive only one every month. Upon receiving a magazine, you usually perform an action on it (read it or throw it away). There are additional cases that you can also consider, such as the time between magazine deliveries being zero, whereby you would receive all the magazines at once, or there might be no magazines (and someone would be getting an angry email). In all these cases, because you perform the action only upon receiving the magazine, you can think of this process as reactive (because you're reacting to receiving a magazine). A non-reactive version of this would be going to a newspaper stall at the airport. Here, you can also find magazines, but now you won't receive additional magazines, only the ones that you buy at the stall. In practice, this would mean that you receive updates only when you happen to be near a magazine stand rather than every time a new magazine becomes available.
 
 ```
---()--()--()--V
+--()--()--()--|
               +--> [RxJS] --> Consumer
---[(),(),()]--^
+--[(),(),()]--|
 ```
 
 Figure 1.11 Not only does RxJS handle sequential events, but using the same programming model, it can just as easily work with asynchronous events (bound by time). This means that the same level of reasoning applied to linear programs can also be applied to non-linear programs with latency and wait times.
@@ -479,7 +480,7 @@ Streams travel only from the producer to the consumer, not the other way around.
 ```
       Direction of data flow
 [Observable] --o--o--> [Observer]
-      ^......Subscribes.....|
+      ^......Subscribes.....:
 ```
 
 Figure 1.12 Events always move from observables to observers and never the other way around.
