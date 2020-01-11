@@ -815,7 +815,7 @@ type AutofacCollection() =
 
 ### Using Common Object Interface Types from the .NET Libraries
 
-Like other constructs discussed in this chapter, object interface types are often encountered when using .NET libraries. Some object interface types such as `IEnumerable<'T>` (called `seq<'T>` in F# coding) are also used throughout F# programming. It's a .NET convention to prefix the name of all object interface types with I. However, using object interface types is very common in F# object programming, and this convention doesn't have to be followed.
+Like other constructs discussed in this chapter, object interface types are often encountered when using .NET libraries. Some object interface types such as `IEnumerable<'T>` (called `seq<'T>` in F# coding) are also used throughout F# programming. It's a .NET convention to prefix the name of all object interface types with `I`. However, using object interface types is very common in F# object programming, and this convention doesn't have to be followed.
 
 Here's the essence of the definition of the `System.Collections.Generic.IEnumerable<'T>` type and the related type `IEnumerator` using F# notation: 
 
@@ -830,13 +830,25 @@ type IEnumerable<'T> =
 
 The `IEnumerable<'T>` type is implemented by most concrete collection types. It can also be implemented by a sequence expression or by calling a library function such as `Seq.unfold`, which in turn uses an object expression as part of its implementation. 
 
----
+> #### Note
+>
+> the `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .net language. this section uses the corresponding F# syntax. in reality, `IEnumerator<'T>` also inherits from the non-generic interfaces `System.Collections.IEnumerator` and `System.IDisposable`, and `IEnumerable<'T>` also inherits from the non-generic interface `System.Collections.IEnumerable`. For clarity, we've ignored this. see the F# library documentation for full example implementations of these types.
 
-#### Note  
+枚舉器的用法：
 
-the `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .net language. this section uses the corresponding F# syntax. in reality, `IEnumerator<'T>` also inherits from the nongeneric interfaces `System.Collections.IEnumerator` and `System.IDisposable`, and `IEnumerable<'T>` also inherits from the nongeneric interface `System.Collections.IEnumerable`. For clarity, we've ignored this. see the F# library documentation for full example implementations of these types.
+```f#
+    let iterable:seq<int> = seq [0..3]
+    let iterator:IEnumerator<int> = iterable.GetEnumerator()
+    let rec loop (iterator:IEnumerator<'T>) =
+        Console.WriteLine("請按任意鍵讀取集合中的下一個元素。") |> ignore
+        Console.ReadKey() |> ignore
+        if iterator.MoveNext() then
+            Console.WriteLine("yield {0}", iterator.Current) |> ignore
+            loop iterator
+    loop iterator
+```
 
----
+
 
 Some other useful predefined F# and .NET object interface types are as follows:
 
