@@ -684,11 +684,6 @@ while (match = regExp.exec(str)) {
 
 Sharing regular expressions with `/g` has a few pitfalls, which are explained [later](https://exploringjs.com/impatient-js/ch_regexps.html#regexp-flag-g).
 
- **Exercise: Extract quoted text via `.exec()`**
-
-```
-exercises/regexps/extract_quoted_test.mjs
-```
 
 #### 40.5.5 `str.match(regExp)`: return all matching substrings [ES3]
 
