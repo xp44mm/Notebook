@@ -12,28 +12,28 @@ class Node extends EventTarget {}
 
 ## Properties
 
-- [`Node.childNodes`](https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes) Read only
+- `Node.childNodes` Read only
 
   Returns a live `NodeList` containing all the children of this node. `NodeList` being live means that if the children of the `Node` change, the `NodeList` object is automatically updated.
 
-- [`Node.firstChild`](https://developer.mozilla.org/en-US/docs/Web/API/Node/firstChild) Read only
+- `Node.firstChild` Read only
 
   Returns a `Node` representing the first direct child node of the node, or `null` if the node has no child.
 
 
-- [`Node.lastChild`](https://developer.mozilla.org/en-US/docs/Web/API/Node/lastChild) Read only
+- `Node.lastChild` Read only
 
   Returns a `Node` representing the last direct child node of the node, or `null` if the node has no child.
 
-- [`Node.nextSibling`](https://developer.mozilla.org/en-US/docs/Web/API/Node/nextSibling) Read only
+- `Node.nextSibling` Read only
 
   Returns a `Node` representing the next node in the tree, or `null` if there isn't such node.
 
-- [`Node.nodeName`](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeName) Read only
+- `Node.nodeName` Read only
 
-  Returns a `DOMString` containing the name of the `Node`. The structure of the name will differ with the node type. E.g. An `HTMLElement` will contain the name of the corresponding tag, like `'audio'` for an `HTMLAudioElement`, a `Text` node will have the `'#text'` string, or a `Document` node will have the `'#document'` string.
+  Returns a `DOMString` containing the name of the `Node`. The structure of the name will differ with the node type. E.g.. An `HTMLElement` will contain the name of the corresponding tag, like `'audio'` for an `HTMLAudioElement`, a `Text` node will have the `'#text'` string, or a `Document` node will have the `'#document'` string.
 
-- [`Node.nodeType`](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType) Read only
+- `Node.nodeType` Read only
 
   Returns an `unsigned short` representing the type of the node. Possible values are:
 
@@ -52,19 +52,19 @@ DOCUMENT_FRAGMENT_NODE      11
 NOTATION_NODE               12 // 不推荐
 ```
 
-- [`Node.nodeValue`](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue)
+- `Node.nodeValue`
 
   Returns / Sets the value of the current node
 
-- [`Node.ownerDocument`](https://developer.mozilla.org/en-US/docs/Web/API/Node/ownerDocument) Read only
+- `Node.ownerDocument` Read only
 
   Returns the `Document` that this node belongs to. If the node is itself a document, returns `null`.
 
-- [`Node.parentNode`](https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode) Read only
+- `Node.parentNode` Read only
 
   Returns a `Node` that is the parent of this node. If there is no such node, like if this node is the top of the tree or if doesn't participate in a tree, this property returns `null`.
 
-- [`Node.previousSibling`](https://developer.mozilla.org/en-US/docs/Web/API/Node/previousSibling) Read only
+- `Node.previousSibling` Read only
 
   Returns a `Node` representing the previous node in the tree, or `null` if there isn't such node.
 
@@ -72,45 +72,45 @@ NOTATION_NODE               12 // 不推荐
 
 ## Methods
 
-- [`Node.appendChild()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild)
+- `Node.appendChild()`
 
   Adds the specified childNode argument as the last child to the current node. If the argument referenced an existing node on the DOM tree, the node will be detached from its current position and attached at the new position.
 
-- [`Node.cloneNode()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/cloneNode)
+- `Node.cloneNode()`
 
   Clone a `Node`, and optionally, all of its contents. By default, it clones the content of the node.
 
 
-- [`Node.contains()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/contains)
+- `Node.contains()`
 
   Returns a `Boolean` value indicating whether a node is a descendant of a given node or not.
 
-- [`Node.getRootNode()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode)
+- `Node.getRootNode()`
 
   Returns the context object's root which optionally includes the shadow root if it is available.
 
-- [`Node.hasChildNodes()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/hasChildNodes)
+- `Node.hasChildNodes()`
 
   Returns a `Boolean` indicating if the element has any child nodes, or not.
 
-- [`Node.insertBefore()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore)
+- `Node.insertBefore()`
 
   Inserts a `Node` before the reference node as a child of a specified parent node.
 
-- [`Node.isEqualNode()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/isEqualNode)
+- `Node.isEqualNode()`
 
   Returns a `Boolean` which indicates whether or not two nodes are of the same type and all their defining data points match.
 
-- [`Node.isSameNode()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode)
+- `Node.isSameNode()`
 
   Returns a `Boolean` value indicating whether or not the two nodes are the same (that is, they reference the same object).
 
 
-- [`Node.removeChild()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild)
+- `Node.removeChild()`
 
   Removes a child node from the current element, which must be a child of the current node.
 
-- [`Node.replaceChild()`](https://developer.mozilla.org/en-US/docs/Web/API/Node/replaceChild)
+- `Node.replaceChild()`
 
   Replaces one child `Node` of the current one with the second one given in parameter.
 

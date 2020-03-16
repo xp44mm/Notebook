@@ -1,7 +1,5 @@
 # Altering the DOM with JavaScript
 
-26th apr 2017
-
 If you’re learning JavaScript, the first thing you should learn (after understanding the basics like variables, functions, etc.) is to alter the DOM. This is one of the things you do daily as a frontend developer.
 
 Changing the DOM used to be difficult. We needed jQuery to make things easier. Luckily, there’s no need for jQuery anymore.
@@ -79,6 +77,9 @@ To do so, you add a space between your classes, ids or tags. Here’s an example
 <div class="container">
   <div class="inner-item">Inner item!</div>
 </div>
+```
+
+```js
 let innerItem = document.querySelector('.container .inner-item')
 // => <div class="inner-item">Inner item!</div>
 ```
@@ -109,6 +110,9 @@ let allELements = document.querySelectorAll(selectors);
 <div class="thing">A thing</div>
 <div class="thing">A thing</div>
 <div class="another-thing">Another thing</div>
+```
+
+```js
 let allThings = document.querySelectorAll('.thing, .another-thing')
 // => [
 //   <div class="thing">A thing</div>,
@@ -117,11 +121,13 @@ let allThings = document.querySelectorAll('.thing, .another-thing')
 // ]
 ```
 
+
+
 Here’s the important part.
 
-`querySelectorAll` returns a [NodeList](https://developer.mozilla.org/en-US/docs/Web/API/NodeList) (even though it looks like an array).
+`querySelectorAll` returns a NodeList (even though it looks like an array).
 
-If you’re only working with modern browsers, you can get individual elements within the Nodelist with a `NodeList.forEach` call.
+If you’re only working with modern browsers, you can get individual elements within the NodeList with a `NodeList.forEach` call.
 
 If you’re working with older browsers, you need to convert the NodeList into an Array before looping through it with a forEach call. The easiest way to do so is to use `Array.from()`.
 
@@ -143,8 +149,6 @@ Next, let’s move on to adding and removing event listeners.
 ## Adding and removing event listeners
 
 Event listeners allow your JavaScript to perform an action whenever an event is triggered. This is how you know when a user has interacted with the DOM. One example is when they clicked a button:
-
-See the Pen [Altering DOM with JS demo](https://codepen.io/zellwk/pen/eWBLdZ/) by Zell Liew ([@zellwk](https://codepen.io/zellwk)) on [CodePen](https://codepen.io/).
 
 Here, you only need to know two methods — `addEventListener` and `removeEventListener`.
 
@@ -202,11 +206,11 @@ Let’s move on.
 
 Remember button demo above?
 
-See the Pen [Altering DOM with JS demo](https://codepen.io/zellwk/pen/eWBLdZ/) by Zell Liew ([@zellwk](https://codepen.io/zellwk)) on [CodePen](https://codepen.io/).
+
 
 Here’s what I did to make this demo work:
 
-1. Add `.is-open` to `` when a user clicks on the button
+1. Add `.is-open` to `<nav>` when a user clicks on the button
 2. Remove `.is-open` from `` if `` is already open when the user clicks on the button.
 3. Transitioning the `` is done with CSS.
 
@@ -246,7 +250,7 @@ Attributes are an important part of HTML elements. Sometimes, you need to extrac
 
 Here’s a demo of the above nav, written in an accessible way:
 
-See the Pen [Altering DOM with JS demo (Accessible way)](https://codepen.io/zellwk/pen/aWBaME/) by Zell Liew ([@zellwk](https://codepen.io/zellwk)) on [CodePen](https://codepen.io/).
+
 
 In this demo, two things changed:
 
@@ -276,7 +280,7 @@ Finally, let’s move on to adding or removing elements.
 
 Let’s start this section with a demo:
 
-See the Pen [Altering DOM with JS demo (Adding and removing elements)](https://codepen.io/zellwk/pen/EmNdWp/) by Zell Liew ([@zellwk](https://codepen.io/zellwk)) on [CodePen](https://codepen.io/).
+
 
 If you clicked on the prepend or append button above, you’d see I’ve added the text `Hello again, world!` into the DOM as another list item.
 
@@ -286,7 +290,7 @@ There are three steps to adding this text into the DOM. They are:
 
 1. Create an HTML element with `document.createElement`
 2. Add content to the HTML element by setting the `innerHTML`.
-3. Add it to the DOM with `parentNode.prepend` or `parentNode.append`.
+3. Add it to the DOM with `parentNode.insertBefore` or `parentNode.appendChild`.
 
 ```js
 let ul = document.querySelector('ul')
@@ -298,7 +302,7 @@ let li = document.createElement('li')
 li.innerHTML = 'Hello again, world!'
 
 // Adding it to the DOM
-ul.append(li)
+ul.appendChild(li)
 ```
 
 ### Removing elements from the DOM
@@ -309,7 +313,7 @@ To remove an element from the DOM, you need to call `parentNode.removeChild`. Th
 ul.removeChild(li)
 ```
 
-We can’t simply say remove `` and expect the JavaScript to know which list item to remove. We need to tell our JavaScript which one to remove explicitly.
+We can’t simply say remove `<li>` and expect the JavaScript to know which list item to remove. We need to tell our JavaScript which one to remove explicitly.
 
 If you can use `querySelector` to choose with element to remove, that’s going to be the easiest method:
 

@@ -837,15 +837,46 @@ The `IEnumerable<'T>` type is implemented by most concrete collection types. It 
 枚舉器的用法：
 
 ```f#
-    let iterable:seq<int> = seq [0..3]
-    let iterator:IEnumerator<int> = iterable.GetEnumerator()
-    let rec loop (iterator:IEnumerator<'T>) =
-        Console.WriteLine("請按任意鍵讀取集合中的下一個元素。") |> ignore
-        Console.ReadKey() |> ignore
-        if iterator.MoveNext() then
-            Console.WriteLine("yield {0}", iterator.Current) |> ignore
-            loop iterator
-    loop iterator
+let iterable:seq<int> = seq [0..3]
+let iterator:IEnumerator<int> = iterable.GetEnumerator()
+Console.WriteLine("請按任意鍵开始读取元素。") |> ignore
+Console.ReadKey() |> ignore
+while iterator.MoveNext() do
+    Console.WriteLine("yield {0}", iterator.Current) |> ignore
+    Console.WriteLine("請按任意鍵讀取下一個元素。") |> ignore
+    Console.ReadKey() |> ignore
+```
+
+下面代码是将连续相同的字符分在一组：
+
+```F#
+let partition (chars:seq<Char>) =
+    let iterator = chars.GetEnumerator()
+    let mutable ptn = ResizeArray<Char>()
+    seq {
+        while iterator.MoveNext() do
+            let chr = iterator.Current
+            if ptn.Count > 0 && ptn.[0] <> chr then
+                let ls = List.ofSeq ptn
+                yield ls
+                ptn <- ResizeArray<Char>()
+            ptn.Add(chr)
+        if ptn.Count > 0 then
+            let ls = List.ofSeq ptn
+            yield ls
+    }
+let main _ = 
+    let inp = "aabccc11x"
+    inp.ToCharArray()
+    |> Seq.map(fun c ->
+        Console.WriteLine(sprintf "%A" c)
+        c
+    )
+    |> ExampleCompiler.partition
+    |> Seq.iter(fun p ->
+        Console.WriteLine(sprintf "%A" p)
+    )
+    0
 ```
 
 
@@ -1429,7 +1460,7 @@ You often have to choose whether to use modules or object types to organize your
 
 * implement object interface types by private concrete types or by object expressions.
 
-* in polished libraries, most concrete types exposed in an implementation should also implement one or more object interface types. For example, collections should implement IEnumerable<'T>, and many types should implement IDisposable. 
+* in polished libraries, most concrete types exposed in an implementation should also implement one or more object interface types. For example, collections should implement `IEnumerable<'T>`, and many types should implement `IDisposable`. 
 
 * avoid relying on or revealing complex type hierarchies. in particular, avoid relying on implementation inheritance, except as an internal implementation technique or when doing gUi programming or authoring very large objects. 
 

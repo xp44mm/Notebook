@@ -172,21 +172,21 @@ Which properties are inherited by default and which aren't is largely down to co
 
 CSS provides four special universal property values for controlling inheritance. Every CSS property accepts these values.
 
-- [`inherit`](https://developer.mozilla.org/en-US/docs/Web/CSS/inherit)
+- `inherit`
 
   Sets the property value applied to a selected element to be the same as that of its parent element. Effectively, this "turns on inheritance".
 
-- [`initial`](https://developer.mozilla.org/en-US/docs/Web/CSS/initial)
+- `initial`
 
   Sets the property value applied to a selected element to be the same as the value set for that element in the browser's default style sheet. If no value is set by the browser's default style sheet and the property is naturally inherited, then the property value is set to `inherit` instead.
 
-- [`unset`](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)
+- `unset`
 
   Resets the property to its natural value, which means that if the property is naturally inherited it acts like `inherit`, otherwise it acts like `initial`.
 
-**Note**: There is also a newer value, [`revert`](https://developer.mozilla.org/en-US/docs/Web/CSS/revert), which has limited browser support.
+**Note**: There is also a newer value, `revert`, which has limited browser support.
 
-**Note**: See [Origin of CSS declarations](https://developer.mozilla.org/en-US/docs/Web/CSS/Cascade#Origin_of_CSS_declarations) in [Introducing the CSS Cascade](https://developer.mozilla.org/en-US/docs/Web/CSS/Cascade) for more information on each of these and how they work.
+**Note**: See Origin of CSS declarations in Introducing the CSS Cascade for more information on each of these and how they work.
 
 We can look at a list of links and explore how the universal values work. The live example below allows you to play with the CSS and see what happens when you make changes. Playing with code really is the best way to get to grips with HTML and CSS.
 
@@ -198,13 +198,9 @@ For example:
 
 ### Resetting all property values
 
-
-
 The CSS shorthand property `all` can be used to apply one of these inheritance values to (almost) all properties at once. Its value can be any one of the inheritance values (`inherit`, `initial`, `unset`, or `revert`). It's a convenient way to undo changes made to styles so that you can get back to a known starting point before beginning new changes.
 
 In the below example we have two blockquotes. The first has styling applied to the blockquote element itself, the second has a class applied to the blockquote which sets the value of `all` to `unset`.
-
- 
 
 Try setting the value of `all` to some of the other available values and observe what the difference is.
 
@@ -281,8 +277,6 @@ li {
 }      
 ```
 
-
-
 So what's going on here? First of all, we are only interested in the first seven rules of this example, and as you'll notice, we have included their specificity values in a comment before each one.
 
 - The first two selectors are competing over the styling of the link's background color — the second one wins and makes the background color blue because it has an extra ID selector in the chain: its specificity is 201 vs. 101.
@@ -300,8 +294,6 @@ So what's going on here? First of all, we are only interested in the first seven
 }
 ```
 
-
-
 - The third and fourth selectors are competing over the styling of the link's text color — the second one wins and makes the text white because although it has one less element selector, the missing selector is swapped out for a class selector, which is worth ten rather than one. So the winning specificity is 113 vs. 104.
 
 ```css
@@ -315,8 +307,6 @@ So what's going on here? First of all, we are only interested in the first seven
     color: white;
 }
 ```
-
-
 
 - Selectors 5–7 are competing over the styling of the link's border when hovered. Selector six clearly loses to five with a specificity of 23 vs. 24 — it has one fewer element selectors in the chain. Selector seven, however, beats both five and six — it has the same number of sub-selectors in the chain as five, but an element has been swapped out for a class selector. So the winning specificity is 33 vs. 23 and 24.
 
@@ -337,15 +327,11 @@ div div .nav:nth-child(2) a:hover {
 }
 ```
 
-
-
 **Note**: This has only been an approximate example for ease of understanding. In actuality, each selector type has its own level of specificity that cannot be overwritten by selectors with a lower specificity level. For example, a *million* **class** selectors combined would not be able to overwrite the rules of *one* **id** selector.
 
 A more accurate way to evaluate specificity would be to score the specificity levels individually starting from highest and moving on to lowest when necessary. Only when there is a tie between selector scores within a specificity level do you need to evaluate the next level down; otherwise, you can disregard the lower specificity level selectors since they can never overwrite the higher specificity levels.
 
 ### !important
-
-
 
 There is a special piece of CSS that you can use to overrule all of the above calculations, however you should be very careful with using it — `!important`. This is used to make a particular property and value the most specific thing, thus overriding the normal rules of the cascade.
 
@@ -414,17 +400,15 @@ Refer back here if you start to come across strange issues with styles not apply
 
 # CSS selectors
 
-In [CSS](https://developer.mozilla.org/en-US/docs/Glossary/CSS), selectors are used to target the [HTML](https://developer.mozilla.org/en-US/docs/Glossary/HTML) elements on our web pages that we want to style. There are a wide variety of CSS selectors available, allowing for fine-grained precision when selecting elements to style. In this article and its sub-articles we'll run through the different types in great detail, seeing how they work. 
+In CSS, selectors are used to target the HTML elements on our web pages that we want to style. There are a wide variety of CSS selectors available, allowing for fine-grained precision when selecting elements to style. In this article and its sub-articles we'll run through the different types in great detail, seeing how they work. 
 
 ## What is a selector?
 
 You have met selectors already. A CSS selector is the first part of a CSS Rule. It is a pattern of elements and other terms that tell the browser which HTML elements should be selected to have the CSS property values inside the rule applied to them. The element or elements which are selected by the selector are referred to as the *subject of the selector*.
 
-![Some code with the h1 highlighted.](https://mdn.mozillademos.org/files/16550/selector.png)
-
 In earlier articles you met some different selectors, and learned that there are selectors that target the document in different ways — for example by selecting an element such as `h1`, or a class such as `.special`.
 
-In CSS, selectors are defined in the CSS Selectors specification; like any other part of CSS they need to have support in browsers for them to work. The majority of selectors that you will come across are defined in the [Level 3 Selectors specification](https://www.w3.org/TR/selectors-3/), which is a mature specification, therefore you will find excellent browser support for these selectors.
+In CSS, selectors are defined in the CSS Selectors specification; like any other part of CSS they need to have support in browsers for them to work. The majority of selectors that you will come across are defined in the Level 3 Selectors specification, which is a mature specification, therefore you will find excellent browser support for these selectors.
 
 ## Selector lists
 
@@ -468,7 +452,7 @@ h1 {
   color: blue; 
 } 
 
-..special { 
+..special { /*syntax error*/
   color: blue; 
 } 
 ```
@@ -476,7 +460,7 @@ h1 {
 When combined however, neither the `h1` nor the class will be styled as the entire rule is deemed invalid.
 
 ```css
-h1, ..special { 
+h1, ..special {  /*syntax error*/
   color: blue; 
 } 
 ```
@@ -557,19 +541,19 @@ You can take a look at the reference table of selectors below for direct links t
 
 The below table gives you an overview of the selectors you have available to use, along with links to the pages in this guide which will show you how to use each type of selector. I have also included a link to the MDN page for each selector where you can check browser support information. You can use this as a reference to come back to when you need to look up selectors later in the material, or as you experiment with CSS generally.
 
-| Selector                                                     | Example             | Learn CSS tutorial                                           |
-| :----------------------------------------------------------- | :------------------ | :----------------------------------------------------------- |
-| [Type selector](https://developer.mozilla.org/en-US/docs/Web/CSS/Type_selectors) | `h1 { }`            | [Type selectors](https://developer.mozilla.org/en-US/docs/user:chrisdavidmills/CSS_Learn/CSS_Selectors/Type_Class_and_ID_Selectors#Type_selectors) |
-| [Universal selector](https://developer.mozilla.org/en-US/docs/Web/CSS/Universal_selectors) | `* { }`             | [The universal selector](https://developer.mozilla.org/en-US/docs/user:chrisdavidmills/CSS_Learn/CSS_Selectors/Type_Class_and_ID_Selectors#The_universal_selector) |
-| [Class selector](https://developer.mozilla.org/en-US/docs/Web/CSS/Class_selectors) | `.box { }`          | [Class selectors](https://developer.mozilla.org/en-US/docs/user:chrisdavidmills/CSS_Learn/CSS_Selectors/Type_Class_and_ID_Selectors#Class_selectors) |
-| [id selector](https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors) | `#unique { }`       | [ID selectors](https://developer.mozilla.org/en-US/docs/user:chrisdavidmills/CSS_Learn/CSS_Selectors/Type_Class_and_ID_Selectors#ID_Selectors) |
-| [Attribute selector](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) | `a[title] { }`      | [Attribute selectors](https://developer.mozilla.org/en-US/docs/User:chrisdavidmills/CSS_Learn/CSS_Selectors/Attribute_selectors) |
-| [Pseudo-class selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes) | `p:first-child { }` | [Pseudo-classes](https://developer.mozilla.org/en-US/docs/User:chrisdavidmills/CSS_Learn/CSS_Selectors/Pseuso-classes_and_Pseudo-elements#What_is_a_pseudo-class) |
-| [Pseudo-element selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements) | `p::first-line { }` | [Pseudo-elements](https://developer.mozilla.org/en-US/docs/User:chrisdavidmills/CSS_Learn/CSS_Selectors/Pseuso-classes_and_Pseudo-elements#What_is_a_pseudo-element) |
-| [Descendant combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator) | `article p`         | [Descendant combinator](https://developer.mozilla.org/en-US/docs/User:chrisdavidmills/CSS_Learn/CSS_Selectors/Combinators#Descendant_Selector) |
-| [Child combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator) | `article > p`       | [Child combinator](https://developer.mozilla.org/en-US/docs/User:chrisdavidmills/CSS_Learn/CSS_Selectors/Combinators#Child_combinator) |
-| [Adjacent sibling combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/Adjacent_sibling_combinator) | `h1 + p`            | [Adjacent sibling](https://developer.mozilla.org/en-US/docs/User:chrisdavidmills/CSS_Learn/CSS_Selectors/Combinators#Adjacent_sibling) |
-| [General sibling combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/General_sibling_combinator) | `h1 ~ p`            | [General sibling](https://developer.mozilla.org/en-US/docs/User:chrisdavidmills/CSS_Learn/CSS_Selectors/Combinators#General_sibling) |
+| Selector                    | Example             | Learn CSS tutorial     |
+| :-------------------------- | :------------------ | :--------------------- |
+| Type selector               | `h1 { }`            | Type selectors         |
+| Universal selector          | `* { }`             | The universal selector |
+| Class selector              | `.box { }`          | Class selectors        |
+| id selector                 | `#unique { }`       | ID selectors           |
+| Attribute selector          | `a[title] { }`      | Attribute selectors    |
+| Pseudo-class selectors      | `p:first-child { }` | Pseudo-classes         |
+| Pseudo-element selectors    | `p::first-line { }` | Pseudo-elements        |
+| Descendant combinator       | `article p`         | Descendant combinator  |
+| Child combinator            | `article > p`       | Child combinator       |
+| Adjacent sibling combinator | `h1 + p`            | Adjacent sibling       |
+| General sibling combinator  | `h1 ~ p`            | General sibling        |
 
 # Type, class, and ID selectors
 
@@ -591,7 +575,7 @@ This kind of behavior can sometimes be seen in "reset stylesheets", which strip 
 
 
 
-One use of the universal selector is to make selectors easier to read and more obvious in terms of what they are doing. For example, if I wanted to select the first child of any `article` element, no matter what element it was, and make it bold, I could use the `:first-child` selector, which we will learn more about in the lesson on [pseudo-classes and pseudo-elements](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors/Pseudo-classes_and_pseudo-elements), as a descendant selector along with the `article` element selector: 
+One use of the universal selector is to make selectors easier to read and more obvious in terms of what they are doing. For example, if I wanted to select the first child of any `article` element, no matter what element it was, and make it bold, I could use the `:first-child` selector, which we will learn more about in the lesson on pseudo-classes and pseudo-elements, as a descendant selector along with the `article` element selector: 
 
 ```css
 article :first-child {
@@ -639,7 +623,7 @@ This approach does make the CSS less reusable as the class will now only apply t
 
 You can apply multiple classes to an element and target them individually, or only select the element when all of the classes in the selector are present. This can be helpful when building up components that can be combined in different ways on your site.
 
-In the example below we have a `div` that contains a note. The grey border is applied when the box has a class of `notebox`. If it also has a class of `warning` or `danger`, we change the [`border-color`](https://developer.mozilla.org/en-US/docs/Web/CSS/border-color).
+In the example below we have a `div` that contains a note. The grey border is applied when the box has a class of `notebox`. If it also has a class of `warning` or `danger`, we change the `border-color`.
 
 We can tell the browser that we only want to match the element if it has all of these classes by chaining them together with no white space between them.
 
@@ -680,7 +664,7 @@ h1#heading {
 
 ## In the next article
 
-We'll continue exploring selectors by looking at [attribute selectors](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors/Attribute_selectors).
+We'll continue exploring selectors by looking at attribute selectors.
 
 # Attribute selectors
 
@@ -775,7 +759,7 @@ In the live example below, add CSS using attribute selectors to do the following
 
 ## Next steps
 
-Now we are done with attribute selectors, you can continue on to the next article and read about [pseudo-class and pseudo-element selectors](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors/Pseudo-classes_and_pseudo-elements).
+Now we are done with attribute selectors, you can continue on to the next article and read about pseudo-class and pseudo-element selectors.
 
 # Pseudo-classes and pseudo-elements
 
@@ -804,7 +788,7 @@ Let's look at a simple example. If we wanted to make the first paragraph in an a
 }
 ```
 
-However, this could be annoying to maintain — what if a new paragraph got added to the top of the document? We'd need to move the class over to the new paragraph. Instead of adding the class, we could use the [`:first-child`](https://developer.mozilla.org/en-US/docs/Web/CSS/:first-child) pseudo-class selector — this will *always* target the first child element in the article, and we will no longer need to edit the HTML (this may not always be possible anyway, maybe due to it being generated by a CMS.) 
+However, this could be annoying to maintain — what if a new paragraph got added to the top of the document? We'd need to move the class over to the new paragraph. Instead of adding the class, we could use the `:first-child` pseudo-class selector — this will *always* target the first child element in the article, and we will no longer need to edit the HTML (this may not always be possible anyway, maybe due to it being generated by a CMS.) 
 
 ```css
 article p:first-child {
@@ -1013,4 +997,4 @@ It is often better to create a simple class and apply that to the element in que
 
 ## Moving on
 
-This is the last section in our lessons on selectors. Next we will move on to another important part of CSS — the [CSS Box Model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model).
+This is the last section in our lessons on selectors. Next we will move on to another important part of CSS — the CSS Box Model.

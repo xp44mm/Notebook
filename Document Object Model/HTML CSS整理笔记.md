@@ -10,7 +10,7 @@
 
 ——修改placeholder提示的样式：
 
-```
+```css
 类名或标签名::placeholder {color: red;}
 ```
 
