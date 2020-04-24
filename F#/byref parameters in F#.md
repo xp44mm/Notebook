@@ -1,6 +1,6 @@
 # byref parameters in F#
 
-Some Times we need to change Parameters of Functions like interoperating with other .NET Languages. If you want to achieve this in F# You need to use a combination of values, the `byref` keyword and Address-of operator(&). Like Below Example.
+Some Times we need to change Parameters of Functions like interoperating with other .NET Languages. If you want to achieve this in F# You need to use a combination of values, the `byref` keyword and Address-of operator(`&`). Like Below Example.
 
 **Example**
 
@@ -12,33 +12,33 @@ incrementParam(&b)
 
 Above example showing that `incrementParam`'s argument a is of type `int byref`. The `byref` keyword tells the compiler to expect the address of a mutable value. In the next line we use the `mutable` keyword so that when we pass `b` to `incrementParam`. The function can successfully change `b`'s value.
 
-Lastly when we call `incrementParam`, we provide the address of the mutable values and we do this by using the address-of operator(&). `byref` parameter works with value type like primitive.
+Lastly when we call `incrementParam`, we provide the address of the mutable values and we do this by using the address-of operator(`&`). `byref` parameter works with value type like primitive.
 
 ## Passing by Reference
 
-Passing an F# value by reference involves [byrefs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/byrefs), which are managed pointer types. Guidance for which type to use is as follows:
+Passing an F# value by reference involves byrefs, which are managed pointer types. Guidance for which type to use is as follows:
 
 - Use `inref<'T>` if you only need to read the pointer.
 - Use `outref<'T>` if you only need to write to the pointer.
 - Use `byref<'T>` if you need to both read from and write to the pointer.
 
 ```fsharp
-let example1 (x: inref<int>) = printfn "It's %d" x
+let exampleR (x: inref<int>) = printfn "It's %d" x
 
-let example2 (x: outref<int>) = x <- x + 1
+let exampleW (x: outref<int>) = x <- x + 1
 
-let example3 (x: byref<int>) =
+let exampleWR (x: byref<int>) =
     printfn "It'd %d" x
     x <- x + 1
 
 // No need to make it mutable, since it's read-only
 let x = 1
-example1 &x
+exampleR &x
 
 // Needs to be mutable, since we write to it
 let mutable y = 2
-example2 &y
-example3 &y // Now 'y' is 3
+exampleW &y
+exampleWR &y // Now 'y' is 3
 ```
 
 Because the parameter is a pointer and the value is mutable, any changes to the value are retained after the execution of the function.
@@ -77,6 +77,8 @@ let h (x: outref<'T>) = ()
 let mutable x = 3
 f &x
 ```
+
+`&`運算符優先級高於空格。
 
 ## Byref, inref, and outref
 
@@ -190,7 +192,7 @@ Well, I came to understand that F# is able to manage references (some sort of C+
 
 1. Ref keyword: The keyword `ref` is used to create, from a value, a reference to that value of the inferred type. So
 
-   ```
+   ```F#
    let myref = ref 10
    ```
 
@@ -200,7 +202,7 @@ Well, I came to understand that F# is able to manage references (some sort of C+
 
 2. Access value: In order to access a value stored in reference I can do this:
 
-   ```
+   ```F#
    let myref = ref 10
    let myval = myref.Value
    let myval2 = !myref
@@ -208,7 +210,7 @@ Well, I came to understand that F# is able to manage references (some sort of C+
 
    While the `:=` operator just lets me edit the value like this:
 
-   ```
+   ```F#
    let myref = ref 10
    myref.Value <- 30
    myref := 40
@@ -218,16 +220,16 @@ Well, I came to understand that F# is able to manage references (some sort of C+
 
 3. The `&` operator: What does this operator do? Is it to be applied to a reference type? No, I guess it must be applied to a mutable value and what does this return? The reference? The address? If using interactive:
 
-   ```
+   ```F#
    let mutable mutvar = 10;;
    &a;;
    ```
 
    The last line throws an error so I do not understand what the `&` operator is for.
 
-4. ByRef: What about `byref`? That's very important to me, but I realize I do not understand it. I understand it is used in function regarding parameter passing. One uses `byref` when he wants that the passed value can be edited (this is a bit against the functional language's philosophy but f# is something more than that). Consider the following:
+4. ByRef: What about `byref`? That's very important to me, but I realize I do not understand it. I understand it is used in function regarding parameter passing. One uses `byref` when he wants that the passed value can be edited (this is a bit against the functional language's philosophy but F# is something more than that). Consider the following:
 
-   ```
+   ```F#
    let myfunc (x: int byref) =
        x <- x + 10
    ```
@@ -238,7 +240,7 @@ Well, I came to understand that F# is able to manage references (some sort of C+
 
 5. Calling functions: How can I use a function utilizing byref parameters?
 
-   The `&` operator is involved but could you explain this better please? In this article: [MSDN Parameters and Arguments](http://msdn.microsoft.com/en-us/library/dd233213.aspx) the following example is provided:
+   The `&` operator is involved but could you explain this better please? In this article: MSDN Parameters and Arguments the following example is provided:
 
    ```F#
    type Incrementor(z) =
@@ -255,7 +257,7 @@ Well, I came to understand that F# is able to manage references (some sort of C+
    let mutable y = 10
    incrementor.Increment(&y) (* Me: & what does it return? *)
    // Prints 11.
-   printfn "%d" y 
+   printfn "%d" y
    
    let refInt = ref 10
    incrementor.Increment(refInt) (* Why does it not work in A, but here it does? *)
@@ -265,31 +267,39 @@ Well, I came to understand that F# is able to manage references (some sort of C+
 
 ## Answer
 
-**Ref keyword** Yes, when you write `let a = ref 10` you're essentially writing `let a = new Ref<int>(10)` where the `Ref<T>` type has a mutable field `Value`.
+**Ref keyword** 
 
-**Access value** The `:=` and `!` operators are just shortcuts for writing:
+Yes, when you write `let a = ref 10` you're essentially writing `let a = new Ref<int>(10)` where the `Ref<'T>` type has a mutable field `Value`.
 
-```
+**Access value** 
+
+The `:=` and `!` operators are just shortcuts for writing:
+
+```F#
 a.Value <- 10  // same as writing: a := 10
 a.Value        // same as writing: !a
 ```
 
-**ByRef** is a special type that can be (reasonably) used only in method parameters. It means that the argument should be essentially a pointer to some memory location (allocated on heap or stack). It corresponds to `out` and `ref` modifiers in C#. Note that you cannot create local variable of this type.
+**ByRef** 
 
-**The & operator** is a way to create a value (a pointer) that can be passed as an argument to a function/method expecting a `byref` type.
+`byref` is a special type that can be (reasonably) used only in method parameters. It means that the argument should be essentially a pointer to some memory location (allocated on heap or stack). It corresponds to `out` and `ref` modifiers in C#. Note that you cannot create local variable of this type.
+
+**The & operator** 
+
+`&` is a way to create a value (a pointer) that can be passed as an argument to a function/method expecting a `byref` type.
 
 **Calling functions** the example with `byref` works because you're passing the method a reference to a local mutable variable. Via the reference, the method can change the value stored in that variable.
 
 The following doesn't work:
 
-```
+```F#
 let a = 10            // Note: You don't even need 'mutable' here
 bar.Increment(ref a)  
 ```
 
 The reason is that you're creating a new instance of `Ref<int>` and you're copying the value of `a` into this instance. The `Increment` method then modifies the value stored on heap in the instance of `Ref<int>`, but you don't have a reference to this object anymore.
 
-```
+```F#
 let a = ref 10
 bar.Increment(a)  
 ```
@@ -297,3 +307,14 @@ bar.Increment(a)
 This works, because `a` is a value of type `Ref<int>` and you're passing a pointer to the heap-allocated instance to `Increment` and then get the value from heap-allocated reference cell using `!a`.
 
 (You can use values created using `ref` as arguments for `byref` because the compiler handles this case specially - it will automatically take reference of the `Value` field because this is a useful scenario...).
+
+
+
+引用參數為汎型時的初始化：
+
+```F#
+let statck = new Stack<'a>()
+let mutable x = Unchecked.defaultof<'a>
+statck.TryPop(&x)
+```
+
