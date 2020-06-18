@@ -2,7 +2,7 @@
 
 I illustrated most of the operations you can perform on numbers in Chapter 2, "Basic Language Concepts." In this section, I complete the discussion showing you the members exposed by the basic numeric classes, particularly the methods related to parsing and formatting.
 
-As you know, `Short`, `Integer`, and `Long` types are just aliases for the `Int16`, `Int32`, and `Int64` .NET classes. By recognizing their true nature and by using their methods and properties, you can better exploit these types. This section applies to all the numeric types in the .NET Framework, such as `Boolean`, `Byte`, `SByte`, Short (`Int16`), Integer (`Int32`), Long (`Int64`), UShort (`UInt16`), UInteger (`UInt32`), ULong (`UInt64`), `Single`, `Double`, and `Decimal`.
+As you know, `short`, `int`, and `int64` types are just aliases for the `Int16`, `Int32`, and `Int64` .NET classes. By recognizing their true nature and by using their methods and properties, you can better exploit these types. This section applies to all the numeric types in the .NET Framework, such as `Boolean`, `Byte`, `SByte`, `Int16`, `Int32`, `Int64`, `UInt16`, `UInt32`, `UInt64`, `Single`, `Double`, and `Decimal`.
 
 ### Properties and Methods
 
@@ -116,7 +116,7 @@ All numeric types support the `Parse` static method, which parses the string pas
 
 ```FSharp
 // Next line assigns 1234 to the variable.
-let shoValue: Short = Short.Parse("1234")
+let shoValue: Int16 = Int16.Parse("1234")
 ```
 
 An overloaded form of the `Parse` method takes a `NumberStyle` enumerated value as its second argument. `NumberStyle` is a bit-coded value that specifies which portions of the number are allowed in the string being parsed. Valid `NumberStyle` values are `AllowLeadingWhite` (1), `AllowTrailingWhite` (2), `AllowLeadingSign` (4), `AllowTrailingSign` (8), `AllowParentheses` (16), `AllowDecimalPoint` (32), `AllowThousand` (64), `AllowExponent` (128), `AllowCurrencySymbol` (256), and `AllowHexSpecifier` (512). You can specify which portions of the strings are valid by using the `|||` bitwise operator on these values, or you can use some predefined compound values, such as `Any` (511, allows everything), `Integer` (7, allows trailing sign and leading/trailing white), `Number` (111, like `Integer` but allows thousands separator and decimal point), `Float` (167, like `Integer` but allows decimal separator and exponent), and `Currency` (383, allows everything except exponent).
@@ -131,7 +131,9 @@ let dblValue: Double = Double.Parse(" 1,234.56E6  ", NumberStyles.Any)
 You can be more specific about what is valid and what isn't:
 
 ```FSharp
-let style: NumberStyles = NumberStyles.AllowDecimalPoint ||| NumberStyles.AllowLeadingSign
+let style: NumberStyles = 
+    NumberStyles.AllowDecimalPoint ||| 
+    NumberStyles.AllowLeadingSign
 // This works and assigns –123.45 to sngValue.
 let sngValue: Single = Single.Parse("-123.45", style)
 Assert.Equal(sngValue,-123.45f)

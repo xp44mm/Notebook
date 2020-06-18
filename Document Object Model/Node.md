@@ -114,8 +114,6 @@ NOTATION_NODE               12 // 不推荐
 
   Replaces one child `Node` of the current one with the second one given in parameter.
 
-
-
 ## Examples
 
 ### Remove all children nested within a node

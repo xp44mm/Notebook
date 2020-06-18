@@ -10,8 +10,8 @@ These program generators are very close to the well-known lex and yacc commands 
 
 The ocamllex command produces a lexical analyzer from a set of regular expressions with attached semantic actions, in the style of lex. Assuming the input file is lexer.mll, executing
 
-```
-        ocamllex lexer.mll
+```cmd
+$ ocamllex lexer.mll
 ```
 
 produces Caml code for a lexical analyzer in file lexer.ml. This file defines one lexing function per entry point in the lexer definition. These functions have the same names as the entry points. Lexing functions take as argument a lexer buffer, and return the semantic attribute of the corresponding entry point.

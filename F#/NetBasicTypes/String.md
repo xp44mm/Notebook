@@ -85,11 +85,13 @@ Many methods in the `String` type enable you to compare strings or search a subs
 ```FSharp
 // Compare two strings in case-sensitive mode, using Unicode values.
 let m: Boolean = String.Equals(s1, s2)
+
 // Compare two strings in case-insensitive mode, using the current locale.
 let m = String.Equals(s1, s2, StringComparison.CurrentCultureIgnoreCase)
-// Compare two strings in case-sensitive mode, using the invariant locale.
 
+// Compare two strings in case-sensitive mode, using the invariant locale.
 let m = String.Equals(s1, s2, StringComparison.InvariantCulture)
+
 // Compare the numeric Unicode values of all the characters in the two strings.
 let m = String.Equals(s1, s2, StringComparison.Ordinal)
 ```

@@ -39,8 +39,6 @@ Inherits properties from its parent interface, `Node`, and by extension that int
 
 Inherits methods from its parents `Node`, and its own parent, `EventTarget`, and implements those of `ParentNode`, `ChildNode`, `NonDocumentTypeChildNode`, and `Animatable`.
 
-
-
 - `Element.getAttribute()`
 
   Retrieves the value of the named attribute from the current node and returns it as an `Object`.

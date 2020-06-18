@@ -188,7 +188,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
   A decimal digit; same as `[0-9]`.
 
 * `\D`
-  A nondigit character; same as `[^0-9]`.
+  A non-digit character; same as `[^0-9]`.
 
 * `\p{name}`
   A character included in the named character class specified by {name}; supported names are Unicode groups and block ranges, for example, Ll, Nd, or Z.
@@ -283,7 +283,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 * `(?<=expr)`
   Zero-width positive look-behind assertion; continues match only if the subexpression matches at this position on the left. For example, `(?<=[,:])\w+` matches a word that follows a comma or semicolon, without matching the comma or semicolon. This construct doesn't backtrack.
 
-* `(?<!expr>`
+* `(?<!expr)`
   Zero-width negative look-behind assertion; continues match only if the subexpression doesn't match at this position on the left. For example, `(?<!,)\b\w+` matches a word that doesn't follow a comma.
 
 * `(?>expr)`
