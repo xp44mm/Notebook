@@ -280,7 +280,9 @@ In this synchronous code fragment, LongDatabaseQuery won't start execution until
 
 The total time it takes to run the preceding code fragment is as follows: 
 
+```
 total_time = LongDiskWrite_time + LongWebRequest_time + LongDatabaseQuery_time
+```
 
 The total completion time is the sum of the completion time of its components. If you could start an operation without waiting for a previous operation to complete, you could use your resources much better. This is what asynchronous execution is for.
 
@@ -330,7 +332,9 @@ This way, you get the same result; you wait for each task to complete (while the
 
 The total time it takes to run the asynchronous version of the code fragment is as follows:
 
+```
 total_time = MAX(LongDiskWritetime, LongWebRequesttime, LongDatabaseQuerytime)
+```
 
 Because all of the methods are running concurrently (and maybe even in parallel), the time it takes to run the code will be the time of the longest operation. 
 
@@ -386,7 +390,7 @@ For example, application startup usually loads data from its persisted storage t
 
 A nice analogy I like to use for explaining streams is a water hose, but this hose has data packets going through it, just like the one you see in figure 1.16. When using a water hose, you can do many things with it. You can put filters at the end. You can add different hose heads that give different functionality. You can add pressure monitors to help you regulate the flow. You can do the same things with your data stream. You'll want to build a pipeline that lets the information flow through it, to eventually give an end result that suits your logic; this includes filtering, transformations, grouping, merging, and so on.
 
-The data and event streams are a perfect fit for Rx observables. Abstracting them with an IObservable enables you to make a composition of the operators and create a complex pipeline of execution. This is similar to what you did with the Shoppy example, where a call to a server obtained the discounts as part of a more complex pipeline of execution that also used filtering (on the connectivity) and eventually refreshed the view (like a sprinkler splashing water).
+The data and event streams are a perfect fit for Rx observables. Abstracting them with an `IObservable` enables you to make a composition of the operators and create a complex pipeline of execution. This is similar to what you did with the Shoppy example, where a call to a server obtained the discounts as part of a more complex pipeline of execution that also used filtering (on the connectivity) and eventually refreshed the view (like a sprinkler splashing water).
 
 ```
 Hose -> Prefilter

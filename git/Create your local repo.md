@@ -11,7 +11,7 @@ Create a local Git repo for your code. If your code is already in a local Git re
 2. Create a Git repo on your machine to store your code. 
 
    ```
-   git init .
+   git init
    ```
 
 3. 在VS中，打开文件夹，执行其他git操作。如果已经打开，将文件夹关闭，重新打开。
