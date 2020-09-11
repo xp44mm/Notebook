@@ -30,3 +30,15 @@ Decimal (decimal)
 另外，.NET也提供了把string解析为`DateTime`结构的方法，除了有上面提到的三种形式（`Convert.ToDateTime`、`DateTime.Parse`、`DateTime.TryParse`）之外，我们还可以使用`DateTime.TryParseExact`。
 
 所有的这些方法都是大同小异，差别在于对字符串字面值格式（包括其所包含符号）的规定，有兴趣的话，你可以参考MSDN的文档或者其他专题资料。
+
+另一种方法，`TypeDescriptor`：
+
+```F#
+open System.ComponentModel
+
+let parse<'T> (text:string) = 
+    let converter = TypeDescriptor.GetConverter(typeof<'T>)
+    let result = converter.ConvertFromString(text)
+    unbox<'T> result
+
+```

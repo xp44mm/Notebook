@@ -470,7 +470,7 @@ A number of properties exist on the event object for every type of event being c
 
 This property contains the name of the event currently being fired (such as `click` or `mouseover`). It can be used to provide a generic event-handler function, which then deterministically executes related code. Listing 6-12 shows an example of using this property to make a handler have different effects depending on the **event type**.
 
-Listing 6-12. Using the `type` Property to Provide Hoverlike Functionality for an Element
+Listing 6-12. Using the `type` Property to Provide Hover like Functionality for an Element
 
 ```js
 function mouseHandler(e){
@@ -550,17 +550,20 @@ function onMouseOver(event) {
 }
 ```
 
-// Sample HTML:
+CSS:
 
-```html
-<style>
+```css
 div > div {
   height: 128px;
   width: 128px;
 }
 #top    { background-color: red; }
 #bottom { background-color: blue; }
-</style>
+```
+
+Sample HTML:
+
+```html
 <title>Untitled Document</title>
 </head>
 <body>
@@ -765,7 +768,7 @@ The `reset` event only occurs when a user clicks a Reset button inside a form (a
 
 The final piece to take into consideration when developing a purely unobtrusive web application is to make sure that your events will work even without the use of a mouse. By doing this, you help two groups of people: those in need of accessibility assistance (vision-impaired users), and people who don't like to use a mouse. (Sit down one day, disconnect your mouse from your computer, and learn how to navigate the Web using only the keyboard. It's a real eye-opening experience).
 
-To make your JavaScript events more accessible, any time you use the `click`, `mouseover`, and `mouseout` events, you should strongly consider providing alternative nonmouse bindings. Thankfully, there are easy ways to remedy this situation quickly:
+To make your JavaScript events more accessible, any time you use the `click`, `mouseover`, and `mouseout` events, you should strongly consider providing alternative non-mouse bindings. Thankfully, there are easy ways to remedy this situation quickly:
 
 - The `click` event: One smart move on the part of browser developers was to make the `click` event work whenever the Enter key is pressed. This completely removes the need to provide an alternative to this event. One point to note, however, is that some developers like to bind click handlers to Submit buttons in forms to watch for when a user submits a web page. Instead of using that event, the developer should bind to the `submit` event on the form object, a smart alternative that works reliably.
 

@@ -369,3 +369,37 @@ git add -f [文件(夹)名]
 本地历史记录
 
 要删除的项目，上下文菜单，重置，删除更改。
+
+### git提交的时候出现异常“bad object HEAD”解决方案
+
+
+问题发生
+在提交文件到 github 上时发现提交不上，查看 `git status`，报了bad object HEAD的错误，如下
+
+```bash
+$ git status
+fatal: bad object HEAD
+```
+
+
+
+解决方案
+这报错信息显示 head 损坏，可能是我误删了什么文件导致本地与远程分支导致，于是我运行
+
+```bash
+git remote update
+```
+
+可以在本地创建远程追踪分支，问题解决。
+
+尝试：
+
+```javascript
+git fetch --all
+```
+
+相当于使用
+
+```javascript
+git remote update
+```

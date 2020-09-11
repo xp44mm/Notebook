@@ -60,8 +60,6 @@ visual studio工具->扩展和更新...
 [ ] Markdown Editor
 [ ] EF Core Power Tools
 [ ] Add New File
-[ ] File Icons
-[ ] Project File Tools
 
 ### Asp.net core的配置
 
@@ -145,13 +143,13 @@ npm install -g npm-check-updates@latest
 ### 升级全局的本地包
 
 ```
-npm install -g
+npm install -g <packagename>
 ```
 
 查看哪些包有更新：
 
 ```
-npm -g outdated
+npm outdated -g
 ```
 
 例如,我们发现全局包`@angular/cli`需要更新, 就执行:
@@ -181,9 +179,14 @@ npm v immutable versions
 * `-O, --save-optional`: Package will appear in your `optionalDependencies`.
 * `--no-save`: Prevents saving to `dependencies`.
 
+
+
+
 ### 置命令行于项目文件夹
 
-在解决方案资源管理器中,单击选中击ASP.NET项目,右击[在文件资源管理器中打开文件夹],在地址栏输入:
+在解决方案资源管理器中,单击选中击ASP.NET项目,右击[在文件资源管理器中打开文件夹],
+
+文件资源管理器，在地址栏输入:
 
 ```
 ConEmu64.exe
@@ -236,20 +239,26 @@ npm naming restrictions:
 
   *  name can no longer contain capital letters
 
-## Chrome浏览器启用 Experimental JavaScript
+# 命令行程序与文件资源管理器的交互
 
-地址栏输入：
-
-```
-chrome://flags/
-```
-
-在页面最顶部的搜索栏输入：
+文件资源管理器，在地址栏输入:
 
 ```
-JavaScript
+ConEmu64.exe
+```
+可以打开命令行程序，且当前目录是文件资源管理器的当前目录。
+
+Windows命令行打开文件夹图形界面
+
+在命令行输入以下命令，可以在文件资源管理器中打开当前目录
+
+```bash
+explorer .
 ```
 
-找到可用的选项进行修改，即可。
+在文件资源管理器中打开命令行当前目录的上级目录
 
+```bash
+explorer ..
+```
 

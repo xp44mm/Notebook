@@ -97,10 +97,15 @@ Below is a list of interfaces which are based on the main `Event` interface, wit
 - [`Event.currentTarget`](https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget) Read only
 
   A reference to the currently registered target for the event. This is the object to which the event is currently slated to be sent; it's possible this has been changed along the way through *retargeting*.
+  
+  事件绑定的元素。即`elem.addEventListener`中的`elem`。无论事件发生在其自身，还是其内部的子元素身上，`currentTarget`始终都是绑定事件的元素。如下断言始终为真：
+  
+  ```javascript
+  elem.addEventListener('click', e => {
+      console.log(e.currentTarget === elem)
+  })
+  ```
 
-- [`Event.deepPath`](https://developer.mozilla.org/en-US/docs/Web/API/Event/deepPath) 
-
-  An `Array` of DOM `Node`s through which the event has bubbled.
 
 - [`Event.defaultPrevented`](https://developer.mozilla.org/en-US/docs/Web/API/Event/defaultPrevented) Read only
 
@@ -108,27 +113,12 @@ Below is a list of interfaces which are based on the main `Event` interface, wit
 
 - [`Event.eventPhase`](https://developer.mozilla.org/en-US/docs/Web/API/Event/eventPhase) Read only
 
-  Indicates which phase of the event flow is being processed.
-
-- [`Event.explicitOriginalTarget`](https://developer.mozilla.org/en-US/docs/Web/API/Event/explicitOriginalTarget) Read only
-
-  The explicit original target of the event (Mozilla-specific).
-
-- [`Event.originalTarget`](https://developer.mozilla.org/en-US/docs/Web/API/Event/originalTarget) Read only
-
-  The original target of the event, before any retargetings (Mozilla-specific).
-
-- [`Event.returnValue`](https://developer.mozilla.org/en-US/docs/Web/API/Event/returnValue)
-
-  A historical property introduced by Internet Explorer and eventually adopted into the DOM specification in order to ensure existing sites continue to work. Ideally, you should try to use `Event.preventDefault()` and `Event.defaultPrevented` instead, but you can use `returnValue` if you choose to do so.
-
-- [`Event.srcElement`](https://developer.mozilla.org/en-US/docs/Web/API/Event/srcElement) 
-
-  A non-standard alias (from old versions of Microsoft Internet Explorer) for `Event.target`, which is starting to be supported in some other browsers for web compatibility purposes.
+  Indicates which phase of the event flow is being processed
 
 - [`Event.target`](https://developer.mozilla.org/en-US/docs/Web/API/Event/target) Read only
 
   A reference to the target to which the event was originally dispatched.
+  触发事件的元素。始终是最底层的元素。
 
 - [`Event.timeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/Event/timeStamp) Read only
 
@@ -142,27 +132,14 @@ Below is a list of interfaces which are based on the main `Event` interface, wit
 
   Indicates whether or not the event was initiated by the browser (after a user click for instance) or by a script (using an event creation method, like `event.initEvent`).
 
-### Obsolete properties
-
-
-
-- [`Event.scoped`](https://developer.mozilla.org/en-US/docs/Web/API/Event/scoped) Read only 
-
-  A `Boolean` indicating whether the given event will bubble across through the shadow root into the standard DOM. This property has been renamed to `composed`.
 
 ## Methods
 
-- [`Event.createEvent()`](https://developer.mozilla.org/en-US/docs/Web/API/Event/createEvent) 
-
-  Creates a new event, which must then be initialized by calling its `initEvent()` method.
 
 - [`Event.composedPath()`](https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath)
 
   Returns the event’s path (objects on which listeners will be invoked). This does not include nodes in shadow trees if the shadow root was created with its `ShadowRoot.mode` closed.
 
-- [`Event.initEvent()`](https://developer.mozilla.org/en-US/docs/Web/API/Event/initEvent) 
-
-  Initializes the value of an Event created. If the event has already being dispatched, this method does nothing.
 
 - [`Event.preventDefault()`](https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
 
@@ -175,3 +152,6 @@ Below is a list of interfaces which are based on the main `Event` interface, wit
 - [`Event.stopPropagation()`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation)
 
   Stops the propagation of events further along in the DOM.
+
+事件处理器内部，优先使用`e.target`，和`e.currentTarget`引用元素。
+
