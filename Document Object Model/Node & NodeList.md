@@ -68,8 +68,6 @@ NOTATION_NODE               12 // 不推荐
 
   Returns a `Node` representing the previous node in the tree, or `null` if there isn't such node.
 
-
-
 ## Methods
 
 - `Node.appendChild()`
@@ -255,15 +253,11 @@ const mistakes = grep(document.body, pattern);
 console.log(mistakes);
 ```
 
-
-
 # NodeList
 
-**`NodeList`** objects are collections of [nodes](https://developer.mozilla.org/en-US/docs/Glossary/Node/DOM), usually returned by properties such as `Node.childNodes` and methods such as `document.querySelectorAll()`.
+**`NodeList`** objects are collections of nodes, usually returned by properties such as `Node.childNodes` and methods such as `document.querySelectorAll()`.
 
 Although `NodeList` is not an `Array`, it is possible to iterate over it with `forEach()`. It can also be converted to a real `Array` using `Array.from()`.
-
-However, some older browsers have not implemented `NodeList.forEach()` nor `Array.from()`. This can be circumvented by using `Array.prototype.forEach()` — see this document's Example.
 
 In some cases, the `NodeList` is *live*, which means that changes in the DOM automatically update the collection. For example, `Node.childNodes` is live:
 
@@ -281,33 +275,33 @@ It's good to keep this distinction in mind when you choose how to iterate over t
 
 ## Properties
 
-- [`NodeList.length`](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/length)
+- `NodeList.length`
 
   The number of nodes in the `NodeList`.
 
 ## Methods
 
-- [`NodeList.item()`](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/item)
+- `NodeList.item()`
 
   Returns an item in the list by its index, or `null` if the index is out-of-bounds.
 
   An alternative to accessing `nodeList[i]` (which instead returns `undefined` when `i` is out-of-bounds). This is mostly useful for non-JavaScript languages DOM implementations.
 
-- [`NodeList.entries()`](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/entries)
-
-  Returns an `iterator`, allowing code to go through all key/value pairs contained in the collection. (In this case, the keys are numbers starting from 0 and the values are nodes.)
-
-- [`NodeList.forEach()`](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/forEach)
+- `NodeList.forEach()`
 
   Executes a provided function once per `NodeList` element, passing the element as an argument to the function.
 
-- [`NodeList.keys()`](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/keys)
+- `NodeList.keys()`
 
   Returns an `iterator`, allowing code to go through all the keys of the key/value pairs contained in the collection. (In this case, the keys are numbers starting from 0.)
 
-- [`NodeList.values()`](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/values)
+- `NodeList.values()`
 
   Returns an `iterator` allowing code to go through all values (nodes) of the key/value pairs contained in the collection.
+  
+- `NodeList.entries()`
+
+  Returns an `iterator`, allowing code to go through all key/value pairs contained in the collection. (In this case, the keys are numbers starting from 0 and the values are nodes.)  
 
 ## Example
 
@@ -319,7 +313,7 @@ for (var i = 0; i < myNodeList.length; i++) {
 }
 ```
 
-**Don't use `for...in` or `for each...in` to enumerate the items in `NodeList`s**, since they will *also* enumerate its `length` and `item` properties and cause errors if your script assumes it only has to deal with `element` objects. Also, `for..in` is not guaranteed to visit the properties in any particular order.
+**Don't use `for...in`  to enumerate the items in `NodeList`s**, since they will *also* enumerate its `length` and `item` properties and cause errors if your script assumes it only has to deal with `element` objects. Also, `for..in` is not guaranteed to visit the properties in any particular order.
 
 `for...of` loops **will** loop over `NodeList` objects correctly:
 

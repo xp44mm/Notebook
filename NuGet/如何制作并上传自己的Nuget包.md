@@ -29,4 +29,5 @@ If you have forgotten which Microsoft account is associated with your NuGet.org 
 
 上传package更新方法非常简约,直接上传同名称高一个版本的新包即可替换掉旧版本的package
 
-无法删除已上传的package,只能隐藏(unlist).因为要考虑老用户兼容为题,情有可原,反正不在我自己的服务器上..
+无法删除已上传的package,只能隐藏(unlist).因为要考虑老用户兼容为题,情有可原,反正不在我自己的服务器上。
+

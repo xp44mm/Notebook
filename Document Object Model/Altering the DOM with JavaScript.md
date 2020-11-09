@@ -328,15 +328,15 @@ elToRemove.parentNode.removeChild(elToRemove)
 
 In the demo above, we can’t do this because there’s no way to tell which is the first or last list item with classes or ids.
 
-Instead, we can use `parentNode.children` to get a NodeList of elements within `ul`, then, use Array methods to get the specific element to remove.
+Instead, we can use `parentNode.children` to get a `NodeList` of elements within `ul`, then, use `Array` methods to get the specific element to remove.
 
 Here’s the code to remove the first child element:
 
 ```js
 let list = document.querySelector('ul')
 removeFirst.addEventListener('click', e => {
-  if (list.children.length) {
-    let firstNode = list.children[0]
+  if (list.childNodes.length) {
+    let firstNode = list.childNodes[0]
     list.removeChild(firstNode)
   }
 })
