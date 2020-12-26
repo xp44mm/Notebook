@@ -343,7 +343,7 @@ git add -f [文件(夹)名]
 
 ##### 方法1
 
-如果你想保留刚才本地修改的代码，并把git服务器上的代码pull到本地（本地刚才修改的代码将会被暂时封存起来）
+如果你想保留刚才本地修改的代码，并把git服务器上的代码pull拉到本地（本地刚才修改的代码将会被暂时封存起来）
 
 ```
  git stash  
@@ -403,3 +403,15 @@ git fetch --all
 ```javascript
 git remote update
 ```
+
+# git强制覆盖本地代码（与git远程仓库保持一致）
+
+**git强制覆盖**：
+
+```bash
+   git fetch --all
+   git reset --hard origin/master
+   git pull
+```
+
+> 当想撤销错误的提交时，本能的想法是退回。另一个更简单的操作是，查看历史，把历史里面的内容复制下来，把当前状态按照历史内容修改，再提交一个和之前状态一样的commit。

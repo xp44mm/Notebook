@@ -1,3 +1,379 @@
+# Chapter 3 Lexical Analysis
+
+In this chapter we show how to construct a lexical analyzer. To implement a lexical analyzer by hand, it helps to start with a diagram or other description for the lexemes of each token. We can then write code to identify each occurrence of each lexeme on the input and to return information about the token identified. 
+
+We can also produce a lexical analyzer automatically by specifying the lexeme patterns to a lexical-analyzer generator and compiling those patterns into code that functions as a lexical analyzer. This approach makes it easier to modify a lexical analyzer, since we have only to rewrite the affected patterns, not the entire program. It also speeds up the process of implementing the lexical analyzer, since the programmer specifies the software at the very high level of patterns and relies on the generator to produce the detailed code. We shall introduce in Section 3.5 a lexical-analyzer generator called Lex (or Flex in a more recent embodiment).
+
+We begin the study of lexical-analyzer generators by introducing regular expressions, a convenient notation for specifying lexeme patterns. We show how this notation can be transformed, first into nondeterministic automata and then into deterministic automata. The latter two notations can be used as input to a "driver," that is, code which simulates these automata and uses them as a guide to determining the next token. This driver and the specification of the automaton form the nucleus of the lexical analyzer.
+
+## 3.3 Specification of Tokens
+
+Regular expressions are an important notation for specifying lexeme patterns. While they cannot express all possible patterns, they are very effective in specifying those types of patterns that we actually need for tokens. In this section we shall study the formal notation for regular expressions, and in Section 3.5 we shall see how these expressions are used in a lexical-analyzer generator. Then, Section 3.7 shows how to build the lexical analyzer by converting regular expressions to automata that perform the recognition of the specified tokens.
+
+### 3.3.1 Strings and Languages
+
+An *alphabet* is any finite set of symbols. Typical examples of symbols are letters, digits, and punctuation. The set {0, 1} is the *binary alphabet*. ASCII is an important example of an alphabet; it is used in many software systems. Unicode, which includes approximately 100,000 characters from alphabets around the world, is another important example of an alphabet. 
+
+A *string* over an alphabet is a finite sequence of symbols drawn from that alphabet. In language theory, the terms "sentence" and "word" are often used as synonyms for "string." The length of a string s, usually written $|s|$ is the number of occurrences of symbols in s. For example, `banana` is a string of length six. The empty string, denoted ε, is the string of length zero.
+
+A language is any countable set of strings over some fixed alphabet. This definition is very broad. Abstract languages like Ø, the *empty set*, or {ε}, the set containing only the empty string, are languages under this definition. So too are the set of all syntactically well-formed C programs and the set of all grammatically correct English sentences, although the latter two languages are difficult to specify exactly. Note that the definition of "language" does not require that any meaning be ascribed to the strings in the language. Methods for defining the "meaning" of strings are discussed in Chapter 5. 
+
+---
+
+##### Terms for Parts of Strings
+
+The following string-related terms are commonly used:
+
+1. A *prefix* of string s is any string obtained by removing zero or more symbols from the end of s. For example, ban, banana, and ε are prefixes of banana.
+
+2. A *suffix* of string s is any string obtained by removing zero or more symbols from the beginning of s. For example, nana, banana, and ε are suffixes of banana.
+
+3. A *substring* of s is obtained by deleting any prefix and any suffix from s. For instance, banana, nan, and ε are substrings of banana. 
+
+4. The *proper* prefixes, suffixes, and substrings of a string s are those, prefixes, suffixes, and substrings, respectively, of s that are not ε or not equal to s itself.
+
+5. A *subsequence* of s is any string formed by deleting zero or more not necessarily consecutive positions of s. For example, `baan` is a subsequence of `banana`. 
+
+---
+
+If x and y are strings, then the *concatenation* of x and y, denoted xy, is the string formed by appending y to x. For example, if x = dog and y = house, then xy = doghouse. The empty string is the identity under concatenation; that is, for any string s, $\epsilon s = s\epsilon = s$.
+
+If we think of concatenation as a product, we can define the "exponentiation" of strings as follows. Define s^0^ to be ε, and for all i > 0, define s^i^ to be s^i-1^s. Since $\epsilon s = s$, it follows that s^1^ = s. Then s^2^ = ss, s^3^ = sss, and so on.
+
+### 3.3.2 Operations on Languages
+
+In lexical analysis, the most important operations on languages are union, concatenation, and closure, which are defined formally in Fig. 3.6. Union is the familiar operation on sets. The concatenation of languages is all strings formed by taking a string from the first language and a string from the second language, in all possible ways, and concatenating them. The (Kleene) closure of a language L, denoted L*, is the set of strings you get by concatenating L zero or more times. Note that L^0^, the "concatenation of L zero times," is defined to be {ε}, and inductively, L^i^ is L^i-1^L. Finally, the positive closure, denoted L^+^, is the same as the Kleene closure, but without the term L^0^. That is, ε will not be in L^+^ unless it is in L itself. 
+
+| OPERATION                | DEFINITION  AND  NOTATION               |
+| ------------------------ | --------------------------------------- |
+| Union of L and M         | L ∪ M = \{ s : s is in L or s is in M \} |
+| Concatenation of L and M | L M = \{st : s is in L and t is in M \}  |
+| Kleene closure of L      | L* = $\cup_{i=0}^\infty L^i$            |
+| Positive closure of L    | L+ = $\cup_{i=1}^\infty L^i$            |
+
+Figure 3.6: Definitions of operations on languages
+
+**Example 3.3:** Let L be the set of letters {A, B, ... , Z, a, b, ... , z} and let D be the set of digits {0, 1, ... 9}. We may think of L and D in two, essentially equivalent, ways. One way is that L and D are, respectively, the alphabets of uppercase and lowercase letters and of digits. The second way is that L and D are languages, all of whose strings happen to be of length one. Here are some other languages that can be constructed from languages L and D, using the operators of Fig. 3.6:
+
+1. L ∪ D is the set of letters and digits strictly speaking the language with 62 strings of length one, each of which strings is either one letter or one digit.
+
+2. LD is the set of 520 strings of length two, each consisting of one letter followed by one digit.
+
+3. L^4^ is the set of all 4-letter strings.
+
+4. L^*^ is the set of ail strings of letters, including ε, the empty string.
+
+5. L(L ∪ D)^*^ is the set of all strings of letters and digits beginning with a letter.
+
+6. D^+^ is the set of all strings of one or more digits.
+
+□
+
+### 3.3.3 Regular Expressions
+
+Suppose we wanted to describe the set of valid C identifiers. It is almost exactly the language described in item (5) above; the only difference is that the underscore is included among the letters.
+
+In Example 3.3, we were able to describe identifiers by giving names to sets of letters and digits and using the language operators union, concatenation, and closure. This process is so useful that a notation called *regular expressions* has come into common use for describing all the languages that can be built from these operators applied to the symbols of some alphabet. In this notation, if `letter_` is established to stand for any letter or the underscore, and `digit` is established to stand for any digit, then we could describe the language of C identifiers by:
+
+```
+letter_ ( letter_ | digit ) *
+```
+
+The vertical bar above means union, the parentheses are used to group subexpressions, the star means "zero or more occurrences of," and the juxtaposition of `letter_` with the remainder of the expression signifies concatenation.
+
+The regular expressions are built recursively out of smaller regular expressions, using the rules described below. Each regular expression r denotes a language L(r), which is also defined recursively from the languages denoted by r's subexpressions. Here are the rules that define the regular expressions over some alphabet ∑ and the languages that those expressions denote.
+
+**BASIS:** There are two rules that form the basis:
+
+1. ε is a regular expression, and L(ε) is {ε}, that is, the language whose sole member is the empty string.
+
+2. If *a* is a symbol in ∑, then **a** is a regular expression, and L(**a**) = {*a*}, that is, the language with one string, of length one, with a in its one position. Note that by convention, we use italics for symbols, and boldface for their corresponding regular expression. [^1]
+
+[^1]: However, when talking about specific characters from the ASCII character set, we shall generally use teletype font for both the character and its regular expression.
+
+**INDUCTION:** There are four parts to the induction whereby larger regular expressions are built from smaller ones. Suppose r and s are regular expressions denoting languages L(r) and L(s), respectively.
+
+1. (r)|(s) is a regular expression denoting the language L(r) ∪ L(s).
+
+2. (r)(s) is a regular expression denoting the language L(r)L(s).
+
+3. (r)* is a regular expression denoting (L (r) ) * .
+
+4. (r) is a regular expression denoting L(r) . This last rule says that we can add additional pairs of parentheses around expressions without changing the language they denote.
+
+As defined, regular expressions often contain unnecessary pairs of parentheses. We may drop certain pairs of parentheses if we adopt the conventions that:
+
+a) The unary operator `*` has highest precedence and is left associative.
+
+b) Concatenation has second highest precedence and is left associative.
+
+c) `|` has lowest precedence and is left associative. 
+
+Under these conventions, for example, we may replace the regular expression `(a)|((b)*(c))` by `a|b*c`. Both expressions denote the set of strings that are either a single `a` or are zero or more `b`'s followed by one `c`.
+
+**Example 3.4:** Let ∑ = {a, b}.
+
+1. The regular expression `a|b` denotes the language {a, b}.
+
+2. `(a|b)(a|b)` denotes {aa, ab, ba, bb}, the language of all strings of length two over the alphabet ∑ . Another regular expression for the same language is `aa|ab|ba|bb`.
+
+3. `a*` denotes the language consisting of all strings of zero or more a's, that is, {ε, a, aa, aaa, ... }.
+
+4. `(a|b)*` denotes the set of all strings consisting of zero or more instances of a or b, that is, all strings of a's and b's: {ε, a, b, aa, ab, ba, bb, aaa, ... }. Another regular expression for the same language is `(a*b*)*`.
+
+5. `a|a*b` denotes the language {a, b, ab, aab, aaab, ... }, that is, the string a and all strings consisting of zero or more a's and ending in b.
+
+□
+
+A language that can be defined by a regular expression is called a *regular set*. If two regular expressions r and s denote the same regular set, we say they are equivalent and write r = s. For instance, (a|b) = (b|a). There are a number of algebraic laws for regular expressions; each law asserts that expressions of two different forms are equivalent. Figure 3.7 shows some of the algebraic laws that hold for arbitrary regular expressions r, s, and t.
+
+| LAW                              | DESCRIPTION                         |
+| -------------------------------- | ----------------------------------- |
+| $r|s = s|r$                      | \| is commutative                   |
+| $r|(s|t) = (r|s)|t$              | \| is associative                   |
+| $r(st) = (rs)t$                  | Concatenation is associative        |
+| $r(s|t) = rs|rt; (s|t)r = sr|tr$ | Concatenation distributes over \|   |
+| $\epsilon r = r\epsilon = r$     | ε is the identity for concatenation |
+| $r* = (r|\epsilon)*$             | ε is guaranteed in a closure        |
+| $r** = r*$                       | * is idempotent                     |
+
+Figure 3.7: Algebraic laws for regular expressions 
+
+### 3.3.4 Regular Definitions
+
+For notational convenience, we may wish to give names to certain regular expressions and use those names in subsequent expressions, as if the names were themselves symbols. If ∑ is an alphabet of basic symbols, then a *regular definition* is a sequence of definitions of the form: 
+
+```
+d1 -> r1 
+d2 -> r2 
+  ...
+dn -> rn
+```
+
+where:
+
+1. Each d~i~ is a new symbol, not in ∑ and not the same as any other of the d's, and
+
+2. Each r~i~ is a regular expression over the alphabet ∑ ∪ {d1, d2, ... , d~i-1~}·
+
+By restricting r~i~ to ∑ and the previously defined d's, we avoid recursive definitions, and we can construct a regular expression over ∑ alone, for each r~i~. We do so by first replacing uses of d1 in r2 (which cannot use any of the d's except for d1, then replacing uses of d1 and d2 in r3 by r1 and (the substituted) r2, and so on. Finally, in r_n we replace each d_i, for i = 1, 2, ... , n-1, by the substituted version of r_i, each of which has only symbols of ∑.
+
+**Example 3.5:** C identifiers are strings of letters, digits, and underscores. Here is a regular definition for the language of C identifiers. We shall conventionally use italics for the symbols defined in regular definitions. 
+
+```F#
+letter_ -> A | B | ... | Z | a | b | ... | z | _
+digit -> 0 | 1 | ... | 9
+id -> letter_ ( letter_ | digit ) * 
+```
+
+□
+
+**Example 3.6:** Unsigned numbers (integer or floating point) are strings such as 5280, 0.01234, 6.336E4, or 1.89E-4. The regular definition 
+
+```
+digit -> 0 | 1 | ... | 9  
+digits -> digit digit*
+optionalFraction -> . digits | ε
+optionalExponent -> ( E ( + | - | ε ) digits ) | ε
+number -> digits optionalFraction optionalExponent 
+```
+
+is a precise specification for this set of strings. That is, an `optionalFraction` is either a decimal point (dot) followed by one or more digits, or it is missing (the empty string) . An `optionalExponent`, if not missing, is the letter E followed by an optional + or - sign, followed by one or more digits. Note that at least one digit must follow the dot, so number does not match 1. , but does match 1.0.  
+
+□
+
+### 3.3.5 Extensions of Regular Expressions
+
+Since Kleene introduced regular expressions with the basic operators for union, concatenation, and Kleene closure in the 1950s, many extensions have been added to regular expressions to enhance their ability to specify string patterns. Here we mention a few notational extensions that were first incorporated into Unix utilities such as Lex that are particularly useful in the specification lexical analyzers. The references to this chapter contain a discussion of some regular expression variants in use today.
+
+1. One or more instances. The unary, postfix operator `+` represents the positive closure of a regular expression and its language. That is, if r is a regular expression, then (r)+ denotes the language (L(r))+. The operator + has the same precedence and associativity as the operator \*. Two useful algebraic laws, `r* = r+|ε` and `r+ = rr* = r*r` relate the Kleene closure and positive closure.
+
+2. Zero or one instance. The unary postfix operator `?` means "zero or one occurrence." That is, r? is equivalent to `r | ε`, or put another way, `L(r?) = L(r) U {ε}`. The ? operator has the same precedence and associativity as * and +.
+
+3. Character classes. A regular expression `a1 | a2 | ... | an`, where the a_i's are each symbols of the alphabet, can be replaced by the shorthand [a1 a2 ... an]. More importantly, when a1 , a2, ... , an form a logical sequence, e.g., consecutive uppercase letters, lowercase letters, or digits, we can replace them by a1-an, that is, just the first and last separated by a hyphen. Thus, `[abc]` is shorthand for `a|b|c`, and `[a-z]` is shorthand for `a|b| ... |z`.
+
+**Example 3.7:** Using these shorthands, we can rewrite the regular definition of Example 3.5 as: 
+
+```F#
+letter_ -> [A-Za-z_]
+digit -> [0-9]
+id -> letter_ ( letter_ | digit ) * 
+```
+
+The regular definition of Example 3.6 can also be simplified: 
+
+```F#
+digit -> [0-9]
+digits -> digit+
+number -> digits ( . digits)? ( E [+-]? digits )? 
+```
+□
+
+## 3.5 The Lexical-Analyzer Generator Lex
+
+In this section, we introduce a tool called **Lex**, or in a more recent implementation **Flex**, that allows one to specify a lexical analyzer by specifying regular expressions to describe patterns for tokens. The input notation for the Lex tool is referred to as the *Lex language* and the tool itself is the *Lex compiler*. Behind the scenes, the Lex compiler transforms the input patterns into a transition diagram and generates code, in a file called `lex.yy.c`, that simulates this transition diagram. The mechanics of how this translation from regular expressions to transition diagrams occurs is the subject of the next sections; here we only learn the Lex language.
+
+### 3.5.1 Use of Lex
+
+Figure 3.22 suggests how Lex is used. An input file, which we call `lex.l`, is written in the Lex language and describes the lexical analyzer to be generated. The Lex compiler transforms `lex.l` to a C program, in a file that is always named `lex.yy.c`. The latter file is compiled by the C compiler into a file called `a.out`, as always. The C-compiler output is a working lexical analyzer that can take a stream of input characters and produce a stream of tokens.
+
+![]()
+
+Figure 3.22: Creating a lexical analyzer with Lex
+
+The normal use of the compiled C program, referred to as `a.out` in Fig. 3.22, is as a subroutine of the parser. It is a C function that returns an integer, which is a code for one of the possible token names. The attribute value, whether it be another numeric code, a pointer to the symbol table, or nothing, is placed in a global variable **yylval**[^2], which is shared between the lexical analyzer and parser, thereby making it simple to return both the name and an attribute value of a token.
+
+[^2]: Incidentally, the `yy` that appears in `yylval` and `lex.yy.c` refers to the Yacc parser generator, which we shall describe in Section 4.9, and which is commonly used in conjunction with Lex. 
+
+### 3.5.2 Structure of Lex Programs
+
+A Lex program has the following form:
+
+```lex
+declarations
+%%
+translation rules
+%%
+auxiliary functions
+```
+
+The declarations section includes declarations of variables, *manifest constants* (identifiers declared to stand for a constant, e.g., the name of a token), and regular definitions, in the style of Section 3.3.4.
+
+The translation rules each have the form
+
+```
+Pattern { Action }
+```
+
+Each pattern is a regular expression, which may use the regular definitions of the declaration section. The actions are fragments of code, typically written in C, although many variants of Lex using other languages have been created.
+
+The third section holds whatever additional functions are used in the actions. Alternatively, these functions can be compiled separately and loaded with the lexical analyzer.
+
+The lexical analyzer created by Lex behaves in concert with the parser as follows. When called by the parser, the lexical analyzer begins reading its remaining input, one character at a time, until it finds the longest prefix of the input that matches one of the patterns P~i~. It then executes the associated action A~i~. Typically, A~i~ will return to the parser, but if it does not (e.g., because P~i~ describes whitespace or comments), then the lexical analyzer proceeds to find additional lexemes, until one of the corresponding actions causes a return to the parser. The lexical analyzer returns a single value, the token name, to the parser, but uses the shared, integer variable `yylval` to pass additional information about the lexeme found, if needed.
+
+**Example 3.11:** Figure 3.23 is a Lex program that recognizes the tokens of Fig. 3.12 and returns the token found. A few observations about this code will introduce us to many of the important features of Lex.
+
+```C++
+%{
+
+/* definitions of manifest constants
+LT, LE, EQ, NE, GT, GE,
+IF, THEN, ELSE, ID, NUMBER, RELOP */
+
+%}
+
+/* regular definitions */
+delim  [ \t\n]
+ws     {delim}+
+letter [A-Za-z]
+digit  [0-9]
+id     {letter}({letter}|{digit})*
+number {digit}+ (\.{digit}+)?(E[+-]?{digit}+)?
+
+%%
+
+{ws}     {/* no action and no return */}
+if       {return(IF) ; }
+then     {return(THEN) ; }
+else     {return(ELSE) ; }
+{id}     {yylval = (int) installID(); return(ID); }
+{number} {yylval = (int) installNum(); return(NUMBER); }
+"<"      {yylval = LT; return(RELOP); }
+"<="     {yylval = LE; return(RELOP); }
+"="      {yylval = EQ; return(RELOP); }
+"<>"     {yylval = NE; return(RELOP); }
+">"      {yylval = GT; return(RELOP); }
+">="     {yylval = GE; return(RELOP); }
+
+%%
+
+int installID () {
+    /* function to install the lexeme, whose
+    first character is pointed to by yytext,
+    and whose length is yyleng, into the
+    symbol table and return a pointer thereto */
+}
+
+int installNum() {
+    /* similar to installID, but puts numerical
+    constants into a separate table */
+}
+```
+
+Figure 3.23: Lex program for the tokens of Fig. 3.12
+
+In the declarations section we see a pair of special brackets, `%{` and `%}`. Anything within these brackets is copied directly to the file `lex.yy.c`, and is not treated as a regular definition. It is common to place there the definitions of the manifest constants, using C `#define` statements to associate unique integer codes with each of the manifest constants. In our example, we have listed in a comment the names of the manifest constants, LT, IF, and so on, but have not shown them defined to be particular integers.[^3]
+
+[^3]: If Lex is used along with Yacc, then it would be normal to define the manifest constants in the Yacc program and use them without definition in the Lex program. Since `lex.yy.c` is compiled with the Yacc output, the constants thus will be available to the actions in the Lex program. 
+
+Also in the declarations section is a sequence of regular definitions. These use the extended notation for regular expressions described in Section 3.3.5. Regular definitions that are used in later definitions or in the patterns of the translation rules are surrounded by curly braces. Thus, for instance, `delim` is defined to be a shorthand for the character class consisting of the blank, the tab, and the newline; the latter two are represented, as in all UNIX commands, by backslash followed by t or n, respectively. Then, `ws` is defined to be one or more delimiters, by the regular expression `{delim}+`.
+
+Notice that in the definition of id and number, parentheses are used as grouping metasymbols and do not stand for themselves. In contrast, E in the definition of number stands for itself. If we wish to use one of the Lex meta- symbols, such as any of the parentheses, +, \*, or ?, to stand for themselves, we may precede them with a backslash. For instance, we see `\.` in the definition of number, to represent the dot, since that character is a metasymbol representing "any character," as usual in UNIX regular expressions.
+
+In the auxiliary-function section, we see two such functions, `installID()` and `installNum()`. Like the portion of the declaration section that appears between `%{ ... %}`, everything in the auxiliary section is copied directly to file `lex.yy.c`, but may be used in the actions.
+
+Finally, let us examine some of the patterns and rules in the middle section of Fig. 3.23. First, `ws`, an identifier declared in the first section, has an associated empty action. If we find whitespace, we do not return to the parser, but look for another lexeme. The second token has the simple regular expression pattern `if`. Should we see the two letters `if` on the input, and they are not followed by another letter or digit ( which would cause the lexical analyzer to find a longer prefix of the input matching the pattern for id), then the lexical analyzer consumes these two letters from the input and returns the token name IF, that is, the integer for which the manifest constant IF stands. Keywords `then` and `else` are treated similarly.
+
+The fifth token has the pattern defined by id. Note that, although keywords like if match this pattern as well as an earlier pattern, Lex chooses whichever pattern is listed first in situations where the longest matching prefix matches two or more patterns. The action taken when id is matched is threefold:
+
+1. Function `installID()` is called to place the lexeme found in the symbol table.
+
+2. This function returns a pointer to the symbol table, which is placed in global variable `yylval`, where it can be used by the parser or a later component of the compiler. Note that `installID()` has available to it two variables that are set automatically by the lexical analyzer that Lex generates:
+
+   a) `yytext` is a pointer to the beginning of the lexeme, analogous to `lexemeBegin` in Fig. 3.3.
+
+   b) `yyleng` is the length of the lexeme found.
+
+3. The token name ID is returned to the parser.
+
+The action taken when a lexeme matching the pattern *number* is similar, using the auxiliary function `installNum()`. □
+
+### 3.5.3 Conflict Resolution in Lex
+
+We have alluded to the two rules that Lex uses to decide on the proper lexeme to select, when several prefixes of the input match one or more patterns:
+
+1. Always prefer a longer prefix to a shorter prefix.
+
+2. If the longest possible prefix matches two or more patterns, prefer the pattern listed first in the Lex program.
+
+Example 3.12: The first rule tells us to continue reading letters and digits to find the longest prefix of these characters to group as an identifier. It also tells us to treat <= as a single lexeme, rather than selecting < as one lexeme and = as the next lexeme. The second rule makes keywords reserved, if we list the keywords before id in the program. For instance, if then is determined to be the longest prefix of the input that matches any pattern, and the pattern then precedes {id}, as it does in Fig. 3.23, then the token THEN is returned, rather than ID. □
+
+### 3.5.4 The Lookahead Operator
+
+Lex automatically reads one character ahead of the last character that forms the selected lexeme, and then retracts the input so only the lexeme itself is consumed from the input. However, sometimes, we want a certain pattern to be matched to the input only when it is followed by a certain other characters. If so, we may use the slash in a pattern to indicate the end of the part of the pattern that matches the lexeme. What follows `/` is additional pattern that must be matched before we can decide that the token in question was seen, but what matches this second pattern is not part of the lexeme.
+
+**Example 3.13:** In Fortran and some other languages, keywords are not reserved. That situation creates problems, such as a statement
+
+```fortran
+IF(I, J) = 3
+```
+
+where IF is the name of an array, not a keyword. This statement contrasts with statements of the form
+
+```fortran
+IF ( condition ) THEN ...
+```
+
+where IF is a keyword. Fortunately, we can be sure that the keyword IF is always followed by a left parenthesis, some text — the condition — that may contain parentheses, a right parenthesis and a letter. Thus, we could write a Lex rule for the keyword IF like:
+
+```lex
+IF / \( .* \) {letter}
+```
+
+This rule says that the pattern the lexeme matches is just the two letters IF. The slash says that additional pattern follows but does not match the lexeme. In this pattern, the first character is the left parentheses. Since that character is a Lex meta symbol, it must be preceded by a backslash to indicate that it has its literal meaning. The dot and star match "any string without a newline." Note that the dot is a Lex meta symbol meaning "any character except newline." It is followed by a right parenthesis, again with a backslash to give that character its literal meaning. The additional pattern is followed by the symbol *letter*, which is a regular definition representing the character class of all letters.
+
+Note that in order for this pattern to be fool proof, we must preprocess the input to delete whitespace. We have in the pattern neither provision for whitespace, nor can we deal with the possibility that the condition extends over lines, since the dot will not match a newline character.
+
+For instance, suppose this pattern is asked to match a prefix of input:
+
+```fortran
+IF(A<(B+C)*D)THEN ...
+```
+
+the first two characters match `IF`, the next character matches `\(` , the next nine characters match `.*`, and the next two match `\)` and letter. Note the fact that the first right parenthesis (after C) is not followed by a letter is irrelevant; we only need to find some way of matching the input to the pattern. We conclude that the letters IF constitute the lexeme, and they are an instance of token **if**. 
+
+□
+
 ## 3.6 Finite Automata
 
 We shall now discover how Lex turns its input program into a lexical analyzer. At the heart of the transition is the formalism known as *finite automata*. These are essentially graphs, like transition diagrams, with a few differences:
@@ -224,8 +600,6 @@ let dfaTransitionTable = Map.ofList[
 let finals = set [3]
 ```
 
-
-
 ## 3.7 From Regular Expressions to Automata
 
 The regular expression is the notation of choice for describing lexical analyzers and other pattern-processing software, as was reflected in Section 3.5. However, implementation of that software requires the simulation of a DFA, as in Algorithm 3.18, or,perhaps simulation of an NFA. Because an NFA often has a choice of move on an input symbol ( as Fig. 3.24 does on input a from state 0) or on ε ( as Fig. 3.26 does from state 0), or even a choice of making a transition on ε or on a real input symbol, its simulation is less straightforward than for a DFA. Thus often it is important to convert an NFA to a DFA that accepts the same language.
@@ -394,89 +768,11 @@ E--b-->C
 
 Figure 3.36: Result of applying the subset construction to Fig. 3.34
 
-### 3.7.2 Simulation of an NFA
+### ~~3.7.2 Simulation of an NFA~~
 
-A strategy that has been used in a number of text-editing programs is to construct an NFA from a regular expression and then simulate the NFA using something like an on-the-fly subset construction. The simulation is outlined below.
 
-**Algorithm 3.22:** Simulating an NFA.
+### ~~3.7.3 Efficiency of NFA Simulation~~
 
-**INPUT:** An input string x terminated by an end-of-file character **eof**. An NFA N with start state s~0~, accepting states F, and transition function `move`.
-
-**OUTPUT:** Answer "yes" if N accepts x ; "no" otherwise.
-
-**METHOD:** The algorithm keeps a set of current states S, those that are reached from s~0~ following a path labeled by the inputs read so far. If c is the next input character, read by the function `nextChar()`, then we first compute `move(S, c)` and then close that set using ε-closure(). The algorithm is sketched in Fig. 3.37. □
-
-```C
-1)  S = ε-closure(s0) ;  
-2)  c = nextChar(); 
-3)  while ( c != eof )  { 
-4)      S = ε-closure(move(S, c)) ;
-5)      c = nextChar(); 
-6)  } 
-7)  if ( S ∩ F  != Ø ) return "yes" ;
-8)  else return "no"; 
-```
-
-Figure 3.37: Simulating an NFA
-
-### 3.7.3 Efficiency of NFA Simulation
-
-If carefully implemented, Algorithm 3.22 can be quite efficient . As the ideas involved are useful in a number of similar algorithms involving search of graphs, we shall look at this implementation in additional detail. The data structures we need are:
-
-1. Two stacks, each of which holds a set of NFA states. One of these stacks, `oldStates`, holds the "current" set of states, i.e., the value of S on the right side of line (4) in Fig. 3.37. The second, `newStates`, holds the "next" set of states S on the left side of line (4). Unseen is a step where, as we go around the loop of lines ( 3 ) through (6), `newStates` is transferred to `oldStates`.
-
-2. A boolean array `alreadyOn`, indexed by the NFA states, to indicate which states are in `newStates`. While the array and stack hold the same information, it is much faster to interrogate `alreadyOn[s]` than to search for state s on the stack `newStates`. It is for this efficiency that we maintain both representations.
-
-3. A two-dimensional array move[s, a] holding the transition table of the NFA. The entries in this table, which are sets of states, are represented by linked lists.
-
-To implement line (1) of Fig. 3.37, we need to set each entry in array `alreadyOn` to FALSE, then for each state s in ε-closure(s~0~), push s onto `oldStates` and set `alreadyOn[s]` to TRUE. This operation on state s, and the implementation of line (4) as well, are facilitated by a function we shall call `addState(s)`. This function pushes state s onto `newStates`, sets `alreadyOn[s]` to TRUE, and calls itself recursively on the states in `move[s, ε]` in order to further the computation of ε-closure(s). However, to avoid duplicating work, we must be careful never to call `addState` on a state that is already on the stack `newStates`. Figure 3.38 sketches this function. 
-
-```
- 9) addState(s) { 
-10)   push s onto newStates; 
-11)   alreadyOn[s]  =  TRUE; 
-12)   for ( t on move[s, ε] ) 
-13)     if ( !alreadyOn(t) ) 
-14)       addState( t) ; 
-15) } 
-```
-
-Figure 3.38: Adding a new state s, which is known not to be on newStates
-
-We implement line (4) of Fig. 3.37 by looking at each state s on `oldStates`. We first find the set of states `move[s,c]`, where c is the next input, and for each of those states that is not already on `newStates`, we apply `addState` to it. Note that `addState` has the effect of computing the ε-closure and adding all those states to `newStates` as well, if they were not already on. This sequence of steps is summarized in Fig. 3.39. 
-
-```
-16)  for ( s on oldStates )  { 
-17)    for ( t on move[s, c] ) 
-18)      if ( !alreadyOn[t] ) 
-19)        addState(t); 
-20)    pop s from oldStates; 
-21)  } 
-
-22)  for ( s on newStates ) { 
-23)    pop s from newStates; 
-24)    push s onto oldStates; 
-25)    alreadyOn[s] = FALSE; 
-26)  } 
-```
-
-Figure 3.39: Implementation of step (4) of Fig. 3.37
-
----
-
-##### Big-Oh Notation
-
-An expression like O(n) is a shorthand for "at most some constant times n." Technically, we say a function ƒ(n), perhaps the running time of some step of an algorithm, is O(g(n)) if there are constants c and n~0~, such that whenever n ≥ n~0~, it is true that ƒ(n) ≤ cg(n). A useful idiom is "O(1)," Which means "some constant." The use of this big-oh notation enables us to avoid getting too far into the details of what we count as a unit of execution time, yet lets us express the rate at which the running time of an algorithm grows.
-
----
-
-Now, suppose that the NFA N has n states and m transitions; i.e., m is the sum over all states of the number of symbols ( or ε) on which the state has a transition out. Not counting the call to `addState` at line (19) of Fig. 3.39, the time spent in the loop of lines (16) through (21) is O(n). That is, we can go around the loop at most n times, and each step of the loop requires constant work, except for the time spent in `addState`. The same is true of the loop of lines (22) through (26).
-
-During one execution of Fig. 3.39, i.e., of step (4) of Fig. 3.37, it is only possible to call `addState` on a given state once. The reason is that whenever we call `addState(s)`, we set `alreadyOn[s]` to TRUE at line (11) of Fig. 3.39. Once `alreadyOn[s]` is TRUE, the tests at line (13) of Fig. 3.38 and line (18 ) of Fig. 3.39 prevent another call.
-
-The time spent in one call to `addState`, exclusive of the time spent in recursive calls at line (14), is O(1) for lines (10) and (11). For lines (12) and (13), the time depends on how many ε-transitions there are out of state s. We do not know this number for a given state, but we know that there are at most m transitions in total, out of all states. As a result, the aggregate time spent in lines (11) over all calls to `addState` during one execution of the code of Fig. 3.39 is O(m). The aggregate for the rest of the steps of `addState` is O(n), since it is a constant per call, and there are at most n calls.
-
-We conclude that, implemented properly, the time to execute line (4) of Fig. 3.37 is O(n + m). The rest of the while-loop of lines (3) through (6) takes O(1) time per iteration. If the input x is of length k, then the total work in that loop is O(k(n + m)) . Line (1) of Fig. 3.37 can be executed in O(n + m) time, since it is essentially the steps of Fig. 3.39 with `oldStates` containing only the state s~0~. Lines (2), (7), and (8) each take O(1) time. Thus, the running time of Algorithm 3.22, properly implemented, is O((k(n + m)) . That is, the time taken is proportional to the length of the input times the size (nodes plus edges) of the transition graph.
 
 ### 3.7.4 Construction of an NFA from a Regular Expression 
 
@@ -889,234 +1185,21 @@ However, when we construct a DFA for use in a lexical analyzer, it is important 
 
 In this section we present three algorithms that have been used to implement and optimize pattern matchers constructed from regular expressions.
 
-1. The first algorithm is useful in a Lex compiler, because it constructs a DFA directly from a regular expression, without constructing an intermediate NFA. The resulting DFA also may have fewer states than the DFA constructed via an NFA.
+1.
 
 2. The second algorithm minimizes the number of states of any DFA, by combining states that have the same future behavior. The algorithm itself is quite efficient, running in time O( n log n ) , where n is the number of states of the DFA.
 
-3. The third algorithm produces more compact representations of transition tables than the standard, two-dimensional table.
+3.
 
 ### 3.9.1 Important States of an NFA
 
-To begin our discussion of how to go directly from a regular expression to a DFA, we must first dissect the NFA construction of Algorithm 3.23 and consider the roles played by various states. We call a state of an NFA *important* if it has a non-ε out-transition. Notice that the subset construction ( Algorithm 3.20) uses only the important states in a set T when it computes `ε-closure(move(T, a))` , the set of states reachable from T on input a. That is, the set of states `move(s, a)` is nonempty only if state s is important. During the subset construction, two sets of NFA states can be identified ( treated as if they were the same set ) if they:
-
-1. Have the same important states, and
-
-2. Either both have accepting states or neither does.
-
-When the NFA is constructed from a regular expression by Algorithm 3.23, we can say more about the important states. The only important states are those introduced as initial states in the basis part for a particular symbol position in the regular expression. That is, each important state corresponds to a particular operand in the regular expression.
-
-The constructed NFA has only one accepting state, but this state, having no out-transitions, is not an important state. By concatenating a unique right endmarker `#` to a regular expression r, we give the accepting state for r a transition on `#`, making it an important state of the NFA for `(r)#`. In other words, by using the augmented regular expression `(r)#`, we can forget about accepting states as the subset construction proceeds; when the construction is complete, any state with a transition on `#` must be an accepting state.
-
-The important states of the NFA correspond directly to the positions in the regular expression that hold symbols of the alphabet. It is useful, as we shall see, to present the regular expression by its syntax tree, where the leaves correspond to operands and the interior nodes correspond to operators. An interior node is called a *cat-node*, *or-node*, or *star-node* if it is labeled by the concatenation operator (dot), union operator |, or star operator *, respectively. We can construct a syntax tree for a regular expression just as we did for arithmetic expressions in Section 2.5.1.
-
-**Example 3.31:** Figure 3.56 shows the syntax tree for the regular expression of our running example. Cat-nodes are represented by circles. □
-
-```F#
-let r1 = Union(Leaf(1, 'a'),Leaf(2, 'b'))
-let r2 = Star r1
-let r3 = Cat(r2, Leaf(3, 'a'))
-let r4 = Cat(r3, Leaf(4, 'b'))
-let r5 = Cat(r4, Leaf(5, 'b'))
-let r6 = Cat(r5, Leaf(6, '#'))
-```
-
-Figure 3.56: Syntax tree for `(a|b)*abb#`
-
-Leaves in a syntax tree are labeled by ε or by an alphabet symbol. To each leaf not labeled ε, we attach a unique integer. We refer to this integer as the position of the leaf and also as a position of its symbol. Note that a symbol can have several positions; for instance, a has positions 1 and 3 in Fig. 3.56. The positions in the syntax tree correspond to the important states of the constructed NFA.
-
-**Example 3.32:** Figure 3.57 shows the NFA for the same regular expression as Fig. 3.56, with the important states numbered and other states represented by letters. The numbered states in the NFA and the positions in the syntax tree correspond in a way we shall soon see. □
-
-```mermaid
-graph LR
-
-start-->A
-A--ε-->B
-B--ε-->1
-B--ε-->2
-1--a-->C
-2--b-->D
-C--ε-->E
-D--ε-->E
-E--ε-->B
-E--ε-->3
-A--ε-->3
-3--a-->4
-4--b-->5
-5--b-->6
-6--#-->F(F)
-```
-
-Figure 3.57: NFA constructed by Algorithm 3.23 for `(a|b)*abb#`
-
 ### 3.9.2 Functions Computed From the Syntax Tree
-
-To construct a DFA directly from a regular expression, we construct its syntax tree and then compute four functions: `nullable`, `firstpos`, `lastpos`, and `followpos`, defined as follows. Each definition refers to the syntax tree for a particular augmented regular expression `(r)#`.
-
-1. `nullable(n)` is true for a syntax-tree node n if and only if the subexpression represented by n has ε in its language. That is, the subexpression can be "made null" or the empty string, even though there may be other strings it can represent as well.
-
-2. `firstpos(n)` is the set of positions in the subtree rooted at n that correspond to the first symbol of at least one string in the language of the subexpression rooted at n.
-
-3. `lastpos(n)` is the set of positions in the subtree rooted at n that correspond to the last symbol of at least one string in the language of the subexpression rooted at n. 
-
-4. `followpos(p)`, for a position p, is the set of positions q in the entire syntax tree such that there is some string x = a1 a2 ... an in L(`(r)#`) such that for some i, there is a way to explain the membership of x in L(`(r)#`) by matching a~i~ to position p of the syntax tree and a~i+1~ to position q.
-
-**Example 3.33:** Consider the cat-node n in Fig. 3.56 that corresponds to the expression `(a|b)*a`. We claim `nullable(n)` is false, since this node generates all strings of a's and b's ending in an a; it does not generate ε. On the other hand, the star-node below it is nullable; it generates ε along with all other strings of a's and b's.
-
-`firstpos(n) = {1, 2, 3}`. In a typical generated string like aa, the first position of the string corresponds to position 1 of the tree, and in a string like ba, the first position of the string comes from position 2 of the tree. However, when the string generated by the expression of node n is just a, then this a comes from position 3.
-
-`lastpos(n) = {3}`. That is, no matter what string is generated from the expression of node n, the last position is the a from position 3 of the tree.
-
-`followpos` is trickier to compute, but we shall see the rules for doing so shortly. Here is an example of the reasoning: `followpos(1) = {1, 2, 3}`. Consider a string `... ac ...` , where the c is either a or b, and the a comes from position 1. That is, this a is one of those generated by the a in expression `(a|b)*`. This a could be followed by another a or b coming from the same subexpression, in which case c comes from position 1 or 2. It is also possible that this a is the last in the string generated by `(a|b)*`, in which case the symbol c must be the a that comes from position 3. Thus, 1, 2, and 3 are exactly the positions that can follow position 1. □
 
 ### 3.9.3 Computing nullable, firstpos, and lastpos
 
-We can compute `nullable`, `firstpos`, and `lastpos` by a straightforward recursion on the height of the tree. The basis and inductive rules for `nullable` and `firstpos` are summarized in Fig. 3.58. The rules for `lastpos` are essentially the same as for `firstpos`, but the roles of children c1 and c2 must be swapped in the rule for a cat-node.
-
-| Node n                 | nullable(n)                     | firstpos(n)                                                  |
-| ---------------------- | ------------------------------- | ------------------------------------------------------------ |
-| A leaf labeled ε       | true                            | Ø                                                            |
-| A leaf with position i | false                           | {i}                                                          |
-| An or-node n = c1\|c2  | nullable(c1) or nullable(c2)    | firstpos( c1 ) ∪ firstpos(c2)                                |
-| A cat-node n = c1 c2   | nullable( c1 ) and nullable(c2) | if nullable( c1 ) then firstpos( c1 ) ∪ firstpos(c2) else firstpos(c1) |
-| A star-node n = c1 *   | nullable(n) = true              | firstpos( c1 )                                               |
-
-Figure 3.58: Rules for computing nullable and firstpos
-
-**Example 3.34:** Of all the nodes in Fig. 3.56 only the star-node is nullable. We note from the table of Fig. 3.58 that none of the leaves are nullable, because they each correspond to non-ε operands. The or-node is not nullable, because neither of its children is. The star-node is nullable, because every star-node is nullable. Finally, each of the cat-nodes, having at least one non nullable child, is not nullable.
-
-The computation of firstpos and lastpos for each of the nodes is shown in Fig. 3.59, with `firstpos(n)` to the left of node n, and `lastpos(n)` to its right. Each of the leaves has only itself for firstpos and lastpos, as required by the rule for non-ε leaves in Fig. 3.58. For the or-node, we take the union of firstpos at the children and do the same for lastpos. The rule for the star-node says that we take the value of firstpos or lastpos at the one child of that node. 
-
-```mermaid
-graph TB
-0["{1,2,3}@{6}"]
-1["{1,2,3}@{5}"]
-2["{6}#{6}"]
-3["{1,2,3}@{4}"]
-4["{5}b{5}"]
-5["{1,2,3}@{3}"]
-6["{4}b{4}"]
-7["{1,2}*{1,2}"]
-8["{3}a{3}"]
-9["{1,2}|{1,2}"]
-10["{1}a{1}"]
-11["{2}b{2}"]
-
-0---1
-0---2
-1---3
-1---4
-3---5
-3---6
-5---7
-5---8
-7---9
-9---10
-9---11
-```
-
-Figure 3.59: firstpos and lastpos for nodes in the syntax tree for `(a|b)*abb#`
-
-Now, consider the lowest cat-node, which we shall call n. To compute `firstpos(n)`, we first consider whether the left operand is nullable, which it is in this case. Therefore, firstpos for n is the union of firstpos for each of its children, that is {1, 2} ∪ {3} = {1, 2, 3}. The rule for lastpos does not appear explicitly in Fig. 3.58, but as we mentioned, the rules are the same as for firstpos, with the children interchanged. That is, to compute `lastpos(n)` we must ask whether its right child ( the leaf with position 3) is nullable, which it is not. Therefore, lastpos(n) is the same as lastpos of the right child, or {3}. □
-
 ### 3.9.4 Computing followpos
 
-Finally, we need to see how to compute *followpos*. There are only two ways that a position of a regular expression can be made to follow another.
-
-1. If n is a cat-node with left child c1 and right child c2 , then for every position i in `lastpos(c1)` , all positions in `firstpos(c2)` are in `followpos(i)`.
-
-2. If n is a star-node, and i is a position in `lastpos(n)`, then all positions in `firstpos(n)` are in `followpos(i)`.
-
-**Example 3.35:** Let us continue with our running example; recall that firstpos and lastpos were computed in Fig. 3.59. Rule 1 for followpos requires that we look at each cat-node, and put each position in firstpos of its right child in followpos for each position in lastpos of its left child. For the lowest cat-node in Fig. 3.59, that rule says position 3 is in `followpos(1)` and `followpos(2)`. The next cat-node above says that 4 is in `followpos(3)`, and the remaining two cat-nodes give us 5 in `followpos(4)` and 6 in `followpos(5)`. 
-
-We must also apply rule 2 to the star-node. That rule tells us positions 1 and 2 are in both `followpos(1)` and `followpos(2)`, since both firstpos and lastpos for this node are {1, 2}. The complete sets followpos are summarized in Fig. 3.60. □
-
-| POSITION n | followpos(n) |
-| ---------- | ------------ |
-| 1          | {1, 2, 3}    |
-| 2          | {1, 2, 3}    |
-| 3          | {4}          |
-| 4          | {5}          |
-| 5          | {6}          |
-| 6          | Ø            |
-
-Figure 3.60: The function followpos
-
-We can represent the function `followpos` by creating a directed graph with a node for each position and an arc from position i to position j if and only if j is in `followpos(i)`. Figure 3.61 shows this graph for the function of Fig. 3.60.
-
-```mermaid
-graph LR
-1-->1
-1-->2
-1-->3
-2-->1
-2-->2
-2-->3
-3-->4
-4-->5
-5-->6
-```
-
-Figure 3.61: Directed graph for the function followpos
-
-It should come as no surprise that the graph for *followpos* is almost an NFA without ε-transitions for the underlying regular expression, and would become one if we:
-
-1. Make all positions in *firstpos* of the root be initial states,
-
-2. Label each arc from i to j by the symbol at position i, and
-
-3. Make the position associated with endmarker # be the only accepting state.
-
 ### 3.9.5 Converting a Regular Expression Directly to a DFA
-
-**Algorithm 3.36:** Construction of a DFA from a regular expression r.
-
-**INPUT:** A regular expression r.
-
-**OUTPUT:** A DFA D that recognizes L(r).
-
-**METHOD:**
-
-1. Construct a syntax tree T from the augmented regular expression `(r)#`.
-
-2. Compute `nullable`, `firstpos`, `lastpos`, and `followpos` for T, using the methods of Sections 3.9.3 and 3.9.4.
-
-3. Construct `Dstates`, the set of states of DFA D, and `Dtran`, the transition function for D, by the procedure of Fig. 3.62. The states of D are sets of positions in T. Initially, each state is "unmarked," and a state becomes "marked" just before we consider its out-transitions. The start state of D is `firstpos(n0)`, where node n~0~ is the root of T. The accepting states are those containing the position for the endmarker symbol #.
-
-□
-
-```C
-initialize Dstates to contain only the unmarked state firstpos( n_0 ), where n_0 is the root of syntax tree T for (r)#; 
-while (there is an unmarked state S in Dstates)  {
-    mark S; 
-    for ( each input symbol a ) { 
-        let U be the union of followpos(p) for all p in S that correspond to a; 
-        if ( U is not in Dstates )
-            add U as an unmarked state to Dstates; 
-        Dtran[S, a]  =  U; 
-    } 
-} 
-```
-
-Figure 3.62: Construction of a DFA directly from a regular expression
-
-**Example 3.37:** We can now put together the steps of our running example to construct a DFA for the regular expression r = `(a|b)*abb`. The syntax tree for `(r)#` appeared in Fig. 3.56. We observed that for this tree, nullable is true only for the star-node, and we exhibited firstpos and lastpos in Fig. 3.59. The values of followpos appear in Fig. 3.60.
-
-The value of firstpos for the root of the tree is {1, 2, 3}, so this set is the start state of D. Call this set of states A. We must compute Dtran[A, a ] and Dtran[A, b]. Among the positions of A, 1 and 3 correspond to a, while 2 corresponds to b. Thus, Dtran[A, a] = followpos(1) ∪ followpos(3) = {1, 2, 3, 4}, and Dtran[A, b] = followpos(2) = {1, 2, 3}. The latter is state A, and so does not have to be added to Dstates, but the former, B = {1, 2, 3, 4}, is new, so we add it to Dstates and proceed to compute its transitions. The complete DFA is shown in Fig. 3.63. □
-
-```mermaid
-graph LR
-start --> 123
-123--b-->123
-123--a-->1234
-1234--a-->1234
-1234--b-->1235
-1235--a-->1234
-1235--b-->1236("(1236)")
-1236--a-->1234
-1236--b-->123
-```
-
-Figure 3.63: DFA constructed from Fig. 3.57
 
 ### 3.9.6 Minimizing the Number of States of a DFA
 
@@ -1221,28 +1304,6 @@ We must split 0137 from 7, because they go to different groups on input `a`. We 
 
 ### 3.9.8 Trading Time for Space in DFA Simulation
 
-The simplest and fastest way to represent the transition function of a DFA is a two-dimensional table indexed by states and characters. Given a state and next input character, we access the array to find the next state and any special action we must take, e.g., returning a token to the parser. Since a typical lexical analyzer has several hundred states in its DFA and involves the ASCII alphabet of 128 input characters, the array consumes less than a megabyte.
-
-However, compilers are also appearing in very small devices, where even a megabyte of storage may be too much. For such situations, there are many methods that can be used to compact the transition table. For instance, we can represent each state by a list of transitions that is, character-state pairs ended by a default state that is to be chosen for any input character not on the list. If we choose as the default the most frequently occurring next state, we can often reduce the amount of storage needed by a large factor.
-
-There is a more subtle data structure that allows us to combine the speed of array access with the compression of lists with defaults. We may think of this structure as four arrays, as suggested in Fig. 3.66.[^5] The base array is used to determine the base location of the entries for state s, which are located in the next and check arrays. The default array is used to determine an alternative base location if the check array tells us the one given by base[s] is invalid.
-
-[^5]: In practice, there would be another array indexed by states to give the action associated with that state, if any.
-
-Figure 3.66: Data structure for representing transition tables
-
-To compute nextState(s, a), the transition for state s on input a, we examine the next and check entries in location l = base[s] + a, where character a is treated as an integer, presumably in the range 0 to 127. If check[l] = s, then this entry is valid, and the next state for state s on input a is next[l]. If check[l] ≠ s, then we determine another state t = default[ s] and repeat the process as if t were the current state. More formally, the function `nextState` is defined as follows:
-
-```C
-int nextState( s, a) { 
-    if ( check[base[s] + a] == s ) return next[base[s] + a]; 
-    else return nextState( default[s], a); 
-} 
-```
-
-The intended use of the structure of Fig. 3.66 is to make the next-check arrays short by taking advantage of the similarities among states. For instance, state t, the default for state s, might be the state that says "we are working on an identifier," like state 10 in Fig. 3.14. Perhaps state s is entered after seeing the letters `th`, which are a prefix of keyword `then` as well as potentially being the prefix of some lexeme for an identifier. On input character e, we must go from state s to a special state that remembers we have seen the, but otherwise, state s behaves as t does. Thus, we set check[base[s] + e] to s (to confirm that this entry is valid for s) and we set next[ base[ s] + e] to the state that remembers `the`. Also, default[s] is set to `t`.
-
-While we may not be able to choose base values so that no next-check entries remain unused, experience has shown that the simple strategy of assigning base values to states in turn, and assigning each base[s] value the lowest integer so that the special entries for state s are not previously occupied utilizes little more space than the minimum possible. 
 
 ## 3.10 Summary of Chapter 3
 
@@ -1250,7 +1311,7 @@ While we may not be able to choose base values so that no next-check entries rem
 
 + Lexemes. Each time the lexical analyzer returns a token to the parser, it has an associated lexeme the sequence of input characters that the token represents.
 
-+ Buffering. Because it is often necessary to scan ahead on the input in order to see where the next lexeme ends, it is usually necessary for the lexical analyzer to buffer its input. Using a pair of buffers cyclicly and ending each buffer's contents with a sentinel that warns of its end are two techniques that accelerate the process of scanning the input.
++ 
 
 + Patterns. Each token has a pattern that describes which sequences of characters can form the lexemes corresponding to that token. The set of words, or strings of characters, that match a given pattern is called a language.
 

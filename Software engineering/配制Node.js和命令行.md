@@ -111,8 +111,16 @@ npm-check-updates工具用于更新`package.json`中的包版本到最新版,参
 
 
 ```bash
-npm install -g npm-check-updates@latest
+npm install -g npm-check-updates
 ```
+
+另一个中国常用插件，淘宝网站：
+
+```bash
+npm install -g cnpm --registry=https://registry.npm.taobao.org
+```
+
+
 
 ### 升级全局的本地包
 

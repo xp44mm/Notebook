@@ -35,4 +35,13 @@ let a = box (Nullable<int>())
 Assert.True(isNull a)
 ```
 
+提示，另外一种装箱后是空的值`None`：
+
+```F#
+let a = box None
+Assert.True(isNull a)
+```
+
+
 可空类型装箱后，和引用类型的拆箱方法相同了？
+

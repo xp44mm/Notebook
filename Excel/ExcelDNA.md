@@ -144,3 +144,42 @@ public static object getVal([ExcelArgument(AllowReference = true)] object input)
 
 
 编译不报错，也应该安装所有的依赖程序集。如果，公式计算结果出现#Value错误，可以检查是否有依赖的程序集没有在xll项目中安装。
+
+### sdk样式的项目：
+
+You shouldn't need any of that code if you're using the [latest version of Excel-DNA](https://www.nuget.org/packages/ExcelDna.AddIn/) (v1.1.1 as of this writing) as all of that is handled for you by Excel-DNA's build process (even in an SDK-style/PackageReference project). So there's basically only two switches you need to change for it to work (with some limitations (*)):
+
+- Turn **on** `ExcelDnaAllowPackageReferenceProjectStyle` to ignore the error that SDK-style projects are not supported
+- Turn **off** `RunExcelDnaSetDebuggerOptions` to disable the automatic configuration of Visual Studio debugging settings
+
+This should be all you need:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ExcelDnaAllowPackageReferenceProjectStyle>true</ExcelDnaAllowPackageReferenceProjectStyle>
+    <RunExcelDnaSetDebuggerOptions>false</RunExcelDnaSetDebuggerOptions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExcelDna.AddIn" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
+```
+
+NB: Change the `TargetFramework` as needed depending on what .NET Framework version your add-in users have on their machines.
+
+***** The feature you'll be missing out when using Excel-DNA with SDK-style/PackageReference projects today is the automatic debugging configuration settings that does two things:
+
+1. Look up where Excel is installed on your machine, and configure Visual Studio to run it (and attach the debugger to) when you press F5 / start a debugging session.
+2. Determine if your Excel installation is 32-bit or 64-bit and automatically configure Visual Studio with the the correct `.xll` to be opened together with Excel when you press F5 / start a debugging session.
+
+SDK-style/PackageReference projects no longer use the `.csproj.user` to store debugging settings so the API that we use to configure debugging is disabled in the new project system.
+
+The current workaround is to (manually) create multiple profiles in your `launchSettings.json` (one for each machine/developer) and store it in source control, so that you can debug your add-in without having to configure this every time.

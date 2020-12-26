@@ -92,3 +92,17 @@ vs 2019 不支持管道操作符`|>`，会在错误列表中给出警告，可�
 JavaScript错误，启用JavaScript错误，False
 
 如果遇到打开解决方案长时间没有反应时，可以尝试删除`.vs`文件夹，（或其他辅助型文件夹），因为里面没有源代码，可以放心删除，系统再打开时会从头建一个新的。
+
+查看自己的本地 SDK 是什么版本的，打开命令行程序，任意目录下，执行下面命令：
+
+```
+# dotnet --list-sdks
+2.1.604 [C:\Program Files\dotnet\sdk]
+2.1.801 [C:\Program Files\dotnet\sdk]
+2.2.204 [C:\Program Files\dotnet\sdk]
+2.2.300 [C:\Program Files\dotnet\sdk]
+2.2.401 [C:\Program Files\dotnet\sdk]
+
+#
+```
+
