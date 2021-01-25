@@ -12,7 +12,7 @@ let isWord (words : string list) =
     fun w -> wordTable.Contains(w)
 ```
 
-Here, isWord has the following type:
+Here, `isWord` has the following type:
 
 ```F#
 val isWord : words:string list -> (string -> bool)
@@ -29,13 +29,13 @@ val it : bool = true
 val it : bool = false
 ```
 
-Here, the internal table wordTable is computed as soon as isCapital is applied to one argument. It would be wasteful to write isCapital as:
+Here, the internal table `wordTable` is computed as soon as `isCapital` is applied to one argument. It would be wasteful to write `isCapital` as:
 
 ```F#
 let isCapitalSlow word = isWord ["London"; "Paris"; "Warsaw"; "Tokyo"] word
 ```
 
-This function computes the same results as isCapital. It does so inefficiently, however, because isWord is applied to both its first argument and its second argument every time you use the function isCapitalSlow. This means the internal table is rebuilt every time the function isCapitalSlow is applied, somewhat defeating the point of having an internal table in the first place. In a similar vein, the definition of isCapital shown previously is more efficient than either isCapitalSlow2 or isCapitalSlow3 in the following:
+This function computes the same results as `isCapital`. It does so inefficiently, however, because `isWord` is applied to both its first argument and its second argument every time you use the function `isCapitalSlow`. This means the internal table is rebuilt every time the function `isCapitalSlow` is applied, somewhat defeating the point of having an internal table in the first place. In a similar vein, the definition of `isCapital` shown previously is more efficient than either isCapitalSlow2 or isCapitalSlow3 in the following:
 
 ```F#
 let isWordSlow2 (words : string list) (word : string) =
@@ -62,9 +62,9 @@ let isWord (words : string list) =
 
 The examples of precomputation given thus far are variations on the theme of computing functions, introduced in Chapter 3. The functions, when computed, capture the precomputed intermediate data structures. It's clear, however, that precomputing via partial applications and functions can be subtle, because it matters when you apply the first argument of a function (triggering the construction of intermediate data structures) and when you apply the subsequent arguments (triggering the real computation that uses the intermediate data structures).
 
-Luckily, functions don't just have to compute functions; they can also return more sophisticated values, such as objects. This can help make it clear when precomputation is being performed. It also allows you to build richer services based on precomputed results. For example, Listing 4-1 shows how to use precomputation as part of building a name-lookup service. The returned object includes both a Contains method and a ClosestPrefixMatch method.
+Luckily, functions don't just have to compute functions; they can also return more sophisticated values, such as objects. This can help make it clear when precomputation is being performed. It also allows you to build richer services based on precomputed results. For example, Listing 4-1 shows how to use precomputation as part of building a name-lookup service. The returned object includes both a `Contains` method and a `ClosestPrefixMatch` method.
 
-##### Listing 4-1. Precomputing a eord table before creating an object
+##### Listing 4-1. Precomputing a word table before creating an object
 
 ```F#
 open System
@@ -95,7 +95,7 @@ Precomputation of the kind used previously is an essential technique for impleme
 
 ### Memoizing Computations
 
-Precomputation is one important way to amortize the costs of computation in F#. Another is called memoization. A memoizing function avoids recomputing its results by keeping an internal table, often called a lookaside table. For example, consider the well-known Fibonacci function, whose naive, unmemoized version is:
+Precomputation is one important way to amortize the costs of computation in F#. Another is called memoization. A memoizing function avoids recomputing its results by keeping an internal table, often called a lookaside table. For example, consider the well-known Fibonacci function, whose naïve, unmemoized version is:
 
 ```F#
 let rec fib n = if n <= 2 then 1 else fib (n - 1) + fib (n - 2)
@@ -139,7 +139,7 @@ val it : int * string = (832040, "0.066100 ms")
 val it : int * string = (832040, "0.077400 ms")
 ```
 
-On one of our laptops, with n = 30, there's an order of magnitude speed up from the first to second run. Listing 4-2 shows how to write a generic function that encapsulates the memoization technique.
+On one of our laptops, with `n = 30`, there's an order of magnitude speed up from the first to second run. Listing 4-2 shows how to write a generic function that encapsulates the memoization technique.
 
 ##### Listing 4-2. A generic memoization function
 
@@ -166,7 +166,7 @@ val memoize : f:('T -> 'U) -> ('T -> 'U) when 'T : equality
 val fibFast : (int -> int)
 ```
 
-In the definition of fibFast, you use let rec because fibFast is self-referential—that is, used as part of its own definition. You can think of fibFast as a computed, recursive function. Such a function generates an informational warning when used in F# code, because it's important to understand when this feature of F# is being used; you then suppress the warning with `#nowarn "40"`. As with the examples of computed functions from the previous section, omit the extra argument from the application of memoize, because including it would lead to a fresh memoization table being allocated each time the function fibNotFast was called:
+In the definition of `fibFast`, you use let rec because `fibFast` is self-referential—that is, used as part of its own definition. You can think of fibFast as a computed, recursive function. Such a function generates an informational warning when used in F# code, because it's important to understand when this feature of F# is being used; you then suppress the warning with `#nowarn "40"`. As with the examples of computed functions from the previous section, omit the extra argument from the application of `memoize`, because including it would lead to a fresh memoization table being allocated each time the function `fibNotFast` was called:
 
 ```F#
 let rec fibNotFast n =
@@ -207,7 +207,7 @@ let rec fibFast =
 
 ```
 
-In Listing 4-3, lookup uses the a.[b] associative Item lookup property syntax, and the Discard method 
+In Listing 4-3, lookup uses the `a.[b]` associative Item lookup property syntax, and the `Discard` method 
 discards any internal partial results. The functions have these types:
 
 ```F#
@@ -215,7 +215,7 @@ val memoizeAndPermitDiscard : ('T -> 'U) -> Table<'T, 'U> when 'T : equality
 val fibFast : Table<int,int>
 ```
 
-This example shows how fibFast caches results but recomputes them after a Discard:
+This example shows how `fibFast` caches results but recomputes them after a Discard:
 
 ```F#
 > fibFast.[3];;
@@ -242,7 +242,7 @@ val it : int = 5
 
 ##### Note  
 
-memoization relies on the memoized function being stable and idempotent. In other words, it always returns the same results, and no additional interesting side effects are caused by further invocations of the function. In addition, memoization strategies rely on mutable internal tables. the implementation of memoize shown in this chapter isn't thread safe, because it doesn't lock this table during reading or writing. this is fine if the computed function is used only from at most one thread at a time, but in a multithreaded application, use memoization strategies that utilize internal tables protected by locks, such as a .net ReaderWriterLock. Chapter 11 will further discuss thread synchronization and mutable state.
+memoization relies on the memoized function being stable and idempotent. In other words, it always returns the same results, and no additional interesting side effects are caused by further invocations of the function. In addition, memoization strategies rely on mutable internal tables. the implementation of memoize shown in this chapter isn't thread safe, because it doesn't lock this table during reading or writing. this is fine if the computed function is used only from at most one thread at a time, but in a multithreaded application, use memoization strategies that utilize internal tables protected by locks, such as a .net `ReaderWriterLock`. Chapter 11 will further discuss thread synchronization and mutable state.
 
 ---
 
