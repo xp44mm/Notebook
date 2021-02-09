@@ -183,7 +183,7 @@ with
 	Console.WriteLine(ex.Message)
 ```
 
-### The InvokeMember Method
+### The `InvokeMember `Method
 
 In some cases, you might find it easier to set properties dynamically and invoke methods by means of the `Type` object's `InvokeMember` method. This method takes the name of the member; a flag that says whether it's a field, property, or method; the object for which the member should be invoked; and an array of Object for the arguments if there are any. Here are a few examples:
 
@@ -232,7 +232,7 @@ Before discussing how the `UniversalComparer` type works, let me show you how yo
 ``` F#
 let persons: Person[] = null
 // Init the array here.
-…
+...
 // Sort the array on the LastName and FirstName fields.
 let comp = new UniversalComparer<Person>("LastName, FirstName")
 Array.Sort<Person>(persons, comp)

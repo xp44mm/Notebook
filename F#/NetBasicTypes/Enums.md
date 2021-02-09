@@ -54,7 +54,7 @@ The opposite of `ToString` is the `Parse` shared method, which takes a string an
 let de: obj = Enum.Parse(typeof<DataEntry>, "CharString")
 ```
 
-Two things are worth noticing in the preceding code. First, the `Parse` method takes a `Type` argument, so you typically use the `typeof<>` operator. Second, `Parse` is a static method and you must use `Enum` as a prefix; ~~Enum is a reserved Visual Basic word, so you must either enclose it in brackets or use its complete `System.Enum` name.~~
+Two things are worth noticing in the preceding code. First, the `Parse` method takes a `Type` argument, so you typically use the `typeof<_>` operator. Second, `Parse` is a static method and you must use `Enum` as a prefix; ~~Enum is a reserved Visual Basic word, so you must either enclose it in brackets or use its complete `System.Enum` name.~~
 
 Being inherited from the generic `Enum` class, the `Parse` method returns a generic object, so you have to ~~set Option Strict to Off (as in the previous snippet) or~~ use an explicit cast to assign it to a specific enumerated variable:
 

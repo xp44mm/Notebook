@@ -626,7 +626,7 @@ Note that the initializer for an auto-property is executed once per object, when
 
 ## Getting Started with Object Interface Types
 
-So far in this chapter, you've seen only how to define concrete object types. One of the key advances in both functional and object-oriented programming has been the move toward using abstract types for large portions of modern software. These values are typically accessed via interfaces, and we will now look at defining new object interface types.
+So far in this chapter, you've seen only how to define *concrete* object types. One of the key advances in both functional and object-oriented programming has been the move toward using *abstract* types for large portions of modern software. These values are typically accessed via *interfaces*, and we will now look at defining new *object interface types*.
 
 The notion of an object interface type can sound a little daunting at first, but the concept is actually simple; object interface types are ones whose member implementations can vary from value to value. As it happens, you've already met one important family of types whose implementations also vary from value to value: F# function types! 
 
@@ -634,11 +634,11 @@ The notion of an object interface type can sound a little daunting at first, but
 
 * In Chapter 5, you saw how records of function values can be used for the parameters needed to make an algorithm generic. 
 
-You've also already met some other important object interface types, such as `System.Collections.Generic.IEnumerable<'T>` and `System.IDisposable`. .NET object interface types always begin with the letter I by convention. 
+You've also already met some other important object interface types, such as `System.Collections.Generic.IEnumerable<'T>` and `System.IDisposable`. .NET object interface types always begin with the letter `I` by convention. 
 
-Definitions of object interface types do not specify the implementation of objects. Listing 6-5 shows an object interface type IShape and a number of implementations of it. This section walks through the definitions in this code piece by piece, because they illustrate the key concepts behind object interface types and how they can be implemented.
+Definitions of object interface types do not specify the implementation of objects. Listing 6-5 shows an object interface type `IShape` and a number of implementations of it. This section walks through the definitions in this code piece by piece, because they illustrate the key concepts behind object interface types and how they can be implemented.
 
-#### Listing 6-5. An object interface type IShape and some implementations
+#### Listing 6-5. An object interface type `IShape` and some implementations
 
 ```F#
 open System.Drawing
@@ -695,11 +695,11 @@ type IShape =
     abstract BoundingBox : Rectangle
 ```
 
-Here you use the keyword abstract to define the member signatures for this type, indicating that the implementation of the member may vary from value to value. Also note that IShape isn't concrete; it's neither a record nor a discriminated union or class type. It doesn't have any constructors and doesn't accept any arguments. This is how F# infers that it's an object interface type. 
+Here you use the keyword `abstract` to define the member signatures for this type, indicating that the implementation of the member may vary from value to value. Also note that `IShape` isn't concrete; it's neither a record nor a discriminated union or class type. It doesn't have any constructors and doesn't accept any arguments. This is how F# infers that it's an object interface type. 
 
 ### Implementing Object Interface Types Using Object Expressions
 
-The following code from Listing 6-5 implements the object interface type IShape using an object expression:
+The following code from Listing 6-5 implements the object interface type `IShape` using an *object expression*:
 
 ```F#
 let circle(center : Point, radius : int) =
@@ -710,11 +710,12 @@ let circle(center : Point, radius : int) =
             sqrt(dx * dx + dy * dy) <= float32 radius
         member x.BoundingBox =
             Rectangle(
-            center.X - radius, center.Y - radius,
-            2 * radius + 1, 2 * radius + 1)}
+                center.X - radius, center.Y - radius,
+                2 * radius + 1, 2 * radius + 1)
+    }
 ```
 
-The type of the function circle is as follows:
+The type of the function `circle` is as follows:
 
 ```F#
 val circle : center:Point * radius:int -> IShape
@@ -725,12 +726,12 @@ The construct in the braces, `{ new IShape with ... }`, is the object expression
 ```F#
 { new Type optional-arguments with
     member-definitions
-    optional-extra-interface-definitions }
+  optional-extra-interface-definitions }
 ```
 
 The member definitions take the same form as members for type definitions described earlier in this chapter. The optional arguments are given only when object expressions inherit from a class type, and the optional interface definitions are used when implementing additional interfaces that are part of a hierarchy of object interface types. 
 
-You can use the function circle as follows:
+You can use the function `circle` as follows:
 
 ```F#
 > let bigCircle = circle(Point(0, 0), 100);;
@@ -743,7 +744,7 @@ val it : bool = true
 val it : bool = false
 ```
 
-Listing 6-5 also contains another function square that gives a different implementation for IShape, also using an object expression: 
+Listing 6-5 also contains another function `square` that gives a different implementation for `IShape`, also using an object expression: 
 
 ```F#
 > let smallSquare = square(Point(1, 1), 1);;
@@ -758,13 +759,13 @@ val it : bool = false
 
 #### Note
 
-In object-oriented languages, implementing types in multiple ways is commonly called polymorphism, which you may call polymorphism of implementation. polymorphism of this kind is present throughout F#, and not just with respect to the object constructs. in functional programming, the word polymorphism is used to mean generic type parameters. these are an orthogonal concept discussed in Chapters 2 and 5. 
+In object-oriented languages, implementing types in multiple ways is commonly called *polymorphism*, which you may call *polymorphism of implementation*. Polymorphism of this kind is present throughout F#, and not just with respect to the object constructs. in functional programming, the word *polymorphism* is used to mean generic type parameters. these are an orthogonal concept discussed in Chapters 2 and 5. 
 
 ---
 
 ### Implementing Object Interface Types Using Concrete Types
 
-It's common to have concrete types that both implement one or more object interface types and provide additional services of their own. Collections are a primary example, because they always implement `IEnumerable<'T>`. To give another example, in Listing 6-5 the type MutableCircle is defined as follows: 
+It's common to have concrete types that both implement one or more object interface types and provide additional services of their own. Collections are a primary example, because they always implement `IEnumerable<'T>`. To give another example, in Listing 6-5 the type `MutableCircle` is defined as follows: 
 
 ```F#
 type MutableCircle() =
@@ -779,11 +780,11 @@ type MutableCircle() =
             sqrt(dx * dx + dy * dy) <= float32 c.Radius
         member c.BoundingBox =
             Rectangle(
-            c.Center.X - c.Radius, c.Center.Y - c.Radius,
-            2 * c.Radius + 1, 2 * c.Radius + 1)
+              c.Center.X - c.Radius, c.Center.Y - c.Radius,
+              2 * c.Radius + 1, 2 * c.Radius + 1)
 ```
 
-This type implements the IShape interface, which means MutableCircle is a subtype of IShape, but it also provides three properties—Center, Radius, and Perimeter—that are specific to the MutableCircle type, two of which are settable. The type has the following signature:
+This type implements the `IShape` interface, which means `MutableCircle` is a subtype of `IShape`, but it also provides three properties—`Center`, `Radius`, and `Perimeter`—that are specific to the `MutableCircle` type, two of which are settable. The type has the following signature:
 
 ```F#
 type MutableCircle =
@@ -832,7 +833,7 @@ The `IEnumerable<'T>` type is implemented by most concrete collection types. It 
 
 > #### Note
 >
-> the `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .net language. this section uses the corresponding F# syntax. in reality, `IEnumerator<'T>` also inherits from the non-generic interfaces `System.Collections.IEnumerator` and `System.IDisposable`, and `IEnumerable<'T>` also inherits from the non-generic interface `System.Collections.IEnumerable`. For clarity, we've ignored this. see the F# library documentation for full example implementations of these types.
+> The `IEnumerator<'T>` and `IEnumerable<'T>` interfaces are defined in a library component that is implemented using another .NET language. This section uses the corresponding F# syntax. In reality, `IEnumerator<'T>` also inherits from the non-generic interfaces `System.Collections.IEnumerator` and `System.IDisposable`, and `IEnumerable<'T>` also inherits from the non-generic interface `System.Collections.IEnumerable`. For clarity, we've ignored this. See the F# library documentation for full example implementations of these types.
 
 枚舉器的用法：
 
@@ -891,7 +892,7 @@ Some other useful predefined F# and .NET object interface types are as follows:
 
 ### Understanding Hierarchies of Object Interface Types
 
-Object interface types can be arranged in hierarchies using *interface inheritance*. This provides a way to classify types. To create a hierarchy, you use the inherit keyword in an object interface type definition along with each parent object interface type. For example, the .NET framework includes a hierarchical classification of collection types: `ICollection<'T>` extends `IEnumerable<'T>`. Here are the essential definitions of these types in F# syntax, with some minor details omitted:
+Object interface types can be arranged in hierarchies using *interface inheritance*. This provides a way to classify types. To create a hierarchy, you use the `inherit` keyword in an object interface type definition along with each parent object interface type. For example, the .NET framework includes a hierarchical classification of collection types: `ICollection<'T>` extends `IEnumerable<'T>`. Here are the essential definitions of these types in F# syntax, with some minor details omitted:
 
 ```F#
 type IEnumerable<'T> =
@@ -914,7 +915,7 @@ When you implement an interface that inherits from another interface, you must e
 
 #### Caution  
 
-although hierarchical modeling is useful, you must use it with care: poorly designed hierarchies often have to be abandoned late in the software development life cycle, leading to major disruptions. For many applications, it's adequate to use existing classification hierarchies in conjunction with some new nonhierarchical interface types.
+Although hierarchical modeling is useful, you must use it with care: poorly designed hierarchies often have to be abandoned late in the software development life cycle, leading to major disruptions. For many applications, it's adequate to use existing classification hierarchies in conjunction with some new nonhierarchical interface types.
 
 ---
 
