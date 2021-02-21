@@ -1,10 +1,10 @@
 ## Enums
 
-I briefly covered enumerated values in Chapter 2. Now I complete the description of Enum blocks by mentioning all the methods you can apply to them.
+I briefly covered enumerated values in Chapter 2. Now I complete the description of `Enum` blocks by mentioning all the methods you can apply to them.
 
-Any Enum you define in your application derives from `System.Enum`, which in turn inherits from `System.ValueType`. Ultimately, therefore, user-defined Enums are value types, but they are special in that you can't define additional properties, methods, or events. All the methods they expose are inherited from `System.Enum`. (It's illegal to explicitly inherit a class from `System.Enum` in Visual Basic.)
+Any `Enum` you define in your application derives from `System.Enum`, which in turn inherits from `System.ValueType`. Ultimately, therefore, user-defined `Enum`s are value types, but they are special in that you can't define additional properties, methods, or events. All the methods they expose are inherited from `System.Enum`. (It's illegal to explicitly inherit a class from `System.Enum` in Visual Basic.)
 
-All the examples in this section refer to the following Enum block:
+All the examples in this section refer to the following `Enum` block:
 
 ```FSharp
 // This Enum defines the data type accepted for a value entered by the end user.
@@ -15,16 +15,16 @@ type DataEntry =
 | DateTime       = 3
 ```
 
-By default, the first enumerated type is assigned the value 0. You can change this initial value if you want, but you aren't encouraged to do so. In fact, it is advisable that 0 be a valid value for any Enum blocks you define; otherwise, a uninitialized Enum variable would contain an invalid value.
+By default, the first enumerated type is assigned the value 0. You can change this initial value if you want, but you aren't encouraged to do so. In fact, it is advisable that 0 be a valid value for any `Enum` blocks you define; otherwise, a uninitialized `Enum` variable would contain an invalid value.
 
-The .NET documentation defines a few guidelines for Enum values:
+The .NET documentation defines a few guidelines for `Enum` values:
 
-- Use names without the Enum suffix; use singular names for regular Enum types and plural for bit-coded Enum types.
+- Use names without the `Enum` suffix; use singular names for regular `Enum` types and plural for bit-coded `Enum` types.
 - Use PascalCase for the name of both the `Enum` and its members. (An exception is constants from the Windows application API, which are usually all uppercase.)
-- Use 32-bit integers unless you need a larger range, which normally happens only if you have a bit-coded Enum with more than 32 possible values.
-- Don't use Enums for open sets, that is, sets that you might need to expand in the future (for example, operating system versions).
+- Use 32-bit integers unless you need a larger range, which normally happens only if you have a bit-coded `Enum` with more than 32 possible values.
+- Don't use `Enum`s for open sets, that is, sets that you might need to expand in the future (for example, operating system versions).
 
-### Displaying and Parsing Enum Values
+### Displaying and Parsing `Enum` Values
 
 The `Enum` class overrides the `ToString` method to return the value as a readable string format. This method is useful when you want to expose a (nonlocalized) string to the end user:
 
@@ -36,7 +36,7 @@ Console.WriteLine(de)                 // => 3
 Console.WriteLine(de.ToString())      // => DateTime
 ```
 
-Or you can use the capability to pass a format character to an overloaded version of the `ToString` method. The only supported format characters are G, g (general), X, x (hexadecimal), F, f (fixed-point), and D, d (decimal):
+Or you can use the capability to pass a format character to an overloaded version of the `ToString` method. The only supported format characters are `G`, `g` (general), `X`, `x` (hexadecimal), `F`, `f` (fixed-point), and `D`, `d` (decimal):
 
 ```FSharp
 // General and fixed formats display the Enum name.
@@ -54,7 +54,7 @@ The opposite of `ToString` is the `Parse` shared method, which takes a string an
 let de: obj = Enum.Parse(typeof<DataEntry>, "CharString")
 ```
 
-Two things are worth noticing in the preceding code. First, the `Parse` method takes a `Type` argument, so you typically use the `typeof<_>` operator. Second, `Parse` is a static method and you must use `Enum` as a prefix; ~~Enum is a reserved Visual Basic word, so you must either enclose it in brackets or use its complete `System.Enum` name.~~
+Two things are worth noticing in the preceding code. First, the `Parse` method takes a `Type` argument, so you typically use the `typeof<_>` operator. Second, `Parse` is a static method and you must use `Enum` as a prefix; ~~`Enum` is a reserved Visual Basic word, so you must either enclose it in brackets or use its complete `System.Enum` name.~~
 
 Being inherited from the generic `Enum` class, the `Parse` method returns a generic object, so you have to ~~set Option Strict to Off (as in the previous snippet) or~~ use an explicit cast to assign it to a specific enumerated variable:
 
@@ -73,7 +73,7 @@ Console.WriteLine(Enum.Parse(de.GetType(), "charstring"))
 Console.WriteLine(Enum.Parse(de.GetType(), "charstring", true))
 ```
 
-### Other Enum Methods
+### Other `Enum` Methods
 
 The `GetUnderlyingType` static method returns the base type for an enumerated class:
 
@@ -89,7 +89,7 @@ if Enum.IsDefined(typeof<DataEntry>, 3) then
    let de = enum<DataEntry>(3)
 ```
 
-The `IsDefined` method is useful because the `enum<>` operator doesn't check whether the value being converted is in the valid range for the target enumerated type. In other words, the following statement doesn't throw an exception:
+The `IsDefined` method is useful because the `enum<_>` operator doesn't check whether the value being converted is in the valid range for the target enumerated type. In other words, the following statement doesn't throw an exception:
 
 ```FSharp
 // This code produces an invalid result, yet it doesn't throw an exception.
@@ -130,9 +130,9 @@ The .NET Framework supports a special `Flags` attribute that you can use to spec
 [<Flags>] 
 type ValidDataEntry =
 | None = 0              // Always define an Enum value equal to 0.
-| IntegerNumber = 1
-| FloatingNumber = 0b10
-| CharString = 0b100
+| IntegerNumber = 0b0001
+| FloatingNumber = 0b0010
+| CharString = 0b0100
 | DateTime = 0b1000
 ```
 
@@ -148,7 +148,7 @@ Console.WriteLine(vde.ToString())       // => IntegerNumber, DateTime
 If no bit is set, the `ToString` method returns the name of the enumerated value corresponding to the zero value:
 
 ```FSharp
-let vde2: ValidDataEntry
+let vde2: ValidDataEntry = ...
 Console.WriteLine(vde2.ToString())     // => None
 ```
 
@@ -166,7 +166,9 @@ let vde = Enum.Parse(vde.GetType(), "IntegerNumber, FloatingNumber") :?> ValidDa
 Console.WriteLine(int vde)        // => 3
 ```
 
-.NET enum types are simple integer-like value types associated with a particular name. They're typically used for specifying flags to `APIs`; for example, ``FileMode`` in the ``System.IO`` namespace is an enum type with values such as ``FileMode.Open`` and ``FileMode.Create``. .NET enum types are easy to use from F# and can be combined using bitwise AND, OR, and XOR operations using the `&&&`, `|||`, and `^^^` operators. Most commonly, the `|||` operator is used to combine multiple flags. On occasion, you may have to mask an attribute value using `&&&` and compare the result to enum 0. You will see how to define .NET-compatible enum types in F# at the end of Chapter 6.
+.NET enum types are simple integer-like value types associated with a particular name. They're typically used for specifying flags to `APIs`; for example, ``FileMode`` in the ``System.IO`` namespace is an enum type with values such as ``FileMode.Open`` and ``FileMode.Create``. .NET enum types are easy to use from F# and can be combined using bitwise AND, OR, and XOR operations using the `&&&`, `|||`, and `^^^` operators. Most commonly, the `|||` operator is used to combine multiple flags. On occasion, you may have to mask an attribute value using `&&&` and compare the result to enum 0.
+
+> You will see how to define .NET-compatible enum types in F# at the end of Chapter 6.
 
 #### Bitwise Operators
 

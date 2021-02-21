@@ -1,6 +1,6 @@
 ## The DateTime Type
 
-使用`DateTimeOffset`代替
+使用[`DateTimeOffset`](https://docs.microsoft.com/en-us/dotnet/api/system.datetimeoffset?view=net-5.0)代替
 
 `System.DateTime` is the main .NET class for working with date and time values. Not only does it offer a place to store data values, it also exposes many useful methods ~~that can replace all the Visual Basic—specific date and time functions. For backward compatibility with Visual Basic 6, Visual Basic 2005 lets you use the Date type as a synonym for the System.DateTime type. In this section, I use the Date class name most of the time, but keep in mind that you can always replace it with System.DateTime or just DateTime (because of the projectwide Imports System statement).~~
 
