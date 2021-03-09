@@ -164,7 +164,7 @@ ncu -u
 为升级`package.json`文件，中引用包的版本号为最新，但不执行具体的安装。检查更新也可以使用淘宝镜像。
 
 ```bash
-ncu -u  --registry=https://registry.npm.taobao.org
+ncu -u --registry=https://registry.npm.taobao.org
 ```
 
 当需要升级项目的依赖包时，先删除锁定文件，然后执行：
@@ -196,19 +196,19 @@ ConEmu64.exe
 
 first:
 
-```
+```bash
 npm i --registry=https://registry.npm.taobao.org --loglevel=silly
 ```
 
 then:
 
-```
+```bash
 npm cache clean --force
 ```
 
 验证缓存：
-```
-# npm cache verify
+```bash
+> npm cache verify
 Cache verified and compressed (~\AppData\Roaming\npm-cache\_cacache):
 Content verified: 2503 (45460300 bytes)
 Content garbage-collected: 1 (87138 bytes)
@@ -221,7 +221,7 @@ Finished in 14.909s
 
 npx 允许我们单次执行命令而不需要安装，例如：
 
-```
+```bash
 npx create-react-app my-app
 ```
 
@@ -238,7 +238,7 @@ npm naming restrictions:
 发包需要登陆npm
 
 ```bash
-# npm login
+> npm login
 Username: xp44m
 Password:
 Email: (this IS public) 34696643@qq.com

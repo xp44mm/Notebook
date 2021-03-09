@@ -725,6 +725,8 @@ Assert.Equal("System.Collections.Generic.Dictionary<System.String,System.Double>
 In practice, you can gather all the cases that I've illustrated so far in an expanded version of the `GetTypeName` function (which I introduced in the previous section):
 
 ```F#
+let fsharpGenericParameterName(tp: Type) = "'" + tp.Name
+
 let rec fsharpTypeName(tp: Type) : String =
     if tp.IsGenericTypeDefinition then // List<'T>
         // It's the type definition of an "open" generic type.
@@ -734,7 +736,7 @@ let rec fsharpTypeName(tp: Type) : String =
         let genericParameters =
             tp.GetGenericArguments()
             |> Array.sortBy(fun p -> p.GenericParameterPosition) // only for demo, order keep no changed.
-            |> Array.filter(fun p -> p.IsGenericTypeParameter) // only for demo, always true.
+            |> Array.filter(fun p -> p.IsGenericParameter) // only for demo, always true.
             |> Array.map fsharpGenericParameterName
             |> String.concat ","
         sprintf "%s<%s>" typeName genericParameters
@@ -754,7 +756,6 @@ let rec fsharpTypeName(tp: Type) : String =
     else
         // This is a regular type.
         tp.FullName
-and private fsharpGenericParameterName(tp: Type) = "'" + tp.Name
 ```
 
 Thanks to its being recursive, this function is able to deal correctly even with contorted cases such as these:
@@ -786,7 +787,7 @@ type TestClass() =
    member this.TestMethod(list : List<String>, x : String) = ()
 ```
 
-How can you build a `MethodInfo` object that points to the first TestMethod rather than the second one? Here's the solution:
+How can you build a `MethodInfo` object that points to the first `TestMethod` rather than the second one? Here's the solution:
 
 ```F#
 // First, get a reference to the List "open" generic type.
@@ -926,7 +927,7 @@ All these alternatives are quite confusing, so let me recap when each of them sh
 
 **Version 2005 of VB or Version 2.0 of .NET** Although all the techniques discussed in this section are available in .NET Framework 1.1 as well, there is a new important change in how you use them to query some special CLR attributes, such as `Serializable`, `NonSerialized`, `DllImport`, `StructLayout`, and `FieldOffset`. To improve performance and to save space in metadata tables, previous versions of the .NET Framework stored these special attributes using a format different from all other attributes. Consequently, you couldn't reflect on these attributes by using one of the techniques I just illustrated. Instead, you had to use special properties exposed by other reflection objects, for example, the `IsSerialized` and `IsLayoutSequential` properties of the `Type` class or the `IsNonSerialized` property of the `FieldInfo` class. A welcome addition in .NET Framework 2.0 is that you don't need to use any of these properties any longer because all the special .NET attributes can be queried by means of the `IsDefined`, `GetCustomAttribute`, and `GetCustomAttributes` methods described in this section. (However, properties such as `IsSerializable` and `IsLayoutSequential` continue to be supported for backward compatibility.)
 
-#### The CustomAttributeData Type
+#### The `CustomAttributeData` Type
 
 **Version 2005 of VB or Version 2.0 of .NET** Version 1.1 of the .NET Framework has a serious limitation related to custom attributes: you could search attributes buried in metadata, instantiate them, and read their properties, but you have no documented means for extracting the exact syntax used in code to define the attribute. For example, you can't determine whether an attribute field or property is assigned in the attribute's constructor using a standard (mandatory) argument or a named (optional) argument; if the field or property is equal to its default value (null or zero), you can't determine whether it happened because the property was omitted in the attribute's constructor. For example, these limitations prevent a .NET developer from building a full-featured object browser.
 
@@ -1176,19 +1177,26 @@ let GetMemberSyntax(mi : MemberInfo) : String =
 
 As provided, the utility displays output in a purely textual format. It is easy, however, to change the argument of `String.Format` methods so that it outputs XML or HTML text, which would greatly improve the appearance of the result. (The complete demo program contains modified versions of this code that outputs HTML and XML text.)
 
-### Replace GetGenericArguments with GenericTypeArguments or GenericTypeParameters
+### Replace `GetGenericArguments` with `GenericTypeArguments` or `GenericTypeParameters`
 
- `GetGenericArguments()` returns parameters (not arguments) if the type is a generic definition, and it returns arguments if the type is a constructed generic.
+`GetGenericArguments()` returns parameters (not arguments) if the type is a generic definition, and it returns arguments if the type is a constructed generic.
 
 `GenericTypeArguments` is better if you expect the type to be constructed.
-`GenericTypeParameters` is better if you expect the type to be a definition. It only exists after adding `.GetTypeInfo()` though.
-If you don't have an expectation about constructed vs definition, I'm not sure how you can meaningfully use `GetGenericArguments()`.
 
-I'm still not sure if this is a good diagnostic, but the example would be `typeof(List<>).GetGenericArguments()` being replaced with `t1.GetTypeInfo().GenericTypeParameters` since `List<>` doesn't technically have its type parameters filled by any type arguments.
+`GenericTypeParameters` is better if you expect the type to be a definition. It only exists after adding `.GetTypeInfo()` though. If you don't have an expectation about constructed vs definition, I'm not sure how you can meaningfully use `GetGenericArguments()`.
 
-The win is that you're using the correct terminology for what you're getting, 'parameters', not 'arguments.' And if the type changes to `List<int>`, you'll get an empty array when you ask for type parameters because you should be doing `GetGenericTypeDefinition()` first if you're interested in parameters.
+I'm still not sure if this is a good diagnostic, but the example would be `typedefof(List<_>).GetGenericArguments()` being replaced with `t1.GetTypeInfo().GenericTypeParameters` since `List<_>` doesn't technically have its type parameters filled by any type arguments.
 
-`typeof(List<>)` is an example where they differ. The property returns an empty array, while the method returns an array with a generic `T` in it. (this `T` has `IsGenericParameter` `true`)
+The win is that you're using the correct terminology for what you're getting, **parameters**, not **arguments**. And if the type changes to `List<int>`, you'll get an empty array when you ask for type parameters because you should be doing `GetGenericTypeDefinition()` first if you're interested in parameters.
 
-From reading the documentation, I think that you can think of `GenericTypeArguments` as `GetGenericArguments().Where(t => !t.IsGenericParameter).ToArray()`, i.e. only the concrete types. See also `ContainsGenericParameters`.
+`typedefof(List<_>)` is an example where they differ. The property returns an empty array, while the method returns an array with a generic `'T` in it. (this `'T` has `IsGenericParameter` `true`)
+
+From reading the documentation, I think that you can think of `GenericTypeArguments` as 
+
+```F#
+ty.GetGenericArguments()
+|> Array.filter(fun t -> not t.IsGenericParameter)
+```
+
+, i.e. only the concrete types. See also `ContainsGenericParameters`.
 

@@ -4,7 +4,7 @@ So far, I've shown how to use reflection to enumerate all the types and members 
 
 ### Creating an Object Dynamically
 
-Let's start by seeing how you can instantiate an object given its type name. You can choose from three ways to create a .NET object using reflection: by using the `CreateInstance` method of the `System.Activator` class, by using the `InvokeMember` method of the Type class, or by invoking one of the type's constructor methods.
+Let's start by seeing how you can instantiate an object given its type name. You can choose from three ways to create a .NET object using reflection: by using the `CreateInstance` method of the `System.Activator` class, by using the `InvokeMember` method of the `Type` class, or by invoking one of the type's constructor methods.
 
 If the type has a parameterless constructor, creating an instance is simple:
 
@@ -20,9 +20,9 @@ Console.WriteLine("A {0} object has been created", o.GetType().Name)
 To call a constructor that takes one or more parameters, you must prepare an array of values:
 
 ``` F#
-// (We reuse the type variable from previous code…)
+// (We reuse the type variable from previous code...)
 // Use the constructor that takes two arguments.
-let args: Object[] = [|"Joe", "Evans"|]
+let args: Object[] = [|"Joe"; "Evans"|]
 // Call the constructor that matches the parameter signature.
 let o: Object = Activator.CreateInstance(myType, args)
 ```
@@ -31,22 +31,22 @@ You can use `InvokeMember` to create an instance of the class and even pass argu
 
 ``` F#
 // Prepare the array of parameters.
-let args: Object[] = [|"Joe", "Evans"|]
+let args: Object[] = [|"Joe"; "Evans"|]
 
 // Constructor methods have no name and take null in the second to last argument.
-let o: Object = myType.InvokeMember("", BindingFlags.CreateInstance,  null, null, args)
+let o: Object = myType.InvokeMember("", BindingFlags.CreateInstance, null, null, args)
 ```
 
 Creating an object through its constructor method is a bit more convoluted, but I'll demonstrate the technique here for the sake of completeness:
 
 ``` F#
 // Prepare the argument signature as an array of types (two strings).
-let argTypes: Type[] = [|typeof<String>, typeof<String>|]
+let argTypes: Type[] = [|typeof<String>; typeof<String>|]
 // Get a reference to the correct constructor.
 let ci: ConstructorInfo = myType.GetConstructor(argTypes)
 
 // Prepare the parameters.
-let args: Object[] = [|"Joe", "Evans"|]
+let args: Object[] = [|"Joe"; "Evans"|]
 // Invoke the constructor and assign the result to a variable.
 let o: Object = ci.Invoke(args)
 ```
@@ -61,6 +61,8 @@ Regardless of the technique you used to create an instance of the type, you usua
 let arrType: Type = typeof<Double>.MakeArrayType()
 // The new array has 10 elements.
 let arr: Array = Activator.CreateInstance(arrType, 10) :?> Array
+//创建数组的专用方法
+// = (Array.CreateInstance:Type*int->Array)(typeof<Double>, 10)
 // Prove that an array of 10 elements has been created.
 Console.WriteLine("{0} {1} elements", arr.Length, arr.GetValue(0).GetType.Name)
 ```
@@ -70,7 +72,7 @@ When you work with an array created using reflection, you typically assign its e
 ``` F#
 // Assign the first element and read it back.
 arr.SetValue(123.45, 0)
-Console.WriteLine(arr.GetValue(0))             // => 123.45
+Console.WriteLine(arr.GetValue(0)) // => 123.45
 ```
 
 ### Accessing Members
@@ -80,7 +82,7 @@ In the most general case, after you've created an instance by using reflection, 
 ``` F#
 // Create a Person object and reflect on it.
 let myType: Type = Assembly.GetExecutingAssembly().GetType("MyApp.Person")
-let args: Object[] = [|"Joe", "Evans"|]
+let args: Object[] = [|"Joe"; "Evans"|]
 let o: Object = Activator.CreateInstance(myType, args)
 
 // Get a reference to its FirstName field.
@@ -98,14 +100,14 @@ Console.WriteLine(pers.FirstName)       // => Robert
 Like `FieldInfo`, the `PropertyInfo` type exposes the `GetValue` and `SetValue` methods, but properties can take arguments, and thus these methods take an array of arguments. You must pass `null` in the second argument if you're calling parameterless properties.
 
 ``` F#
-// (Continuing previous example…)
+// (Continuing previous example...)
 // This code assumes that the Person type exposes a 16-bit Age property.
 // Get a reference to the PropertyInfo object.
 let pi: PropertyInfo = myType.GetProperty("Age")
 
 // Note that the type of value must match exactly.
 // (Int32 constants must be converted to Short, in this case.)
-pi.SetValue(o, 35S, null)
+pi.SetValue(o, 35s, null)
 // Read it back.
 Console.WriteLine(pi.GetValue(o, null)) // => 35
 ```
@@ -126,9 +128,9 @@ let pi: PropertyInfo = myType.GetProperty("Notes")
 let args: Object[] = [|1|]
 
 // Set the property.
-pi2.SetValue(o, "Tell John about the briefing", args)
+pi.SetValue(o, "Tell John about the briefing", args)
 // Read it back.
-Console.WriteLine(pi2.GetValue(o, args2))
+Console.WriteLine(pi2.GetValue(o, args))
 ```
 
 A similar thing happens when you're invoking methods, except that you use the Invoke method instead of `GetValue` or `SetValue`:
@@ -143,7 +145,7 @@ type Person() =
 // Get the MethodInfo for this method.
 let mi: MethodInfo = myType.GetMethod("SendEmail")
 // Prepare an array for expected arguments.
-let arguments: Object[] = [|"This is a message", 3|]
+let arguments: Object[] = [|box "This is a message"; box 3|]
 
 // Invoke the method.
 mi.Invoke(o, arguments) |> ignore
@@ -152,17 +154,17 @@ mi.Invoke(o, arguments) |> ignore
 Things are more interesting when optional arguments are involved. In this case, you pass the `Type.Missing` special value, as in this code:
 
 ``` F#
-// …(Initial code as above)…
+// ...(Initial code as above)...
 // Don't pass the second argument (optional).
 
-let arguments:obj[] = [|"This is a message", Type.Missing|]
-mi.Invoke(o, arguments)// Don't pass the second argument.
+let arguments:obj[] = [|"This is a message"; Type.Missing|]
+mi.Invoke(o, arguments) // Don't pass the second argument.
 ```
 
 Alternatively, you can query the `DefaultValue` property of corresponding `ParameterInfo` to learn the default value for that specific argument:
 
 ``` F#
-// …(Initial code as above)…
+// ...(Initial code as above)...
 
 // Retrieve the DefaultValue from the ParameterInfo object.
 let defaultValue = mi.GetParameters().[1].DefaultValue
@@ -183,14 +185,14 @@ with
 	Console.WriteLine(ex.Message)
 ```
 
-### The `InvokeMember `Method
+### The `InvokeMember` Method
 
 In some cases, you might find it easier to set properties dynamically and invoke methods by means of the `Type` object's `InvokeMember` method. This method takes the name of the member; a flag that says whether it's a field, property, or method; the object for which the member should be invoked; and an array of Object for the arguments if there are any. Here are a few examples:
 
 ``` F#
 // Create an instance of the Person type using InvokeMember.
 let myType: Type = Assembly.GetExecutingAssembly().GetType("MyApp.Person")
-let arguments: obj[] = [|"John", "Evans"|]
+let arguments: obj[] = [|"John"; "Evans"|]
 let obj: obj = myType.InvokeMember("", BindingFlags.CreateInstance, null, null, arguments)
 
 // Set the FirstName field.
@@ -201,10 +203,10 @@ myType.InvokeMember("FirstName", BindingFlags.SetField, null, obj, args) |> igno
 let value: obj = myType.InvokeMember("FirstName", BindingFlags.GetField, null, obj, null)
 
 // Set the Age property, create the argument array on the fly.
-myType.InvokeMember("Age", BindingFlags.SetProperty, null, obj, [|35S|]) |> ignore
+myType.InvokeMember("Age", BindingFlags.SetProperty, null, obj, [|35s|]) |> ignore
 
 // Call the SendEMail method.
-let args2: Object[] = [|"This is a message", 2|]
+let args2: Object[] = [|"This is a message"; 2|]
 myType.InvokeMember("SendEmail", BindingFlags.InvokeMethod, null, obj, args2) |> ignore
 ```
 
@@ -259,7 +261,7 @@ type SortKey<'T> =
 
 let parse (tp: Type, prop:string) =
     let descending, memberName =
-        if prop.ToLower().EndsWith(@" desc") then
+        if prop.ToLower().EndsWith(" desc") then
             // Discard the DESC qualifier.
             let descending  = true //= sortKeys(i).Descending
             let memberName = prop.Remove(prop.Length - 5).TrimEnd()
@@ -300,7 +302,7 @@ type UniversalComparer<'T when 'T : equality and 'T : null>(sort : String) =
     // Prepare the array that holds information on sort criteria.
     let sortKeys =
         let tp = typeof<'T>        
-        let props: String[] = sort.Split(',')// Split the list of properties.
+        let props: String[] = sort.Split(',') // Split the list of properties.
         props
         |> Array.map(fun prop -> prop.Trim())
         |> Array.map(fun prop -> parse(tp,prop))
@@ -376,7 +378,7 @@ type MainModule() =
 Here's the code that registers the procedure for this event, using reflection exclusively:
 
 ``` F#
-// obj and type initialized as in previous examples…
+// obj and type initialized as in previous examples...
 
 // Get a reference to the GotEmail event.
 let ei: EventInfo = myType.GetEvent("GotEmail")
@@ -391,7 +393,7 @@ let args: Object[] = [|"Hello Joe"; Some 2|]
 Type.InvokeMember("SendEmail", BindingFlags.InvokeMethod, null, obj, args)
 ```
 
-A look at the console window proves that the EventHandler procedure in the `MainModule` type was invoked when the code in the `Person.SendEmail` method raised the `GotEmail` event. If the event handler is an instance method, the second argument to the `Delegate.CreateDelegate` method must be an instance of the class that defines the method; if the event handler is a static method (as in the previous example), this argument must be a `Type` object corresponding to the class where the method is defined.
+A look at the console window proves that the `EventHandler` procedure in the `MainModule` type was invoked when the code in the `Person.SendEmail` method raised the `GotEmail` event. If the event handler is an instance method, the second argument to the `Delegate.CreateDelegate` method must be an instance of the class that defines the method; if the event handler is a static method (as in the previous example), this argument must be a `Type` object corresponding to the class where the method is defined.
 
 The previous code doesn't really add much to what you can do by registering an event by means of the `AddHandler` operator. But wait, there's more. To show how this technique can be so powerful, I must make a short digression on delegates.
 
@@ -454,14 +456,14 @@ The most interesting application of this feature is the ability to have an indiv
 
 ``` F#
 // (Inside a Form class)
-member this.MyEventHandler(sender : Object, e : EventArgs) =
+member this.MyEventHandler(sender: Object, e: EventArgs) =
    Console.WriteLine("An event has fired")
 ```
 
 The following code can make all the events exposed by an object point to the "universal handler":
 
 ``` F#
-// (Inside the same Form class…)
+// (Inside the same Form class...)
 member this.event() =
     // The control we want to trap events from
     let ctrl: Object = box this.TextBox1
@@ -470,8 +472,10 @@ member this.event() =
 
         // The universal event handler method
         let method: MethodInfo = this.GetType().GetMethod("MyEventHandler")
+        
         // Leverage contravariance to create a delegate that points to the method.
         let handler: Delegate = Delegate.CreateDelegate(handlerType, this, method)
+        
         // Use reflection to register the event.
         ei.AddEventHandler(ctrl, handler)
 
@@ -497,9 +501,7 @@ type ObjectEventHandler = delegate of obj * ObjectEventArgs -> unit
 type EventInterceptor() =
     // the public event
     let event = new Event<ObjectEventHandler,ObjectEventArgs>()
-
     member this.ObjectEvent = event.Publish
-
     // This is invoked from inside the EventInterceptorHandler auxiliary class.
     member this.OnObjectEvent(e : ObjectEventArgs) = event.Trigger(this, e)
 
@@ -524,7 +526,6 @@ The `EventInterceptor` class uses the nested `EventInterceptorHandler` type to t
                 // Create a EventInterceptorHandler that handles this event.
                 let interceptor = new EventInterceptorHandler(eventSource, ei, this)
                 ()
-
         )
 
         // Recurse on child controls if so required.
@@ -579,7 +580,7 @@ Interceptor.AddEventSource(this, true, "(Mouse|Key).+)")
 For more information, see the source code of the complete demo program. (See Figure 18-2.)
 
  ![img](C:/Program Files/Typora/images/fig794_01.jpg)
-Figure 18-2: The EventInterceptor demo application
+Figure 18-2: The `EventInterceptor` demo application
 
 ### Scheduling a Sequence of Actions
 
@@ -589,7 +590,7 @@ Implementing an undo strategy in the most general case isn't a simple task, espe
 
 ``` F#
 // 2nd argument can be an object (for instance methods) or a Type (for static methods).
-type Action(message : String, obj : Object, methodName : String, [<ParamArray>] arguments : Object[]) =
+type Action(message: String, obj: Object, methodName: String, [<ParamArray>]arguments: Object[]) =
 
     // Determine the type this method belongs to.
     let myType: Type = match obj with :? Type as tp -> tp | _ -> obj.GetType()
@@ -687,7 +688,7 @@ The constructor of the `ActionSequence` type takes an `Action<String>` object, w
 // Prepare to write diagnostic messages to a log file.
 let sw = new StreamWriter(@"c:\logfile.txt")
 let actionSequence = new ActionSequence(Action<string>(sw.WriteLine))
-…
+...
 // Close the stream when you're done with the ActionSequence object.
 sw.Close()
 ```
@@ -702,7 +703,7 @@ let undoAct = new Action(@"Delete c:\backup directory", typeof<Directory>,  "Del
 actionSequence.Add(act, undoAct)
 
 // Create a readme.txt file in the c:\ root directory.
-let contents: String = @"Instructions for myapp.exe..."
+let contents: String = "Instructions for myapp.exe..."
 let act = new Action(@"Create the c:\myapp_readme.txt", typeof<File>,  "WriteAllText", @"c:\myapp_readme.txt", contents)
 // Notice that this action has no undo action.
 actionSequence.Add(act, null)
@@ -720,7 +721,7 @@ After running the previous code snippet, you should find a new c:\backup directo
 
 ``` F#
 // (Insert the lines in bold type before the call to the Execute method.)
-…
+...
 // Copy the c:\missing.txt file to the c:\backup directory.
 let act = new Action(@"Copy c:\missing.txt to c:\backup", typeof<File>,  "Copy", @"c:\missing.text", @"c:\backup\missing.txt")
 let undoAct = new Action(@"Delete c:\backup\missing.text", typeof<File>,  "Delete", @"c:\backup\missing.text")
@@ -827,20 +828,20 @@ if compRes.Errors.Count > 0 then
    MessageBox.Show(msg, "Compilation Failed", MessageBoxButtons.OK, MessageBoxIcon.Error)
 else
    // Compilation was successful.
-   …
+   ...
 ```
 
-If the compilation was successful, you use the `CompilerResults.CompiledAssembly` property to get a reference to the created assembly. Once you have this Assembly object, you can create an instance of its Evaluator class and invoke its Eval method by using standard reflection techniques:
+If the compilation was successful, you use the `CompilerResults.CompiledAssembly` property to get a reference to the created assembly. Once you have this `Assembly` object, you can create an instance of its `Evaluator` class and invoke its `Eval` method by using standard reflection techniques:
 
 ``` F#
 let asm: Assembly = compRes.CompiledAssembly
 let evaluator: Object = asm.CreateInstance("Evaluator")
 let evalMethod: MethodInfo = evaluator.GetType.GetMethod("Eval")
-let args: Object[] = [|123.|]    // Pass x = 123
+let args: Object[] = [|123.0|]    // Pass x = 123
 let result: Object = evalMethod.Invoke(evaluator, args)
 ```
 
-Notice that you can't reference the Evaluator class by a typed variable because this class (and its container assembly) doesn't exist yet when you compile the main application. For this reason, you must use reflection both to create an instance of the class and to invoke its members.
+Notice that you can't reference the `Evaluator` class by a typed variable because this class (and its container assembly) doesn't exist yet when you compile the main application. For this reason, you must use reflection both to create an instance of the class and to invoke its members.
 
 Another tricky thing to do when applying this technique is to have the dynamic assembly call back a method in a class defined in the main application by means of reflection, for example, to let the main application update a progress bar during a lengthy routine. Alternatively, you can define a public interface in a DLL and must have the class in the main application implement the interface; being defined in a DLL, the dynamic assembly can create an interface variable and therefore it can call methods in the main application through that interface.
 
@@ -874,13 +875,13 @@ An alternative technique for storing information about a large number of types a
 // Store information about a method in the Person type.
 let hType: RuntimeTypeHandle = typeof<Person>.TypeHandle
 let hMethod: RuntimeMethodHandle = typeof<Person>.GetMethod("SendEmail").MethodHandle
-…
-// (Later in the application…)
+...
+// (Later in the application...)
 // Rebuild the Type and MethodBase objects.
 let ty: Type = Type.GetTypeFromHandle(hType)
 let mb: MethodBase = MethodBase.GetMethodFromHandle(hMethod, hType)
 // Use them as needed.
-…
+...
 ```
 
 ### Security Issues
@@ -902,7 +903,7 @@ This discussion on reflection is important for one reason: never rely on the pri
 The ability to invoke nonpublic members can be important in some scenarios. For example, in the section titled "The `ICloneable` Interface" in Chapter 10, I show how a type can implement the Clone method by leveraging the `MemberwiseClone` protected method, but in some cases you'd like to clone an object for which you don't have any source code. Provided that your application runs in full trust mode and has `ReflectionPermission`, you can clone any object quite easily with reflection. Here's a reusable routine that performs a (shallow) copy of the object passed as an argument:
 
 ``` F#
-let CloneObject<'T when 'T:equality and 'T:null>(obj : 'T) : 'T =
+let CloneObject<'T when 'T:equality and 'T:null>(obj: 'T) : 'T =
    if obj = null then
       // Cloning a null object is easy.
       null

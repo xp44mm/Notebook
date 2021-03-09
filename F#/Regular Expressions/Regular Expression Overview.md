@@ -164,10 +164,10 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
   Any character in the list between the opening and closing brackets; `[aeiou]` matches any vowel.
 
 * `[^aeiou]`
-  Any character except those in the list between the opening and closing brackets; `[^aeiou]` matches any nonvowel.
+  Any character except those in the list between the opening and closing brackets; `[^aeiou]` matches any non-vowel.
 
 * `[a–zA–Z]`
-  The - (dash) character enables you to specify ranges of characters: `[a–zA–Z]` matches any lowercase or uppercase character; `[^0–9]` matches any nondigit character. Notice, however, that accented letters aren't matched.
+  The - (dash) character enables you to specify ranges of characters: `[a–zA–Z]` matches any lowercase or uppercase character; `[^0–9]` matches any non-digit character. Notice, however, that accented letters aren't matched.
 
 * `[a-z-[aeiou]]`
   Character class subtraction: when a pair of brackets is nested in another pair of brackets and is preceded by a minus sign, the regular expression matches all the characters in the outer pair except those in the inner pair. For example, `[a-z-[aeiou]]` matches any lowercase character that isn't a vowel. (Support for character class subtractions has been added in .NET Framework version 2.0.)

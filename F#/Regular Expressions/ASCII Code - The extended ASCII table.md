@@ -7,46 +7,48 @@ https://www.ascii-code.com/
 ## ASCII control characters (character code 0-31)
 
 The first 32 characters in the ASCII-table are unprintable control codes and are used to control peripherals such as printers.
-
-| DEC  | OCT  | HEX  | BIN      | Symbol | HTML Number | HTML Name | Description                  |
-| ---- | ---- | ---- | -------- | ------ | ----------- | --------- | ---------------------------- |
-| 0    | 000  | 00   | 00000000 | NUL    | &#000;      |           | Null char                    |
-| 1    | 001  | 01   | 00000001 | SOH    | &#001;      |           | Start of Heading             |
-| 2    | 002  | 02   | 00000010 | STX    | &#002;      |           | Start of Text                |
-| 3    | 003  | 03   | 00000011 | ETX    | &#003;      |           | End of Text                  |
-| 4    | 004  | 04   | 00000100 | EOT    | &#004;      |           | End of Transmission          |
-| 5    | 005  | 05   | 00000101 | ENQ    | &#005;      |           | Enquiry                      |
-| 6    | 006  | 06   | 00000110 | ACK    | &#006;      |           | Acknowledgment               |
-| 7    | 007  | 07   | 00000111 | BEL    | &#007;      |           | Bell                         |
-| 8    | 010  | 08   | 00001000 | BS     | &#008;      |           | Back Space                   |
-| 9    | 011  | 09   | 00001001 | HT     | &#009;      |           | Horizontal Tab               |
-| 10   | 012  | 0A   | 00001010 | LF     | &#010;      |           | Line Feed                    |
-| 11   | 013  | 0B   | 00001011 | VT     | &#011;      |           | Vertical Tab                 |
-| 12   | 014  | 0C   | 00001100 | FF     | &#012;      |           | Form Feed                    |
-| 13   | 015  | 0D   | 00001101 | CR     | &#013;      |           | Carriage Return              |
-| 14   | 016  | 0E   | 00001110 | SO     | &#014;      |           | Shift Out / X-On             |
-| 15   | 017  | 0F   | 00001111 | SI     | &#015;      |           | Shift In / X-Off             |
-| 16   | 020  | 10   | 00010000 | DLE    | &#016;      |           | Data Line Escape             |
-| 17   | 021  | 11   | 00010001 | DC1    | &#017;      |           | Device Control 1 (oft. XON)  |
-| 18   | 022  | 12   | 00010010 | DC2    | &#018;      |           | Device Control 2             |
-| 19   | 023  | 13   | 00010011 | DC3    | &#019;      |           | Device Control 3 (oft. XOFF) |
-| 20   | 024  | 14   | 00010100 | DC4    | &#020;      |           | Device Control 4             |
-| 21   | 025  | 15   | 00010101 | NAK    | &#021;      |           | Negative Acknowledgement     |
-| 22   | 026  | 16   | 00010110 | SYN    | &#022;      |           | Synchronous Idle             |
-| 23   | 027  | 17   | 00010111 | ETB    | &#023;      |           | End of Transmit Block        |
-| 24   | 030  | 18   | 00011000 | CAN    | &#024;      |           | Cancel                       |
-| 25   | 031  | 19   | 00011001 | EM     | &#025;      |           | End of Medium                |
-| 26   | 032  | 1A   | 00011010 | SUB    | &#026;      |           | Substitute                   |
-| 27   | 033  | 1B   | 00011011 | ESC    | &#027;      |           | Escape                       |
-| 28   | 034  | 1C   | 00011100 | FS     | &#028;      |           | File Separator               |
-| 29   | 035  | 1D   | 00011101 | GS     | &#029;      |           | Group Separator              |
-| 30   | 036  | 1E   | 00011110 | RS     | &#030;      |           | Record Separator             |
-| 31   | 037  | 1F   | 00011111 | US     | &#031;      |           | Unit Separator               |
+```
+| DEC  | OCT  | HEX  | BIN      | Symbol | HTML Number | Description                  |
+| ---- | ---- | ---- | -------- | ------ | ----------- | ---------------------------- |
+| 0    | 000  | 00   | 00000000 | NUL    | &#000;      | Null char                    |
+| 1    | 001  | 01   | 00000001 | SOH    | &#001;      | Start of Heading             |
+| 2    | 002  | 02   | 00000010 | STX    | &#002;      | Start of Text                |
+| 3    | 003  | 03   | 00000011 | ETX    | &#003;      | End of Text                  |
+| 4    | 004  | 04   | 00000100 | EOT    | &#004;      | End of Transmission          |
+| 5    | 005  | 05   | 00000101 | ENQ    | &#005;      | Enquiry                      |
+| 6    | 006  | 06   | 00000110 | ACK    | &#006;      | Acknowledgment               |
+| 7    | 007  | 07   | 00000111 | BEL    | &#007;      | Bell / Alert                 |
+| 8    | 010  | 08   | 00001000 | BS     | &#008;      | Back Space / Backspace       |
+| 9    | 011  | 09   | 00001001 | HT     | &#009;      | Horizontal Tab               |
+| 10   | 012  | 0A   | 00001010 | LF     | &#010;      | Line Feed / newline          |
+| 11   | 013  | 0B   | 00001011 | VT     | &#011;      | Vertical Tab                 |
+| 12   | 014  | 0C   | 00001100 | FF     | &#012;      | Form Feed                    |
+| 13   | 015  | 0D   | 00001101 | CR     | &#013;      | Carriage Return              |
+| 14   | 016  | 0E   | 00001110 | SO     | &#014;      | Shift Out / X-On             |
+| 15   | 017  | 0F   | 00001111 | SI     | &#015;      | Shift In / X-Off             |
+| 16   | 020  | 10   | 00010000 | DLE    | &#016;      | Data Line Escape             |
+| 17   | 021  | 11   | 00010001 | DC1    | &#017;      | Device Control 1 (oft. XON)  |
+| 18   | 022  | 12   | 00010010 | DC2    | &#018;      | Device Control 2             |
+| 19   | 023  | 13   | 00010011 | DC3    | &#019;      | Device Control 3 (oft. XOFF) |
+| 20   | 024  | 14   | 00010100 | DC4    | &#020;      | Device Control 4             |
+| 21   | 025  | 15   | 00010101 | NAK    | &#021;      | Negative Acknowledgement     |
+| 22   | 026  | 16   | 00010110 | SYN    | &#022;      | Synchronous Idle             |
+| 23   | 027  | 17   | 00010111 | ETB    | &#023;      | End of Transmit Block        |
+| 24   | 030  | 18   | 00011000 | CAN    | &#024;      | Cancel                       |
+| 25   | 031  | 19   | 00011001 | EM     | &#025;      | End of Medium                |
+| 26   | 032  | 1A   | 00011010 | SUB    | &#026;      | Substitute                   |
+| 27   | 033  | 1B   | 00011011 | ESC    | &#027;      | Escape                       |
+| 28   | 034  | 1C   | 00011100 | FS     | &#028;      | File Separator               |
+| 29   | 035  | 1D   | 00011101 | GS     | &#029;      | Group Separator              |
+| 30   | 036  | 1E   | 00011110 | RS     | &#030;      | Record Separator             |
+| 31   | 037  | 1F   | 00011111 | US     | &#031;      | Unit Separator               |
+```
 
 ## ASCII printable characters (character code 32-127)
 
 Codes 32-127 are common for all the different variations of the ASCII table, they are called printable characters, represent letters, digits, punctuation marks, and a few miscellaneous symbols. You will find almost every character on your keyboard. Character 127 represents the command DEL.
 
+```
 | DEC  | OCT  | HEX  | BIN      | Symbol | HTML Number | HTML Name | Description                            |
 | ---- | ---- | ---- | -------- | ------ | ----------- | --------- | -------------------------------------- |
 | 32   | 040  | 20   | 00100000 |        | &#32;       |           | Space                                  |
@@ -145,11 +147,13 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 | 125  | 175  | 7D   | 01111101 | }      | &#125;      |           | Closing brace                          |
 | 126  | 176  | 7E   | 01111110 | ~      | &#126;      |           | Equivalency sign - tilde               |
 | 127  | 177  | 7F   | 01111111 |        | &#127;      |           | Delete                                 |
+```
 
 ## The extended ASCII codes (character code 128-255)
 
 There are several different variations of the 8-bit ASCII table. The table below is according to Windows-1252 (CP-1252) which is a superset of ISO 8859-1, also called ISO Latin-1, in terms of printable characters, but differs from the IANA's ISO-8859-1 by using displayable characters rather than control characters in the 128 to 159 range. Characters that differ from ISO-8859-1 is marked by light blue color.
 
+```
 | DEC  | OCT  | HEX  | BIN      | Symbol | HTML Number | HTML Name | Description                                |
 | ---- | ---- | ---- | -------- | ------ | ----------- | --------- | ------------------------------------------ |
 | 128  | 200  | 80   | 10000000 | €      | &#128;      | &euro;    | Euro sign                                  |
@@ -280,6 +284,7 @@ There are several different variations of the 8-bit ASCII table. The table below
 | 253  | 375  | FD   | 11111101 | ý      | &#253;      | &yacute;  | Latin small letter y with acute            |
 | 254  | 376  | FE   | 11111110 | þ      | &#254;      | &thorn;   | Latin small letter thorn                   |
 | 255  | 377  | FF   | 11111111 | ÿ      | &#255;      | &yuml;    | Latin small letter y with diaeresis        |
+```
 
 # 标点符号的英语名称
 
