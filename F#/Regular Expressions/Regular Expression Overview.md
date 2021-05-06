@@ -350,7 +350,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 
 ### Regular Expression Options
 
-The `Match`, `Matches`, and `Replace` static methods of the `Regex` object support an optional argument, which lets you specify one or more options to be applied to the regular expression search (see Table 14-2). For example, the following code searches for all occurrences of the "abc" word, regardless of its case:
+The `Match`, `Matches`, and `Replace` static methods of the `Regex` object support an optional argument, which lets you specify one or more options to be applied to the regular expression search (see Table 14-2). For example, the following code searches for all occurrences of the `"abc"` word, regardless of its case:
 
 ```F#
 let source: String = "ABC Abc abc"
@@ -415,7 +415,7 @@ let FileGrep (pattern: String) (filespec: String) =
             Console.WriteLine("{0} [{1} matches]", fname, mc.Count)
 ```
 
-For example, you can use the `FileGrep` utility to find all .vb source files in the current directory that contain the definition of a public `ArrayList` variable:
+For example, you can use the `FileGrep` utility to find all `.vb` source files in the current directory that contain the definition of a public `ArrayList` variable:
 
 ```F#
 FileGrep @"^\s*Public\s+\w+\s+As\s+(New\s+)?ArrayList" "*.vb"

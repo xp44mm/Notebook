@@ -2,7 +2,23 @@
 
 The `System.Type` class is central to all reflection actions. It represents a managed type, a concept that encompasses classes, structures, modules, interfaces, and enums. The `Type` class provides all the means to enumerate a type's fields, properties, methods, and events, as well as set properties and fields and invoke methods dynamically.
 
-An interesting detail: a `Type` object that represents a managed type is unique in a given AppDomain. This means that when you retrieve the `Type` object corresponding to a given type (for example, `System.String`) you always get the same instance, regardless of how you retrieve the `Type` object. This feature allows for the automatic synchronization of multiple static method invocations, among other benefits.
+An interesting detail: a `Type` object that represents a managed type is unique in a given `AppDomain`. This means that when you retrieve the `Type` object corresponding to a given type (for example, `System.String`) you always get the same instance, regardless of how you retrieve the `Type` object. This feature allows for the automatic synchronization of multiple static method invocations, among other benefits.
+
+## 反射继承
+
+```mermaid
+graph BT
+
+m(MemberInfo)-->O[Object]
+param[ParameterInfo]-->O
+ei(EventInfo)-->m
+fi(FieldInfo)-->m
+mb(MethodBase)-->m
+ci(ConstructorInfo)-->mb
+mi(MethodInfo)-->mb
+pi(PropertyInfo)-->m
+
+```
 
 ### Retrieving a Type Object
 
@@ -115,9 +131,9 @@ for t: Type in asm.GetExportedTypes() do
 
 The `IsPublic` and `IsNotPublic` properties return information about the type's visibility. You should use these properties only with types that aren't nested in other types: the `IsPublic` property of a nested type is always false.
 
-If the type is nested inside another type, you must use the following IsNestedXxxx properties to deduce the scope used to declare the type: `IsNestedPublic` (public), `IsNestedAssembly` (internal), `IsNestedFamily` (Protected), `IsNestedFamORAssem` (Protected Internal), `IsNestedPrivate` (private), and `IsNestedFamANDAssem` (Protected and visible only from inside the assembly, a scope you can't define with F#). You can also use the `DeclaringType` property to get the enclosing type of a nested type; this property returns null if the type isn't nested.
+If the type is nested inside another type, you must use the following `IsNestedXxxx` properties to deduce the scope used to declare the type: `IsNestedPublic` (public), `IsNestedAssembly` (internal), `IsNestedFamily` (Protected), `IsNestedFamORAssem` (Protected Internal), `IsNestedPrivate` (private), and `IsNestedFamANDAssem` (Protected and visible only from inside the assembly, a scope you can't define with F#). You can also use the `DeclaringType` property to get the enclosing type of a nested type; this property returns null if the type isn't nested.
 
-While we are on this subject, notice that the `FullName` property of a nested type includes a plus sign (+) to separate the name of the class and the name of its enclosing type, as in:
+While we are on this subject, notice that the `FullName` property of a nested type includes a plus sign (`+`) to separate the name of the class and the name of its enclosing type, as in:
 
 ```F#
 MyNamespace.MyEnclosingType+MyNestedType
@@ -170,17 +186,17 @@ if obj.GetType().IsSubclassOf(typeof<Person>) then
 The `Type` class exposes an intimidatingly large number of methods. The following methods let you enumerate type members: `GetMembers`, `GetFields`, `GetProperties`, `GetMethods`, `GetEvents`, `GetConstructors`, `GetInterfaces`, `GetNestedTypes`, and `GetDefaultMembers`. All these methods (note the plural names) return an array of elements that describe the members of the type represented by the current `Type` object. The most generic method in this group is `GetMembers`, which returns an array with all the fields, properties, methods, and events that the type exposes. For example, the following code lists all the members of the `System.String` type:
 
 ```F#
-let tt = typeof<string>
-tt.GetMembers()
+let ty = typeof<string>
+ty.GetMembers()
 |> Array.map(fun m -> m.MemberType, m.Name)
-|> Array.map(fun(t,n)-> String.Format("{0} {1}", t, n))
+|> Array.map(fun(ty,nm)-> String.Format("{0} {1}", ty, nm))
 |> String.concat "\n"
 |> output.WriteLine
 ```
 
 The `GetMembers` function returns an array of `MemberInfo` elements, where each `MemberInfo` represents a field, a property, a method, a constructor, an event, or a nested type (including delegates defined inside the class). `MemberInfo` is an abstract type from which more specific types derive—for example, `FieldInfo` for field members and `MethodInfo` for method members. The `MemberInfo.MemberType` enumerated property lets you discern between methods, properties, fields, and so on.
 
-The `GetMembers` method returns two or more `MemberInfo` objects with the same name if the class exposes overloaded properties and methods. So, for example, the output from the preceding code snippet includes multiple occurrences of the `Format` and `Concat` methods. You also find multiple occurrences of the constructor method, which is always named `.ctor`. In the next section, I show how you can explore the argument signature of these overloaded members. Also note that the `GetMembers` method returns public, instance, and static members, as well as methods inherited by other objects, such as the `GetHashCode` method inherited from `System.Object`.
+The `GetMembers` method returns two or more `MemberInfo` objects with the same name if the class exposes **overloaded** properties and methods. So, for example, the output from the preceding code snippet includes multiple occurrences of the `Format` and `Concat` methods. You also find multiple occurrences of the constructor method, which is always named `.ctor`. In the next section, I show how you can explore the argument signature of these overloaded members. Also note that the `GetMembers` method returns public, instance, and static members, as well as methods inherited by other objects, such as the `GetHashCode` method inherited from `System.Object`.
 
 The `GetMembers` method supports an optional `BindingFlags` enumerated argument. This bit-coded value lets you narrow the enumeration—for example, by listing only public or instance members. The `BindingFlags` type is used in many reflection methods and includes many enumerated values, but in this case only a few are useful:
 
@@ -189,18 +205,19 @@ The `GetMembers` method supports an optional `BindingFlags` enumerated argument.
 * The `DeclaredOnly` enumerated value restricts the enumeration to members declared in the current type (as opposed to members inherited from its base class).
 * The `FlattenHierarchy` enumerated value is used to include static members up the hierarchy.
 
-This code lists only the public, nonstatic, and noninherited members of the `String` class:
+This code lists only the public, non-static, and non-inherited members of the `String` class:
 
 ```F#
 // Get all public, instance, noninherited members of String type.
-let minfo: MemberInfo[] =
-    typeof<String>.GetMembers(
-        BindingFlags.Public ||| BindingFlags.Instance ||| BindingFlags.DeclaredOnly)
+let minfo: MemberInfo[] = typeof<String>.GetMembers(
+        BindingFlags.Public ||| 
+        BindingFlags.Instance ||| 
+        BindingFlags.DeclaredOnly)
 ```
 
 The preceding code snippet produces an array that includes the `ToString` method, which at first glance shouldn't be in the result because it's inherited from `System.Object`. It's included because the `String` class adds an overloaded version of this method, and this overloaded method is the one that appears in the result array.
 
-To narrow the enumeration to a given member type, you can use a more specific GetXxxxs method. When you're using a GetXxxxs method other than `GetMembers`, you can assign the result to an array of a more specific type, namely, `PropertyInfo`, `MethodInfo`, `ConstructorInfo`, `FieldInfo`, or `EventInfo`. (All these specific types derive from `MemberInfo`.) For example, this code lists only the methods of the `String` type:
+To narrow the enumeration to a given member type, you can use a more specific `GetXxxxs` method. When you're using a `GetXxxxs` method other than `GetMembers`, you can assign the result to an array of a more specific type, namely, `PropertyInfo`, `MethodInfo`, `ConstructorInfo`, `FieldInfo`, or `EventInfo`. (All these specific types derive from `MemberInfo`.) For example, this code lists only the methods of the `String` type:
 
 ```F#
 for mi: MethodInfo in typeof<String>.GetMethods() do
@@ -214,9 +231,9 @@ for itf: Type in typeof<String>.GetInterfaces() do
     Console.WriteLine(itf.FullName)
 ```
 
-All the GetXxxxs methods—with the exception of `GetDefaultMembers` and `GetInterfaces`—can take an optional `BindingFlags` argument to restrict the enumeration to public or nonpublic, static or instance, and declared or inherited members. For more sophisticated searches, you can use the `FindMembers` or `FindInterfaces` method, which takes a delegate pointing to a function that filters individual members or interfaces. (See MSDN documentation for additional information.)
+All the `GetXxxxs` methods—with the exception of `GetDefaultMembers` and `GetInterfaces`—can take an optional `BindingFlags` argument to restrict the enumeration to public or nonpublic, static or instance, and declared or inherited members. For more sophisticated searches, you can use the `FindMembers` or `FindInterfaces` method, which takes a delegate pointing to a function that filters individual members or interfaces. (See MSDN documentation for additional information.)
 
-In many cases, you don't need to enumerate a type's members because you have other ways to find out the name of the field, property, methods, or event you want to get information about. You can use the `GetMember` or other GetXxxx methods (where Xxxx is a singular word) of the `Type` class—namely, `GetMember`, `GetField`, `GetProperty`, `GetMethod`, `GetEvent`, `GetInterface`, `GetConstructor`, and `GetNestedType`—to get the corresponding `MemberInfo` (or a more specific object):
+In many cases, you don't need to enumerate a type's members because you have other ways to find out the name of the field, property, methods, or event you want to get information about. You can use the `GetMember` or other `GetXxxx` methods (where `Xxxx` is a singular word) of the `Type` class—namely, `GetMember`, `GetField`, `GetProperty`, `GetMethod`, `GetEvent`, `GetInterface`, `GetConstructor`, and `GetNestedType`—to get the corresponding `MemberInfo` (or a more specific object):
 
 ```F#
 // Get information about the String.Chars property.
@@ -235,7 +252,9 @@ let argTypes: Type[] = [|typeof<Char>; typeof<int>; typeof<int>|]
 let mi2: MethodInfo = typeof<String>.GetMethod("IndexOf", argTypes)
 ```
 
-**Version 2005 of VB or Version 2.0 of .NET** The method signature you pass to `GetMethod` must include information about whether the argument is passed by reference or is an array. Two new methods of the `Type` class make this task simpler than it is in .NET Framework 1.1:
+**Version 2005 of VB or Version 2.0 of .NET**
+
+The method signature you pass to `GetMethod` must include information about whether the argument is passed by reference or is an array. Two new methods of the `Type` class make this task simpler than it is in .NET Framework 1.1:
 
 ```F#
 // This code shows how you can build a reference to the following method
@@ -255,14 +274,17 @@ Console.WriteLine(arrTy1.FullName) // => System.Int32[]
 Console.WriteLine(arrTy2.FullName) // => System.Int32[,]
 ```
 
-Also, the name of a type that represents a `byref<_> ` argument has a trailing ampersand (`&`) character; therefore, you need to process the value returned by the `FullName` property if you want to display a type name using Visual Basic syntax:
+Also, the name of a type that represents a `byref<_> ` argument has a trailing ampersand (`&`) character.
 
-```F#
-let vbTypeName: String =
-    argType1.FullName
-    .Replace("[", "(").Replace("]", ")") //array
-    .Replace("&", "") //byref
-```
+~~Therefore, you need to process the value returned by the `FullName` property if you want to display a type name using Visual Basic syntax:~~
+
+~~```F#~~
+~~let vbTypeName: String =
+~~    argType1.FullName
+~~    .Replace("[", "(").Replace("]", ")") //array
+~~    .Replace("&", "") //byref
+~~```~~
+
 
 Finally, your code can easily get a reference to the `MethodBase` that describes the method being executed by means of a static member of the `MethodBase` type:
 
@@ -270,32 +292,39 @@ Finally, your code can easily get a reference to the `MethodBase` that describes
 let currMethod: MethodBase = MethodBase.GetCurrentMethod()
 ```
 
+
 ### Exploring Type Members
 
-After you get a reference to a `MemberInfo` object—or a more specific object, such as `FieldInfo` or `PropertyInfo`—you can retrieve information about the corresponding member. Because all these specific XxxxInfo objects derive from `MemberInfo`, they have some properties in common, including `Name`, `MemberType`, `ReflectedType` (the type used to retrieve this `MemberInfo` instance), and `DeclaringType` (the type where this member is declared). The values returned by the last two properties differ only if the member has been inherited.
+After you get a reference to a `MemberInfo` object—or a more specific object, such as `FieldInfo` or `PropertyInfo`—you can retrieve information about the corresponding member. Because all these specific `XxxxInfo` objects derive from `MemberInfo`, they have some properties in common, including `Name`, `MemberType`, `ReflectedType` (the type used to retrieve this `MemberInfo` instance), and `DeclaringType` (the type where this member is declared). The values returned by the last two properties differ only if the member has been inherited.
 
-The following loop displays the name of all the members exposed by the `String` type, together with a description of the member type. To make things more interesting, I'm suppressing constructor methods, multiple definitions for overloaded methods, and methods inherited from the base Object class:
+The following loop displays the name of all the members exposed by the `String` type, together with a description of the member type. To make things more interesting, I'm suppressing constructor methods, multiple definitions for overloaded methods, and methods inherited from the base `Object` class:
 
 ```F#
 let ty = typeof<string>
 
 ty.GetMembers()
-|> Array.filter(fun mi -> mi.DeclaringType = mi.ReflectedType)// Ignore inherited members.
-|> Array.filter(fun mi -> mi.MemberType <> MemberTypes.Constructor)// Ignore constructor methods.
+|> Array.filter(fun mi -> mi.DeclaringType = mi.ReflectedType) // Ignore inherited members.
+|> Array.filter(fun mi -> mi.MemberType <> MemberTypes.Constructor) // Ignore constructor methods.
 |> Array.map(fun mi -> String.Format("{0} {1}", mi.MemberType, mi.Name))
 |> Set.ofArray
 |> String.concat "\n"
 |> output.WriteLine
 ```
 
-declaring type: 定义或声明成员的所在类型。即`member`语句所处的类型。Reflected Type: `GetMember`等方法所在的实例类型。比如`typeof<Int32>.GetMember("Equals")`的声明类型是`Object`，反射类型是`Int32`.
+declaring type: 定义或声明成员的所在类型。即`member`语句所处的类型。Reflected Type: `GetMember`等方法所在的实例类型。比如：
+
+```F#
+let mi = typeof<Int32>.GetMember("Equals")
+Should.equal mi.DeclaringType typeof<Object>
+Should.equal mi.ReflectedType typeof<int>
+```
 
 #### Exploring Fields
 
-Except for the members inherited from `MemberInfo`, a `FieldInfo` object exposes only a few properties, including `FieldType` (the type of the field), `IsLiteral` (true if the field is actually a constant), `IsInitOnly` (true if the field is marked as ReadOnly), `IsStatic` (true if the field is marked as static), and other Boolean properties that reflect the scope of the field, such as `IsPublic`, `IsAssembly` (internal), `IsFamily` (Protected), `IsFamilyOrAssembly` (Protected internal), `IsFamilyAndAssembly` (Protected but visible only from inside the same assembly, a scope not supported by F#), and `IsPrivate`:
+Except for the members inherited from `MemberInfo`, a `FieldInfo` object exposes only a few properties, including `FieldType` (the type of the field), `IsLiteral` (true if the field is actually a constant), `IsInitOnly` (true if the field is marked as `ReadOnly`), `IsStatic` (true if the field is marked as `static`), and other Boolean properties that reflect the scope of the field, such as `IsPublic`, `IsAssembly` (internal), `IsFamily` (Protected), `IsFamilyOrAssembly` (Protected internal), `IsFamilyAndAssembly` (Protected but visible only from inside the same assembly, a scope not supported by F#), and `IsPrivate`:
 
 ```F#
-let ty = typeof<Type>
+let ty = typeof<int>
 
 ty.GetFields(BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance ||| BindingFlags.Static)
 |> Array.filter(fun fi -> fi.IsPublic || fi.IsAssembly)
@@ -321,7 +350,7 @@ ty.GetFields()
 
 #### Exploring Methods
 
-Like `FieldInfo`, the `MethodInfo` type exposes the `IsStatic` property and all the other scope-related properties you've just seen, plus a few additional Boolean properties: `IsVirtual` (the method is marked with the Overridable keyword), `IsAbstract` (`abstract`), and `IsFinal` (NotOverridable). The `IsSpecialName` property returns true if the method has been created by the compiler and should be dealt with in a special way, as is the case of the methods generated by properties and operators. If the method returns a value (a Function, in Visual Basic parlance), the `ReturnType` property returns the type of the return value; otherwise, it returns a special type whose name is `System.Void`. This snippet uses these properties to display information on all the methods in a class, exposed in a Visual Basic-like syntax:
+Like `FieldInfo`, the `MethodInfo` type exposes the `IsStatic` property and all the other scope-related properties you've just seen, plus a few additional Boolean properties: `IsVirtual` (the method is marked with the Overridable keyword), `IsAbstract`, and `IsFinal` (NotOverridable). The `IsSpecialName` property returns true if the method has been created by the compiler and should be dealt with in a special way, as is the case of the methods generated by properties and operators. If the method returns a value instead of `unit`, the `ReturnType` property returns the type of the return value; otherwise, it returns a special type whose name is `System.Void`. This snippet uses these properties to display information on all the methods in a class, exposed in a Visual Basic-like syntax:
 
 ```F#
 let ty = typeof<Array>
@@ -339,10 +368,10 @@ ty.GetMethods()
     let flags =
         [
             if mi.IsAbstract then yield "Abstract"
-            if mi.IsAssembly then yield "Assembly"
+            if mi.IsAssembly then yield "Assembly" // internal
             if mi.IsConstructedGenericMethod then yield "ConstructedGenericMethod"
             if mi.IsConstructor then yield "Constructor"
-            if mi.IsFamily then yield "Family"
+            if mi.IsFamily then yield "Family" // protected
             if mi.IsFamilyAndAssembly then yield "FamilyAndAssembly"
             if mi.IsFamilyOrAssembly then yield "FamilyOrAssembly"
             if mi.IsFinal then yield "Final"
@@ -360,7 +389,7 @@ ty.GetMethods()
         ] |> String.concat ","
     String.Format("{0}: {1} {{{2}}}", mi.Name, retTypeName, flags)
 )
-|> String.concat "\r\n"
+|> String.concat "\n"
 |> output.WriteLine
 ```
 
@@ -382,7 +411,7 @@ ty.GetProperties(BindingFlags.Public ||| BindingFlags.Instance ||| BindingFlags.
             if pi.CanRead then yield pi.GetMethod
             if pi.CanWrite then yield pi.SetMethod
         ]
-        |> List.map(fun mi -> "    " + mi.Name) // TODO: call method printer
+        |> List.map(fun mi -> "    " + mi.Name)
     let flags =
         [
             if pi.CanRead then yield "CanRead"
@@ -436,14 +465,8 @@ let mi: MethodInfo = typeof<TestClass>.GetMethod("MethodWithOptionalArgs")
 mi.GetParameters()
 |> Array.sortBy(fun pi -> pi.Position)
 |> Array.map(fun pi ->
-    let optional  = if pi.IsOptional then "Optional " else "" 
-
-    // Notice how you can discern between ByVal and ByRef parameters.
-    let direction: String = 
-        if pi.ParameterType.IsByRef then "ByRef" else "ByVal"
-
     // Process the parameter type.
-    let tyName: String = 
+    let paramTypeName() = 
         match pi.ParameterType.FullName with
         | null -> sprintf "%A" pi.ParameterType
         | tyName -> 
@@ -451,16 +474,16 @@ mi.GetParameters()
                 .Replace("[", "(").Replace("]", ")")// Convert [] into () 
                 .Replace("&", "")//and drop the & character (included if parameter is ByRef).
 
-    let dec = String.Format("{0} {1} : {2}", direction, pi.Name, tyName)
-
-    // Append the default value for optional parameters.
-    let defaultValue =
+    [
+        if pi.IsOptional then yield "Optional"
+        // Notice how you can discern between ByVal and ByRef parameters.
+        yield if pi.ParameterType.IsByRef then "ByRef" else "ByVal"
+        yield pi.Name + " : " + paramTypeName()
+        // Append the default value for optional parameters.
         if pi.IsOptional then 
-            "=" + GetObjectValue(pi.DefaultValue)
-        else ""
-
-    [optional;dec;defaultValue] 
-    |> String.concat ""
+            yield "= " + GetObjectValue(pi.DefaultValue)
+    ] 
+    |> String.concat " "
 )
 |> String.concat ","
 |> output.WriteLine
@@ -469,7 +492,7 @@ mi.GetParameters()
 The previous code snippet uses the `GetObjectValue` auxiliary method, which returns the value of an object in Visual Basic syntax:
 
 ```F#
-let GetObjectValue(obj : Object) : String =
+let GetObjectValue(obj: Object): String =
    if obj = null then
       "null"
    elif obj.GetType() = typeof<String> then
@@ -496,7 +519,9 @@ for pi: ParameterInfo in mi.GetParameters() do
 
 #### Exploring the Method Body
 
-**Version 2005 of VB or Version 2.0 of .NET** Version 2.0 of the .NET Framework introduces a new feature that, although not completely implemented, surely goes in a very promising direction: the ability to peek at the IL code compiled for a given method. The entry point for this capability is the new `MethodBase.GetMethodBody` method, which returns a `MethodBody` object. In turn, a `MethodBody` object exposes properties that let you list the local variables, evaluate the size of the stack that the method uses, and explore the try…Catch exception handlers defined in the inspected method.
+**Version 2005 of VB or Version 2.0 of .NET**
+
+Version 2.0 of the .NET Framework introduces a new feature that, although not completely implemented, surely goes in a very promising direction: the ability to peek at the IL code compiled for a given method. The entry point for this capability is the new `MethodBase.GetMethodBody` method, which returns a `MethodBody` object. In turn, a `MethodBody` object exposes properties that let you list the local variables, evaluate the size of the stack that the method uses, and explore the try…Catch exception handlers defined in the inspected method.
 
 ```F#
 // Get a reference to the method in a type.
@@ -519,7 +544,6 @@ for ehc: ExceptionHandlingClause in mb.ExceptionHandlingClauses do
 
    Console.WriteLine("try off/len={0}/{1}, ", ehc.TryOffset, ehc.TryLength)
    Console.WriteLine("Handler off/len={0}/{1}", ehc.HandlerOffset, ehc.HandlerLength)
-
 ```
 
 The list of exception handlers doesn't differentiate between Catch and finally clauses belonging to distinct try blocks, but you can group them correctly by looking at elements with identical `TryOffset` properties. The `Flags` property of the `ExceptionHandlingClause` object helps you understand whether the clause is a filter (When block), a clause (Catch block), or a finally block. The type of the `Exception` object is exposed by the `CatchType` property. For example, given the following method:
@@ -570,13 +594,15 @@ Exception handlers:
   Type=Clause, ex As Exception, Try off/len=82/13, Handler off/len=147/27
 ```
 
-Notice that the list of local variables is likely to include variables that you haven't declared explicitly but that are created for you by the compiler to store intermediate results, such as the `Exception` variables in Catch clauses or the upper limit of a For loop.
+Notice that the list of local variables is likely to include variables that you haven't declared explicitly but that are created for you by the compiler to store intermediate results, such as the `Exception` variables in `Catch` clauses or the upper limit of a `For` loop.
 
 The only method of the `MethodBody` object of interest is `GetILAsByteArray`, which returns an array containing the raw IL opcodes. These opcodes are fully documented, so you might use this method to disassemble a .NET executable. As you can guess, this isn't exactly a trivial task, however.
 
 ### Reflecting on Generics
 
-**Version 2005 of VB or Version 2.0 of .NET** Reflection techniques in .NET Framework 2.0 fully support generic types, and you must account for them when exploring the types that an assembly exposes.
+**Version 2005 of VB or Version 2.0 of .NET**
+
+Reflection techniques in .NET Framework 2.0 fully support generic types, and you must account for them when exploring the types that an assembly exposes.
 
 #### Exploring Generic Types
 
@@ -623,7 +649,7 @@ let gArgs =
     // this argument appears in the signature.
     |> Array.sortBy(fun tyArg -> tyArg.GenericParameterPosition)
     |> Array.filter(fun tyArg -> tyArg.IsGenericTypeParameter) // always true
-    |> Array.map(fun tyArg -> "'"+tyArg.Name)
+    |> Array.map(fun tyArg -> "'" + tyArg.Name)
     |> String.concat ","
 
 sprintf "%s<%s>" typeName gArgs
@@ -632,7 +658,7 @@ sprintf "%s<%s>" typeName gArgs
 
 #### Exploring Generic Methods
 
-You must adopt a similar approach when exploring the generics methods of a type. (Remember that a method with generic arguments can appear in both a regular and a generic type.) You can check whether a method has a generic definition by means of the `MethodInfo.IsGenericMethodDefinition` method and explore its generic parameters by means of the `MethodInfo.GetGenericArguments` method. For example, the following loop displays the name of all the methods in a type using the `<_>`clause for generic methods:
+You must adopt a similar approach when exploring the generics methods of a type. (Remember that a method with generic arguments can appear in both a regular and a generic type.) You can check whether a method has a generic definition by means of the `MethodInfo.IsGenericMethodDefinition` method and explore its generic parameters by means of the `MethodInfo.GetGenericArguments` method. For example, the following loop displays the name of all the methods in a type using the `<_>` clause for generic methods:
 
 ```F#
 let ty = typeof<Array>
@@ -647,26 +673,28 @@ ty.GetMethods()
         |> String.concat ","
     sprintf "%s<%s>" mi.Name gargs
 )
-|> String.concat "\r\n"
+|> String.concat "\n"
 |> output.WriteLine
 ```
 
-When you explore the parameters of a method, you must discern between regular types (e.g., `System.String`) and types passed as an argument to a generic type or method (e.g., T or K). This is possible because the `Type` class exposes a new `IsGenericParameter` property, which returns false in the former case and true in the latter. It is essential that you test this method before doing anything else with a `Type` value because some properties of a type used as a parameter in a generic class return meaningless values or might throw an exception. For example, this is the most correct way to assemble the signature of a method:
+When you explore the parameters of a method, you must discern between regular types (e.g., `System.String`) and types passed as an argument to a generic type or method (e.g., `'T` or `'K`). This is possible because the `Type` class exposes a new `IsGenericParameter` property, which returns false in the former case and true in the latter. It is essential that you test this method before doing anything else with a `Type` value because some properties of a type used as a parameter in a generic class return meaningless values or might throw an exception. For example, this is the most correct way to assemble the signature of a method:
 
 ```F#
 // (The mi variable points to a MethodInfo object.)
-let mutable signature: String = mi.Name + "("
-for par: ParameterInfo in mi.GetParameters() do
-    if par.Position > 0 then signature <- signature + ", "
-    signature <- signature + par.Name + " As " + GetTypeName(par.ParameterType)
+let signature (mi: MethodInfo) =
+    [
+        yield mi.Name + "("
+        for par: ParameterInfo in mi.GetParameters() do
+            if par.Position > 0 then yield ", "
+            yield par.Name + ": " + GetTypeName(par.ParameterType)
+        yield ") :"
+        yield if mi.ReturnType.FullName = "System.Void" then "unit" 
+              else GetTypeName(mi.ReturnType)
+    ]
+    |> String.concat ""
 
-signature <- signature + ")"
-let retType: Type = mi.ReturnType
-if retType.FullName <> "System.Void" then
-    signature <- signature + " As " + GetTypeName(retType)
-
-Console.WriteLine(signature)
-   // => TestMethod(key As K, values As V(), count As System.Int32) As T
+Console.WriteLine(signature mi)
+   // => TestMethod(key : 'K, values : 'V(), count : System.Int32) : 'T
 ```
 
 where the `GetTypeName` function is defined as follows:
@@ -674,19 +702,19 @@ where the `GetTypeName` function is defined as follows:
 ```F#
 let GetTypeName(tp : Type) : String =
    if tp.IsGenericParameter then
-      tp.Name
+      "'" + tp.Name
    else
       tp.FullName.Replace("[", "(").Replace("]", ")").Replace("&", "")
 ```
 
 #### Exploring Members That Use Generic Types
 
-A slightly different problem occurs when you are dealing with a member of a type (either a regular or generic type) and the member uses or returns a generic type that has already been bound with nongeneric arguments, as in the following case:
+A slightly different problem occurs when you are dealing with a member of a type (either a regular or generic type) and the member uses or returns a generic type that has already been bound with non-generic arguments, as in the following case:
 
 ```F#
 [
     typeof<ResizeArray<int>>
-    typeof<System.Collections.Generic.Dictionary<string,float>>
+    typeof<Dictionary<string,float>>
 ]
 |> List.filter(fun ty -> ty.IsGenericType) // for all is true
 |> List.map(fun ty ->ty.FullName)
@@ -709,13 +737,13 @@ Three details are worth noticing:
 You can easily extract the name of a generic type and its argument types by parsing this full name, for example, by using a regular expression. Alternatively, you can use the `IsGenericType` method to check whether the type is the bound version of a generic type, and, if this is the case, you can use the `GetGenericTypeDefinition` method to extract the name of the original generic type and the `GetGenericArguments` method to extract the type of individual type arguments:
 
 ```F#
-let ty = typeof<System.Collections.Generic.Dictionary<System.String,System.Double>>
+let ty = typeof<Dictionary<String,Double>>
 let name: String = ty.GetGenericTypeDefinition().FullName
 let name = name.Remove(name.IndexOf('`'))
 let gargs =
     ty.GetGenericArguments()
     // |> Array.sortBy(fun argType -> argType.GenericParameterPosition) //it is arg no param, order no change.
-    |> Array.map(fun argType -> sprintf "%A" argType)//GetTypeName(argType)
+    |> Array.map(fun argType -> GetTypeName(argType))
     |> String.concat ","
 
 let signature = sprintf "%s<%s>" name gargs
@@ -733,7 +761,7 @@ let rec fsharpTypeName(tp: Type) : String =
         let typeName = 
             let nm = tp.FullName
             nm.Remove(nm.IndexOf('`'))
-        let genericParameters =
+        let genericParameters = //形参
             tp.GetGenericArguments()
             |> Array.sortBy(fun p -> p.GenericParameterPosition) // only for demo, order keep no changed.
             |> Array.filter(fun p -> p.IsGenericParameter) // only for demo, always true.
@@ -748,7 +776,7 @@ let rec fsharpTypeName(tp: Type) : String =
         let typeName =
             let nm = tp.GetGenericTypeDefinition().FullName
             nm.Remove(nm.IndexOf('`'))
-        let gargs =
+        let gargs = //实参
             tp.GetGenericArguments()
             |> Array.map fsharpTypeName
             |> String.concat ","
@@ -821,6 +849,47 @@ for argType: Type in genType.GetGenericArguments() do
    if (attrs &&& GenericParameterAttributes.NotNullableValueTypeConstraint) > GenericParameterAttributes.None then
       Console.WriteLine(" Structure (nonnullable value type)")
 ```
+
+
+#### Replace `GetGenericArguments` with `GenericTypeArguments` or `GenericTypeParameters`
+
+`GetGenericArguments()` returns parameters (not arguments) if the type is a generic definition, and it returns arguments if the type is a constructed generic.
+
+`GenericTypeArguments` is better if you expect the type to be constructed.
+
+`GenericTypeParameters` is better if you expect the type to be a definition.
+
+> It only exists after adding `.GetTypeInfo()` though. If you don't have an expectation about constructed vs definition, I'm not sure how you can meaningfully use `GetGenericArguments()`. 
+> 
+> 获得`TypeInfo`的方法：
+>
+> ```F#
+> let getTypeInfo (ty:Type) = ty.GetTypeInfo()
+> ```
+>
+> **reference** is a shallow representation of something. `Type`代表引用。
+>
+> **definition** is  a rich representation of something. `TypeInfo`代表定义。
+>
+> 在完整版的类库中，不需要使用`TypeInfo`，使用`Type`即可。
+
+I'm still not sure if this is a good diagnostic, but the example would be `typedefof(List<_>).GetGenericArguments()` being replaced with `typedefof(List<_>).GenericTypeParameters` since `List<'a>` doesn't technically have its type parameters filled by any type arguments.
+
+The win is that you're using the correct terminology for what you're getting, **parameters**, not **arguments**. And if the type changes to `List<int>`, you'll get an empty array when you ask for type parameters because you should be doing `GetGenericTypeDefinition()` first if you're interested in parameters.
+
+`typedefof(List<_>)` is an example where they differ. The property returns an empty array, while the method returns an array with a generic `'T` in it. (this `'T` has `IsGenericParameter` true)
+
+From reading the documentation, I think that you can think of `GenericTypeArguments` as 
+
+```F#
+ty.GetGenericArguments()
+|> Array.filter(fun t -> not t.IsGenericParameter)
+```
+
+, i.e. only the concrete types. See also `ContainsGenericParameters`.
+
+
+
 
 ### Reflecting on Attributes
 
@@ -925,11 +994,15 @@ All these alternatives are quite confusing, so let me recap when each of them sh
 
 * If you are checking whether a multiple-instance attribute is associated with an element and you want to read the attribute's fields and properties, use the `Attribute.GetCustomAttributes` static method or the `GetCustomAttributes` method exposed by the `Assembly`, `Module`, `Type`, `ParameterInfo`, and `MemberInfo` classes. You must use this technique when reading all the attributes associated with an element, regardless of the attribute type.
 
-**Version 2005 of VB or Version 2.0 of .NET** Although all the techniques discussed in this section are available in .NET Framework 1.1 as well, there is a new important change in how you use them to query some special CLR attributes, such as `Serializable`, `NonSerialized`, `DllImport`, `StructLayout`, and `FieldOffset`. To improve performance and to save space in metadata tables, previous versions of the .NET Framework stored these special attributes using a format different from all other attributes. Consequently, you couldn't reflect on these attributes by using one of the techniques I just illustrated. Instead, you had to use special properties exposed by other reflection objects, for example, the `IsSerialized` and `IsLayoutSequential` properties of the `Type` class or the `IsNonSerialized` property of the `FieldInfo` class. A welcome addition in .NET Framework 2.0 is that you don't need to use any of these properties any longer because all the special .NET attributes can be queried by means of the `IsDefined`, `GetCustomAttribute`, and `GetCustomAttributes` methods described in this section. (However, properties such as `IsSerializable` and `IsLayoutSequential` continue to be supported for backward compatibility.)
+**Version 2005 of VB or Version 2.0 of .NET**
+
+Although all the techniques discussed in this section are available in .NET Framework 1.1 as well, there is a new important change in how you use them to query some special CLR attributes, such as `Serializable`, `NonSerialized`, `DllImport`, `StructLayout`, and `FieldOffset`. To improve performance and to save space in metadata tables, previous versions of the .NET Framework stored these special attributes using a format different from all other attributes. Consequently, you couldn't reflect on these attributes by using one of the techniques I just illustrated. Instead, you had to use special properties exposed by other reflection objects, for example, the `IsSerialized` and `IsLayoutSequential` properties of the `Type` class or the `IsNonSerialized` property of the `FieldInfo` class. A welcome addition in .NET Framework 2.0 is that you don't need to use any of these properties any longer because all the special .NET attributes can be queried by means of the `IsDefined`, `GetCustomAttribute`, and `GetCustomAttributes` methods described in this section. (However, properties such as `IsSerializable` and `IsLayoutSequential` continue to be supported for backward compatibility.)
 
 #### The `CustomAttributeData` Type
 
-**Version 2005 of VB or Version 2.0 of .NET** Version 1.1 of the .NET Framework has a serious limitation related to custom attributes: you could search attributes buried in metadata, instantiate them, and read their properties, but you have no documented means for extracting the exact syntax used in code to define the attribute. For example, you can't determine whether an attribute field or property is assigned in the attribute's constructor using a standard (mandatory) argument or a named (optional) argument; if the field or property is equal to its default value (null or zero), you can't determine whether it happened because the property was omitted in the attribute's constructor. For example, these limitations prevent a .NET developer from building a full-featured object browser.
+**Version 2005 of VB or Version 2.0 of .NET**
+
+Version 1.1 of the .NET Framework has a serious limitation related to custom attributes: you could search attributes buried in metadata, instantiate them, and read their properties, but you have no documented means for extracting the exact syntax used in code to define the attribute. For example, you can't determine whether an attribute field or property is assigned in the attribute's constructor using a standard (mandatory) argument or a named (optional) argument; if the field or property is equal to its default value (null or zero), you can't determine whether it happened because the property was omitted in the attribute's constructor. For example, these limitations prevent a .NET developer from building a full-featured object browser.
 
 In addition to this limitation inherited from .NET Framework 1.1, you run into another problem under .NET Framework 2.0 when you want to extract custom attributes from assemblies that have been loaded for reflection-only purposes. In fact, both the `GetCustomAttribute` and the `GetCustomAttributes` methods instantiate the custom attribute and therefore would run some code inside the assembly, which is prohibited.
 
@@ -1177,26 +1250,4 @@ let GetMemberSyntax(mi : MemberInfo) : String =
 
 As provided, the utility displays output in a purely textual format. It is easy, however, to change the argument of `String.Format` methods so that it outputs XML or HTML text, which would greatly improve the appearance of the result. (The complete demo program contains modified versions of this code that outputs HTML and XML text.)
 
-### Replace `GetGenericArguments` with `GenericTypeArguments` or `GenericTypeParameters`
-
-`GetGenericArguments()` returns parameters (not arguments) if the type is a generic definition, and it returns arguments if the type is a constructed generic.
-
-`GenericTypeArguments` is better if you expect the type to be constructed.
-
-`GenericTypeParameters` is better if you expect the type to be a definition. It only exists after adding `.GetTypeInfo()` though. If you don't have an expectation about constructed vs definition, I'm not sure how you can meaningfully use `GetGenericArguments()`.
-
-I'm still not sure if this is a good diagnostic, but the example would be `typedefof(List<_>).GetGenericArguments()` being replaced with `t1.GetTypeInfo().GenericTypeParameters` since `List<_>` doesn't technically have its type parameters filled by any type arguments.
-
-The win is that you're using the correct terminology for what you're getting, **parameters**, not **arguments**. And if the type changes to `List<int>`, you'll get an empty array when you ask for type parameters because you should be doing `GetGenericTypeDefinition()` first if you're interested in parameters.
-
-`typedefof(List<_>)` is an example where they differ. The property returns an empty array, while the method returns an array with a generic `'T` in it. (this `'T` has `IsGenericParameter` `true`)
-
-From reading the documentation, I think that you can think of `GenericTypeArguments` as 
-
-```F#
-ty.GetGenericArguments()
-|> Array.filter(fun t -> not t.IsGenericParameter)
-```
-
-, i.e. only the concrete types. See also `ContainsGenericParameters`.
 

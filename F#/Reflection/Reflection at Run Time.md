@@ -256,7 +256,6 @@ type SortKey<'T> =
         GetValue: 'T -> obj
         // true if sort is descending.
         Descending : bool
-
     }
 
 let parse (tp: Type, prop:string) =

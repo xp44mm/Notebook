@@ -227,13 +227,13 @@ npx create-react-app my-app
 
 这条命令会临时安装 create-react-app 包，命令完成后 create-react-app 会删掉，不会出现在 global 中。下次再执行，还是会重新临时安装。
 
+### 发布npm包
+
 npm naming restrictions:
 
   *  name can no longer contain capital letters
 
 不管升级降级，在配置文件中，修改完版本，或者增加包，删除包，执行`npm i`，即可自动添加和删除。
-
-
 
 发包需要登陆npm
 

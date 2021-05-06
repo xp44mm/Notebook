@@ -1,6 +1,6 @@
 ## Unicode Category or Unicode Block: \p{}
 
-The Unicode standard assigns each character a general category. For example, a particular character can be an uppercase letter (represented by the `Lu` category), a decimal digit (the `Nd` category), a math symbol (the `Sm`category), or a paragraph separator (the `Zl` category). Specific character sets in the Unicode standard also occupy a specific range or block of consecutive code points. For example, the basic Latin character set is found from \u0000 through \u007F, while the Arabic character set is found from \u0600 through \u06FF.
+The Unicode standard assigns each character a general category. For example, a particular character can be an uppercase letter (represented by the `Lu` category), a decimal digit (the `Nd` category), a math symbol (the `Sm` category), or a paragraph separator (the `Zl` category). Specific character sets in the Unicode standard also occupy a specific range or block of consecutive code points. For example, the basic Latin character set is found from \u0000 through \u007F, while the Arabic character set is found from \u0600 through \u06FF.
 
 The regular expression construct
 
@@ -48,7 +48,7 @@ The regular expression `\b(\p{IsGreek}+(\s)?)+\p{Pd}\s(\p{IsBasicLatin}+(\s)?)+`
 * `(\p{IsBasicLatin}+(\s)?)+`
   Match the pattern of one or more basic Latin characters followed by zero or one white-space characters one or more times. 
 
-## Negative Unicode Category or Unicode Block: \P{}
+## Negative Unicode Category or Unicode Block: `\P{}`
 
 The regular expression construct
 
