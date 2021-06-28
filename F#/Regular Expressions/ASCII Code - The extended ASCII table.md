@@ -144,7 +144,7 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 | 121 | 171 | 79 | y      | &#121;      |           | Lowercase y                            |
 | 122 | 172 | 7A | z      | &#122;      |           | Lowercase z                            |
 | 123 | 173 | 7B | {      | &#123;      |           | Opening brace                          |
-| 124 | 174 | 7C | \|     | &#124;      |           | Vertical bar                           |
+| 124 | 174 | 7C | |      | &#124;      |           | Vertical bar                           |
 | 125 | 175 | 7D | }      | &#125;      |           | Closing brace                          |
 | 126 | 176 | 7E | ~      | &#126;      |           | Equivalency sign - tilde               |
 | 127 | 177 | 7F |        | &#127;      |           | Delete                                 |
@@ -286,6 +286,18 @@ There are several different variations of the 8-bit ASCII table. The table below
 | 254 | 376 | FE | þ      | &#254;      | &thorn;   | Latin small letter thorn                   |
 | 255 | 377 | FF | ÿ      | &#255;      | &yuml;    | Latin small letter y with diaeresis        |
 ```
+
+# ASCII 可打印字符与控制字符
+
+基本的 ASCII 字符集共有 128 个字符，其中有 95 个可打印字符，包括常用的字母、数字、标点符号等，另外还有 33 个控制字符。标准 ASCII 码使用 7 个二进位对字符进行编码，对应的 ISO 标准为 ISO646 标准。
+
+## 控制字符
+
+在ASCII码中，第0～31号及第127号(共33个)是控制字符或通讯专用字符。如控制符：LF（换行）、CR（回车）、FF（换页）、DEL（删除）、BS（退格)、BEL（振铃）等；通讯专用字符：SOH（文头）、EOT（文尾）、ACK（确认）等。
+
+## 可打印字符
+
+在ASCII码中，第32~126号（共95个）是可打印字符，也就是在显示器上输出能够看得见的。
 
 # 标点符号的英语名称
 
