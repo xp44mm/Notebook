@@ -78,7 +78,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 
   Offer a means to match one character from a group that you specify between brackets, as in `[aeiou]`. You don't need to escape special characters when they appear in brackets except in the cases of the dash and the closing bracket, which are the only characters that have special meaning inside brackets. For example, `[()[\]{}]` matches opening and closing parentheses, brackets, and braces. (Notice that the `]` character is escaped, but the `[` character isn't.)
 
-- **Atomic zero-width assertions** 
+- **Atomic zero-width assertions**
 
   Specify where the matching string should be but don't consume characters. For example, the `abc$` regular expression matches any abc word immediately before the end of a line without also matching the end of the line.
 
@@ -98,7 +98,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 
   Enable you to reference a previous group of characters in the regular expression pattern by using its group number or name. You can use these constructs as a way to say "match the same thing again." For example, `(?<value>\d+)=\k<value>` matches identical numbers separated by an = symbol, as in the "123=123" sequence.
 
-* **Alternating constructs** 
+* **Alternating constructs**
 
   Provide a way to specify alternatives; for example, the sequence `I (am|have)` can match both the "I am" and "I have" strings.
 
@@ -301,7 +301,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
   Substitutes the last substring matched by a `(?<name>)` group.
 
 * `$&`
-  Substitutes the entire match (same as $0).
+  Substitutes the entire match (same as `$0`).
 
 * `$_`
   Substitutes the entire source string.

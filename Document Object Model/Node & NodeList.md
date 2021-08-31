@@ -38,18 +38,18 @@ class Node extends EventTarget {}
   Returns an `unsigned short` representing the type of the node. Possible values are:
 
 ```js
-ELEMENT_NODE                1
-ATTRIBUTE_NODE              2  // 不推荐
-TEXT_NODE                   3
-CDATA_SECTION_NODE          4
-ENTITY_REFERENCE_NODE       5  // 不推荐
-ENTITY_NODE                 6  // 不推荐
-PROCESSING_INSTRUCTION_NODE 7
-COMMENT_NODE                8
-DOCUMENT_NODE               9
-DOCUMENT_TYPE_NODE          10
-DOCUMENT_FRAGMENT_NODE      11
-NOTATION_NODE               12 // 不推荐
+document.ELEMENT_NODE                1
+document.ATTRIBUTE_NODE              2  // 不推荐
+document.TEXT_NODE                   3
+document.CDATA_SECTION_NODE          4
+document.ENTITY_REFERENCE_NODE       5  // 不推荐
+document.ENTITY_NODE                 6  // 不推荐
+document.PROCESSING_INSTRUCTION_NODE 7
+document.COMMENT_NODE                8
+document.DOCUMENT_NODE               9
+document.DOCUMENT_TYPE_NODE          10
+document.DOCUMENT_FRAGMENT_NODE      11
+document.NOTATION_NODE               12 // 不推荐
 ```
 
 - `Node.nodeValue`

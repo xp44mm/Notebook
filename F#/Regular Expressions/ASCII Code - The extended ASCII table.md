@@ -116,7 +116,7 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 | 93  | 135 | 5D | ]      | &#93;       |           | Closing bracket                        |
 | 94  | 136 | 5E | ^      | &#94;       |           | Caret - circumflex                     |
 | 95  | 137 | 5F | _      | &#95;       |           | Underscore                             |
-| 96  | 140 | 60 | `      | &#96;       |           | Grave accent                           |
+| 96  | 140 | 60 | `      | &#96;       |           | Grave accent - backquote - tick        |
 | 97  | 141 | 61 | a      | &#97;       |           | Lowercase a                            |
 | 98  | 142 | 62 | b      | &#98;       |           | Lowercase b                            |
 | 99  | 143 | 63 | c      | &#99;       |           | Lowercase c                            |
