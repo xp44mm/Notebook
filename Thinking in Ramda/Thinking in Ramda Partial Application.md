@@ -63,7 +63,7 @@ Now, when we call `filter`, `publishedInYear(year)` is evaluated immediately, re
 
 ## Partially-Applying Functions
 
-We could rewrite any multi-argument function this way if we wanted to, but we don’t own all of the functions we might want to use. Also, we might want to use some multi-argument functions in the usual way.
+We could rewrite any multi-argument function in this way if we wanted to, but we don’t own all of the functions we might want to use. Also, we might want to use some multi-argument functions in the usual way.
 
 For example, if we had some other code that just wanted to check if a book was published in a given year, we’d like to say `publishedInYear(book, 2012)`, but we can’t do that any more. Instead, we have to say `publishedInYear(2012)(book)`. That’s less readable and more annoying.
 

@@ -8,38 +8,38 @@ A programmer’s pipe-dream is to write code, and be able to use it repeatedly w
 
 Normal function invocation in JavaScript goes something like this:
 
-```
-var add = function(a, b){ return a + b }
+```js
+let add = function(a, b){ return a + b }
 add(1, 2) //= 3
 ```
 
 A function takes a number of arguments, and returns a value. I can call it with too few (with odd results), or too many (where the excess normally get ignored):
 
-```
+```js
 add(1, 2, 'IGNORE ME') //= 3
 add(1) //= NaN
 ```
 
 A *curried* function is one where multiple arguments are described by a series of one-argument functions. For example, curried addition would be:
 
-```
-var curry = require('curry')
-var add = curry(function(a, b){ return a + b })
-var add100 = add(100)
+```js
+let curry = require('curry')
+let add = curry(function(a, b){ return a + b })
+let add100 = add(100)
 add100(1) //= 101
 ```
 
 A curried function accepting multiple arguments would be written as:
 
-```
-var sum3 = curry(function(a, b, c){ return a + b + c })
+```js
+let sum3 = curry(function(a, b, c){ return a + b + c })
 sum3(1)(2)(3) //= 6
 ```
 
-Since this is ugly in JavaScript’s syntax, [curry](https://npmjs.org/package/curry) allows you can also call a function with multiple arguments at once:
+Since this is ugly in JavaScript’s syntax, curry allows you can also call a function with multiple arguments at once:
 
-```
-var sum3 = curry(function(a, b, c){ return a + b + c })
+```js
+let sum3 = curry(function(a, b, c){ return a + b + c })
 sum3(1, 2, 3) //= 6
 sum3(1)(2, 3) //= 6
 sum3(1, 2)(3) //= 6
@@ -56,8 +56,8 @@ If you’re not used to languages in which curried functions are part of daily l
 
 Let’s take an obvious example; mapping over a collection to get the ids of its members:
 
-```
-var objects = [{ id: 1 }, { id: 2 }, { id: 3 }]
+```js
+let objects = [{ id: 1 }, { id: 2 }, { id: 3 }]
 objects.map(function(o){ return o.id })
 ```
 
@@ -67,27 +67,27 @@ If you’re looking for the REAL logic in that second line, let me pick it out f
 
 There’s a lot of implementation cruft in just that line; in the form of the function definition. Let’s clean that up:
 
-```
-var get = curry(function(property, object){ return object[property] })
+```js
+let get = curry(function(property, object){ return object[property] })
 objects.map(get('id')) //= [1, 2, 3]
 ```
 
-Now we’re talking in terms of the real logic of the operation - map over these objects, getting their ids. BAM. What we’ve really created in the *get* function is a **function that can be partially configured**.
+Now we’re talking in terms of the real logic of the operation — map over these objects, getting their ids. BAM. What we’ve really created in the *get* function is a **function that can be partially configured**.
 
 What if we want to re-use the ‘get ids from a list of objects’ functionality, though? Let’s do it the naive way:
 
-```
-var getIDs = function(objects){
+```js
+let getIDs = function(objects){
     return objects.map(get('id'))
 }
 getIDs(objects) //= [1, 2, 3]
 ```
 
-Hrm, we seem to be back to cluttery from elegant and terse. What can we do about this? Ah - what if map could be partially configured with a function, but no collection yet?
+Hrm, we seem to be back to clutter from elegant and terse. What can we do about this? Ah - what if map could be partially configured with a function, but no collection yet?
 
-```
-var map = curry(function(fn, value){ return value.map(fn) })
-var getIDs = map(get('id'))
+```js
+let map = curry(function(fn, value){ return value.map(fn) })
+let getIDs = map(get('id'))
 
 getIDs(objects) //= [1, 2, 3]
 ```
@@ -100,7 +100,7 @@ Another advantage of this approach is that it encourages the creation of functio
 
 In this toy example, let’s ‘get’ some data from a server and process it in some useful way. The data looks something like this:
 
-```
+```json
 {
     "user": "hughfdjackson",
     "posts": [
@@ -112,7 +112,7 @@ In this toy example, let’s ‘get’ some data from a server and process it in
 
 Your task is to get the the titles for each of this users posts. Gogogo!
 
-```
+```js
 fetchFromServer()
     .then(JSON.parse)
     .then(function(data){ return data.posts })
@@ -121,13 +121,13 @@ fetchFromServer()
     })
 ```
 
-Okay, that wasn’t fair, I rushed you. (Also, I wrote that code on your behalf - perhaps you would solve it more elegantly, but I digress).
+Okay, that wasn’t fair, I rushed you. (Also, I wrote that code on your behalf — perhaps you would solve it more elegantly, but I digress).
 
 Since chains of promises (or, if you prefer, callbacks) fundamentally *work* with functions, you can’t easily just map over an value when one is available from the server without first wrapping it up in all that visual (and mental) clutter.
 
 Let’s go again, this time using the tools we’ve already defined:
 
-```
+```js
 fetchFromServer()
     .then(JSON.parse)
     .then(get('posts'))

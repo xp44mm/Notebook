@@ -125,7 +125,7 @@ Here's one technique:
 let groupByUser = R.partition(R.prop('username'));
 ```
 
-The `partition` function uses Ramda's version of `reduce`, one that is very similar to the one on `Array.prototype.reduce`. We're not going to discuss this further here. Our `partition` simply uses `reduce` to group a list into sublists that share the same key, as determined by a function run against each one of them, in this case `prop('username')`, which simply extracts the "username" property from each item.
+The `partition` function uses Ramda's version of `reduce`, one that is very similar to the one on `Array.prototype.reduce`. Our `partition` simply uses `reduce` to group a list into sublists that share the same key, as determined by a function run against each one of them, in this case `prop('username')`, which simply extracts the "username" property from each item.
 
 (So, did I manage to distract you with the shiny new function? I'm still not mentioning the data here! Sorry. And look, a few more shiny new functions are coming up!)
 

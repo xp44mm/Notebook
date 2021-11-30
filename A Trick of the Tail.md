@@ -1,0 +1,552 @@
+# A Trick of the Tail
+
+------
+
+In [Recursion? We don’t need no stinking recursion!](http://raganwald.com/2018/05/20/we-dont-need-no-stinking-recursion.html), we looked at seven different techniques for turning recursive functions into iterative functions. In this post, we’re going to take a deeper look at technique #3, [convert recursion to iteration with tail calls](http://raganwald.com/2018/05/20/we-dont-need-no-stinking-recursion.html#3-convert-recursion-to-iteration-with-tail-calls).
+
+Before we dive into it, here’s a quick recap of what we explored in the previous post:
+
+------
+
+### recursion, see recursion
+
+The shallow definition of a recursive algorithm is a function that directly or indirectly calls itself. For example, the [factorial](https://en.wikipedia.org/wiki/Factorial) of an integer:
+
+> In mathematics, the factorial of a non-negative integer *n*, denoted by *n*!, is the product of all positive integers less than or equal to *n*. For example,
+>
+> 5! = 5 * 4 * 3 * 2 * 1 = 120.
+>
+> The value of 0! is 1, according to the convention for an empty product.
+
+In JavaScript, we can write it as:
+
+```js
+function factorial (n) {
+  if (n === 0) {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+}
+```
+
+Our `factorial` function clearly calls itself. And because of the way almost every implementation of JavaScript we encounter is designed, every time it calls itself, it creates a frame on the program stack. The stack is a limited resource, and for a sufficiently large number, our function will exhaust the stack.
+
+This is sometimes given as a reason to convert recursive calls to iteration. That is true in theory, but in practice it is unusual to have to worry about the stack being exhausted. For example, if we wanted to compute 5000!, rewriting our function to avoid exhausting the stack is the least of our worries. We’d also have to convert our function to work with some kind of Big Integer data type, as we are going to end up working with some huge integers, and JavaScript does not support arbitrarily large numbers “out of the box.”
+
+However, exploring the process of converting a recursive function to a function that is [tail recursive](https://en.wikipedia.org/wiki/Tail_call) is interesting in its own right, and furthermore, exploring how to make a function that is tail recursive avoid exhausting the stack is even more interesting in its own right, so that’s what we’re going to do.
+
+### tail calls
+
+> In computer science, a tail call is a subroutine call performed as the final action of a procedure. If a tail call might lead to the same subroutine being called again later in the call chain, the subroutine is said to be tail-recursive, which is a special case of recursion. Tail recursion (or tail-end recursion) is particularly useful, and often easy to handle in implementations.
+
+The TL;DR is that if a function calls another function and then does nothing with the result except return it, it is said to be making a tail call. Here’s a simplified version of a function from [JavaScript Allongé](https://leanpub.com/javascriptallongesix/):
+
+```js
+function whenNotNull(fn, ...args) {
+  if (args.length === null) {
+    return;
+  }
+  for (const arg of args) {
+    if (arg == null) {
+      return;
+    }
+  }
+  return fn(...args);
+}
+
+factorial(5)
+  //=> 120
+factorial(null)
+  //=> Maximum call stack size exceeded.
+
+whenNotNull(factorial, 5)
+  //=> 120
+whenNotNull(factorial, null)
+  //=> undefined
+```
+
+`whenNotNull` is a higher-order function closely related to the `maybe` decorator. We call it with the name of a function and one or more arguments. If none of the arguments are null, it returns the result of calling that function with the arguments. But of no arguments are supplied, or any of them are null, it simply returns without calling the function.
+
+The key thing to observe is that when `whenNotNull` calls `fn`, it returns the result with no further calculations or computations. The statement `return fn(...args);` is a *tail call*. By way of contrast, the statement `return n * factorial(n - 1);` is not a tail call, because after invoking `factorial(n - 1)`, our factorial function proceeds to multiply the result by `n`.
+
+A *tail recursive* function is simply a function that only makes calls in tail position, and that as a result of making a call in tail position, directly or indirectly calls itself.
+
+Tail recursive functions are interesting for several reasons. Let’s look at the first practical reason *why* they are interesting:
+
+------
+
+[![Piet Mondrian, Composition, 1921 by Sharon Mollerus](http://raganwald.com/assets/images/recursion/1921.jpg)](https://www.flickr.com/photos/clairity/36939052581)
+
+### converting simple recursive functions to tail recursive functions using functional composition
+
+There are a large class of recursive functions that can be converted into tail recursive functions. Tom Moertel gives a procedure for performing this conversion in his [Tricks of the trade: Recursion to Iteration](http://blog.moertel.com/tags/recursion-to-iteration series.html) series:
+
+1. Find a recursive call that’s not a tail call.
+2. Identify what work is being done between that call and its return statement.
+3. Extend the function with a secret feature to do that work, as controlled by a new accumulator argument with a default value that causes it to do nothing.
+4. Use the secret feature to eliminate the old work.
+5. You’ve now got a tail call!
+6. Repeat until all recursive calls are tail calls.
+
+We’ll use a contrived version of it here. Let’s start with a ridiculous recursive function:
+
+```js
+function isEven (n) {
+  if (n === 0) {
+    return true;
+  } else {
+    return !isEven(n - 1);
+  }
+}
+
+isEven(13)
+  //=> false
+```
+
+There’s a really obvious transformation into a tail-recursive form,[1](http://raganwald.com/2018/05/27/tail.html#fn:obvious) but let’s follow Moertel’s steps, sort of. First, we identify the recursive call that is not in tail position:
+
+```js
+return !isEven(n - 1);
+```
+
+Next, we identify the work that is being done between that call and the return statement. It’s the `!`, which is the prefix operator for logical negation Since this is JavaScript, and we prefer function-oriented programming, we’ll can refactor it into an immediately invoked anonymous function:
+
+```js
+function isEven (n) {
+  if (n === 0) {
+    return true;
+  } else {
+    return (x => !x)(isEven(n - 1));
+  }
+}
+```
+
+Now we’ve identified that the work to be done is the function `x => !x`. Next, we extend the `isEven` function to do any extra work it is passed in an “accumulator argument with a default value that causes it to do nothing”. In the standard form, we would pass data, but in our function-oriented style, we will pass a function that does the work.
+
+And the default value that does no work is the infamous “Identity function,” or “Idiot Bird:”
+
+```js
+function isEven (n, accFn = x => x) {
+  if (n === 0) {
+    return true;
+  } else {
+    return isEven(n - 1, x => !x);
+  }
+}
+```
+
+Now how shall our function make use of `accFn`? In the case of `n === 0`, it is obvious:
+
+```js
+function isEven (n, accFn = x => x) {
+  if (n === 0) {
+    return accFn(true);
+  } else {
+    return isEven(n - 1, x => !x);
+  }
+}
+```
+
+But what about our recursive call? Let’s temporarily do the same thing:
+
+```js
+function isEven (n, accFn = x => x) {
+  if (n === 0) {
+    return accFn(true);
+  } else {
+    return accFn(isEven(n - 1, x => !x));
+  }
+}
+```
+
+This works, although maddeningly we still have a non-tail recursive call, we’ve just swapped `accFn(isEven(n - 1, x => !x))` for `!isEven(n - 1)`. *However*, we have a semi-secret weapon: *Naïve function composition*. If we compose `accFn` with `x => !x`, we can pass it into the function to be done later:
+
+```js
+function compose (a, b) {
+  return (...args) => a(b(...args));
+}
+
+function isEven (n, accFn = x => x) {
+  if (n === 0) {
+    return accFn(true);
+  } else {
+    return isEven(n - 1, compose(accFn, x => !x));
+  }
+}
+```
+
+And now, our call to `isEven` is in tail position. What’s the difference? Let’s rename our functions so we won’t get them confused:
+
+```js
+function isEvenNotTailRecursive (n) {
+  if (n === 0) {
+    return true;
+  } else {
+    return !isEvenNotTailRecursive(n - 1);
+  }
+}
+
+isEvenNotTailRecursive(100000)
+  //=> Maximum call stack size exceeded.
+
+function isEvenTailRecursive (n, accFn = x => x) {
+  if (n === 0) {
+    return accFn(true);
+  } else {
+    return isEvenTailRecursive(n - 1, compose(accFn, x => !x));
+  }
+}
+
+isEvenTailRecursive(100000)
+  //=> true
+```
+
+In implementations that support tail call optimization, our tail recursive version does not consume space on the call stack. *That is very interesting!*
+
+------
+
+[![3D view of May072013lja1a by Kent Schimke](http://raganwald.com/assets/images/recursion/May072013lja1a.jpg)](https://www.flickr.com/photos/22603020@N04/8719777940)
+
+### the problem with our naïve functional composition approach
+
+To summarize, when we wish to convert a recursive function to a tail recursive function, we follow these steps:
+
+1. Find a recursive call that’s not a tail call.
+2. Identify what work is being done between that call and its return statement, *and make it a work function*. In our example, the work function was `not`
+3. Extend the recursive function with a new accumulator function argument with a default value that causes it to do nothing, `I`.
+4. Wherever we are returning a result, run it through the accumulator function.
+5. Wherever we are making a recursive call, pass in the composition of the accumulator function and the work function.
+6. We’ve now got a tail call!
+7. Repeat until all recursive calls are tail calls. Now we have a tail-recursive function.
+
+Having done so, implementations that optimize for tail calls are able to avoid consuming space on the call stack.
+
+We’ll now layer in a little more complexity with the `sumTo` function (It’s deliberately very similar to `factorial`).
+
+```js
+function sumTo (n) {
+  if (n === 0) {
+    return 0;
+  } else {
+    return n + sumTo(n - 1);
+  }
+}
+
+sumTo(100000)
+  //=> Maximum call stack size exceeded.
+```
+
+Unlike `isEven`, the work to be done between the recursive call and the return statement is not fixed, so for our work function, we will need a closure:
+
+```js
+function sumToTailRecursive (n, accFn = x => x) {
+  if (n === 0) {
+    return accFn(0);
+  } else {
+    return sumToTailRecursive(n - 1, compose(accFn, x => n * x));
+  }
+}
+
+sumToTailRecursive(100000)
+  //=> 5000050000
+```
+
+Excellent! Now for a trick question: How much space do our tail recursive functions take up? Well, it is going to be on the order of the size of our input.
+
+It’s possible that every time we evaluate an expression like `x => !x`, we get a new function object. It would be nice if our implementation knew enough to hoist it out of our function for us and make it a constant, but even if it did, when we evaluate `compose(accFn, x => !x)`, we are *absolutely* creating a new function object.
+
+And of course, functions like `x => n * x` are going to be created fresh every time `sumToTailRecursive` is called. So one way or the other, we are going to end up with a lot of function objects when we use the function composition method for transforming recursive functions into tail recursive functions.
+
+Let’s address the problem that `compose` creates. It’s a naïve function that composes any two functions, so it’s the right default choice. But sometimes, the functions we’re composing have some kind of special property that allows us to avoid profligately creating new functions.
+
+In the case of composing `x => !x` with `x => !x` or with `x => x`, there is a special set of rules. Here’s a composition table we can make:
+
+| a         | b         | compose(a,b) |
+| --------- | --------- | ------------ |
+| `x => x`  | `x => x`  | `x => x`     |
+| `x => !x` | `x => !x` | `x => x`     |
+| `x => x`  | `x => !x` | `x => !x`    |
+| `x => !x` | `x => x`  | `x => !x`    |
+
+If we ideologically stay with functions, we can start with extracting our anonymous functions to bind them to specific variables, and then write our own composition function:
+
+```js
+const I = x => x;
+const not = x => !x;
+
+function composeNotI (a, b) {
+  if (a === b) {
+    return I;
+  } else {
+    return not;
+  }
+}
+
+function isEvenConstantSpace (n, accFn = I) {
+  if (n === 0) {
+    return accFn(true);
+  } else {
+    return isEvenConstantSpace(n - 1, composeNotI(accFn, not));
+  }
+}
+```
+
+This is a little bit of wrangling, but what it comes down to is recognizing how operations compose. Now let’s look at `sumTo`.
+
+------
+
+[![Mondrian 3D by Felipe Salgado](http://raganwald.com/assets/images/recursion/mondrian-3d.jpg)](https://www.flickr.com/photos/pi-p/1537989163)
+
+### converting simple recursive functions to tail recursive functions using data composition
+
+Let’s look at `sumTo` again:
+
+```js
+function sumTo (n) {
+  if (n === 0) {
+    return 0;
+  } else {
+    return n + sumTo(n - 1);
+  }
+}
+```
+
+We’ll do the usual refactoring, but note the choice of default `accFn`:
+
+```js
+function sumTo (n, accFn = x => 0 + x) {
+  if (n === 0) {
+    return accFn(0);
+  } else {
+    return sumTo(n - 1, compose(accFn, x => n + x));
+  }
+}
+```
+
+Now, what happens if, instead of `accFn`, we pass a number into `sumTo`? We’ll need to expand `accFn` in place:
+
+```js
+function sumTo (n, acc = 0) {
+  if (n === 0) {
+    return acc + 0;
+  } else {
+    return sumTo(n - 1, compose(acc, n));
+  }
+}
+```
+
+`compose` doesn’t work with integers, but we do know how to compose integres for addition:
+
+```js
+function sumToConstantSpace (n, acc = 0) {
+  if (n === 0) {
+    return acc + 0;
+  } else {
+    return sumToConstantSpace(n - 1, acc + n);
+  }
+}
+
+sumToConstantSpace(100000)
+  //=> 5000050000
+```
+
+And this is how conversion to tail recursive form is usually handled, by finding a way to compose the data instead of explicitly composing functions. But working through functional composition highlights what we’re really doing: converting the work to be done later into a function, applying it later, and composing work to be done.
+
+Now let’s take another look at converting a tail-recursive form to an iterative form.
+
+------
+
+[![Infinite Loop Apple by Mario Antonio Pena Zapatería Follow ](http://raganwald.com/assets/images/recursion/infinite-loop.jpg)](https://www.flickr.com/photos/oneras/5433232010)
+
+### converting tail-recursive functions to iterative loops
+
+Above, we gave this example of a tail recursive function executing without consuming the call stack:
+
+```js
+function sumToConstantSpace (n, acc = 0) {
+  if (n === 0) {
+    return acc + 0;
+  } else {
+    return sumToConstantSpace(n - 1, acc + n);
+  }
+}
+
+// Safari
+
+sumToConstantSpace(100000)
+  //=> 5000050000
+```
+
+That worked on the Safari browser, which in addition to being far more thrifty with battery life on OS X and iOS devices, implements Tail Call Optimization, as specified in the JavaScript standard. Alas, most other implementations refuse to implement TCO.
+
+If we run the same code in Chrome…
+
+```js
+// Chrome
+
+sumToConstantSpace(100000)
+  //=> Maximum call stack size exceeded
+```
+
+***Ugh\***.
+
+Well, the good news is that we can fix this problem. There’s a simple transformation to turn any tail recursive function into an iterative function with a loop:
+
+1. Wrap everything in an infinite loop
+2. Transform all tail recursive calls to rebind the function’s parameters, followed by a `continue` statement
+
+Here’s `sumTo` wrapped in a loop:
+
+```js
+function sumToLoop (n, acc = 0) {
+  while (true) {
+    if (n === 0) {
+      return acc + 0;
+    } else {
+      return sumToLoop(n - 1, acc + n);
+    }
+  }
+}
+```
+
+And now we transform the tail call:
+
+```js
+function sumToLoop (n, acc = 0) {
+  while (true) {
+    if (n === 0) {
+      return acc + 0;
+    } else {
+      [n, acc] = [n - 1, acc + n];
+      continue;
+    }
+  }
+}
+
+// Chrome
+
+sumToConstantSpace(100000)
+  //=> 5000050000
+```
+
+Unfortunately, this will not work with tail recursive functions built with naïve functional composition:
+
+```js
+function compose (a, b) {
+  return (...args) => a(b(...args));
+}
+
+function isEvenLoop (n, accFn = x => x) {
+  while (true) {
+    if (n === 0) {
+      return accFn(true);
+    } else {
+      [n, accFn] = [n - 1, compose(accFn, x => !x)];
+      continue;
+    }
+  }
+}
+
+// Safari
+
+isEvenLoop(100000)
+  //=> true
+
+// Chrome
+
+isEvenLoop(100000)
+  //=> Maximum call stack size exceeded
+```
+
+What happened? Well, in addition to using up a lot of space, the functions we built with `compose` are like a [Matryoshka doll](https://en.wikipedia.org/wiki/Matryoshka_doll). Each one calls a function that calls a function and so on down the line. Luckily, the functions it creates are tail recursive, so Safari manages to invoke them without using up the Call Stack.
+
+Chrome doesn’t optimize that, so `isEvenLoop` breaks on Chrome.
+
+Now what if we find another way to compose functions that doesn’t involve nesting functions like Matryoshka dolls? We did discuss using special-purpose composition:
+
+```js
+const I = x => x;
+const not = x => !x;
+
+function composeNotI (a, b) {
+  if (a === b) {
+    return I;
+  } else {
+    return not;
+  }
+}
+
+function isEvenLoopCompose (n, accFn = I) {
+  while (true) {
+    if (n === 0) {
+      return accFn(true);
+    } else {
+      [n, accFn] = [n - 1, composeNotI(accFn, not)];
+      continue;
+    }
+  }
+}
+
+// Chrome
+
+isEvenLoopCompose(100000)
+  //=> true
+```
+
+And purely as an exercise, we can also conceive of a different way to compose functions, one that relies on linked lists of functions:
+
+```js
+class Composition {
+  constructor (a, b = undefined) {
+    this.a = a;
+    this.b = b;
+  }
+
+  call (pseudoThis, ...args) {
+    let cell = this;
+
+    while (true) {
+      const result = cell.a.apply(pseudoThis, args);
+      if (cell.b === undefined) {
+        return result;
+        } else {
+          [args, cell] = [[result], cell.b];
+        }
+    }
+  }
+}
+
+function isEven (n, accComposition = new Composition(x => x)) {
+  while (true) {
+    if (n === 0) {
+      return accComposition.call(null, true);
+    } else {
+      [n, accComposition] = [
+        n - 1,
+        new Composition(x => !x, accComposition)
+      ];
+      continue;
+    }
+  }
+}
+
+// Chrome
+
+console.log(isEven(100000))
+  //=> true
+```
+
+Our conclusion is that the conversion to an iterative loop is fine, provided that we use the data composition method, or some function composition method that does not rely on nesting functions. If we use naïve functional composition, we will still wind up with a recursive function hidden in our accumulator.
+
+------
+
+## notes
+
+1. code is
+
+   ```js
+   const isEven = n => n === 0 ? true : n === 1 ? false : isEven(n - 2);
+   ```
+
+   

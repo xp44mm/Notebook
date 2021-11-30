@@ -116,8 +116,6 @@ For example, if wanted just the names and ages of a person, we could use
 pick(['name', 'age'], person)
 ```
 
-
-
 ### has
 
 If we just want to know if an object has a property without reading the value, we can use `has` for checking own properties, and `hasIn` for checking up the prototype chain: 
@@ -125,8 +123,6 @@ If we just want to know if an object has a property without reading the value, w
 ```js
 has('name', person)
 ```
-
-
 
 ### path
 
@@ -274,11 +270,13 @@ const reverseMerge = flip(merge)
 
 Recall that `flip` reverses the first two arguments of the function it is applied to.
 
-`merge` performs a shallow merge. If the objects being merged both have a property whose value is a sub-object, those sub-objects will not be merged. Ramda does not currently have a “deep merge” capability, where sub-objects are merged recursively.
+`merge` performs a shallow merge. If the objects being merged both have a property whose value is a sub-object, those sub-objects will not be merged.
 
-> webpack-merge provides “deep merge”. 见另一随笔[对此函数用法测试](https://www.cnblogs.com/cuishengli/p/13948947.html)
+> See also `mergeDeepLeft`, `mergeDeepRight`, `mergeDeepWith`, `mergeDeepWithKey`
 
 Note that `merge` only takes two arguments. If you want to merge multiple objects into one, there is `mergeAll` that takes an array of the objects to be merged.
+
+> See also `mergeLeft`, `mergeRight`, `mergeWith`, `mergeWithKey`
 
 ## Conclusion
 

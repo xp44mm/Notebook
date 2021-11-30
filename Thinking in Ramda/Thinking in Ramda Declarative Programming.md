@@ -47,7 +47,7 @@ const operate = pipe(
   addOne,
   square
 )
-operate(3, 4) // => ((3 * 4) + 1)^2 => (12 + 1)^2 => 13^2 => 169
+operate(3, 4) // => ((3 * 4) + 1)**2 => (12 + 1)**2 => 13**2 => 169
 ```
 
 Notice how we had to write functions for all of these basic building blocks that we wanted to use.

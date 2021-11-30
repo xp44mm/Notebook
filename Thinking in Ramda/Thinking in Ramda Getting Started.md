@@ -116,7 +116,7 @@ map with named function
 
 ```js
 const double = x => x * 2
- map(double, [1, 2, 3])
+map(double, [1, 2, 3])
 ```
 
 ### filter/reject

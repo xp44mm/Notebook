@@ -509,7 +509,7 @@ git remote update
 
 # git强制覆盖本地代码（与git远程仓库保持一致）
 
-**git强制覆盖**：
+git强制覆盖：
 
 ```bash
    git fetch --all
@@ -518,3 +518,36 @@ git remote update
 ```
 
 > 当想撤销错误的提交时，本能的想法是退回。另一个更简单的操作是，查看历史，把历史里面的内容复制下来，把当前状态按照历史内容修改，再提交一个和之前状态一样的commit。
+
+# git 删除远程分支提交
+
+回滚到指定的commit：
+
+```bash
+git reset --hard HEAD^^
+HEAD is now at fe4a0552 Create SECURITY.md
+```
+
+Git必须知道当前版本是哪个版本，在Git中，用`HEAD`表示当前版本，上一个版本就是`HEAD^`，上上一个版本就是`HEAD^^`，当然往上100个版本写100个`^`数不过来，所以写成`HEAD~100`。
+
+ 强制覆盖远程仓库
+
+```bash
+git push origin master -f
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/xp44mm/ramda
+ + 795e1255...fe4a0552 master -> master (forced update)
+```
+
+ origin指远程服务器。
+
+
+
+
+
+
+
+
+
+
+

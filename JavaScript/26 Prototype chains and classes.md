@@ -805,7 +805,7 @@ This pattern may seem inefficient, but most engines optimize this pattern, so pe
 
 JavaScript’s class system only supports *single inheritance*. That is, each class can have at most one superclass. One way around this limitation is via a technique called *mixin classes* (short: *mixins*).
 
-The idea is as follows: Let’s say we want a class `C` to inherit from two superclasses `S1` and `S2`. That would be *multiple inheritance*, which JavaScript doesn’t support.
+The idea is as follows: Let’s say we want a class `C` to inherit from two super classes `S1` and `S2`. That would be *multiple inheritance*, which JavaScript doesn’t support.
 
 Our workaround is to turn `S1` and `S2` into *mixins*, factories for subclasses:
 
