@@ -1,10 +1,10 @@
 # nuget
 
-### 升级NuGet程序包
+## 升级NuGet程序包
 
 注意选择相应的VisualStudio版本，不要变更扩展包相关NuGet项的主要版本号。
 
-https://docs.microsoft.com/en-us/nuget/tools/ps-ref-update-package
+<https://docs.microsoft.com/en-us/nuget/tools/ps-ref-update-package>
 
 NuGet版本号由三部分组成:`Major.Minor.Patch`，中文名为主要版本，次要版本，补丁版本
 
@@ -12,7 +12,7 @@ NuGet版本号由三部分组成:`Major.Minor.Patch`，中文名为主要版本�
 
 ToHighestMinor: Constrains upgrades to only versions with the same Major version as the currently installed package.
 
-```
+```bash
 Update-Package -ToHighestMinor
 ```
 
@@ -35,18 +35,21 @@ Update-Package -Safe
 ### NuGet找不到资产文件 project.assets.json
 
 解决办法：
-使用 cmd cd 目前 .net core 项目文件夹中
-运行 dotnet build
+使用 cmd cd 目前 .net core 项目文件夹中，运行
 
-# NuGet File Locations
+```bash
+dotnet build
+```
+
+## NuGet File Locations
 
 NuGet directory and file locations across Linux, Mac and Windows operating systems.
 
-## NuGet Cache
+### NuGet Cache
 
 Stores downloaded NuGet packages (.nupkg).
 
-**Windows**
+#### Windows
 
 - %LocalAppData%\NuGet\Cache
 - %UserProfile%\.nuget\packages
@@ -63,7 +66,7 @@ Machine wide configurations are used to define NuGet package sources specific to
 
 **Windows** %ProgramData%\NuGet\Config
 
-来源：https://lastexitcode.com/projects/NuGet/FileLocations/
+来源：<https://lastexitcode.com/projects/NuGet/FileLocations/>
 
 机器范围配置文件内容：
 
@@ -94,4 +97,8 @@ Machine wide configurations are used to define NuGet package sources specific to
 </configuration>
 ```
 
-来源：https://blog.csdn.net/lindexi_gd/article/details/79399744
+使用 dotnet restore 还原包：
+
+```.NET CLI
+dotnet restore 
+```

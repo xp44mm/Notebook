@@ -8,7 +8,7 @@ https://www.ascii-code.com/
 
 The first 32 characters in the ASCII-table are unprintable control codes and are used to control peripherals such as printers.
 
-```
+```fs
 | DEC| OCT | HEX| Symbol | HTML Number | Description                  |
 | ---| ----| ---| ------ | ----------- | ---------------------------- |
 | 0  | 000 | 00 | NUL    | &#000;      | Null char                    |
@@ -49,7 +49,7 @@ The first 32 characters in the ASCII-table are unprintable control codes and are
 
 Codes 32-127 are common for all the different variations of the ASCII table, they are called printable characters, represent letters, digits, punctuation marks, and a few miscellaneous symbols. You will find almost every character on your keyboard. Character 127 represents the command DEL.
 
-```
+```fs
 | DEC | OCT | HEX| Symbol | HTML Number | HTML Name | Description                            |
 | ----| ----| ---| ------ | ----------- | --------- | -------------------------------------- |
 | 32  | 040 | 20 |        | &#32;       |           | Space                                  |

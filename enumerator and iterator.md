@@ -62,6 +62,16 @@ show <| enumerator.MoveNext() // false
 show <| enumerator.MoveNext() // false
 ```
 
+当输入序列为空时，行为如下：
+
+```F#
+let ls = []
+let enumerator = (Seq.ofList ls).GetEnumerator()
+show <| enumerator.MoveNext() // false
+show enumerator.Current
+// InvalidOperationException : 枚举已完成。
+```
+
 ## Iterator
 
 javaScript的枚举器用法如下：
