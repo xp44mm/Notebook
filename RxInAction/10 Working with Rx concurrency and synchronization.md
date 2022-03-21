@@ -1,4 +1,4 @@
-﻿# 10 Working with Rx concurrency and synchronization
+﻿﻿# 10 Working with Rx concurrency and synchronization
 
 Timing is everything, or at least that's what some say. Unlike collections (enumerables), timing plays a big part in the observables world. The time between notifications can be long or short, and it can affect how you process them. In chapter 9, you saw examples of buffering elements or creating sliding windows over time. There's also the matter of where the execution takes place (for example, threads, tasks, dispatchers, and so on). The concepts of time and execution context are related and provide the foundation for the Rx concurrency model. The scheduler type and its derivations express this model. This chapter explains the scheduler's layer in Rx and how to use it to control concurrency inside the Rx observable pipeline, as well as how to use it with Rx time-based operators.
 
@@ -14,23 +14,30 @@ In simple terms, a scheduler is a unit that represents a clock and an execution 
 
 Figure 10.1 The Rx schedulers are like timers: you assign specific actions or tasks to the scheduler, and when a preset time expires, the scheduler posts the work to the execution context it's bound to.
 
-Listing 10.1 The IScheduler interface
+Listing 10.1 The `IScheduler` interface
 
 ```C#
 public interface IScheduler
 {
-    DateTimeOffset Now { get; }
-
+    DateTimeOffset Now { get; }  //1    
+    //2
     IDisposable Schedule<TState>(TState state,
                     Func<IScheduler, TState, IDisposable> action);
+    //3
     IDisposable Schedule<TState>(TState state,
                     TimeSpan dueTime,
                     Func<IScheduler, TState, IDisposable> action);
+    //4
     IDisposable Schedule<TState>(TState state,
                     DateTimeOffset dueTime,
                     Func<IScheduler, TState, IDisposable> action);
 }
 ```
+
+1. Returns the scheduler’s notion of current time
+2. Schedules an action to be executed. Returns a disposable that’s used to cancel the scheduled action.
+3. Schedules an action to be executed after the given TimeSpan. Returns a disposable that’s used to cancel the scheduled action.
+4. Schedules an action to be executed at the given dueTime. Returns a disposable that’s used to cancel the scheduled action.
 
 The scheduler contains the property `Now`, which returns the scheduler's notion of the current time. Most scheduler implementations return `DateTimeOffset.UtcNow`, but in more advanced cases, as you'll see in appendix C, the scheduler's time abstraction lets you control the time for testing and for revisiting past events.
 
@@ -45,18 +52,22 @@ Let's see an example of what working with the scheduler looks like. You'll use `
 Figure 10.2 Scheduling work with `NewThreadScheduler`
 
 ```C#
-var scheduler = NewThreadScheduler.Default as IScheduler;
+IScheduler scheduler = NewThreadScheduler.Default;
 
-var scheduling = // IDisposable
+IDisposable scheduling =
     scheduler.Schedule(
-        Unit.Default,
-        TimeSpan.FromSeconds(2),
-        (scdlr, _) =>
+        Unit.Default, //1
+        TimeSpan.FromSeconds(2), //2
+        (scdlr, _) => //3
         {
             Console.WriteLine("Hello World, Now: {0}", scdlr.Now);
             Return Disposable.Empty;
         });
 ```
+
+1. The state object isn’t used in this example; `Unit.Default` is used, which acts like a null object.
+2. The execution time is 2 seconds from when the scheduling takes place.
+3. Receives the scheduler that’s used for recursive scheduling and the state object. `Disposable.Empty` is returned because there is no specific resource handling or cancellation object.
 
 Running this example (and waiting 2 seconds) displays this output:
 
@@ -70,7 +81,7 @@ Let's see a more advanced example of a recurring event (every 2 seconds) that ne
 
 ```C#
 IScheduler scheduler = NewThreadScheduler.Default;
-Func<IScheduler, int, IDisposable> action = null;
+Func<IScheduler, int, IDisposable> action = null; //1
 action = (scdlr, callNumber) => {
     Console.WriteLine("Hello {0}, Now: {1}, Thread: {2}",
         callNumber,
@@ -79,16 +90,20 @@ action = (scdlr, callNumber) => {
     return scdlr.Schedule(
         callNumber + 1, 
         TimeSpan.FromSeconds(2),
-        action); //使用递归
+        action); //2
 };
 IDisposable scheduling =
     scheduler.Schedule(
-        0,
+        0, //3
         TimeSpan.FromSeconds(2),
         action);
 ```
 
 Figure 10.3 shows the conceptual sequence of the periodic behavior you just created.
+
+1. The C# compiler doesn’t allow use of a variable until it’s declared, so you separate the action declaration from its definition (where it’s being used).
+2. Reschedules the action for another 2 seconds, incrementing the state object (that acts as the calls counter). The disposable returned from the Schedule method is also returned.
+3. The first scheduling passes the initial state object. Because it’s the first call, you pass 0.
 
 If you run this example now, it'll keep on running and writing messages on-screen. When the time comes, and you want to stop it, you can simply dispose of the scheduling object.
 
@@ -98,9 +113,9 @@ Figure 10.3 You can use schedulers to create a periodic behavior. You can also u
 
 Some schedulers, in addition to implementing the `IScheduler` interface, implement two more interfaces that Rx provides:
 
-  - `ISchedulerPeriodic` declares the `SchedulePeriodic` method for scheduling actions to run periodically.
+- `ISchedulerPeriodic` declares the `SchedulePeriodic` method for scheduling actions to run periodically.
 
-  - `ISchedulerLongRunning` declares the `ScheduleLongRunning` method for scheduling actions that'll run for a long period of time.
+- `ISchedulerLongRunning` declares the `ScheduleLongRunning` method for scheduling actions that'll run for a long period of time.
 
 In most cases, you won't use the scheduler directly. Instead, you'll pass it to Rx operators only to control concurrency.
 
@@ -127,7 +142,7 @@ Inside - Thread: 1
 Inside - Thread: 1
 ```
 
-Interval creates a cold observable. Because `CurrentThreadScheduler` is used in this example, an observable runs synchronously for each observer that subscribes, so the subscription call turns into a blocking operation that continues only after the entire observable sequence completes.
+`Interval` creates a cold observable. Because `CurrentThreadScheduler` is used in this example, an observable runs synchronously for each observer that subscribes, so the subscription call turns into a blocking operation that continues only after the entire observable sequence completes.
 
 If no scheduler is passed to the Interval operator, it'll use the default scheduler that runs the timer on another thread and, therefore, the emissions will happen on that thread, yielding this output (thread numbers could differ):
 
@@ -225,7 +240,7 @@ Unlike `NewThreadScheduler`, recursive scheduling is also queued on the thread p
 
 #### TASKPOOLSCHEDULER
 
-`TaskPoolScheduler` works similarly to `ThreadPoolScheduler` except, instead of working with ThreadPool, it uses the Task Parallel Library (TPL) task pool. In some platforms (such as WinRT), the thread pool isn't accessible, so `TaskPoolScheduler` is the perfect replacement.
+`TaskPoolScheduler` works similarly to `ThreadPoolScheduler` except, instead of working with `ThreadPool`, it uses the Task Parallel Library (TPL) task pool. In some platforms (such as WinRT), the thread pool isn't accessible, so `TaskPoolScheduler` is the perfect replacement.
 
 #### CURRENTTHREADSCHEDULER
 
@@ -332,7 +347,7 @@ With XAML platforms (such as WPF or WinRT), you can use the Dispatcher class:
 Dispatcher.CurrentDispatcher.BeginInvoke(() => {/* the action code */});
 ```
 
-To ease the use of schedulers in those frameworks, Rx provides `ControlScheduler` and `DispatcherScheduler`, which wrap the right synchronization context for WinForms and XAML platforms. To access these schedulers, add a reference to the relevant platform package—`System.Reactive.Windows.Threading` for XAML platforms such as WPF or UAP (www.nuget.org/packages/System.Reactive.Windows.Threading) and `System.Reactive.Windows.Forms` for WinForms (www.nuget.org/packages/System.Reactive.Windows.Forms).
+To ease the use of schedulers in those frameworks, Rx provides `ControlScheduler` and `DispatcherScheduler`, which wrap the right synchronization context for WinForms and XAML platforms. To access these schedulers, add a reference to the relevant platform package—[`System.Reactive.Windows.Threading` for XAML platforms such as WPF or UAP](www.nuget.org/packages/System.Reactive.Windows.Threading) and [`System.Reactive.Windows.Forms` for WinForms](www.nuget.org/packages/System.Reactive.Windows.Forms).
 
 ---
 
@@ -396,8 +411,9 @@ IObservable<Timestamped<TSource>> Timestamp<TSource>(
 In the next example, you create an observable that emits a notification every 1 second, like a heartbeat notification received from a hardware product that your software monitors. You add a timestamp by using the `Timestamp` operator so you can log the information for future analysis. Because you don't want the example to run forever, you're taking only three notifications:
 
 ```C#
-var deviceHeartbeat = //IObservable<long>
+IObservable<long> deviceHeartbeat =
     Observable.Interval(TimeSpan.FromSeconds(1));
+
 deviceHeartbeat
     .Take(3)
     .Timestamp()
@@ -548,7 +564,7 @@ IObservable<TSource> Delay<TSource, TDelay>(this IObservable<TSource> source,
     Func<TSource, IObservable<TDelay>> delayDurationSelector);
 ```
 
-Another overload also exists whereby you can omit the subscriptionDelay, which is used to delay the subscription to the source observable.
+Another overload also exists whereby you can omit the `subscriptionDelay`, which is used to delay the subscription to the source observable.
 
 In the next example, you create an observable of integers, and use each integer to determine the delay duration for each notification. These integers can be the request's priority in your application or the requested handling time of your application user:
 
@@ -688,23 +704,26 @@ From the observer's standpoint, the emissions done by the observables can happen
 
 ### 10.3.1 Changing the observation's execution context
 
-If you need to control the execution context (the observations of elements done by the observer), Rx provides the `ObserveOn` operator that lets you pass the scheduler that the emissions will be scheduled on. You have the ability (to some extent) to specify on which thread you want the `OnNext`/`OnError`/`OnCompleted` functions to run. Figure 10.10 is a marble diagram of ObserveOn.
+If you need to control the execution context (the observations of elements done by the observer), Rx provides the `ObserveOn` operator that lets you pass the scheduler that the emissions will be scheduled on. You have the ability (to some extent) to specify on which thread you want the `OnNext`/`OnError`/`OnCompleted` functions to run. Figure 10.10 is a marble diagram of `ObserveOn`.
 
-Figure 10.10 The ObserveOn operator runs the observer functions on the specified scheduler.
+Figure 10.10 The `ObserveOn` operator runs the observer functions on the specified scheduler.
 
-A classic use of `ObserveOn` occurs when you need your observer to modify a UI control (for example, changing the width of a button), and you need to make sure the observer runs in the UI thread. The UI thread is managed either by `DispatcherScheduler` for XAML platforms or by `ControlScheduler` in WinForms.
+A classic use of `ObserveOn` occurs when you need your observer to modify a UI control (for example, changing the width of a button), and you need to make sure the observer runs in the UI thread. ~~The UI thread is managed either by `DispatcherScheduler` for XAML platforms or by `ControlScheduler` in WinForms.~~
 
-The next example creates an observable from the TextBox.TextChanged event and throttles it. The text values that survive the throttling are then added to a ListBox. Because the Throttle operator uses a default scheduler (usually ThreadPool), you use the ObserveOn operator to make sure the ListBox is changed on the UI thread.
+The next example creates an observable from the `TextBox.TextChanged` event and throttles it. The text values that survive the throttling are then added to a `ListBox`. Because the `Throttle` operator uses a default scheduler (usually `ThreadPool`), you use the `ObserveOn` operator to make sure the `ListBox` is changed on the UI thread.
 
 ```C#
 Observable.FromEventPattern(TextBox, "TextChanged")
     .Select(_ => TextBox.Text)
     .Throttle(TimeSpan.FromMilliseconds(400))
-    .ObserveOn(DispatcherScheduler.Current)
+    //.ObserveOn(DispatcherScheduler.Current)
+    .ObserveOn(SynchronizationContext.Current) //System.Threading
     .Subscribe(t => ThrottledResults.Items.Add(t));
 ```
 
-Because the observation on the `Dispatcher` is something that happens frequently, you can use the shortened operator `ObserveOnDispatcher`, which does the same thing. The `ObserveOn` operator also has overloads that let you pass the `SynchronizationContext` or the WinForms Control with which you want to make the observation. Under the hood, the `ObserveOn` operator creates an interceptor in the observable pipeline that intercepts each call done on the observer and executes it on the specified scheduler.
+~~Because the observation on the `Dispatcher` is something that happens frequently, you can use the shortened operator `ObserveOnDispatcher`, which does the same thing.~~ The `ObserveOn` operator also has overloads that let you pass the `SynchronizationContext` or the WinForms Control with which you want to make the observation. Under the hood, the `ObserveOn` operator creates an interceptor in the observable pipeline that intercepts each call done on the observer and executes it on the specified scheduler.
+
+Using `System.Threading.SynchronizationContext.Current` instead of `DispatcherScheduler.Current`.
 
 ### 10.3.2 Changing the subscription/unsubscription execution context
 
@@ -718,7 +737,7 @@ Consider the code for an observable that does heavy processing before emitting i
 var observable =
     Observable.Create<int>(o =>
     {
-        Thread.Sleep(TimeSpan.FromSeconds(5));
+        Thread.Sleep(TimeSpan.FromSeconds(5)); //1
         o.OnNext(1);
         o.OnCompleted();
         return Disposable.Empty;
@@ -726,27 +745,32 @@ var observable =
 observable.SubscribeConsole("LongOperation");
 ```
 
+1. Simulating a long operation done in the subscription time
+
 When running this example, the calling thread will be blocked for 5 seconds, and only afterward do the messages appear. Adding `ObserveOn` to this example won't help because the long operation happens as part of the subscription. What you want is to make the subscription itself on another thread.
 
-The `SubscribeOn` operator lets you pass the scheduler that'll be used to schedule the subscription and unsubscription. It creates interceptors in the observable pipeline that'll intercept the call to the observable `Subscribe` method and make these calls run on the specified `Scheduler`. Then, the interceptor wraps the disposable returned by the Subscribe method so that its Dispose method will also run under the specified scheduler. Figure 10.11 depicts the SubscribeOn operator.
+The `SubscribeOn` operator lets you pass the scheduler that'll be used to schedule the subscription and unsubscription. It creates interceptors in the observable pipeline that'll intercept the call to the observable `Subscribe` method and make these calls run on the specified `Scheduler`. Then, the interceptor wraps the disposable returned by the `Subscribe` method so that its `Dispose` method will also run under the specified scheduler. Figure 10.11 depicts the `SubscribeOn` operator.
 
-`SubscribeOn`向上，`ObserveOn`向下
+`ObserveOn`向下，`SubscribeOn`向上。
 
-Figure 10.11 The SubscribeOn operator runs the observer subscription and unsubscription on the specified scheduler.
+Transitions from the original execution context to the one defined by the scheduler
 
-This interception over the unsubscription can cause confusion because the moment you call the Dispose method, it might go into effect only at a later time, based on the scheduler used. In the next example, you create an observable that emits every 1 second and uses the `EventLoopScheduler` for making the subscription. Then you schedule work items that take a long time to complete and dispose of the subscription. The unsubscription will take some time until it's complete and, in the meantime, notifications will still be processed inside the pipeline.
+Unless stated otherwise, emissions are carried out by the scheduler execution context.
 
-描述行为不一致，实际上`Dispose`将立即执行完成，不会等待3秒留出间隔发射信号。
+Figure 10.11 The `SubscribeOn` operator runs the observer subscription and unsubscription on the specified scheduler.
 
-Listing 10.5 Confusion from using SubscribeOn when unsubscribing
+This interception over the unsubscription can cause confusion because the moment you call the `Dispose` method, it might go into effect only at a later time, based on the scheduler used. In the next example, you create an observable that emits every 1 second and uses the `EventLoopScheduler` for making the subscription. Then you schedule work items that take a long time to complete and dispose of the subscription. The unsubscription will take some time until it's complete and, in the meantime, notifications will still be processed inside the pipeline.
+
+Listing 10.5 Confusion from using `SubscribeOn` when unsubscribing
 
 ```C#
 var eventLoopScheduler = new EventLoopScheduler();
 var subscription = Observable.Interval(TimeSpan.FromSeconds(1))
-    .Do(x => Console.WriteLine("Inside Do"))
-    .SubscribeOn(eventLoopScheduler)
+    .Do(x => Console.WriteLine("Inside Do")) //1
+    .SubscribeOn(eventLoopScheduler) //2
     .Subscribe();
 
+//3
 eventLoopScheduler.Schedule(1,
     (s, state) =>
     {
@@ -756,9 +780,17 @@ eventLoopScheduler.Schedule(1,
         return Disposable.Empty;
     });
 
-subscription.Dispose();
+subscription.Dispose(); //4
 Console.WriteLine("Subscription disposed");
 ```
+
+1. Calls to `Do` will stop only when the subscription is disposed of
+
+2. Sets the subscription and unsubscription to run on the event loop
+
+3. Simulates a long processing-time operation that’s happening in the event loop
+
+4. Triggers the disposal of the underlying subscription on the event loop
 
 Running the example shows this output:
 
@@ -775,14 +807,14 @@ Note that the call to `Dispose` happens almost immediately; but, because the rea
 
 ### 10.3.3 Using SubscribeOn and ObserveOn together
 
-Depending on the observable you subscribe to, the thread on which you subscribe might also be the thread on which the emissions happens, or they might be totally different threads. You can combine the SubscribeOn and ObserveOn operators to gain better control over which thread will run in each step of your observable pipeline. And it's important to understand the order in which these operators happen and where their effect is coming into play.
+Depending on the observable you subscribe to, the thread on which you subscribe might also be the thread on which the emissions happens, or they might be totally different threads. You can combine the `SubscribeOn` and `ObserveOn` operators to gain better control over which thread will run in each step of your observable pipeline. And it's important to understand the order in which these operators happen and where their effect is coming into play.
 
-To help with that, I created this simple LogWithThread operator to provide insight on the threads on which the subscriptions and emissions happen.
+To help with that, I created this simple `LogWithThread` operator to provide insight on the threads on which the subscriptions and emissions happen.
 
-Listing 10.6 The LogWithThread operator logs both events and threads.
+Listing 10.6 The `LogWithThread` operator logs both events and threads.
 
 ```C#
-static IObservable<T> LogWithThread<T>(this IObservable<T> observable,string msg = "")
+static IObservable<T> LogWithThread<T>(this IObservable<T> observable,string msg)
 {
      return Observable.Defer(() =>
      {
@@ -804,25 +836,20 @@ static IObservable<T> LogWithThread<T>(this IObservable<T> observable,string msg
 }
 ```
 
-The LogWithThread operator prints messages to the console when the observer subscribes and for every notification done by the source observable. With each log message, the thread on which the event happens is also written.
+The `LogWithThread` operator prints messages to the console when the observer subscribes and for every notification done by the source observable. With each log message, the thread on which the event happens is also written.
 
-Now let's see what happens when you use `SubscribeOn` and `ObserveOn` with LogWithThread to log the details for you. In the next example, you create a simple observable that emits three notifications (one every second), and you use the `SubscribeOn` and `ObserveOn` operators to control the execution context. The example creates an observable that emits five numbers and adds a few operators on it.
+Now let's see what happens when you use `SubscribeOn` and `ObserveOn` with `LogWithThread` to log the details for you. In the next example, you create a simple observable that emits three notifications (one every second), and you use the `SubscribeOn` and `ObserveOn` operators to control the execution context. The example creates an observable that emits five numbers and adds a few operators on it.
 
 Listing 10.7 Testing the order of execution and effects of SubscribeOn and ObserveOn
 
 ```C#
 new[] {0,1,2,3,4,5}
     .ToObservable()
-    .Take(3)
-    .LogWithThread("A")
-    .Where(x => x%2 == 0)
-    .LogWithThread("B")
-    .SubscribeOn(NewThreadScheduler.Default)
-    .LogWithThread("C")
-    .Select(x => x*x)
-    .LogWithThread("D")
-    .ObserveOn(TaskPoolScheduler.Default)
-    .LogWithThread("E")
+    .Take(3)                                .LogWithThread("A")
+    .Where(x => x%2 == 0)                   .LogWithThread("B")
+    .SubscribeOn(NewThreadScheduler.Default).LogWithThread("C")
+    .Select(x => x*x)                       .LogWithThread("D")
+    .ObserveOn(TaskPoolScheduler.Default)   .LogWithThread("E")
     .SubscribeConsole("squares by time");
 ```
 
@@ -857,19 +884,21 @@ squares by time - OnCompleted()
 
 Figure 10.12 shows the marble diagram that displays what you see in the output.
 
-Figure 10.12 The effects of SubscribeOn and ObserveOn on the observable pipeline
+Figure 10.12 The effects of `SubscribeOn` and `ObserveOn` on the observable pipeline
 
 Here are the key points in the example output:
 
-  - The order of the subscriptions is from the bottom to the top (the subscription is first executed at stage E, and only at the end at stage A). This is because the observable returned by the last LogWithThread operator is the one the observer is subscribing to.
+- The order of the subscriptions is from the bottom to the top (the subscription is first executed at stage E, and only at the end at stage A). This is because the observable returned by the last `LogWithThread` operator is the one the observer is subscribing to.
 
-  - The subscriptions are executed on thread 1 until `SubscribeOn` is called, and then the subscriptions are made with thread 3 (step B).
+- The subscriptions are executed on thread 1 until `SubscribeOn` is called, and then the subscriptions are made with thread 3 (step B).
 
-  - The notifications are done from top to bottom (A is first, and E is last).
+- The notifications are done from top to bottom (A is first, and E is last).
 
-  - The notifications are emitted on thread 3 (where the subscriptions occur) until `ObserveOn` is called (right before E), and then the notifications are emitted on thread 4.
+- The notifications are emitted on thread 3 (where the subscriptions occur) until `ObserveOn` is called (right before E), and then the notifications are emitted on thread 4.
 
-  - While the notification is observed on thread 4, thread 3 is free to observe the next notification. That's why you see the observation of 0 together with the emission of 2 (the bolded lines).
+- While the notification is observed on thread 4, thread 3 is free to observe the next notification. That's why you see the observation of 0 together with the emission of 2 (the bolded lines).
+
+- 由于System.Reactive版本升级，程序执行的效果可能会修改，请自行测试之。
 
 Next, I'll talk about how to synchronize processing of the notifications in the observable pipeline and between observables.
 
@@ -960,11 +989,12 @@ Now the messages are received in a serialized way, no matter from what thread th
 The `Synchronize` operator has an overload that lets you send the gate object that will be used to make the locks:
 
 ```C#
-IObservable<TSource> Synchronize<TSource>(IObservable<TSource> source,
+IObservable<TSource> Synchronize<TSource>(
+    IObservable<TSource> source,
     object gate);
 ```
 
-This overload can be useful when you need to share the lock between multiple subscribed observables. Suppose the Messenger class exposes another event, FriendRequestReceived, of all the friend requests you receive. After you create an observable, you want to synchronize the processing of the two types of notifications (friend requests and text messages). This how to do that:
+This overload can be useful when you need to share the lock between multiple subscribed observables. Suppose the `Messenger` class exposes another event, `FriendRequestReceived`, of all the friend requests you receive. After you create an observable, you want to synchronize the processing of the two types of notifications (friend requests and text messages). This how to do that:
 
 ```C#
 var gate = new object();
@@ -988,36 +1018,36 @@ This chapter dealt with many advanced topics of the Rx world. Let's summarize wh
 
 In this chapter, you've learned about the way Rx models time and concurrency, and the techniques you can use to control the timing and execution context of the observable pipeline.
 
-  - In Rx, a scheduler is a unit that represents a clock and an execution context.
+- In Rx, a scheduler is a unit that represents a clock and an execution context.
 
-  - With a scheduler, you can schedule work to be posted to an execution context at a specific time.
+- With a scheduler, you can schedule work to be posted to an execution context at a specific time.
 
-  - All Rx schedulers implement the `IScheduler` interface.
+- All Rx schedulers implement the `IScheduler` interface.
 
-  - Some schedulers also implement the `ISchedulerPeriodic` or the `ISchedulerLongRunning` interfaces.
+- Some schedulers also implement the `ISchedulerPeriodic` or the `ISchedulerLongRunning` interfaces.
 
-  - Rx operators that introduce concurrency can receive a parameter of type `IScheduler`, allowing you to control the way concurrency is introduced.
+- Rx operators that introduce concurrency can receive a parameter of type `IScheduler`, allowing you to control the way concurrency is introduced.
 
-  - Out-of-the-box Rx comes with a handful of schedulers: `NewThreadScheduler`, `ThreadPoolScheduler`, `TaskPoolScheduler`, `CurrentThreadScheduler`, `ImmediateScheduler`, and `EventLoopScheduler`.
+- Out-of-the-box Rx comes with a handful of schedulers: `NewThreadScheduler`, `ThreadPoolScheduler`, `TaskPoolScheduler`, `CurrentThreadScheduler`, `ImmediateScheduler`, and `EventLoopScheduler`.
 
-  - Depending on the framework you use, other schedulers that are bound to the synchronization context will also be included (for example, `ControlScheduler` or `DispatcherScheduler`).
+- ~~Depending on the framework you use, other schedulers that are bound to the synchronization context will also be included (for example, `ControlScheduler` or `DispatcherScheduler`).~~
 
-  - You use the `Timestamp` operator to add a timestamp of the emission time to every notification.
+- You use the `Timestamp` operator to add a timestamp of the emission time to every notification.
 
-  - You use the `TimeInterval` operator to add a time interval between two notifications.
+- You use the `TimeInterval` operator to add a time interval between two notifications.
 
-  - You use the `Timeout` operator to emit an error notification in case the timeout duration has passed without the source observable emitting.
+- You use the `Timeout` operator to emit an error notification in case the timeout duration has passed without the source observable emitting.
 
-  - You use the `Delay` operator to shift the observable notifications by a time duration.
+- You use the `Delay` operator to shift the observable notifications by a time duration.
 
-  - You use the `Throttle` operator to emit an item from an observable if a particular time span has passed without the source observable emitting another item.
+- You use the `Throttle` operator to emit an item from an observable if a particular time span has passed without the source observable emitting another item.
 
-  - You use the `Sample` operator to sample the observable sequence every time interval, emitting the last notification in each interval.
+- You use the `Sample` operator to sample the observable sequence every time interval, emitting the last notification in each interval.
 
-  - You use the `ObserveOn` operator to enforce the observer functions to run on a specified scheduler.
+- You use the `ObserveOn` operator to enforce observer function to run on a specified scheduler.
 
-  - You use the `SubscribeOn` operator to enforce observer subscription and unsubscription to run on a specified scheduler.
+- You use the `SubscribeOn` operator to enforce observer subscription and unsubscription to run on a specified scheduler.
 
-  - You use the `Synchronize` operator to create a lock so that the notifications are received in a serialized way.
+- You use the `Synchronize` operator to create a lock so that the notifications are received in a serialized way.
 
 The topics in this chapter are considered advanced and complex, but they're inherent in many of the operators you've seen throughout the book. Controlling them will help you achieve the goals of your observable pipelines. The next chapter covers something we all dislike but must take care of: errors. Because they're inevitable, I'll show you how to add error handling and recovery to your observable queries.
