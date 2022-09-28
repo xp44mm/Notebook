@@ -453,7 +453,7 @@ $$
 
 表 4.5: 希腊字母
 
-`\Alpha`, `\Beta` 等希腊字母符号不存在，因为它们和拉丁字母 A,B 等一模一样；小写字母里也不存在`\omicron`，直接用 o 代替。
+`\Alpha`, `\Beta` 等希腊字母符号不存在，因为它们和拉丁字母 A,B 等一模一样；小写字母里也不存在`\omicron`，直接用 o 代替。共（24*2-3）个。
 $\alpha$、$\beta$、$\gamma$、$\delta$、$\epsilon$、$\varepsilon$、$\zeta$、$\eta$、$\Gamma$、$\Delta$、$\Theta$、$\theta$、$\vartheta$、$\iota$、$\kappa$、$\lambda$、$\mu$、$\nu$、$\xi$、$\Lambda$、$\Xi$、$\Pi$、$\pi$、$\varpi$、$\rho$、$\varrho$、$\sigma$、$\varsigma$、$\tau$、$\Sigma$、$\Upsilon$、$\Phi$、$\upsilon$、$\phi$、$\varphi$、$\chi$、$\psi$、$\omega$、$\Psi$、$\Omega$、$\varGamma$、$\varDelta$、$\varTheta$、$\varLambda$、$\varXi$、$\varPi$、$\varSigma$、$\varUpsilon$、$\varPhi$、$\varPsi$、$\varOmega$
 
 表 4.6: 二元关系符
@@ -523,5 +523,4 @@ $\llcorner$、$\lrcorner$、$\lvert$、$\lVert$、$\rvert$、$\rVert$、$\ulcorn
 表 4.21: AMS 其它符号
 
 $\angle$、$\backprime$、$\Bbbk$、$\bigstar$、$\blacklozenge$、$\blacksquare$、$\blacktriangle$、$\blacktriangledown$、$\circledS$、$\complement$、$\diagdown$、$\diagup$、$\eth$、$\Finv$、$\Game$、$\hbar$、$\hslash$、$\lozenge$、$\measuredangle$、$\mho$、$\nexists$、$\sphericalangle$、$\square$、$\triangledown$、$\varnothing$、$\vartriangle$
-
 
