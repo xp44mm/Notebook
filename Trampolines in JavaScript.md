@@ -2,7 +2,6 @@
 
 ------
 
-<iframe width="160" height="430" src="https://leanpub.com/javascriptallongesix/embed" frameborder="0" allowtransparency="true" style="margin: 0px 0px 0px -160px; padding: 0px; border: 0px; font: inherit; vertical-align: baseline; position: relative; float: right; left: 180px; top: 0px;"></iframe>
 
 > A trampoline is a loop that iteratively invokes [thunk](https://en.wikipedia.org/wiki/Thunk_(functional_programming))-returning functions ([continuation-passing style](https://en.wikipedia.org/wiki/Continuation-passing_style)). A single trampoline is sufficient to express all control transfers of a program; a program so expressed is trampolined, or in trampolined style; converting a program to trampolined style is trampolining. Trampolined functions can be used to implement [tail-recursive](https://en.wikipedia.org/wiki/Tail-recursive_function) function calls in stack-oriented programming languages.–[Wikipedia](https://en.wikipedia.org/wiki/Trampoline_(computing))
 
@@ -20,7 +19,7 @@ The challenge is to implement factorial in recursive style.
 
 You write:
 
-```
+```js
 function factorial (n) {
   return n
   ? n * factorial(n - 1)
@@ -34,7 +33,7 @@ This creates two problems: First, we need space O*n* for all those stack frames.
 
 Trying this in Node, I get:
 
-```
+```js
 factorial(10)
   //=> 3628800
 factorial(32768)
@@ -55,7 +54,7 @@ Now you have probably jumped directly to how to do this, but I am not so smart a
 
 If we use the symbol `_` to represent a kind of “hole” in an expression where we plan to put the result, every time `factorial` calls itself, it needs to remember `n * _` so that when it gets a result back, it can multiply it by `n` and return that. So the first time it calls itself, it remembers `10 * _`, the second time it calls itself, it remembers `9 * _`, and all these things stack up like this when we call `factorial(10)`:
 
-```
+```bash
  1 * _
  2 * _
  3 * _
@@ -78,7 +77,7 @@ If we don’t need to remember anything, we don’t create another stack frame, 
 
 If we had an implementation of JavaScript capable of tail-call elimination, we would need to rewrite functions like `factorial` to take advantage of it. This is easy with a helper function. In production we’d use IIFEs and other techniques to encapsulate things and prevent the creation of a new closure every time we call `factorial`, but we aren’t in production, so:
 
-```
+```js
 function factorial (n) {
   var _factorial = function myself (acc, n) {
     return n
@@ -96,7 +95,7 @@ Sharp-eyed functional programmers will notice that we’re basically rewriting t
 
 It gives us the correct results, but we can see that Node doesn’t perform this magic “tail-call elimination.”
 
-```
+```js
 factorial(10)
   //=> 3628800
 factorial(32768)

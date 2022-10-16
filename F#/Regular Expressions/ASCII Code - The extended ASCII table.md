@@ -49,7 +49,7 @@ The first 32 characters in the ASCII-table are unprintable control codes and are
 
 Codes 32-127 are common for all the different variations of the ASCII table, they are called printable characters, represent letters, digits, punctuation marks, and a few miscellaneous symbols. You will find almost every character on your keyboard. Character 127 represents the command `DEL`.
 
-```table
+```fortran
 | DEC | OCT | HEX| Symbol | HTML Name | Description                            |
 | ----| ----| ---| ------ | --------- | -------------------------------------- |
 | 32  | 040 | 20 |        |           | Space                                  |
@@ -80,9 +80,9 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 | 57  | 071 | 39 | 9      |           | Nine                                   |
 | 58  | 072 | 3A | :      |           | Colon                                  |
 | 59  | 073 | 3B | ;      |           | Semicolon                              |
-| 60  | 074 | 3C | <      | &lt;      | Less than (or open angled bracket)     |
+| 60  | 074 | 3C | <      | &lt;      | Less than (open angled bracket)     |
 | 61  | 075 | 3D | =      |           | Equals                                 |
-| 62  | 076 | 3E | >      | &gt;      | Greater than (or close angled bracket) |
+| 62  | 076 | 3E | >      | &gt;      | Greater than (close angled bracket) |
 | 63  | 077 | 3F | ?      |           | Question mark                          |
 | 64  | 100 | 40 | @      |           | At symbol                              |
 | 65  | 101 | 41 | A      |           | Uppercase A                            |
@@ -114,9 +114,9 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 | 91  | 133 | 5B | [      |           | Opening bracket                        |
 | 92  | 134 | 5C | \      |           | Backslash                              |
 | 93  | 135 | 5D | ]      |           | Closing bracket                        |
-| 94  | 136 | 5E | ^      |           | Caret - circumflex                     |
+| 94  | 136 | 5E | ^      |           | Caret, circumflex                     |
 | 95  | 137 | 5F | _      |           | Underscore                             |
-| 96  | 140 | 60 | `      |           | Grave accent - backquote - tick        |
+| 96  | 140 | 60 | `      |           | Grave accent, backquote, tick        |
 | 97  | 141 | 61 | a      |           | Lowercase a                            |
 | 98  | 142 | 62 | b      |           | Lowercase b                            |
 | 99  | 143 | 63 | c      |           | Lowercase c                            |
@@ -146,7 +146,7 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 | 123 | 173 | 7B | {      |           | Opening brace                          |
 | 124 | 174 | 7C | |      |           | Vertical bar                           |
 | 125 | 175 | 7D | }      |           | Closing brace                          |
-| 126 | 176 | 7E | ~      |           | Equivalency sign - tilde               |
+| 126 | 176 | 7E | ~      |           | Equivalency, tilde               |
 | 127 | 177 | 7F |        |           | Delete                                 |
 ```
 
@@ -156,7 +156,7 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 
 There are several different variations of the 8-bit ASCII table. The table below is according to Windows-1252 (CP-1252) which is a superset of ISO 8859-1, also called ISO Latin-1, in terms of printable characters, but differs from the IANA's ISO-8859-1 by using displayable characters rather than control characters in the 128 to 159 range. Characters that differ from ISO-8859-1 is marked by light blue color.
 
-```table
+```fsharp
 | DEC | OCT | HEX| Symbol | HTML Name | Description                                |
 | ----| ----| ---| ------ | --------- | ------------------------------------------ |
 | 128 | 200 | 80 | €      | &euro;    | Euro sign                                  |
@@ -206,15 +206,15 @@ There are several different variations of the 8-bit ASCII table. The table below
 | 172 | 254 | AC | ¬      | &not;     | Not sign                                   |
 | 173 | 255 | AD |        | &shy;     | Soft hyphen                                |
 | 174 | 256 | AE | ®      | &reg;     | Registered trade mark sign                 |
-| 175 | 257 | AF | ¯      | &macr;    | Spacing macron - overline                  |
+| 175 | 257 | AF | ¯      | &macr;    | Spacing macron, overline                  |
 | 176 | 260 | B0 | °      | &deg;     | Degree sign                                |
 | 177 | 261 | B1 | ±      | &plusmn;  | Plus-or-minus sign                         |
-| 178 | 262 | B2 | ²      | &sup2;    | Superscript two - squared                  |
-| 179 | 263 | B3 | ³      | &sup3;    | Superscript three - cubed                  |
-| 180 | 264 | B4 | ´      | &acute;   | Acute accent - spacing acute               |
+| 178 | 262 | B2 | ²      | &sup2;    | Superscript two, squared                  |
+| 179 | 263 | B3 | ³      | &sup3;    | Superscript three, cubed                  |
+| 180 | 264 | B4 | ´      | &acute;   | Acute accent, spacing acute               |
 | 181 | 265 | B5 | µ      | &micro;   | Micro sign                                 |
-| 182 | 266 | B6 | ¶      | &para;    | Pilcrow sign - paragraph sign              |
-| 183 | 267 | B7 | ·      | &middot;  | Middle dot - Georgian comma                |
+| 182 | 266 | B6 | ¶      | &para;    | Pilcrow sign, paragraph sign              |
+| 183 | 267 | B7 | ·      | &middot;  | Middle dot, Georgian comma                |
 | 184 | 270 | B8 | ¸      | &cedil;   | Spacing cedilla                            |
 | 185 | 271 | B9 | ¹      | &sup1;    | Superscript one                            |
 | 186 | 272 | BA | º      | &ordm;    | Masculine ordinal indicator                |

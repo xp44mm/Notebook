@@ -2,8 +2,6 @@
 
 ------
 
-<iframe width="160" height="430" src="https://leanpub.com/javascriptallongesix/embed" frameborder="0" allowtransparency="true" style="margin: 0px 0px 0px -160px; padding: 0px; border: 0px; font: inherit; vertical-align: baseline; position: relative; float: right; left: 180px; top: 0px;"></iframe>
-
 *…and two practical applications…*
 
 ------
@@ -47,7 +45,7 @@ We saw that we can decouple a recursive function from itself. Instead of calling
 
 We call that writing a recursive function in mockingbird form. It looks like this:
 
-```
+```js
 (myself, x, n) => {
   if (n === 0) {
     return 1;
@@ -61,7 +59,7 @@ We call that writing a recursive function in mockingbird form. It looks like thi
 
 Given a function written in mockingbird form, we use a JavaScript implementation of the mockingbird to turn it into a recursive function:[3](https://raganwald.com/2018/09/10/why-y.html#fn:m)
 
-```
+```js
 const mockingbird =
   fn =>
     (...args) =>
@@ -86,7 +84,7 @@ exponent(3, 3)
 
 Because the recursive function has been decoupled from itself, we can do things like memoize it:
 
-```
+```js
 const memoized = (fn, keymaker = JSON.stringify) => {
   const lookupTable = Object.create(null);
 
@@ -128,13 +126,13 @@ Memoizing our recursive function does not require any changes to its code. We ca
 
 The mockingbird is a useful tool, but it has a drawback: In addition to rewriting our functions to take themselves as a parameter, we also have to rewrite them to pass themselves along. So in addition to this:
 
-```
+```js
 (myself, x, n) => ...
 ```
 
 We must also write this:
 
-```
+```js
 myself(myself, x * x, n / 2)
 ```
 
@@ -146,7 +144,7 @@ What we want is a function *like* the mockingbird, but it must support functions
 
 Let’s visualize exactly what we want. With the mockingbird, we write:
 
-```
+```js
 const exponent =
   mockingbird(
     (myself, x, n) => {
@@ -163,7 +161,7 @@ const exponent =
 
 We want a better recursive combinator, one that lets us write:
 
-```
+```js
 const exponent =
   _____(
     (myself, x, n) => {
@@ -200,6 +198,7 @@ Before we begin, there are some rules we have to follow if we are to take the mo
 In combinatory logic, all combinators take exactly one parameter, as do all of the functions that combinators create. Combinatory logic also eschews all gathering and spreading of parameters. When creating an idiomatic JavaScript combinator (like `mockingbird`), we eschew these limitations. Idiomatic JavaScript combinators can:
 
 - Gather parameters, and;
+  
 - Spread parameters.
 
 ------
@@ -212,7 +211,7 @@ In combinatory logic, all combinators take exactly one parameter, as do all of t
 
 **Step Zero**: We begin with the mockingbird:
 
-```
+```js
 const mockingbird =
   fn =>
     (...args) =>
@@ -221,7 +220,7 @@ const mockingbird =
 
 **Step One**, we name our combinator. Honouring Raymond Smullyan’s choice, we shall call it the why bird:
 
-```
+```js
 const why =
   fn =>
     (...args) =>
@@ -230,7 +229,7 @@ const why =
 
 **Step Two**, we identify the key change we have to make:
 
-```
+```js
 const why =
   fn =>
     (...args) =>
@@ -247,7 +246,7 @@ The mockingbird isn’t what we want, but let’s airily assume that there is su
 
 **Step Three**, we replace `?` with `maker(??)`. We know it will make the function we want, but we don’t yet know what we must pass to it:
 
-```
+```js
 const why =
   fn =>
     (...args) =>
@@ -263,7 +262,7 @@ For `1`, we could define `maker` as an anonymous function expression. Another op
 
 **Step Four**, we could, after some experimentation, consider this format that binds a function expression to `maker` with an immediately invoked function expression;
 
-```
+```js
 const why =
   fn =>
     (
@@ -281,7 +280,7 @@ This still leaves us two things to work out: `??` is what we pass to `maker`, an
 
 **Step Five**, let’s fill that in for `???`:
 
-```
+```js
 const why =
   fn =>
     (
@@ -304,7 +303,7 @@ Conclusion: `maker` takes one parameter, `maker`, and returns a function that lo
 
 **Step Six**:
 
-```
+```js
 const why =
   fn =>
     (
@@ -320,7 +319,7 @@ const why =
 
 Let’s test it:
 
-```
+```js
 const exponent =
   why(
     (myself, x, n) => {
@@ -352,7 +351,7 @@ Our why bird is written in–and for–idiomatic JavaScript, especially with res
 
 We can translate our why bird to its formal combinator, the **y combinator**. To aid us, let’s first imagine a recursive function:
 
-```
+```js
 const isEven =
   n =>
     (n === 0) || !isEven(n - 1);
@@ -360,7 +359,7 @@ const isEven =
 
 In why bird form, it becomes:
 
-```
+```js
 const _isEven =
   (myself, n) =>
     (n === 0) || !myself(n - 1);
@@ -368,7 +367,7 @@ const _isEven =
 
 Alas, it now takes two parameters. We fix this by [currying](http://raganwald.com/2013/03/07/currying-and-partial-application.html) it:
 
-```
+```js
 const __isEven =
   myself =>
     n =>
@@ -379,7 +378,7 @@ Instead of taking two parameters (`myself` and `n`), it is now a function taking
 
 To accommodate functions in this form, we take our why bird and perform some similar modifications. We’ll start as above by renaming it:
 
-```
+```js
 const Y =
   fn =>
     (
@@ -395,7 +394,7 @@ const Y =
 
 Next, we observe that `(...args) => fn(maker(maker), ...args)` is not allowed, we do not gather and spread parameters. First, we change `...args` into just `arg`, since only one parameter is allowed:
 
-```
+```js
 const Y =
   fn =>
     (
@@ -409,7 +408,7 @@ const Y =
 
 `fn(maker(maker), arg)` is also not allowed, we do not pass two parameters to any function. Instead, we pass one parameter, get a function back, and pass the second parameter to that function. Like this:
 
-```
+```js
 const Y =
   fn =>
     (
@@ -423,7 +422,7 @@ const Y =
 
 Let’s try it:
 
-```
+```js
 Y(
   myself =>
     n =>
@@ -445,7 +444,7 @@ The Y Combinator makes recursion possible without requiring variable declaration
 
 Looking this expression of the Y combinator, we can see why it was named after the letter “Y,” the code literally looks like a forking branch:
 
-```
+```js
 const Y =
   fn =>
     (m => a => fn(m(m))(a))(
@@ -455,14 +454,14 @@ const Y =
 
 Since we’re talking direct implementations of formal combinators, let’s have a look at the M combinator:
 
-```
+```js
 const M =
   fn => fn(fn);
 ```
 
 We can combine `M` and `Y` to create a more compact expression of the Y combinator:
 
-```
+```js
 const Y =
   fn =>
     M(m => a => fn(m(m))(a));
@@ -470,7 +469,7 @@ const Y =
 
 The compact expression of the Y combinator is usually expressed with the M combinator “reduced” to `(x => x(x))`:
 
-```
+```js
 const Y =
   fn =>
     (x => x(x))(m => a => fn(m(m))(a));
@@ -478,7 +477,7 @@ const Y =
 
 We can use the reduced M combinator make a compact why bird, too:
 
-```
+```js
 const why =
   fn =>
     (x => x(x))(
@@ -500,7 +499,7 @@ And with that, we have derived compact implementations of both the Y combinator 
 
 This function for determining whether a number is even is extremely slow:
 
-```
+```js
 const _isEven =
   (myself, n) =>
     (n === 0) || !myself(n - 1);
@@ -518,7 +517,7 @@ isEven(1001)
 
 As discussed in [To Grok a Mockingbird](http://raganwald.com/2018/08/30/to-grok-a-mockingbird.html), one of the things we can do to improve performance is to [memoize](https://en.wikipedia.org/wiki/Memoization) our function:
 
-```
+```js
 const memoized = (fn, keymaker = JSON.stringify) => {
   const lookupTable = Object.create(null);
 
@@ -555,7 +554,7 @@ Thus, the first benefit of functions written in “why bird form” is that they
 
 There’s another–albeit rarer–benefit to rewriting functions in why bird form. Consider this extreme use case:
 
-```
+```js
 why(
   (myself, n) =>
     (n === 0) || !myself(n - 1)
@@ -567,7 +566,7 @@ Our function consumes stack space equal to the magnitude of the argument `n`. Na
 
 One solution to this problem is to rewrite the function in tail-recursive form. If the JavaScript engine supports tail-call optimization, the function will execute in constant stack space:
 
-```
+```js
 // Safari Browser, c. 2018
 
 why(
@@ -588,7 +587,7 @@ However, not all engines support tail-call optimization, despite it being part o
 
 As we saw in [To Grok a Mockingbird](http://raganwald.com/2018/08/30/to-grok-a-mockingbird.html), this necessitates having our recursive function become tightly coupled to its execution strategy. In other words, above and beyond being rewritten in tail-recursive form, it must explicitly return thunks rather than call `myself`:
 
-```
+```js
 class Thunk {
   constructor (delayed) {
     this.delayed = delayed;
@@ -642,7 +641,7 @@ We will call this function the “Long-tailed Widowbird.” Let’s derive it.
 
 Our goal is to create a trampolining function. So let’s start with the basic outline of a trampoline, and call it `longtailed`:
 
-```
+```js
 class Thunk {
   constructor (delayed) {
     this.delayed = delayed;
@@ -668,7 +667,7 @@ const longtailed =
 
 We won’t even bother trying this, we know that `fn(...initialArgs)` is not going to work without injecting a function for `myself`. But we do know a function that we can call with `...initialArgs`:
 
-```
+```js
 class Thunk {
   constructor (delayed) {
     this.delayed = delayed;
@@ -694,7 +693,7 @@ const longtailed =
 
 This works, but never actually creates any thunks. To do that, let’s reduce `why(fn)`:
 
-```
+```js
 class Thunk {
   constructor (delayed) {
     this.delayed = delayed;
@@ -725,7 +724,7 @@ const longtailed =
 
 Now we see where the value for `myself` comes from, it’s `maker(maker)`. Let’s replace that with a function that, given some arguments, returns a new thunk that—when evaluated—returns `maker(maker)` invoked with those arguments:
 
-```
+```js
 class Thunk {
   constructor (delayed) {
     this.delayed = delayed;
@@ -779,7 +778,7 @@ The long-tailed widowbird works, but it is code that only its author could love.
 
 Let’s begin our cleanup by moving `Thunk` inside our function. This has certain technical advantages if we ever create a recursive program that itself returns thunks. Since it is now a special-purpose class that only ever invokes a single function, we’ll give it a more specific implementation:
 
-```
+```js
 const longtailed =
   fn => {
     class Thunk {
@@ -812,7 +811,7 @@ const longtailed =
 
 Next, let’s extract the creation of a function that delays the invocation of `maker(maker)`:
 
-```
+```js
 const longtailed =
   fn => {
     class Thunk {
@@ -852,7 +851,7 @@ And now we have a considerably less ugly long-tailed widowbird. Well, actually, 
 
 Nevertheless, if we are to work with others, we might want to consider the possibility that they would prefer a less poetic approach:
 
-```
+```js
 const decoupledTrampoline =
   fn => {
     class Thunk {
@@ -923,7 +922,7 @@ Why is this superior? We’re going to refactor into tail-recursive form either 
 
 If we compare and contrast:
 
-```
+```js
 const isEven =
   trampoline(
     function myself (n) {
@@ -938,7 +937,7 @@ const isEven =
 
 With:
 
-```
+```js
 const isEven =
   decoupledTrampoline(
     (myself, n) => {
