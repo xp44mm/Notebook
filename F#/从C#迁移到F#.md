@@ -1,6 +1,6 @@
-# 从C#迁移到F#
+# 从CSharp迁移到FSharp
 
-### 委托的写法：
+## 委托的写法
 
 参考：Beginning F# 4.0 chapter 5  object-oriented programming
 
@@ -10,17 +10,17 @@ delegate TResult MethodCall<T, TResult>(T target, params object[] args);
 
 等价的F#写法：
 
-```F#
+```fsharp
 type MethodCall<'T, 'TResult> = delegate of 'T * [<ParamArray>]args:obj[] -> 'TResult
 ```
 
 C#中的`EventHandler<'T>`在F#中有如下定义：
 
-```F#
+```fsharp
 type EventHandler<'T> = delegate of obj * 'T -> unit
 ```
 
-### 标准事件
+## 标准事件
 
 C#中有`event`关键字，放在声明事件处理器的前面，定义事件的代码：
 
@@ -66,7 +66,7 @@ class StockMonitor : IDisposable
 
 C#定义的事件是是CLI通用的模式。在F#需要带`[<CLIEvent>]`的标准事件，下面代码与C#等价：
 
-```F#
+```fsharp
 type IStockTicker =
     [<CLIEvent>]
     abstract StockTick:IEvent<EventHandler<StockTick>,StockTick>
@@ -81,9 +81,9 @@ type StockTicker() =
 
 添加或移除事件处理器：
 
-```F#
+```fsharp
 type StockMonitor(ticker:StockTicker) =
-    let _ticker = ticker:> IStockTicker
+    let _ticker = ticker :> IStockTicker
     let OnStockTick(sender:obj)(stockTick:StockTick) = ()
     let handler = EventHandler<StockTick> OnStockTick
     do _ticker.StockTick.AddHandler(handler)
@@ -94,7 +94,7 @@ type StockMonitor(ticker:StockTicker) =
 
 快捷F#事件，不带`[<CLIEvent>]`，省略第一个参数（sender）的快捷方式，不是CLI通用的模式。
 
-```F#
+```fsharp
 type IStockTicker =
     abstract StockTick:IEvent<StockTick>
     
@@ -107,7 +107,7 @@ type StockTicker() =
 
 添加或移除事件处理器：
 
-```F#
+```fsharp
 type StockMonitor(ticker:StockTicker) =
     let _ticker = ticker :> IStockTicker
     let OnStockTick(sender:obj)(stockTick:StockTick) = ()
@@ -120,11 +120,11 @@ type StockMonitor(ticker:StockTicker) =
 
 可以使用`Add`快捷方法添加事件处理器，但是这个快捷方法没有反方法，不能移除事件处理器：
 
-```F#
+```fsharp
     do _ticker.StockTick.Add(OnStockTick)
 ```
 
-### 委托event写法
+## 委托event写法
 
 C#中定义事件的接口类型：
 
@@ -140,7 +140,7 @@ public interface IChatConnection
 
 等价的F#代码：
 
-```F#
+```fsharp
 type IChatConnection =
     abstract Received:IDelegateEvent<Action<string>>
     abstract Closed:IDelegateEvent<Action>
@@ -183,7 +183,7 @@ public class ChatConnection : IChatConnection
 
 等价的F#代码：
 
-```F#
+```fsharp
 type ChatConnection() =
     let received = DelegateEvent<Action<string>>()
     let closed = DelegateEvent<Action>()
@@ -246,7 +246,7 @@ public class ObservableConnection : ObservableBase<string>
 
 F#代码：
 
-```F#
+```fsharp
 type ObservableConnection(chatConnection:IChatConnection) =
     inherit ObservableBase<string>()
 
@@ -269,7 +269,7 @@ type ObservableConnection(chatConnection:IChatConnection) =
 
 测试代码，仅列出F#代码：
 
-```F#
+```fsharp
 let chatConnection = ChatConnection() 
 let observableConnection = ObservableConnection (chatConnection:> IChatConnection )
 let subscription =
@@ -280,7 +280,7 @@ chatConnection.NotifyClosed()
 subscription.Dispose()
 ```
 
-### 锁
+## 锁
 
 C#代码
 
@@ -292,11 +292,11 @@ lock (this._stockTickLocker)
 
 F#代码：
 
-```F#
+```fsharp
 lock _stockTickLocker (fun() -> ...)
 ```
 
-### 从事件到可观察
+## 从事件(IEvent)到可观察(IObservable)
 
 标准事件模式，C#代码：
 
@@ -308,30 +308,33 @@ Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
 ```
 
 F#代码：
-```F#
+
+```fsharp
 ticker.StockTick :> IObservable<_>
 ```
 
-在F#中，不能从C#中直译代码，而是利用事实`IEvent<>`继承自`IObservable<>`接口，向上强制转换即可。
+在F#中，不能从C#中直译代码，而是利用事实`IEvent<'t>`继承自`IObservable<'t>`接口，向上强制转换即可。
 
-委托事件转化为Observable，详见  rx.net in action第4章，非标准事件。
+## 委托事件转化为`Observable`
 
-### 写WPF程序，XAML
+详见 rx.net in action第4章，非标准事件。
 
-新建控制台应用程序，.net framework的，
+## 写WPF程序，XAML
 
-添加下面引用：
+新建控制台(.net framework)应用程序。
 
-```F#
-#r "WindowsBase"
+添加下面程序集：
+
+```fsharp
 #r "PresentationCore"
 #r "PresentationFramework"
 #r "System.Xaml"
+#r "WindowsBase"
 ```
 
 启动代码如下：
 
-```F#
+```fsharp
 open System
 open System.Windows
 open System.Windows.Controls
@@ -347,16 +350,14 @@ let a = new Application()
 do a.Run(w) |> ignore
 ```
 
-FromEventPattern(可能不对)
+FromEventPattern
 
-```F#
+```fsharp
 let clicks = 
-    Observable.FromEventPattern<RoutedEventHandler, RoutedEventArgs>(
-        theButton.Click.AddHandler, theButton.Click.RemoveHandler)
+    (theButton.Click :> IObservable<_>)
+        .Synchronize();
 
 let _ = clicks.Subscribe(fun eventPattern -> 
     output.Text <-  output.Text + "button clicked" + Environment.NewLine
 )
 ```
-
-

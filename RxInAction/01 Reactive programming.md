@@ -1,12 +1,12 @@
 # 1. Reactive programming
 
-The reactive programming paradigm has gained increasing popularity in recent years as a model that aims to simplify the implementation of event-driven applications and the execution of asynchronous code. Reactive programming concentrates on the propagation of changes and their effects—simply put, how to react to changes and create data flows that depend on them. 
+The reactive programming paradigm has gained increasing popularity in recent years as a model that aims to simplify the implementation of event-driven applications and the execution of asynchronous code. Reactive programming concentrates on the propagation of changes and their effects—simply put, how to react to changes and create data flows that depend on them.
 
-With the rise of applications such as Facebook and Twitter, every change happening on one side of the ocean (for example, a status update) is immediately observed on the other side, and a chain of reactions occurs instantly inside the application. It shouldn't come as a surprise that a simplified model to express this reaction chain is needed. Today, modern applications are highly driven by changes happening in the outside environment (such as in GPS location, battery and power management, and social networking messages) as well as by changes inside the application (such as web call responses, file reading and writing, and timers). To all of those events, the applications are reacting accordingly—for instance, by changing the displayed view or modifying stored data. 
+With the rise of applications such as Facebook and Twitter, every change happening on one side of the ocean (for example, a status update) is immediately observed on the other side, and a chain of reactions occurs instantly inside the application. It shouldn't come as a surprise that a simplified model to express this reaction chain is needed. Today, modern applications are highly driven by changes happening in the outside environment (such as in GPS location, battery and power management, and social networking messages) as well as by changes inside the application (such as web call responses, file reading and writing, and timers). To all of those events, the applications are reacting accordingly—for instance, by changing the displayed view or modifying stored data.
 
-We see the necessity for a simplified model for reacting to events in many types of applications: robotics, mobile apps, health care, and more. Reacting to events in a classic imperative way leads to cumbersome, hard-to-understand, and error-prone code, because the poor programmer who is responsible for coordinating events and data changes has to work manually with isolated islands of code that can change that same data. These changes might happen in an unpredictable order or even at the same time. *Reactive programming* provides abstractions to events and to states that change over time so that we can free ourselves from managing the dependencies between those values when we create the chains of execution that run when those events occur. 
+We see the necessity for a simplified model for reacting to events in many types of applications: robotics, mobile apps, health care, and more. Reacting to events in a classic imperative way leads to cumbersome, hard-to-understand, and error-prone code, because the poor programmer who is responsible for coordinating events and data changes has to work manually with isolated islands of code that can change that same data. These changes might happen in an unpredictable order or even at the same time. *Reactive programming* provides abstractions to events and to states that change over time so that we can free ourselves from managing the dependencies between those values when we create the chains of execution that run when those events occur.
 
-*Reactive Extensions* (Rx) is a library that provides the reactive programming model for .NET applications. Rx makes event-handling code simpler and more expressive by using declarative operations (in LINQ style) to create queries over a single sequence of events. Rx also provides methods called combinators (combining operations) that enable you to join sequences of events in order to handle patterns of event occurrences or the correlations between them. At the time of this writing, more than 600 operations (with overloads) are in the Rx library. Each one encapsulates recurring event-processing code that otherwise you'd have to write yourself. 
+*Reactive Extensions* (Rx) is a library that provides the reactive programming model for .NET applications. Rx makes event-handling code simpler and more expressive by using declarative operations (in LINQ style) to create queries over a single sequence of events. Rx also provides methods called combinators (combining operations) that enable you to join sequences of events in order to handle patterns of event occurrences or the correlations between them. At the time of this writing, more than 600 operations (with overloads) are in the Rx library. Each one encapsulates recurring event-processing code that otherwise you'd have to write yourself.
 
 This book's purpose is to teach you why you should embrace the reactive programming way of thinking and how to use Rx to build event-driven applications with ease and, most important, fun. The book will teach you step by step about the various layers that Rx is built upon, from the building blocks that allow you to create reactive data and event streams, through the rich query capabilities that Rx provides, and the Rx concurrency model that allows you to control the asynchrony of your code and the processing of your reactive handlers. But first you need to understand what being reactive means, and the difference between traditional imperative programming and the reactive way of working with events.
 
@@ -32,9 +32,9 @@ You'll explore each component of the Rx layers as well as their interactions thr
 
 ### 1.2.2 Rx on the client and server
 
-Rx is a good fit with event-driven applications. This makes sense because events (as you saw earlier) are the imperative way to create time-variant values. Historically, event-driven programming was seen mainly in client-side technologies because of the user interaction that was implemented as events. For example, you may have worked with OnMouseMove or OnKeyPressed events. For that reason, it's no wonder that you see many client applications using Rx. Furthermore, some client frameworks are based on Rx, such as ReactiveUI (http://reactiveui.net). 
+Rx is a good fit with event-driven applications. This makes sense because events (as you saw earlier) are the imperative way to create time-variant values. Historically, event-driven programming was seen mainly in client-side technologies because of the user interaction that was implemented as events. For example, you may have worked with `OnMouseMove` or `OnKeyPressed` events. For that reason, it's no wonder that you see many client applications using Rx. Furthermore, some client frameworks are based on Rx, such as ReactiveUI (<http://reactiveui.net>).
 
-But let me assure you that Rx isn't client-side-only technology. On the contrary, many scenarios exist for server-side code that Rx will fit perfectly. In addition, as I said before, Rx is used for large applications such as Microsoft Cortana, Netflix, and complex event processing (CEP) using Microsoft StreamInsight. Rx is an excellent library for dealing with messages that the application receives, and it doesn't matter whether it's running on a service layer or a client layer. 
+But let me assure you that Rx isn't client-side-only technology. On the contrary, many scenarios exist for server-side code that Rx will fit perfectly. In addition, as I said before, Rx is used for large applications such as Microsoft Cortana, Netflix, and complex event processing (CEP) using Microsoft `StreamInsight`. Rx is an excellent library for dealing with messages that the application receives, and it doesn't matter whether it's running on a service layer or a client layer.
 
 ### 1.2.3 Observables
 
@@ -42,14 +42,14 @@ But let me assure you that Rx isn't client-side-only technology. On the contrary
 
 Observables are defined as the source of the events (or notifications) or, if you prefer, the publishers of a stream of data. And the push model means that instead of having the observers fetch data from the source and always checking whether there's new data that wasn't already taken (the *pull model*), the data is delivered to the observers when it's available.
 
-Observables implement the `IObservable<T>` interface that has resided in the `System` namespace~~ since version 4.0 of the .NET Framework~~. 
+Observables implement the `IObservable<'T>` interface that has resided in the `System` namespace. ~~since version 4.0 of the .NET Framework.~~
 
 ```F#
 type IObservable<'T> =
-	abstract Subscribe:IObserver<'T> -> IDisposable
+    abstract Subscribe:IObserver<'T> -> IDisposable
 ```
 
-The `IObservable<T>` interface has only one method, `Subscribe`, that allows observers to be subscribed for notifications. The `Subscribe` method returns an `IDisposable` object that represents the subscription and allows the observer to unsubscribe at any time by calling the `Dispose` method. Observables hold the collection of subscribed observers and notify them when there's something worth notifying. This is done using the `IObserver<T>` interface, which also has resided in the `System` namespace~~ since version 4.0 of the .NET Framework~~, as shown here. 
+The `IObservable<'T>` interface has only one method, `Subscribe`, that allows observers to be subscribed for notifications. The `Subscribe` method returns an `IDisposable` object that represents the subscription and allows the observer to unsubscribe at any time by calling the `Dispose` method. Observables hold the collection of subscribed observers and notify them when there's something worth notifying. This is done using the `IObserver<'T>` interface, which also has resided in the `System` namespace, ~~since version 4.0 of the .NET Framework~~ as shown here.
 
 ```F#
 type IObserver<'T> =
@@ -58,9 +58,9 @@ type IObserver<'T> =
     abstract OnCompleted: unit -> unit
 ```
 
-The basic flow of using `IObservable` and `IObserver` is shown in figure 1.6. Observables don't always complete; they can be providers of a potentially unbounded number of sequenced elements (such as an infinite collection). An observable also can be "quiet," meaning it never pushed any element and never will. Observables can also fail; the failure can occur after the observable has already pushed elements or it can happen without any element ever being pushed. 
+The basic flow of using `IObservable` and `IObserver` is shown in figure 1.6. Observables don't always complete; they can be providers of a potentially unbounded number of sequenced elements (such as an infinite collection). An observable also can be "quiet," meaning it never pushed any element and never will. Observables can also fail; the failure can occur after the observable has already pushed elements or it can happen without any element ever being pushed.
 
-This observable algebra is formalized in the following expression (where * indicates zero or more times, ? indicates zero or one time, and | is an OR operator):
+This observable algebra is formalized in the following expression (where `*` indicates zero or more times, `?` indicates zero or one time, and `|` is an OR operator):
 
 ```F#
 OnNext(t)* (OnCompleted() | OnError(e))? 
@@ -74,7 +74,7 @@ Figure 1.7 In the case of an error in the observable, the observers will be noti
 
 ---
 
-##### The Observer design pattern
+#### The Observer design pattern
 
 In certain programming languages, events are sometimes offered as first-class citizens, meaning that you can define and register events with the language-provided keywords and types and even pass events as parameters to functions.
 
@@ -107,7 +107,7 @@ let subscription:IDisposable =
 subscription.Dispose()
 ```
 
-In this simple example, you can see the declarative style of the Rx operators—say what you want and not how you want it—and so the code reads like a story. Because I want to focus on the querying operators in this example, I don't show how the observable is created. You can create observables in many ways: from events, enumerables, asynchronous types, and more. Those are discussed in chapters 4 and 5. For now, you can assume that the observables were created for you behind the scenes. 
+In this simple example, you can see the declarative style of the Rx operators—say what you want and not how you want it—and so the code reads like a story. Because I want to focus on the querying operators in this example, I don't show how the observable is created. You can create observables in many ways: from events, enumerables, asynchronous types, and more. Those are discussed in chapters 4 and 5. For now, you can assume that the observables were created for you behind the scenes.
 
 The operators and combinators (operators that combine multiple observables) can help you create even more complex scenarios that involve multiple observables. To achieve the resizable icon for the shops in the Shoppy example, you can write the following Rx expressions:
 
@@ -128,7 +128,7 @@ iconSize.Subscribe(fun iconInfo -> iconInfo.Store.Icon <- iconInfo.Size)
 |> ignore
 ```
 
-Even without knowing all the fine details of Reactive Extensions, you can see that the amount of code needed to implement this feature in the Shoppy application is small, and it's easy to read. All the boilerplate of combining the various streams of data was done by Rx and saved you the burden of writing the isolated code fragments required to handle the events of data change. 
+Even without knowing all the fine details of Reactive Extensions, you can see that the amount of code needed to implement this feature in the Shoppy application is small, and it's easy to read. All the boilerplate of combining the various streams of data was done by Rx and saved you the burden of writing the isolated code fragments required to handle the events of data change.
 
 ### 1.2.5 The composable nature of Rx operators
 
@@ -138,13 +138,13 @@ Most Rx operators have the following format:
 OperatorName:'arguments->IObservable<'T> 
 ```
 
-Note that the return type is an observable. This allows the composable nature of Rx operators; you can add operators to the observable pipeline, and each one produces an observable that encapsulates the behavior that's been applied to the notification from the moment it was emitted from the original source. 
+Note that the return type is an observable. This allows the composable nature of Rx operators; you can add operators to the observable pipeline, and each one produces an observable that encapsulates the behavior that's been applied to the notification from the moment it was emitted from the original source.
 
 Another important takeaway is that from the observer point of view, an observable with or without operators that are added to it is still an observable, as shown in figure 1.8.
 
 Figure 1.8 The composable nature of Rx operators allows you to encapsulate what happens to the notification since it was emitted from the original source.
 
-Because you can add operators to the pipeline not only when the observable is created, but also when the observer is subscribed, it gives you the power to control the observable even if you don't have access to the code that created it. 
+Because you can add operators to the pipeline not only when the observable is created, but also when the observer is subscribed, it gives you the power to control the observable even if you don't have access to the code that created it.
 
 ### 1.2.6 Marble diagrams
 
@@ -152,11 +152,11 @@ A picture is worth a thousand words. That's why, when explaining reactive progra
 
 Marble diagrams use a horizontal axis to represent the observable sequence. Each notification that's carried on the observable is marked with a symbol, usually a circle (although other symbols are used from time to time), to distinguish between values. The value of the notification is written inside the symbol or as a note above it, as shown in figure 1.9.
 
-Figure 1.9 Marble diagram with two observable sequences 
+Figure 1.9 Marble diagram with two observable sequences.
 
 In the marble diagram, time goes from left to right, and the distance between the symbols shows the amount of time that has passed between the two events. The longer the distance, the more time has passed, but only in a relative way. There's no way to know whether the time is in seconds, hours, or another measurement unit. If this information is important, it'll be written as a note.
 
-To show that the observable has completed, you use the | symbol. To show that an error occurred (which also ends the observable), you use X. Figure 1.10 shows examples.
+To show that the observable has completed, you use the `|` symbol. To show that an error occurred (which also ends the observable), you use X. Figure 1.10 shows examples.
 
 Figure 1.10 An observable can end because it has completed or because an error occurred.
 
@@ -168,11 +168,11 @@ Marble diagrams are used in this book to show the effects of operators as well a
 
 ### 1.2.7 Pull model vs. push model
 
-Nonobservable sequences are what we normally call *enumerables* (or collections), which implement the `IEnumerable` interface and return an iterator that implements the `IEnumerator` interface. When using enumerables, you pull values out of the collection, usually with a loop. Rx observables behave differently: instead of pulling, the values are pushed to the observer. Tables 1.1 and 1.2 show how the pull and push models correspond to each other. This relationship between the two is called the *duality principle*.
+Non-observable sequences are what we normally call *enumerables* (or collections), which implement the `IEnumerable` interface and return an iterator that implements the `IEnumerator` interface. When using enumerables, you pull values out of the collection, usually with a loop. Rx observables behave differently: instead of pulling, the values are pushed to the observer. Tables 1.1 and 1.2 show how the pull and push models correspond to each other. This relationship between the two is called the *duality principle*.
 
 Table 1.1 How `IEnumerator` and `IObserver` correspond to each other
 
-```
+```fsharp
 | IEnumerator             | IObserver               |
 | ----------------------- | ----------------------- |
 | MoveNext—when false     | OnCompleted:unit->unit  |
@@ -182,23 +182,23 @@ Table 1.1 How `IEnumerator` and `IObserver` correspond to each other
 
 Table 1.2 How `IEnumerable` and `IObservable` correspond to each other
 
-```
+```fsharp
 | IEnumerable                     | IObservable                      |
 | ------------------------------- | -------------------------------- |
 | GetEnumerator:unit->IEnumerator | Subscribe:IObserver->IDisposable |
 ```
 
-There's one exception to the duality here, because the twin of the `GetEnumerator` parameter (which is `void`) should have been transformed to the `Subscribe` method return type (and stay `void`), but instead `IDisposable` was used.
+There's one exception to the duality here, because the twin of the `GetEnumerator` parameter (which is `unit`) should have been transformed to the `Subscribe` method return type (and stay `unit`), but instead `IDisposable` was used.
 
-Because a reverse correspondence exists between observables and enumerables (the duality), you can move from one representation of a sequence of values to the other. A fixed collection, such as `List<'T>`, can be transformed to an observable that emits all its values by pushing them to the observers. The more surprising fact is that observables can be transformed to pull-based collections. You'll dive into the details of how and when to make those transformations in later chapters. For now, the important thing to understand is that because you can transform one model into the other, everything you can do with a pull-based model can also be done with the push-based model. So when you face a problem, you can solve it in the easiest model and then transform the result if needed. 
+Because a reverse correspondence exists between observables and enumerables (the duality), you can move from one representation of a sequence of values to the other. A fixed collection, such as `List<'T>`, can be transformed to an observable that emits all its values by pushing them to the observers. The more surprising fact is that observables can be transformed to pull-based collections. You'll dive into the details of how and when to make those transformations in later chapters. For now, the important thing to understand is that because you can transform one model into the other, everything you can do with a pull-based model can also be done with the push-based model. So when you face a problem, you can solve it in the easiest model and then transform the result if needed.
 
-The last point I'll make here is that because you can look at a single value as if it were a collection of one item, you can by the same logic take the asynchronous single item—the `Task<T>`—and look at it as an observable of one item, and vice versa. Keep that in mind, because it's an important point in understanding that "everything is an observable."
+The last point I'll make here is that because you can look at a single value as if it were a collection of one item, you can by the same logic take the asynchronous single item—the `Task<'T>`—and look at it as an observable of one item, and vice versa. Keep that in mind, because it's an important point in understanding that "everything is an observable."
 
 ## 1.3 Working with reactive systems and the Reactive Manifesto
 
 So far, we've discussed how Rx adds reactiveness to an application. Many applications aren't standalone, but rather part of a whole system that's composed of more applications (desktop, mobile, web), servers, databases, queues, service buses, and other components that you need to connect in order to create a working organism. The reactive programming model (and Rx as an implementation of that model) simplifies the way an application handles the propagation of changes and the consumption of events, thus making the application reactive. But how can you make a whole system reactive?
 
-As a system, reactiveness is defined by being responsive, resilient, elastic, and message-driven. These four traits of reactive systems are defined in the *Reactive Manifesto* (www.reactivemanifesto.org), a collaborative effort of the software community to define the best architectural style for building a reactive system. You can join the effort of raising awareness about reactive systems by signing the manifesto and spreading the word.
+As a system, reactiveness is defined by being responsive, resilient, elastic, and message-driven. These four traits of reactive systems are defined in the [*Reactive Manifesto*](www.reactivemanifesto.org), a collaborative effort of the software community to define the best architectural style for building a reactive system. You can join the effort of raising awareness about reactive systems by signing the manifesto and spreading the word.
 
 It's important to understand that the Reactive Manifesto didn't invent anything new; reactive applications existed long before it was published. An example is the telephone system that has existed for decades. This type of distributed system needs to react to a dynamic amount of load (the calls), recover from failures, and stay available and responsive to the caller and the callee 24/7, and all this by passing signals (messages) from one operator to the other.
 
@@ -216,7 +216,7 @@ In either case, if the time that it takes the system to respond is reasonable, y
 
 Every once in a while, your system might face failures. Networks disconnect, hard drives fail, electricity shuts down, or an inner component experiences an exceptional situation. A resilient system is one that stays responsive in the case of a failure. In other words, when you write your application, you want to handle failures in a way that doesn't prevent the user from getting a response.
 
-The way you add resiliency to an application is different from one application to another. One application might catch an exception and return the application to a consistent state. Another application might add more servers so that if one server crashes, another one will compensate and handle the request. A good principle you should follow to increase the resiliency of your system is to avoid a single point of failure. This can be done by making each part of your application isolated from the other parts; you might separate parts into different AppDomains, different processes, different containers, or different machines. By isolating the parts, you reduce the risk that the system will be unavailable as a whole.
+The way you add resiliency to an application is different from one application to another. One application might catch an exception and return the application to a consistent state. Another application might add more servers so that if one server crashes, another one will compensate and handle the request. A good principle you should follow to increase the resiliency of your system is to avoid a single point of failure. This can be done by making each part of your application isolated from the other parts; you might separate parts into different `AppDomains`, different processes, different containers, or different machines. By isolating the parts, you reduce the risk that the system will be unavailable as a whole.
 
 ### 1.3.3 Elasticity
 
@@ -238,7 +238,7 @@ In the figure, the participants are communicating in a message-driven approach t
 
 The Reactive Extensions library comes into play inside the applications that compose a reactive system, and it relates to the message-driven concept. Rx isn't the mechanism to move messages between applications or servers, but rather it's the mechanism that's responsible for handling the messages when they arrive and passing them along the chain of execution inside the application. It's important to state that working with Rx is something you can do even if you're not developing a full system with many components. Even a single application can find Rx useful for reacting to events and the types of messages that the application may want to process. The relationships between all the Reactive Manifesto concepts and Rx are captured in figure 1.13.
 
-```
+```fsharp
 Message driven + Rx
 Message driven -> Elastic
 Message driven -> Responsive
@@ -258,17 +258,17 @@ To get a fully reactive system, all the concepts in the diagram must exist. Each
 
 ## 1.4 Understanding asynchrony
 
-Asynchronous message passing is a key trait of a reactive system. But what exactly is asynchrony, and why is it so important to a reactive application? Our lives are made up of many asynchronous tasks. You may not be aware of it, but your everyday activities would be annoying if they weren't asynchronous by nature. To understand what asynchrony is, you first need to understand non-asynchronous execution, or synchronous execution. 
+Asynchronous message passing is a key trait of a reactive system. But what exactly is asynchrony, and why is it so important to a reactive application? Our lives are made up of many asynchronous tasks. You may not be aware of it, but your everyday activities would be annoying if they weren't asynchronous by nature. To understand what asynchrony is, you first need to understand non-asynchronous execution, or synchronous execution.
 
 **DEFINITION** *Synchronous*: Happening, existing, or arising at precisely the same time
 
 *Synchronous* execution means that you have to wait for a task to complete before you can continue to the next task. A real-life example of synchronous execution takes place at a fast-food restaurant: you approach the staff at the counter, decide what to order while the clerk waits, order your food, and wait until the meal is ready. The clerk waits until you hand over the payment and then gives you the food. Only then you can continue the next task of going to your table to eat. This sequence is shown in figure 1.14.
 
-This type of sequence feels like a waste of time (or, better said, a waste of resources), so imagine how your applications feel when you do the same for them. The next section demonstrates this. 
+This type of sequence feels like a waste of time (or, better said, a waste of resources), so imagine how your applications feel when you do the same for them. The next section demonstrates this.
 
 ### 1.4.1 It's all about resource use
 
-Imagine what your life would be like if you had to wait for every single operation to complete before you could do something else. Think of the resources that would be waiting and used at that time. The same issues are also relevant in computer science: 
+Imagine what your life would be like if you had to wait for every single operation to complete before you could do something else. Think of the resources that would be waiting and used at that time. The same issues are also relevant in computer science:
 
 ```C#
 writeResult = LongDiskWrite();
@@ -276,11 +276,11 @@ response = LongWebRequest();
 entities = LongDatabaseQuery();
 ```
 
-In this synchronous code fragment, LongDatabaseQuery won't start execution until LongWebRequest and LongDiskWrite complete. During the time that each method is executed, the calling thread is blocked and the resources it holds are practically wasted and can't be used to serve other requests or handle other events. If this were happening on the UI thread, the application would look frozen until the execution finishes. If this were happening on a server application, at some point you might run out of free threads and requests would start being rejected. In both cases, the application stops being responsive.
+In this synchronous code fragment, `LongDatabaseQuery` won't start execution until `LongWebRequest` and `LongDiskWrite` complete. During the time that each method is executed, the calling thread is blocked and the resources it holds are practically wasted and can't be used to serve other requests or handle other events. If this were happening on the UI thread, the application would look frozen until the execution finishes. If this were happening on a server application, at some point you might run out of free threads and requests would start being rejected. In both cases, the application stops being responsive.
 
-The total time it takes to run the preceding code fragment is as follows: 
+The total time it takes to run the preceding code fragment is as follows:
 
-```
+```fsharp
 total_time = LongDiskWrite_time + LongWebRequest_time + LongDatabaseQuery_time
 ```
 
@@ -294,7 +294,7 @@ This model is asynchronous: tasks are executed concurrently, and the time of exe
 
 ---
 
-##### Where does the asynchronous execution happen?
+#### Where does the asynchronous execution happen?
 
 In a computer program, we can differentiate between two types of asynchronous operations: CPU-based and I/O-based.
 
@@ -310,57 +310,56 @@ There's more than one way to run code asynchronously, and it depends on the lang
 
 The asynchronous version of the preceding code fragment looks like the following:
 
-```C#
-var taskA = LongDiskWriteAsync();
-var taskB = LongWebRequestAsync();
-var taskC = LongDatabaseQueryAsync();
-Task.WaitAll(taskA, taskB, taskC);
+```fsharp
+let taskA = LongDiskWriteAsync()
+let taskB = LongWebRequestAsync()
+let taskC = LongDatabaseQueryAsync()
+Task.WaitAll(taskA, taskB, taskC)
 ```
 
-In this version, each method returns `Task<T>`. This class represents an operation that's being executed in the background. When each method is called, the calling thread isn't blocked, and the method returns immediately. Then the next method is called while the previous method is still executing. When all the methods are called, you wait for their completion by using the `Task.WaitAll` method that gets a collection of tasks and blocks until all of them are completed. Another way to write this is as follows:
+In this version, each method returns `Task<'T>`. This class represents an operation that's being executed in the background. When each method is called, the calling thread isn't blocked, and the method returns immediately. Then the next method is called while the previous method is still executing. When all the methods are called, you wait for their completion by using the `Task.WaitAll` method that gets a collection of tasks and blocks until all of them are completed. Another way to write this is as follows:
 
-```C#
-taskA = LongDiskWriteAsync();
-taskB = LongWebRequestAsync();
-taskC = LongDatabaseQueryAsync();
-taskA.Wait();
-taskB.Wait(); 
-taskC.Wait();
+```fsharp
+let taskA = LongDiskWriteAsync()
+let taskB = LongWebRequestAsync()
+let taskC = LongDatabaseQueryAsync()
+taskA.Wait()
+taskB.Wait()
+taskC.Wait()
 ```
 
 This way, you get the same result; you wait for each task to complete (while they're still running in the background). If a task is already completed when you call the Wait method, it will return immediately.
 
 The total time it takes to run the asynchronous version of the code fragment is as follows:
 
-```
+```fsharp
 total_time = MAX(LongDiskWritetime, LongWebRequesttime, LongDatabaseQuerytime)
 ```
 
-Because all of the methods are running concurrently (and maybe even in parallel), the time it takes to run the code will be the time of the longest operation. 
+Because all of the methods are running concurrently (and maybe even in parallel), the time it takes to run the code will be the time of the longest operation.
 
 ### 1.4.2 Asynchronicity and Rx
 
-Asynchronous execution isn't limited to being handled only by using `Task<T>`. In appendix A, you'll be introduced to other patterns used inside the .NET Framework to provide asynchronous execution.
+Asynchronous execution isn't limited to being handled only by using `Task<'T>`. In appendix A, you'll be introduced to other patterns used inside the .NET Framework to provide asynchronous execution.
 
-Looking back at `IObservable<T>`, the Rx representation of a time-variant variable, you can use it to represent any asynchronous pattern, so when the asynchronous execution completes (successfully or with an error), the chain of execution will run and the dependencies will be evaluated. Rx provides methods for transforming the various types of asynchronous execution (such as `Task<T>`) to `IObservable<T>`.
+Looking back at `IObservable<'T>`, the Rx representation of a time-variant variable, you can use it to represent any asynchronous pattern, so when the asynchronous execution completes (successfully or with an error), the chain of execution will run and the dependencies will be evaluated. Rx provides methods for transforming the various types of asynchronous execution (such as `Task<'T>`) to `IObservable<'T>`.
 
 For example, in the Shoppy app, you want to get new discounts not only when your location changes, but also when your connectivity state changes to online—for example, if your phone loses its signal for a short time and then reconnects. The call to the Shoppy web service is done in an asynchronous way, and when it completes, you want to update your view to show the new items:
 
-```C#
-IObservable<Connectivity> myConnectivity = ...  
-IObservable<IEnumerable<Discount>> newDiscounts = 
+```fsharp
+let myConnectivity:IObservable<Connectivity> = ...  
+let newDiscounts:IObservable<IEnumerable<Discount>> =
     from connectivity in myConnectivity
     where connectivity == Connectivity.Online
-    from discounts in GetDiscounts()                     
+    from discounts in GetDiscounts()
     select discounts;
-newDiscounts.Subscribe(discounts => RefreshView(discounts));
-private Task<IEnumerable<Discount>> GetDiscounts()
-{
+newDiscounts.Subscribe(fun discounts -> RefreshView(discounts))
+let GetDiscounts():Task<IEnumerable<Discount>> =
     //Sends request to the server and receives the collection of discounts
-}
+
 ```
 
-In this example, you're reacting to the connectivity changes that are carried on the myConnectivity observable. Each time a change in connectivity occurs, you check to see whether it's because you're online, and if so, you call the asynchronous GetDiscounts method. When the method execution is complete, you select the result that was returned. This result is what will be pushed to the observers of the newDiscounts observable that was created from your code.
+In this example, you're reacting to the connectivity changes that are carried on the `myConnectivity` observable. Each time a change in connectivity occurs, you check to see whether it's because you're online, and if so, you call the asynchronous `GetDiscounts` method. When the method execution is complete, you select the result that was returned. This result is what will be pushed to the observers of the `newDiscounts` observable that was created from your code.
 
 ## 1.5 Understanding events and streams
 
@@ -372,7 +371,7 @@ An event is raised by an event source and consumed by an event handler. As you'v
 
 The application you write will ultimately deal with some kind of data, as shown in figure 1.15. Data can be of two types: data at rest and data in motion. Data at rest is stored in a digital format, and you usually read it from persisted storage such as a database or files. Data in motion is moving on the network (or other medium) and is being pushed to your application or pulled by your application from any external source.
 
-```
+```fsharp
 Data at rest source -> Startup module
 Startup module -> Data stream
 
@@ -392,7 +391,7 @@ A nice analogy I like to use for explaining streams is a water hose, but this ho
 
 The data and event streams are a perfect fit for Rx observables. Abstracting them with an `IObservable` enables you to make a composition of the operators and create a complex pipeline of execution. This is similar to what you did with the Shoppy example, where a call to a server obtained the discounts as part of a more complex pipeline of execution that also used filtering (on the connectivity) and eventually refreshed the view (like a sprinkler splashing water).
 
-```
+```fsharp
 Hose -> Prefilter
 Prefilter -> Pressure monitor
 Pressure monitor -> Sprinkler
@@ -404,36 +403,37 @@ Figure 1.16 A data stream is like a hose: every drop of water is a data packet t
 
 This chapter covered what being reactive means and how you can use Rx to implement reactive programming in your applications.
 
-  * In reactive programming, you use time-variant variables that hold values that change by reacting to changes happening to their dependencies. You saw examples of these variables in the Shoppy example: location, connectivity, iconSize, and so on.
+* In reactive programming, you use time-variant variables that hold values that change by reacting to changes happening to their dependencies. You saw examples of these variables in the Shoppy example: location, connectivity, `iconSize`, and so on.
 
-  * Rx is a library developed by Microsoft to implement reactive programming in.NET applications.
+* Rx is a library developed by Microsoft to implement reactive programming in.NET applications.
 
-  * In Rx, time-variant variables are abstracted by observable sequences that implement the `IObservable<T>` interface.
+* In Rx, time-variant variables are abstracted by observable sequences that implement the `IObservable<'T>` interface.
 
-  * The observable is a producer of notifications, and observers subscribe to it to receive those notifications.
+* The observable is a producer of notifications, and observers subscribe to it to receive those notifications.
 
-  * Each observer subscription is represented as `IDisposable` that allows unsubscribing at any time.
+* Each observer subscription is represented as `IDisposable` that allows unsubscribing at any time.
 
-  * Observers implement the `IObserver<T>` interface.
+* Observers implement the `IObserver<'T>` interface.
 
-  * Observables can emit a notification with a payload, notify on its completion, and notify on an error.
+* Observables can emit a notification with a payload, notify on its completion, and notify on an error.
 
-  * After an observable notifies an observer on its completions or about an error, no more notifications will be emitted.
+* After an observable notifies an observer on its completions or about an error, no more notifications will be emitted.
 
-  * Observables don't always complete; they can be providers of potentially unbounded notifications.
+* Observables don't always complete; they can be providers of potentially unbounded notifications.
 
-  * Observables can be “quiet,” meaning they have never pushed any element and never will.
+* Observables can be “quiet,” meaning they have never pushed any element and never will.
 
-  * Rx provides operators that are used to create pipelines of querying, transformation, projections, and more in the same syntax that LINQ uses.
+* Rx provides operators that are used to create pipelines of querying, transformation, projections, and more in the same syntax that LINQ uses.
 
-  * Marble diagrams are used to visualize the Rx pipelines.
+* Marble diagrams are used to visualize the Rx pipelines.
 
-  * Reactive systems are defined as being responsive, resilient, elastic, and message driven. These traits of reactive systems are defined in the Reactive Manifesto.
+* Reactive systems are defined as being responsive, resilient, elastic, and message driven. These traits of reactive systems are defined in the Reactive Manifesto.
 
-  * In a reactive system, Rx is placed in the message-driven slot, as the way you want to handle the messages the application is receiving.
+* In a reactive system, Rx is placed in the message-driven slot, as the way you want to handle the messages the application is receiving.
 
-  * Asynchronicity is one of the most important parts of being reactive, because it allows you to better use your resources and thus makes the application more responsive.
+* Asynchronicity is one of the most important parts of being reactive, because it allows you to better use your resources and thus makes the application more responsive.
 
-  * “Everything is a stream” explains why Rx makes it easy to work with any source, even if it's a data source such as a database.
+* “Everything is a stream” explains why Rx makes it easy to work with any source, even if it's a data source such as a database.
 
-In the next chapter, you'll get the chance to build your first Rx application, and you'll compare it with writing the same application in the traditional event-handling way. You'll see for yourself how awesome Rx is. 
+In the next chapter, you'll get the chance to build your first Rx application, and you'll compare it with writing the same application in the traditional event-handling way. You'll see for yourself how awesome Rx is.
+

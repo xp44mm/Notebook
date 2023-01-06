@@ -19,12 +19,12 @@ The first 32 characters in the ASCII-table are unprintable control codes and are
 | 5  | 005 | 05 | ENQ   | Enquiry                      |
 | 6  | 006 | 06 | ACK   | Acknowledgment               |
 | 7  | 007 | 07 | BEL   | Bell / Alert                 |
-| 8  | 010 | 08 | BS    | Back Space / Backspace       |
-| 9  | 011 | 09 | HT    | Horizontal Tab               |
-| 10 | 012 | 0A | LF    | Line Feed / newline          |
-| 11 | 013 | 0B | VT    | Vertical Tab                 |
-| 12 | 014 | 0C | FF    | Form Feed                    |
-| 13 | 015 | 0D | CR    | Carriage Return              |
+| 8  | 010 | 08 | BS    | Back Space / Backspace       |*
+| 9  | 011 | 09 | HT    | Horizontal Tab               |*
+| 10 | 012 | 0A | LF    | Line Feed / newline          |*
+| 11 | 013 | 0B | VT    | Vertical Tab                 |*
+| 12 | 014 | 0C | FF    | Form Feed                    |*
+| 13 | 015 | 0D | CR    | Carriage Return              |*
 | 14 | 016 | 0E | SO    | Shift Out / X-On             |
 | 15 | 017 | 0F | SI    | Shift In / X-Off             |
 | 16 | 020 | 10 | DLE   | Data Line Escape             |
@@ -35,10 +35,10 @@ The first 32 characters in the ASCII-table are unprintable control codes and are
 | 21 | 025 | 15 | NAK   | Negative Acknowledgement     |
 | 22 | 026 | 16 | SYN   | Synchronous Idle             |
 | 23 | 027 | 17 | ETB   | End of Transmit Block        |
-| 24 | 030 | 18 | CAN   | Cancel                       |
+| 24 | 030 | 18 | CAN   | Cancel                       |*
 | 25 | 031 | 19 | EM    | End of Medium                |
 | 26 | 032 | 1A | SUB   | Substitute                   |
-| 27 | 033 | 1B | ESC   | Escape                       |
+| 27 | 033 | 1B | ESC   | Escape                       |*
 | 28 | 034 | 1C | FS    | File Separator               |
 | 29 | 035 | 1D | GS    | Group Separator              |
 | 30 | 036 | 1E | RS    | Record Separator             |

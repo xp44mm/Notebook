@@ -9,9 +9,11 @@ Private WithEvents IE_Inst As New SHDocVw.InternetExplorer
 ```
 
 I get as far as:
+
 ```VB
 private SHDocVw.InternetExplorer IE_Inst = new SHDocVw.InternetExplorer();
 ```
+
 but am not sure how to translate the `WithEvents` part. Any suggestions?  
 
 ##### Bob Powell
@@ -29,8 +31,6 @@ the Form.Paint += new PaintEventHandler(this painthandler); // This is the equiv
 ```
 
 you can remove events similarly with `-=` being the equivalent of `RemoveHandler`.
-
-  
 
 ##### Brett
 
@@ -51,11 +51,13 @@ Public Sub IEDocComplete(ByVal pDisp As Object, ByRef URL As Object) Handles IE_
 ##### David Anton
 
 The usual general format of the C# add handler equivalent is:
+
 ```C#
 <object>.<event> += new <eventhandler>(<event handling method>);
 ```
 
 The equivalent C# code is (using our Instant C# VB to C# converter):
+
 ```C#
 private SHDocVw.InternetExplorer IE_Inst = new SHDocVw.InternetExplorer();
 
@@ -66,7 +68,6 @@ IE_Inst.DocumentComplete += new System.EventHandler(IEDocComplete);
 public void IEDocComplete(object pDisp, ref object URL)
 {
 }
-
 ```
 
 ##### Bob Powell
@@ -84,6 +85,7 @@ this.axWebBrowser1.DocumentComplete += new AxSHDocVw.DWebBrowserEvents2_Document
 ##### Brett
 
 I'm getting this error now on the line below:
+
 ```C#
 C:\myFiles\myprogC#\Main\IE.cs(31): 
 Method 'Mail.IE.IEDocComplete(object, ref object)' 
@@ -131,4 +133,3 @@ public void IEDocComplete(object pDisp, ref object url)
 Because it was not wiring it up to a `System.EventHandler`, it's wiring it up to a `SHDocVw.DWebBrowserEvents2_DocumentCompleteEventHandler`. Open your VB exe with *ildasm* and you'll see it doing it. You need to do the same in your C#.
 
 You know, compiling that to have a look at the IL was the first VB I've done for years. I feel soiled :o)
-
