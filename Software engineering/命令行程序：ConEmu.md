@@ -2,7 +2,7 @@
 
 ## ConEmu
 
-这是一个命令行程序，可以从 https://www.fosshub.com/ConEmu.html 下载安装。
+这是一个命令行程序，可以从[ConEmu](https://www.fosshub.com/ConEmu.html)下载安装。
 
 安装完成后，用管理员启动这个程序，从右上角的菜单中选择`setting...`, 在右侧的树选择`General`，如下设置：
 
@@ -67,8 +67,6 @@ tree [<drive>:][<path>] [/f] [/a]
 2. `/A` - Specifies that alternative characters (plus signs, hyphens, and vertical bars) be used to draw the tree diagram so that it can be printed by printers that don't support the line-drawing and box-drawing characters.
 
 3. 打印出来的内容，文件夹前面一定有横线，文件前面一定没有横线。
-
-   
 
 ### Examples
 

@@ -204,6 +204,10 @@ type ChatConnection() =
     member _.NotifyError() = error.Trigger[|OutOfMemoryException()|]
 ```
 
+[DelegateEvent<'Delegate>](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpdelegateevent-1.html)
+
+Event implementations for an arbitrary type of delegate.
+
 添加或移除处理器的C#代码：
 
 ```C#
@@ -321,15 +325,27 @@ ticker.StockTick :> IObservable<_>
 
 ## 写WPF程序，XAML
 
-新建控制台(.net framework)应用程序。
+新建控制台应用程序。非(.net framework)
 
-添加下面程序集：
+修改项目属性，项目文件代码如下：
 
-```fsharp
-#r "PresentationCore"
-#r "PresentationFramework"
-#r "System.Xaml"
-#r "WindowsBase"
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>False</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MahApps.Metro" Version="2.4.9" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>
+
 ```
 
 启动代码如下：
@@ -348,6 +364,27 @@ let a = new Application()
 
 [<STAThread>]
 do a.Run(w) |> ignore
+```
+
+LOADING XAML INTO F# APPLICATIONS
+
+```fsharp
+let a = 
+    let reader = XmlReader.Create(Path.Combine(__SOURCE_DIRECTORY__,"App.xaml"))
+    XamlReader.Load(reader) :?> Application
+
+let w = 
+    let reader = XmlReader.Create(Path.Combine(__SOURCE_DIRECTORY__,"FirstMetroWindow.xaml"))
+    let this = XamlReader.Load(reader) :?> Window
+    let btn = this.FindName("btn") :?> Button
+    btn.Click.Add(fun _ ->
+        MessageBox.Show("click from code behind.") |> ignore
+    )
+    this
+
+[<STAThread>]
+do a.Run(w) |> ignore
+
 ```
 
 FromEventPattern

@@ -8,15 +8,15 @@ In this chapter, we'll look at various interop scenarios where you'll learn how 
 
 ### Problem
 
-There is an older asynchronous pattern that uses methods named OperationAsync along with events named OperationCompleted. You want to perform an operation using the older asynchronous pattern and await the result.
+There is an older asynchronous pattern that uses methods named `OperationAsync` along with events named `OperationCompleted`. You want to perform an operation using the older asynchronous pattern and await the result.
 
 ##### TIP
 
-The OperationAsync and OperationCompleted pattern is called the Event-based Asynchronous Pattern (EAP). You're going to wrap those into a Task-returning method that follows the Task-based Asynchronous Pattern (TAP).
+The `OperationAsync` and `OperationCompleted` pattern is called the Event-based Asynchronous Pattern (EAP). You're going to wrap those into a Task-returning method that follows the Task-based Asynchronous Pattern (TAP).
 
 ### Solution
 
-By using the `TaskCompletionSource<TResult>` type, you can create wrappers for asynchronous operations. The `TaskCompletionSource<TResult>` type controls a `Task<TResult>` and enables you to complete the task at the appropriate time.
+By using the `TaskCompletionSource<'TResult>` type, you can create wrappers for asynchronous operations. The `TaskCompletionSource<'TResult>` type controls a `Task<'TResult>` and enables you to complete the task at the appropriate time.
 
 This example defines an extension method for `WebClient` that downloads a string. The `WebClient` type defines `DownloadStringAsync` and `DownloadStringCompleted`. Using those, you can define a `DownloadStringTaskAsync` method, like this:
 
@@ -43,6 +43,34 @@ static Task<string> DownloadStringTaskAsync(this WebClient client, Uri address)
 }
 ```
 
+F#
+
+```fsharp
+open System.Net
+let DownloadStringTaskAsync (client:WebClient) (address:Uri) =
+    let tcs = TaskCompletionSource<string>()
+    let rec handler s e =
+        client.DownloadStringCompleted.RemoveHandler(handler) // rec:注销自己
+        if e.Cancelled then
+            tcs.TrySetCanceled() |> ignore
+        else if e.Error <> null then
+            tcs.TrySetException(e.Error) |> ignore
+        else
+            tcs.TrySetResult(e.Result) |> ignore
+    // Register for the event and *then* start the operation
+    client.DownloadStringCompleted.AddHandler(handler)
+    client.DownloadStringAsync(address)
+    tcs.Task
+    
+let test() =
+    task {
+        let! s = DownloadStringTaskAsync 
+                    (WebClient()) 
+                    (Uri("https://news.cnblogs.com/"))
+        Trace.WriteLine(s)
+    }    
+```
+
 ### Discussion
 
 This particular example is not very useful because `WebClient` already is defining a `DownloadStringTaskAsync`, and there's a more async-friendly `HttpClient` that could be used. However, this same technique can be used to interface with older asynchronous code that hasn't yet been updated to use `Task`.
@@ -57,7 +85,7 @@ When wrapping EAP methods, there's the possibility that the “start” method m
 
 ### See Also
 
-Recipe 8.2 covers TAP wrappers for APM methods (BeginOperation and EndOperation).
+Recipe 8.2 covers TAP wrappers for APM methods (`BeginOperation` and `EndOperation`).
 
 Recipe 8.3 covers TAP wrappers for any kind of notification.
 
@@ -65,15 +93,15 @@ Recipe 8.3 covers TAP wrappers for any kind of notification.
 
 ### Problem
 
-An older asynchronous pattern uses pairs of methods named BeginOperation and EndOperation, with the `IAsyncResult` representing the asynchronous operation. You have an operation that follows the older asynchronous pattern and want to consume it with await.
+An older asynchronous pattern uses pairs of methods named `BeginOperation` and `EndOperation`, with the `IAsyncResult` representing the asynchronous operation. You have an operation that follows the older asynchronous pattern and want to consume it with await.
 
 ##### TIP
 
-The BeginOperation and EndOperation pattern is called the Asynchronous Programming Model (APM). You're going to wrap those into a Task-returning method that follows the Task-based Asynchronous Pattern (TAP).
+The `BeginOperation` and `EndOperation` pattern is called the Asynchronous Programming Model (APM). You're going to wrap those into a Task-returning method that follows the Task-based Asynchronous Pattern (TAP).
 
 ### Solution
 
-The best approach for wrapping APM is to use one of the `FromAsync` methods on the `TaskFactory` type. `FromAsync` uses `TaskCompletionSource<TResult>` under the hood, but when you're wrapping APM, `FromAsync` is much easier to use.
+The best approach for wrapping APM is to use one of the `FromAsync` methods on the `TaskFactory` type. `FromAsync` uses `TaskCompletionSource<'TResult>` under the hood, but when you're wrapping APM, `FromAsync` is much easier to use.
 
 This example defines an extension method for `WebRequest` that sends an HTTP request and gets the response. The `WebRequest` type defines `BeginGetResponse` and `EndGetResponse`; you can define a `GetResponseAsync` method like this:
 
@@ -86,9 +114,9 @@ public static Task<WebResponse> GetResponseAsync(this WebRequest client)
 
 ### Discussion
 
-`FromAsync` has a downright confusing number of overloads! As a general rule, it's best to call `FromAsync`, as in the example. First, pass the BeginOperation method (without calling it), then pass the EndOperation method (without calling it). Next, pass all arguments that BeginOperation takes except for the last AsyncCallback and object arguments. Finally, pass null.
+`FromAsync` has a downright confusing number of overloads! As a general rule, it's best to call `FromAsync`, as in the example. First, pass the `BeginOperation` method (without calling it), then pass the `EndOperation` method (without calling it). Next, pass all arguments that `BeginOperation` takes except for the last `AsyncCallback` and object arguments. Finally, pass null.
 
-In particular, do not call the BeginOperation method before calling `FromAsync`. You can call `FromAsync`, passing the `IAsyncOperation` that you get from BeginOperation, but if you call it that way, `FromAsync` is forced to use a less efficient implementation.
+In particular, do not call the `BeginOperation` method before calling `FromAsync`. You can call `FromAsync`, passing the `IAsyncOperation` that you get from `BeginOperation`, but if you call it that way, `FromAsync` is forced to use a less efficient implementation.
 
 You might be wondering why the recommended pattern always passes a null at the end. `FromAsync` was introduced along with the `Task` type in .NET 4.0, before async was around. At the time, it was common to use state objects in asynchronous callbacks, and the `Task` type supports this via its `AsyncState` member. In the new async pattern, state objects are no longer necessary, so it's normal to always pass null for the state parameter. These days, state is only used to avoid a closure instance when optimizing memory usage.
 
@@ -104,7 +132,7 @@ You have an unusual or nonstandard asynchronous operation or event and want to c
 
 ### Solution
 
-The `TaskCompletionSource<T>` type can be used to construct `Task<T>` objects in any scenario. Using a `TaskCompletionSource<T>`, you can complete a task in three different ways: with a successful result, faulted, or canceled. Before async was on the scene, there were two other asynchronous patterns recommended by Microsoft: APM (Recipe 8.2) and EAP (Recipe 8.1). However, both APM and EAP were rather awkward and in some cases difficult to get right. So, an unofficial convention arose that used callbacks, with methods like the following:
+The `TaskCompletionSource<'T>` type can be used to construct `Task<'T>` objects in any scenario. Using a `TaskCompletionSource<'T>`, you can complete a task in three different ways: with a successful result, faulted, or canceled. Before async was on the scene, there were two other asynchronous patterns recommended by Microsoft: APM (Recipe 8.2) and EAP (Recipe 8.1). However, both APM and EAP were rather awkward and in some cases difficult to get right. So, an unofficial convention arose that used callbacks, with methods like the following:
 
 ```C#
 public interface IMyAsyncHttpService
@@ -132,17 +160,35 @@ static Task<string> DownloadStringAsync(this IMyAsyncHttpService httpService, Ur
 }
 ```
 
+F#
+
+```fsharp
+type IMyAsyncHttpService =
+  abstract DownloadString: Uri * (string * exn -> unit) -> unit
+
+let DownloadStringAsync(httpService:IMyAsyncHttpService) (address:Uri) =
+    let tcs = TaskCompletionSource<string>()
+    httpService.DownloadString(address, fun (result, ex:exn) ->
+        if (ex <> null) then
+            tcs.TrySetException(ex)
+        else
+            tcs.TrySetResult(result)
+        |> ignore
+    )
+    tcs.Task
+```
+
 ### Discussion
 
-You can use this same `TaskCompletionSource<T>` pattern to wrap any asynchronous method, no matter how nonstandard. Create the `TaskCompletionSource<T>` instance first. Next, arrange a callback so that the `TaskCompletionSource<T>` completes its task appropriately. Then, start the actual asynchronous operation. Finally, return the `Task<T>` that is attached to that `TaskCompletionSource<T>`.
+You can use this same `TaskCompletionSource<'T>` pattern to wrap any asynchronous method, no matter how nonstandard. Create the `TaskCompletionSource<'T>` instance first. Next, arrange a callback so that the `TaskCompletionSource<'T>` completes its task appropriately. Then, start the actual asynchronous operation. Finally, return the `Task<'T>` that is attached to that `TaskCompletionSource<'T>`.
 
-It is important for this pattern that you make sure that the `TaskCompletionSource<T>` is always completed. Think through your error handling in particular, and ensure that the `TaskCompletionSource<T>` will be completed appropriately. In the last example, exceptions are explicitly passed into the callback, so you don't need a catch block; but some nonstandard patterns might need you to catch exceptions in your callbacks and place them on the `TaskCompletionSource<T>`.
+It is important for this pattern that you make sure that the `TaskCompletionSource<'T>` is always completed. Think through your error handling in particular, and ensure that the `TaskCompletionSource<'T>` will be completed appropriately. In the last example, exceptions are explicitly passed into the callback, so you don't need a catch block; but some nonstandard patterns might need you to catch exceptions in your callbacks and place them on the `TaskCompletionSource<'T>`.
 
 ### See Also
 
-Recipe 8.1 has coverage of TAP wrappers for EAP members (OperationAsync, OperationCompleted).
+Recipe 8.1 has coverage of TAP wrappers for EAP members (`OperationAsync`, `OperationCompleted`).
 
-Recipe 8.2 covers TAP wrappers for APM members (BeginOperation, EndOperation).
+Recipe 8.2 covers TAP wrappers for APM members (`BeginOperation`, `EndOperation`).
 
 ## 8.4 Async Wrappers for Parallel Code
 
@@ -174,7 +220,7 @@ Chapter 4 covers the basics of parallel code.
 
 Chapter 2 covers the basics of asynchronous code.
 
-## 8.5 Async Wrappers for System.Reactive Observables
+## 8.5 Async Wrappers for `System.Reactive` Observables
 
 ### Problem
 
@@ -196,6 +242,18 @@ var lastElement = await observable.LastAsync();
 /* or: var lastElement = await observable; */
 ```
 
+F#
+
+```fsharp
+    task {
+        let observable = Observable.Range(1,3)
+        let! lastElement = observable.LastAsync().ToTask()
+        Trace.WriteLine(lastElement) //3
+        let! b = observable.ToTask()
+        Trace.WriteLine(b) //3
+    }
+```
+
 When you await an observable or `LastAsync`, the code (asynchronously) waits until the stream completes and then returns the last element. Under the covers, the await is subscribing to the stream.
 
 To capture the next event in the stream, use `FirstAsync`. In the following code, the await subscribes to the stream and then completes (and unsubscribes) as soon as the first event arrives:
@@ -212,13 +270,25 @@ var observable = ...; // as IObservable<int>
 var allElements = await observable.ToList(); // as IList<int>
 ```
 
+F#
+
+```fsharp
+    task {
+        let observable = Observable.Range(1,3)
+        let! nextElement = observable.FirstAsync().ToTask()
+        Trace.WriteLine(nextElement)
+        let! allElements = observable.ToList().ToTask()
+        Trace.WriteLine(stringify(List.ofSeq allElements))
+    }
+```
+
 ### Discussion
 
 The `System.Reactive` library provides all the tools you need to consume streams using `await`. The only tricky part is that you have to think about whether the awaitable will wait until the stream completes. Of the examples in this recipe, `LastAsync`, `ToList`, and the direct await will wait until the stream completes; `FirstAsync` will only wait for the next event.
 
 If these examples don't satisfy your needs, remember that you have the full power of LINQ as well as the `System.Reactive` manipulators. Operators such as `Take` and `Buffer` can also help you asynchronously wait for the elements you need without having to wait for the entire stream to complete.
 
-Some of the operators for use with await—such as `FirstAsync` and `LastAsync`—don't actually return a `Task<T>`. If you plan to use `Task.WhenAll` or `Task.WhenAny`, then you'll need an actual `Task<T>`, which you can get by calling `ToTask` on any observable. `ToTask` will return a `Task<T>` that completes with the last value in the stream.
+Some of the operators for use with await—such as `FirstAsync` and `LastAsync`—don't actually return a `Task<'T>`. If you plan to use `Task.WhenAll` or `Task.WhenAny`, then you'll need an actual `Task<'T>`, which you can get by calling `ToTask` on any observable. `ToTask` will return a `Task<'T>` that completes with the last value in the stream.
 
 ### See Also
 
@@ -228,7 +298,7 @@ Recipe 8.8 covers using observable streams as an input to a dataflow block (whic
 
 Recipe 6.3 covers windows and buffering for observable streams.
 
-## 8.6 System.Reactive Observable Wrappers for async Code
+## 8.6 `System.Reactive` Observable Wrappers for async Code
 
 ### Problem
 
@@ -248,6 +318,15 @@ IObservable<HttpResponseMessage> GetPage(HttpClient client)
 }
 ```
 
+F#
+
+```fsharp
+open System.Net.Http
+let GetPage(client:HttpClient) =
+    let task = client.GetAsync("https://news.cnblogs.com/")
+    task.ToObservable()
+```
+
 The `ToObservable` approach assumes you have already called the async method and have a `Task` to convert.
 
 Another approach is to call `StartAsync`. `StartAsync` also calls the async method immediately but supports cancellation: if a subscription is disposed of, the async method is canceled:
@@ -260,6 +339,15 @@ IObservable<HttpResponseMessage> GetPage(HttpClient client)
 }
 ```
 
+F#
+
+```fsharp
+let GetPage2(client:HttpClient) =
+    Observable.StartAsync(
+        fun (token:CancellationToken) -> 
+        client.GetAsync("http://www.example.com/", token))
+```
+
 Both `ToObservable` and `StartAsync` immediately start the asynchronous operation without waiting for a subscription; the observable is “hot.” To create a “cold” observable that only starts the operation when subscribed to, use `FromAsync` (which also supports cancellation just like `StartAsync`):
 
 ```C#
@@ -268,6 +356,15 @@ IObservable<HttpResponseMessage> GetPage(HttpClient client)
   return Observable.FromAsync(
       token => client.GetAsync("http://www.example.com/", token));
 }
+```
+
+F#
+
+```fsharp
+let GetPage3 (client:HttpClient) =
+    Observable.FromAsync(
+        fun (token:CancellationToken) -> 
+        client.GetAsync("http://www.example.com/", token))
 ```
 
 `FromAsync` is notably different than `ToObservable` and `StartAsync`, which return an observable for an async operation that has already started. `FromAsync` starts a new, independent async operation every time it is subscribed to. Finally, you can use special overloads of `SelectMany` to start asynchronous operations for each event in a source stream as they arrive. `SelectMany` also supports cancellation.
@@ -280,6 +377,16 @@ IObservable<HttpResponseMessage> GetPages(IObservable<string> urls, HttpClient c
   return urls.SelectMany(
       (url, token) => client.GetAsync(url, token));
 }
+```
+
+F#
+
+```fsharp
+let GetPages (client:HttpClient) (urls:IObservable<string>)=
+  urls.FlatMap(
+      fun url (token:CancellationToken) -> 
+      client.GetAsync(url, token)
+      )
 ```
 
 ### Discussion

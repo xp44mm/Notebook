@@ -1,6 +1,6 @@
 ﻿# 9 Partitioning and combining observables
 
-A typical application is usually composed of multiple workflows that structure its behavior. In many cases, the application needs to handle and react to more than one data source, UI events, push notifications, remote procedure calls, and so on. Suppose your application needs to consume messages from various sources (such as social networking) and react to all of them in the same way. Or, say your application deals with a source that emits a stream of various kinds of notifications (such as stock prices), and it needs to look at each subgroup of notifications (for each stock) separately and independently. How do you do that?
+A typical application is usually composed of multiple workflows that structure its behavior. In many cases, the application needs to handle and react to more than one data source, UI events, push notifications, remote procedure calls, and so on. Suppose your application needs to consume messages from various sources (such as social networking) and react to all of them in the same way. Or, say your application deals with a source that emits a stream of various kinds of notifications (such as stock prices), and it needs to look at each sub-group of notifications (for each stock) separately and independently. How do you do that?
 
 There are many ways to combine observables and react to a combination of the notifications emitted by them (for example, taking only the latest, pairing, or joining by condition). And, there are different ways to create subgroups from an observable (for example, by time or condition). This chapter takes you to the next level by using concepts you already know from enumerables and applying those to the world of observables.
 
@@ -25,17 +25,28 @@ temp1
     .SubscribeConsole("Avg Temp.");
 ```
 
+F#
+
+```fsharp
+    let temp1 = Observable.Return(0.0)
+    let temp2 = Observable.Return(0.0)
+
+    temp1
+        .Zip(temp2, fun t1 t2 -> (t1 + t2)/2.0)
+        .Subscribe(ConsoleObserver "Avg Temp.")
+```
+
 A sample output of this program is shown in figure 9.1.
 
-Figure 9.1 The Zip operator lets you zip values with the same index from two (or more) observables by using a selector function.
+Figure 9.1 The `Zip` operator lets you zip values with the same index from two (or more) observables by using a selector function.
 
-The problem with the `Zip` operator is that it relies on the index of the values emitted by both observables. If the rate of one of the observables is higher than the other, Zip accumulates the emitted values in memory until the next value is emitted from the second observable (this also means that if the second observable never emits or completes, the values from the first observable will never be used, but still remain in memory). In many cases, you'll want to combine only the latest values emitted by the observables.
+The problem with the `Zip` operator is that it relies on the index of the values emitted by both observables. If the rate of one of the observables is higher than the other, `Zip` accumulates the emitted values in memory until the next value is emitted from the second observable (this also means that if the second observable never emits or completes, the values from the first observable will never be used, but still remain in memory). In many cases, you'll want to combine only the latest values emitted by the observables.
 
 ### 9.1.2 Combining the latest emitted values
 
-To combine the set of values last emitted by the observables, use the `CombineLatest` operator (figure 9.2). Unlike the `Zip` operator, when one of the observables returns a value, CombineLatest also returns a value, even if a second observable doesn't emit for a long time.
+To combine the set of values last emitted by the observables, use the `CombineLatest` operator (figure 9.2). Unlike the `Zip` operator, when one of the observables returns a value, `CombineLatest` also returns a value, even if a second observable doesn't emit for a long time.
 
-Figure 9.2 The CombineLatest operator combines the latest emitted values from each observable by using a selector function.
+Figure 9.2 The `CombineLatest` operator combines the latest emitted values from each observable by using a selector function.
 
 Consider this example: you have a sensor that monitors heart rate and one that monitors speed. You want to display the most up-to-date value, regardless of the update rate of each sensor. To simulate this case, you'll create the observables as subjects you can control:
 
@@ -46,6 +57,17 @@ var speed = new Subject<int>();
 speed.CombineLatest(heartRate,
                     (s, h) => String.Format("Heart:{0} Speed:{1}", h, s))
     .SubscribeConsole("Metrics");
+```
+
+F#
+
+```fsharp
+    let heartRate = new Subject<int>()
+    let speed = new Subject<int>()
+
+    speed.CombineLatest(heartRate,
+                        fun s h -> $"Heart:{h} Speed:{s}")
+        .Subscribe(ConsoleObserver "Metrics")
 ```
 
 Now you can emit the values from each observable and see what happens:
@@ -69,9 +91,9 @@ Metrics - OnNext(Heart:153 Speed:31)
 Metrics - OnNext(Heart:154 Speed:31)
 ```
 
-Two things are of note here. First, you can see that the heartrate value of 152 is emitted twice at the beginning. This is because the speed observable emits two values, one after the other, and 152 is the latest value emitted by the heartRate observable. The same thing happens when the heartRate observable emits its values while the latest speed value is 31 (shown in the last two lines).
+Two things are of note here. First, you can see that the heartrate value of 152 is emitted twice at the beginning. This is because the speed observable emits two values, one after the other, and 152 is the latest value emitted by the `heartRate` observable. The same thing happens when the `heartRate` observable emits its values while the latest speed value is 31 (shown in the last two lines).
 
-The second thing to notice is that when the heartRate observable initially produces the values 150 and 151, nothing is emitted by the combined observable. Indeed, `CombineLatest` emits values only if all observables emit a value at least once; otherwise, there isn't a latest value from all observables.
+The second thing to notice is that when the `heartRate` observable initially produces the values 150 and 151, nothing is emitted by the combined observable. Indeed, `CombineLatest` emits values only if all observables emit a value at least once; otherwise, there isn't a latest value from all observables.
 
 One way to overcome dropped values, making sure the combined observable emits a value even if all observables haven't yet emitted a value, is to add a value at the beginning of each observable by using the `StartWith` operator. For example, changing the previous snippet to the following prints the heart-rate values of 150 and 151 as well:
 
@@ -82,7 +104,23 @@ speed.StartWith(0)
     .SubscribeConsole("Metrics");
 ```
 
-NOTE Currently, the Rx codebase also includes the operator `WithLatestFrom`, which is like a one-way CombineLatest. `WithLatestFrom` combines each value from the first observable with the latest value from the second observable, but not the other way around. This operator isn't included in Rx versions prior to 3.0, which this book is using.
+F#
+
+```fsharp
+    speed
+        .StartWith(0)
+        .CombineLatest(heartRate.StartWith(0),
+                       fun s h -> $"Heart:{h} Speed:{s}")
+        .Subscribe(ConsoleObserver "Metrics")
+```
+
+
+
+------
+
+NOTE Currently, the Rx codebase also includes the operator `WithLatestFrom`, which is like a one-way `CombineLatest`. `WithLatestFrom` combines each value from the first observable with the latest value from the second observable, but not the other way around. ~~This operator isn't included in Rx versions prior to 3.0, which this book is using.~~
+
+------
 
 Combining observables isn't restricted only to taking a value from each observable and creating a unified result from them. As you'll see next, another combination includes creating a unified observable and placing the values emitted from each observable into a single stream.
 
@@ -90,9 +128,9 @@ Combining observables isn't restricted only to taking a value from each observab
 
 The `Concat` operator connects two or more observables of the same type into a single stream (figure 9.3). When the first observable completes, `Concat` links the values from the second observable to the resulting observable, even if they were emitted long before the first observable completes. It's important to note that the `Concat` operator subscribes itself to the second observable only after the first observable completes, so if the second observable is hot and notifications were emitted before subscribing, they won't be part of the resulting observable emissions.
 
-Figure 9.3 The Concat operator concatenates the second observable sequence to the first observable sequence upon successful termination of the first.
+Figure 9.3 The `Concat` operator concatenates the second observable sequence to the first observable sequence upon successful termination of the first.
 
-Confusion about hot and cold observables and the Concat operator may arise when you use it in asynchronous operations. For example, say you use Concat to ensure that the results from two asynchronous operations are emitted in an order that isn't the expected order returned by asynchronous operations. Remember, when tasks are converted to observables, an `AsyncSubject` is created so the value of the asynchronous computation won't get dropped, which turns a hot operation into a cold observable.
+Confusion about hot and cold observables and the `Concat` operator may arise when you use it in asynchronous operations. For example, say you use `Concat` to ensure that the results from two asynchronous operations are emitted in an order that isn't the expected order returned by asynchronous operations. Remember, when tasks are converted to observables, an `AsyncSubject` is created so the value of the asynchronous computation won't get dropped, which turns a hot operation into a cold observable.
 
 The following example simulates two asynchronous operations that load messages from Facebook and Twitter. Facebook is slower in this case (due to the use of the `Delay` operator), but because I'm using `Concat`, the Facebook messages appear first in the output:
 
@@ -113,6 +151,22 @@ Observable.Concat(facebookMessages.ToObservable(),
     .SubscribeConsole("Concat Messages");
 ```
 
+F#
+
+```fsharp
+    let facebookMessages: Task<string[]> = 
+        Task.Delay(10)
+            .ContinueWith(fun _ -> Array.ofList ["Facebook1"; "Facebook2"])
+            
+    let twitterStatuses: Task<string[]> =
+        Task.FromResult(Array.ofList ["Twitter1"; "Twitter2"])
+
+    Observable.Concat(facebookMessages.ToObservable(),
+                      twitterStatuses.ToObservable())
+        .FlatMap(fun messages->messages.ToObservable())
+        .Subscribe(ConsoleObserver "Concat Messages")
+```
+
 Running this example shows this output:
 
 ```C#
@@ -129,7 +183,7 @@ Even though the results from Facebook take longer to arrive (due to the use of `
 
 Merging observables means you want to route the notifications from the source observables into a single observable, so that when a notification is emitted by one of the sources, it's also emitted by the merged observable (figure 9.4). This allows you to react to the notifications as fast as possible, no matter what source observable emitted them.
 
-Figure 9.4 The Merge operator merges the notifications from the source observables into a single observable sequence.
+Figure 9.4 The `Merge` operator merges the notifications from the source observables into a single observable sequence.
 
 The following example simulates two asynchronous operations that load messages from Facebook and Twitter. Facebook is slower in this case (due to the use of the `Delay` operator), but because I'm using `Merge`, the Twitter messages are shown first and only then. When the Facebook operation completes, its messages are then shown:
 
@@ -149,6 +203,24 @@ Observable.Merge(
         twitterStatuses.ToObservable())
     .SelectMany(messages => messages)
     .SubscribeConsole("Merged Messages");
+```
+
+F#
+
+```fsharp
+    let facebookMessages: Task<string[]> =
+        Task.Delay(50)
+            .ContinueWith(fun _ -> Array.ofList ["Facebook1"; "Facebook2"])
+            
+    let twitterStatuses: Task<string[]> =
+        Task.FromResult(Array.ofList ["Twitter1"; "Twitter2"])
+
+    Observable
+        .Merge(
+            facebookMessages.ToObservable(),
+            twitterStatuses.ToObservable())
+        .FlatMap(fun messages->messages.ToObservable())
+        .Subscribe(ConsoleObserver "Merged Messages")
 ```
 
 Now, even though the Facebook asynchronous operation is passed first to the `Merge` operator, the first values you'll see printed are those from Twitter because this operation completes first:
@@ -176,7 +248,7 @@ IObservable<TSource> Merge<TSource>(
     this IObservable<IObservable<TSource>> sources)
 ```
 
-These overloads let you add `Merge` or `Concat` as part of a broader pipeline; for example, when a source observable emits a value that'll be transformed into another observable (like one that represents an asynchronous operation). Suppose you want to create an observable from the textchanged event of a text box, and when the text changes, you want to make a call to a remote search service and show all the results from all the searches.
+These overloads let you add `Merge` or `Concat` as part of a broader pipeline; for example, when a source observable emits a value that'll be transformed into another observable (like one that represents an asynchronous operation). Suppose you want to create an observable from the text-changed event of a text box, and when the text changes, you want to make a call to a remote search service and show all the results from all the searches.
 
 ```C#
 var texts = new[] {"Hello", "World"}
@@ -189,6 +261,18 @@ texts
     .SubscribeConsole("Merging from observable");
 ```
 
+F#
+
+```fsharp
+    let texts: IObservable<string> = 
+        ["Hello"; "World"].ToObservable()
+
+    texts
+        .Map(fun txt -> Observable.Return(txt + "-Result"))
+        .Merge()
+        .Subscribe(ConsoleObserver "Merging from observable")
+```
+
 Running the example yields this output:
 
 ```C#
@@ -197,7 +281,13 @@ Merging from observable - OnNext(World-Result)
 Merging from observable - OnCompleted()
 ```
 
+
+
+------
+
 NOTE Conceptually, the operator `SelectMany` (described broadly in chapter 8) operates the same as calling `Select` and `Merge`.
+
+------
 
 As with dynamic allocations, without dynamic operations, you sometimes need to set a limit; otherwise, performance decreases (just like overallocations that may cause `OutOfMemoryException` or responsiveness degradation). Luckily, Rx provides control over this.
 
@@ -224,6 +314,29 @@ new [] {first,second,third}
     .SubscribeConsole("Merge with 2 concurrent subscriptions");
 ```
 
+F#
+
+```fsharp
+    let a: IObservable<string> = 
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Map(sprintf "A%d")
+            .Take(2)
+
+    let b: IObservable<string> =
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Map(sprintf "B%d")
+            .Take(2)
+    let c: IObservable<string> = 
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Map(sprintf "C%d")
+            .Take(2)
+
+    [a;b;c]
+        .ToObservable()
+        .Merge(2)
+        .Subscribe(ConsoleObserver "Merge with 2 concurrent subscriptions")
+```
+
 In this case, you have three observables that can emit notifications concurrently. If `Merge` subscribes to all of them, you'd see the messages generated from the three observables intertwined. Instead, you get the following:
 
 ```C#
@@ -236,7 +349,7 @@ Merge with 2 concurrent subscriptions - OnNext(Third1)
 Merge with 2 concurrent subscriptions - OnCompleted()
 ```
 
-推论：Concat() == Merge(1)
+推论：`Concat() == Merge(1)`
 
 Note that the notifications emitted by the third observable are separate from the others. This is because it's subscribed to only when one of the first two observables completes (after 2 seconds). If after the first observable completes, the second observable still emits notifications, you'd see the merged result from the second and third observables.
 
@@ -252,7 +365,7 @@ Figure 9.5 The `Switch` operator takes an observable that emits observables and 
 
 Here's a simple program that simulates the text changes shown in the marble diagram. You use the `Delay` operator to add a little delay to R1 emissions so the system will switch to the R2 observable before the R results are available.
 
-Listing 9.1 Switching to the most recent search results with the Switch operator
+Listing 9.1 Switching to the most recent search results with the `Switch` operator
 
 ```C#
 var textsSubject = new Subject<string>();
@@ -267,6 +380,25 @@ textsSubject.OnNext("R1");
 textsSubject.OnNext("R2");
 Thread.Sleep(20);
 textsSubject.OnNext("R3");
+```
+
+F#
+
+```fsharp
+    let textsSubject = new Subject<string>();
+    let texts:IObservable<string> = textsSubject.AsObservable()
+
+    texts
+        .Map(fun txt -> 
+            Observable.Return(txt + "-Result")
+                .Delay(TimeSpan.FromMilliseconds(if txt = "R1" then 10 else 0)))
+        .Switch()
+        .Subscribe(ConsoleObserver "Merging from observable")
+        |> ignore
+    textsSubject.OnNext("R1")
+    textsSubject.OnNext("R2")
+    Thread.Sleep(20)
+    textsSubject.OnNext("R3")
 ```
 
 #### SWITCHING TO THE FIRST OBSERVABLE TO EMIT
@@ -285,14 +417,31 @@ var server1 =
              .Select(i => "Server1-" + i);
 var server2 =
      Observable.Interval(TimeSpan.FromSeconds(1))
-             .Select(I => "Server2-" + i);
+             .Select(i => "Server2-" + i);
 
 Observable.Amb(server1, server2)
     .Take(3)
     .SubscribeConsole("Amb");
 ```
 
+F#
+
+```fsharp
+    let server1 =
+         Observable.Interval(TimeSpan.FromSeconds(2))
+                 .Map(sprintf "Server1-%d")
+    let server2 =
+         Observable.Interval(TimeSpan.FromSeconds(1))
+                 .Map(sprintf "Server2-%d")
+
+    Observable.Amb(server1, server2)
+        .Take(3)
+        .Subscribe(ConsoleObserver "Amb")
+```
+
 In this case, the server2 observable emits first, so you'll see only the values with the prefix `Server2-`.
+
+------
 
 TIP You can also write the example like this:
 
@@ -300,7 +449,9 @@ TIP You can also write the example like this:
 server1.Amb(server2).Take(3).SubscribeConsole("Amb");
 ```
 
-So far, you've learned how to combine and pair observables. Next, you'll get to know techniques for breaking an observable into subobservables.
+------
+
+So far, you've learned how to combine and pair observables. Next, you'll get to know techniques for breaking an observable into sub-observables.
 
 ## 9.2 Grouping elements from the observable
 
@@ -319,7 +470,7 @@ IObservable<IGroupedObservable<TKey, TSource>> GroupBy<TSource, TKey>(this IObse
 
 Note that the return type is an observable of grouped observables. The grouped observable is itself an observable that also includes the property `Key`, which holds the key that describes each element it emits.
 
-`GroupBy` also includes overloads that let you pass an elementSelector (to decide how each element will be transformed before being emitted by the grouped observable) and a capacity (to control the maximum number of groups that can live concurrently).
+`GroupBy` also includes overloads that let you pass an `elementSelector` (to decide how each element will be transformed before being emitted by the grouped observable) and a capacity (to control the maximum number of groups that can live concurrently).
 
 By separating the elements into different observables, you can create separate queries for each group. For example, you can now get the average age for females and for males:
 
@@ -330,7 +481,6 @@ var genderAge =
     select new {Gender=gender.Key, AvgAge=avg};
 
 genderAge.SubscribeConsole("Gender Age");
-
 ```
 
 You can also use the `GroupBy` query syntax clause for the preceding example:
@@ -342,6 +492,30 @@ var genderAge =
     into gender
     from avg in gender.Average(p => p.Age)
     select new { Gender = gender.Key, AvgAge = avg };
+```
+
+F#
+
+```fsharp
+    let people = new Subject<{|Gender:bool;Age:int|}>()
+    let genderAge =
+        people
+            .GroupBy(fun p -> p.Gender)
+            .FlatMap(fun gender ->
+                gender
+                    .Average(fun p -> p.Age)
+                    .Map(fun avg ->
+                        {|Gender=gender.Key;AvgAge=avg|}
+                    )
+            )
+
+    genderAge.Subscribe(ConsoleObserver "Gender Age")
+    |> ignore
+
+    people.OnNext({|Gender=true;Age=18|})
+    people.OnNext({|Gender=true;Age=16|})
+    people.OnNext({|Gender=false;Age=20|})
+    people.OnCompleted()
 ```
 
 Next, you'll look at another concept that's clear in the world of collections but is a little tricky in the world of observables: joins.
@@ -358,7 +532,7 @@ In short, combining elements from various observables based on the coincidence t
 
 Let's start with an example of how joining observables works. Suppose you're running a statistical study and want to get notifications on the occurrence of males and females that are in the same room at the same time. This is a classic case for joins, as shown in figure 9.7.
 
-Figure 9.7 The Join operator combines items emitted by two observables when an item from one observable is emitted during a time frame of an emitted item from the other observable.
+Figure 9.7 The `Join` operator combines items emitted by two observables when an item from one observable is emitted during a time frame of an emitted item from the other observable.
 
 To create joins between observables, you use the `Join` operator, which correlates the elements of two sequences based on overlapping durations. The signature for `Join` is complex and requires some explanation:
 
@@ -373,13 +547,13 @@ IObservable<TResult> Join<TLeft, TRight,TLeftDuration, TRightDuration,TResult>(
 
 The tricky part of the method signature is the duration selector functions. Those functions receive an emitted element and return an observable whose emissions determine the end of the time frame for the element.
 
-Suppose you have a sensor, coded as a hot observable of DoorEvent objects, that monitors people who enter and exit a room. You want to emit all the males and females that are in the same room at the same time:
+Suppose you have a sensor, coded as a hot observable of `DoorEvent` objects, that monitors people who enter and exit a room. You want to emit all the males and females that are in the same room at the same time:
 
 ```C#
 var doorOpened = doorOpenedSubject.AsObservable() as IObservable<DoorOpened>;
 ```
 
-DoorEvent is defined as follows:
+`DoorEvent` is defined as follows:
 
 ```C#
 class DoorOpened
@@ -417,7 +591,11 @@ maleEntering
     .SubscribeConsole("Together At Room");
 ```
 
-TIP An interesting type of a time-frame observable is one that uses the same observable that emits the elements as the one that defines the time frame. By doing this, you're expressing that the time frame for an element is the time until the next element is emitted.
+------
+
+TIP: An interesting type of a time-frame observable is one that uses the same observable that emits the elements as the one that defines the time frame. By doing this, you're expressing that the time frame for an element is the time until the next element is emitted.
+
+------
 
 To test your code, you'll create a subject that acts as the back end of your observable and then you'll emit notifications that simulate the sequence shown previously in figure 9.7:
 
@@ -444,6 +622,67 @@ doorOpenedSubject.OnNext(
     new DoorOpened("Dan", Gender.Male, OpenDirection.Leaving));
 
 // Rest of code that simulates participants leaving the room
+```
+
+F#
+
+```fsharp
+type Gender = Male | Female
+type OpenDirection = Entering | Leaving
+
+type DoorOpened = 
+    {
+     Name: string
+     Direction: OpenDirection
+     Gender: Gender
+    }
+
+    static member create (name,gender,direction) = {
+        Name = name
+        Direction = direction
+        Gender = gender
+        }
+
+let test () =
+    let doorOpenedSubject = new Subject<DoorOpened>()
+    let doorOpened:IObservable<DoorOpened> = doorOpenedSubject.AsObservable()
+
+    let entrances = doorOpened.Filter(fun o -> o.Direction = OpenDirection.Entering)
+    let maleEntering = entrances.Filter(fun x -> x.Gender = Gender.Male)
+    let femaleEntering = entrances.Filter(fun x -> x.Gender = Gender.Female)
+
+    let exits = doorOpened.Filter(fun o -> o.Direction = OpenDirection.Leaving)
+    let maleExiting = exits.Filter(fun x -> x.Gender = Gender.Male)
+    let femaleExiting = exits.Filter(fun x -> x.Gender = Gender.Female)
+
+    maleEntering
+        .Join(femaleEntering,
+            (fun male -> maleExiting.Filter(fun exit -> exit.Name = male.Name)),
+            (fun female -> femaleExiting.Filter(fun exit -> female.Name = exit.Name)),
+            (fun m f -> m,f))
+        .Subscribe(ConsoleObserver "Together At Room")
+        |> ignore
+
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Bob", Gender.Male, OpenDirection.Entering))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Sara", Gender.Female, OpenDirection.Entering))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("John", Gender.Male, OpenDirection.Entering))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Sara", Gender.Female, OpenDirection.Leaving))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Fibi", Gender.Female, OpenDirection.Entering))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Bob", Gender.Male, OpenDirection.Leaving))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Dan", Gender.Male, OpenDirection.Entering))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Fibi", Gender.Female, OpenDirection.Leaving))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("John", Gender.Male, OpenDirection.Leaving))
+    doorOpenedSubject.OnNext(
+        DoorOpened.create("Dan", Gender.Male, OpenDirection.Leaving))
 ```
 
 Running this procedure produces the following output:
@@ -486,7 +725,7 @@ The `GroupJoin` operator lets you correlate the elements of two observable seque
 
 The motivation for this group, based on coincidence, is that for each group you can define a finer query in a much easier way. For example, what's the average age of the women group?
 
-The `GroupJoin` operator has a signature similar to Join:
+The `GroupJoin` operator has a signature similar to `Join`:
 
 ```C#
 IObservable<TResult> GroupJoin<TLeft,TRight,TLeftDuration,TRightDuration,TResult>(
@@ -521,7 +760,7 @@ var malesAcquaintances =
             (m, females) => new {Male = m.Name, Females = females});
 ```
 
-Then you can create a query for the malesAcquaintances observable that computes the number of females each man meets in the room and subscribe to it:
+Then you can create a query for the `malesAcquaintances` observable that computes the number of females each man meets in the room and subscribe to it:
 
 ```C#
 var amountPerUser =
@@ -530,6 +769,49 @@ var amountPerUser =
     select new {acquaintances.Male, cnt};
 
 amountPerUser.SubscribeConsole("Amount of meetings for User");
+```
+
+F#
+
+```fsharp
+let doorOpenedSubject = new Subject<DoorOpened>()
+let doorOpened = doorOpenedSubject.AsObservable()
+
+let enterences = doorOpened.Filter(fun o -> o.Direction = OpenDirection.Entering)
+let maleEntering = enterences.Filter(fun x -> x.Gender = Gender.Male)
+let femaleEntering = enterences.Filter(fun x -> x.Gender = Gender.Female)
+let exits = doorOpened.Filter(fun o -> o.Direction = OpenDirection.Leaving)
+let maleExiting = exits.Filter(fun x -> x.Gender = Gender.Male)
+let femaleExiting = exits.Filter(fun x -> x.Gender = Gender.Female)
+let malesAcquaintances =
+    maleEntering
+        .GroupJoin(femaleEntering,
+            (fun male -> maleExiting.Filter(fun exit -> exit.Name = male.Name)),
+            (fun female -> femaleExiting.Filter(fun exit -> female.Name = exit.Name)),
+            (fun m females -> m,females))
+
+let amountPerUser =
+    malesAcquaintances
+        .FlatMap(fun (m,females) ->
+                females
+                    .Scan(0,fun acc curr -> acc + 1)
+                    .Map(fun cnt -> m,females,cnt)
+        )
+
+
+amountPerUser.Subscribe(ConsoleObserver "Amount of meetings per User")
+|> ignore
+//This is the sequence you see in Figure 9.8
+doorOpenedSubject.OnNext(DoorOpened.create("Bob", Gender.Male, OpenDirection.Entering))
+doorOpenedSubject.OnNext(DoorOpened.create("Sara", Gender.Female, OpenDirection.Entering))
+doorOpenedSubject.OnNext(DoorOpened.create("John", Gender.Male, OpenDirection.Entering))
+doorOpenedSubject.OnNext(DoorOpened.create("Sara", Gender.Female, OpenDirection.Leaving))
+doorOpenedSubject.OnNext(DoorOpened.create("Fibi", Gender.Female, OpenDirection.Entering))
+doorOpenedSubject.OnNext(DoorOpened.create("Bob", Gender.Male, OpenDirection.Leaving))
+doorOpenedSubject.OnNext(DoorOpened.create("Dan", Gender.Male, OpenDirection.Entering))
+doorOpenedSubject.OnNext(DoorOpened.create("Fibi", Gender.Female, OpenDirection.Leaving))
+doorOpenedSubject.OnNext(DoorOpened.create("John", Gender.Male, OpenDirection.Leaving))
+doorOpenedSubject.OnNext(DoorOpened.create("Dan", Gender.Male, OpenDirection.Leaving))
 ```
 
 Running this example with the males and females shown in figure 9.8 generates this output:
@@ -546,7 +828,7 @@ Note that a notification emits each time the count changes.
 
 #### GROUPJOIN WITH QUERY SYNTAX
 
-For simplicity, you can write a GroupJoin clause by using the LINQ query syntax. GroupJoin has the same format as the clause used in LINQ, but the meaning of its parts is as follows:
+For simplicity, you can write a `GroupJoin` clause by using the LINQ query syntax. `GroupJoin` has the same format as the clause used in LINQ, but the meaning of its parts is as follows:
 
 ```C#
 from [left] in [leftObservable]
@@ -599,9 +881,9 @@ window == buffer + to observable
 
 You can define three types of windows when you consider them as containers of elements over time:
 
-  - Tumbling windows are a series of fixed-sized, non-overlapping, contiguous time intervals.
-  - Hopping windows are a series of windows that “hop” forward in time by a fixed period.
-  - Sliding windows are a type of hopping window in which the window width is larger than the “hop,” causing the windows to overlap.
+  - **Tumbling windows** are a series of fixed-sized, non-overlapping, contiguous time intervals.
+  - **Hopping windows** are a series of windows that “hop” forward in time by a fixed period.
+  - **Sliding windows** are a type of hopping window in which the window width is larger than the “hop,” causing the windows to overlap.
 
 ---
 
@@ -613,11 +895,11 @@ Suppose your application connects to your bike's speedometer, which pushes the s
 
 Figure 9.10 shows the marble diagram of what you're trying to achieve.
 
-Figure 9.10 A marble diagram of acceleration calculated with the Buffer operator
+Figure 9.10 A marble diagram of acceleration calculated with the `Buffer` operator
 
 This listing shows the code for the marble diagram in figure 9.10.
 
-Listing 9.2 Using Buffer to find the deltas between two speedometer readings
+Listing 9.2 Using `Buffer` to find the deltas between two speedometer readings
 
 ```C#
 var speedReadings = ... as IObservable<double>;
@@ -630,7 +912,25 @@ var accelerations =
 accelerations.SubscribeConsole("Acceleration");
 ```
 
-In this example, you use the query syntax approach because it allows you to use the `let` keyword to introduce new sub-calculations that make your code smaller. After applying the `Buffer` operator on the speedReadings observable, you get an observable of buffers with two consecutive items.
+F#
+
+```fsharp
+    let speedReadings = 
+        [ 50.0; 51.0; 51.5; 53.0; 52.0; 52.5; 53.0 ]
+            .ToObservable()
+    let timeDelta = 1.0/3600.0
+    let accelrations =
+        speedReadings
+            .Buffer(count= 2, skip= 1)
+            .Filter(fun buffer -> buffer.Count = 2)
+            .Map(fun buffer ->
+                let speedDelta = buffer.[1] - buffer.[0]
+                speedDelta / timeDelta
+            )
+    accelrations.Subscribe(ConsoleObserver "Acceleration")
+```
+
+In this example, you use the query syntax approach because it allows you to use the `let` keyword to introduce new sub-calculations that make your code smaller. After applying the `Buffer` operator on the `speedReadings` observable, you get an observable of buffers with two consecutive items.
 
 TIP Instead of creating a buffer of two consecutive elements to find the speed delta, you could use the `Zip` operator like this: 
 
@@ -658,7 +958,7 @@ The first argument passed is the number of items you want in each buffer, and th
 
 Figure 9.11 Buffering with various combinations of amount and skip and the effect on the windows' behavior
 
-Buffer has overloads that let you make the buffering by time span, or you can set the buffering to be both by time and number of items, whichever happens first:
+`Buffer` has overloads that let you make the buffering by time span, or you can set the buffering to be both by time and number of items, whichever happens first:
 
 ```C#
 IObservable<IList<TSource>> Buffer<TSource>(IObservable<TSource> source,
@@ -721,6 +1021,25 @@ var messages = // as IObservable<string>
 //Rest of the example as it is shown in the snippet and use the Buffer operator
 ```
 
+F#
+
+```fsharp
+    let coldMessages = 
+        Observable.Interval(TimeSpan.FromMilliseconds(50))
+            .Take(4)
+            .Map(sprintf "Message %d")
+
+    let messages =
+        coldMessages.Concat(
+                coldMessages.DelaySubscription(TimeSpan.FromMilliseconds(200)))
+            .Publish()
+            .RefCount()
+
+    messages.Buffer(messages.Throttle(TimeSpan.FromMilliseconds(100)))
+        .FlatMap(fun b i -> b.ToObservable().Map(fun m -> $"Buffer {i} - {m}"))
+        .Subscribe(ConsoleObserver "Hi-Rate Messages")
+```
+
 Running this example displays these results:
 
 ```C#
@@ -736,7 +1055,7 @@ Hi-Rate Messages - OnNext(Buffer 1 - Message 3)
 Hi-Rate Messages - OnCompleted()
 ```
 
-With the different overloads of the Buffer operator, you can control when a buffer is opened and when it's closed. Still, your observer receives the elements inside the buffer only when the buffer closes, which can take some time (depending on your logic).
+With the different overloads of the `Buffer` operator, you can control when a buffer is opened and when it's closed. Still, your observer receives the elements inside the buffer only when the buffer closes, which can take some time (depending on your logic).
 
 If you need to perform any operations on the elements inside the buffer (such as summing or filtering them), you can do that only at the end of each buffer. For cases like this, requiring a more “live” operation, you should use the `Window` operator.
 
@@ -744,7 +1063,7 @@ If you need to perform any operations on the elements inside the buffer (such as
 
 The `Window` operator lets you fragment the observable sequence into windows along temporal boundaries or capacity. A window is an observable that emits the elements in that temporal boundary (figure 9.12). The `Window` operator looks similar to the `Buffer` operator, but instead of wrapping all the elements of the buffer inside a collection that emits when the buffer closes, a window emits the items as soon as they arrive.
 
-Figure 9.12 The Window operator splits the observable sequence into sub-observables based on temporal boundaries or capacity.
+Figure 9.12 The `Window` operator splits the observable sequence into sub-observables based on temporal boundaries or capacity.
 
 Suppose you have an application for a call center that collects donations. The work is done in shifts of 1 hour, and you want to see how many donations were collected in each shift.
 
@@ -763,9 +1082,30 @@ var donationsSums =
 donationsSums.SubscribeConsole("donations in shift");
 ```
 
+F#
+
+```fsharp
+    let donationsWindow1 = [50M; 55M; 60M].ToObservable()
+    let donationsWindow2 = [49M; 48M; 45M].ToObservable()
+
+    let donations =
+        donationsWindow1.Concat(donationsWindow2.DelaySubscription(TimeSpan.FromSeconds(1.5)))
+
+    let windows = donations.Window(TimeSpan.FromSeconds(1))
+
+    let donationsSums =
+        windows.Do(fun _ -> Console.WriteLine("New Window"))
+            .FlatMap(fun window ->
+                window.Scan(fun prevSum donation -> prevSum + donation)
+            )
+            //.Map(fun sum -> sum)
+
+    donationsSums.Subscribe(ConsoleObserver "donations in shift")
+```
+
 The donations observable is broken into non-overlapping windows of 1 hour each. Then, you take each window and apply the `Scan` operator to sum all the values of the donations made. `Scan` emits the summation when the values change (as opposed to `Aggregate`, which emits when the observable completes).
 
-The donationsSums observable is a flat observable that emits the summations from all the windows. Because you've added the `Do` operator to the windows observable, you'll see a message between each window. Here's the output I received when running the example for two shifts with the sample donation values:
+The `donationsSums` observable is a flat observable that emits the summations from all the windows. Because you've added the `Do` operator to the windows observable, you'll see a message between each window. Here's the output I received when running the example for two shifts with the sample donation values:
 
 ```C#
 Shift 1—50$, 55$, 60$
@@ -826,7 +1166,7 @@ IObservable<IObservable<TSource>> Window<TSource, TWindowBoundary>(IObservable<T
     IObservable<TWindowBoundary> windowBoundaries);
 ```
 
-windowBounderies is an observable that you provide to close the previous window and open the next by emitting a notification.
+`windowBounderies` is an observable that you provide to close the previous window and open the next by emitting a notification.
 
 Windows and buffers are two ways you can split a big problem into many small ones and solve each one independently. By splitting your observable into parts, you can gain insight into the different parts that later can be reflected overall. This is ideal for aggregations or other operations over subsets of elements that fall within a certain period of time.
 

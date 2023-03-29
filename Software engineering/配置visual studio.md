@@ -42,11 +42,7 @@ visual studio 自带ESLint功能，只需修改默认配置文件：
 ### 常用扩展工具
 
 visual studio工具->扩展和更新...
-
-[ ] CodeMaid
-[ ] Markdown Editor
 [ ] EF Core Power Tools
-[ ] Add New File
 
 ### Asp.net core的配置
 
@@ -104,21 +100,5 @@ JavaScript错误，启用JavaScript错误，False
 2.2.401 [C:\Program Files\dotnet\sdk]
 
 #
-```
-
-
-
-# Visual Studio 2019 Enterprise
-
-```
-BF8Y8-GN2QH-T84XB-QVY3B-RC4DF
-```
-
-
-
-# Visual Studio 2019 Professional
-
-```
-NYWVH-HT4XC-R2WYW-9Y3CM-X4V3Y
 ```
 

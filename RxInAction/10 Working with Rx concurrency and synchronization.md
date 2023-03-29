@@ -1,4 +1,4 @@
-﻿﻿# 10 Working with Rx concurrency and synchronization
+﻿# 10 Working with Rx concurrency and synchronization
 
 Timing is everything, or at least that's what some say. Unlike collections (enumerables), timing plays a big part in the observables world. The time between notifications can be long or short, and it can affect how you process them. In chapter 9, you saw examples of buffering elements or creating sliding windows over time. There's also the matter of where the execution takes place (for example, threads, tasks, dispatchers, and so on). The concepts of time and execution context are related and provide the foundation for the Rx concurrency model. The scheduler type and its derivations express this model. This chapter explains the scheduler's layer in Rx and how to use it to control concurrency inside the Rx observable pipeline, as well as how to use it with Rx time-based operators.
 
@@ -36,8 +36,8 @@ public interface IScheduler
 
 1. Returns the scheduler’s notion of current time
 2. Schedules an action to be executed. Returns a disposable that’s used to cancel the scheduled action.
-3. Schedules an action to be executed after the given TimeSpan. Returns a disposable that’s used to cancel the scheduled action.
-4. Schedules an action to be executed at the given dueTime. Returns a disposable that’s used to cancel the scheduled action.
+3. Schedules an action to be executed after the given `TimeSpan`. Returns a disposable that’s used to cancel the scheduled action.
+4. Schedules an action to be executed at the given `dueTime`. Returns a disposable that’s used to cancel the scheduled action.
 
 The scheduler contains the property `Now`, which returns the scheduler's notion of the current time. Most scheduler implementations return `DateTimeOffset.UtcNow`, but in more advanced cases, as you'll see in appendix C, the scheduler's time abstraction lets you control the time for testing and for revisiting past events.
 
@@ -69,6 +69,18 @@ IDisposable scheduling =
 2. The execution time is 2 seconds from when the scheduling takes place.
 3. Receives the scheduler that’s used for recursive scheduling and the state object. `Disposable.Empty` is returned because there is no specific resource handling or cancellation object.
 
+```fsharp
+    let scheduler = NewThreadScheduler.Default
+    let scheduling =
+        scheduler.Schedule(
+            Unit.Default,
+            TimeSpan.FromSeconds(2),
+            fun (scdlr:IScheduler) _ ->
+                Console.WriteLine($"Hello World, Now: {scdlr.Now}")
+                Disposable.Empty
+            )
+```
+
 Running this example (and waiting 2 seconds) displays this output:
 
 ```C#
@@ -97,6 +109,22 @@ IDisposable scheduling =
         0, //3
         TimeSpan.FromSeconds(2),
         action);
+```
+
+F#
+
+```fsharp
+    let scheduler = NewThreadScheduler.Default
+    let rec action (scdlr:IScheduler) callNumber =
+        $"Hello {callNumber}, Now: {scdlr.Now}, Thread: {Thread.CurrentThread.ManagedThreadId}"
+        |> Console.WriteLine
+        scdlr.Schedule(callNumber + 1, TimeSpan.FromSeconds(2), action)
+
+    let scheduling =
+        scheduler.Schedule(
+            0,
+            TimeSpan.FromSeconds(2),
+            action)
 ```
 
 Figure 10.3 shows the conceptual sequence of the periodic behavior you just created.
@@ -131,6 +159,20 @@ Observable.Interval(TimeSpan.FromSeconds(1), CurrentThreadScheduler.Instance)
     .Subscribe(x => Console.WriteLine("Inside - Thread: {1}",
                            x,
                            Thread.CurrentThread.ManagedThreadId));
+```
+
+F#
+
+```fsharp
+    Console.WriteLine("Before - Thread: {0}",Thread.CurrentThread.ManagedThreadId)
+    Observable.Interval(TimeSpan.FromSeconds(1), CurrentThreadScheduler.Instance)
+        .Timestamp()
+        .Take(3)
+        .Do(fun x -> 
+            Console.WriteLine("Inside - Thread: {1}",
+                x,Thread.CurrentThread.ManagedThreadId)
+            )
+        .Subscribe()
 ```
 
 Note that I passed the `CurrentThreadScheduler.Instance` to the `Interval` operator. This ensures that the internal timer that `Interval` is using will use the current thread. The code yields this output (thread numbers could differ):
@@ -175,7 +217,19 @@ To overcome this, you can change the `Range` emissions to take place on another 
 Observable.Range(1, 5, NewThreadScheduler.Default)
 ```
 
-Now the calling thread won't be blocked, and the call to the Dispose method will happen as quickly as possible.
+F#
+
+```fsharp
+    let subscription =
+        Observable.Range(1, 5, NewThreadScheduler.Default)
+            //without passing the scheduler, this will run infinitely
+            .Repeat()
+            .Subscribe(ConsoleObserver "Range on another thread")
+
+    subscription.Dispose()
+```
+
+Now the calling thread won't be blocked, and the call to the `Dispose` method will happen as quickly as possible.
 
 Rx also provides a few implementations of the `IScheduler` interface that's suited for different purposes.
 
@@ -194,13 +248,43 @@ static void TestScheduler(IScheduler scheduler)
     scheduler.Schedule(Unit.Default,
         (s, _) => Console.WriteLine("Action2 - Thread:{0}",
                            Thread.CurrentThread.ManagedThreadId));
-
 }
+```
+
+F#
+
+```fsharp
+let TestScheduler(scheduler:IScheduler) = 
+    let countdownEvent = new CountdownEvent(2)
+    Thread.CurrentThread.ManagedThreadId
+    |> sprintf "Calling Thread: %d"
+    |> Console.WriteLine
+
+    scheduler.Schedule(
+        Unit.Default,
+        fun s _ ->
+            Thread.CurrentThread.ManagedThreadId
+            |> sprintf "Action1 - Thread: %d"
+            |> Console.WriteLine
+            countdownEvent.Signal() |> ignore
+        )
+        |> ignore
+    scheduler.Schedule(
+        Unit.Default,
+        fun s _ ->
+            Thread.CurrentThread.ManagedThreadId
+            |> sprintf "Action2 - Thread: %d"
+            |> Console.WriteLine
+            countdownEvent.Signal() |> ignore
+        )
+        |> ignore
+
+    countdownEvent.Wait()
 ```
 
 #### NEWTHREADSCHEDULER
 
-Just as the name suggests, `NewThreadScheduler` runs the scheduled action on a new thread. By default, `NewThreadScheduler` creates a new `Thread` object for every scheduling operation, but you can also pass it a threadFactory of type `Func<ThreadStart,Thread>`, which is responsible for the way threads are created.
+Just as the name suggests, `NewThreadScheduler` runs the scheduled action on a new thread. By default, `NewThreadScheduler` creates a new `Thread` object for every scheduling operation, but you can also pass it a `threadFactory` of type `Func<'ThreadStart,'Thread>`, which is responsible for the way threads are created.
 
 Most of the time, you won't instantiate the scheduler, but will use the `NewThreadScheduler.Default` static property to receive a shared instance.
 
@@ -217,11 +301,11 @@ Action2 - Thread:8
 
 One issue usually confuses developers who use `NewThreadScheduler` with a recursive call to the scheduler—it won't open a new thread. Internally, it will use the `EventLoopScheduler` that uses the same thread.
 
-Because creating a new thread for every scheduling isn't efficient, you should use the `NewThreadScheduler` primarily for making long-running operations. For short-lived operations, it's recommended to work with ThreadPool.
+Because creating a new thread for every scheduling isn't efficient, you should use the `NewThreadScheduler` primarily for making long-running operations. For short-lived operations, it's recommended to work with `ThreadPool`.
 
 #### THREADPOOLSCHEDULER
 
-Creating a new thread for every scheduled action isn't efficient; opening and closing a thread in the OS is time and memory expensive. Instead, the .NET Framework provides the ThreadPool class that reuses threads instead of opening a new one each time. `ThreadPoolScheduler` works similarly to `NewThreadScheduler`, but uses the thread pool instead of creating new threads:
+Creating a new thread for every scheduled action isn't efficient; opening and closing a thread in the OS is time and memory expensive. Instead, the .NET Framework provides the `ThreadPool` class that reuses threads instead of opening a new one each time. `ThreadPoolScheduler` works similarly to `NewThreadScheduler`, but uses the thread pool instead of creating new threads:
 
 ```C#
 TestScheduler(ThreadPoolScheduler.Instance);
@@ -244,7 +328,7 @@ Unlike `NewThreadScheduler`, recursive scheduling is also queued on the thread p
 
 #### CURRENTTHREADSCHEDULER
 
-`CurrentThreadScheduler` schedules the actions on the same thread where the caller of the Schedule method runs. Any recursive scheduling that happens inside a scheduled action is put into an ordered-by-time queue maintained by the scheduler. After a scheduled operation completes, the scheduler picks the next operations from the queue and runs it when its dueTime comes, or immediately if it has already passed.
+`CurrentThreadScheduler` schedules the actions on the same thread where the caller of the Schedule method runs. Any recursive scheduling that happens inside a scheduled action is put into an ordered-by-time queue maintained by the scheduler. After a scheduled operation completes, the scheduler picks the next operations from the queue and runs it when its `dueTime` comes, or immediately if it has already passed.
 
 ```C#
 TestScheduler(CurrentThreadScheduler.Instance);
@@ -262,7 +346,7 @@ The example shows that each scheduled action runs on the same thread, and that t
 
 #### IMMEDIATESCHEDULER
 
-Like `CurrentThreadScheduler`, `ImmediateScheduler` schedules the action on the current thread. But unlike `CurrentThreadScheduler` that queues the scheduled actions and then runs them one after the other, `ImmediateScheduler` runs each action immediately or blocks it until the dueTime comes:
+Like `CurrentThreadScheduler`, `ImmediateScheduler` schedules the action on the current thread. But unlike `CurrentThreadScheduler` that queues the scheduled actions and then runs them one after the other, `ImmediateScheduler` runs each action immediately or blocks it until the `dueTime` comes:
 
 ```C#
 var immediateScheduler = ImmediateScheduler.Instance;
@@ -290,6 +374,35 @@ immediateScheduler.Schedule(Unit.Default,
 Console.WriteLine("After the Schedule, Time: {0}",immediateScheduler.Now);
 ```
 
+F#
+
+```fsharp
+    let immediateScheduler = ImmediateScheduler.Instance
+    let countdownEvent = new CountdownEvent(2)
+        
+    Console.WriteLine("Calling thread: {0} Current time: {1}", Thread.CurrentThread.ManagedThreadId, immediateScheduler.Now)
+
+    immediateScheduler.Schedule(Unit.Default,
+        TimeSpan.FromSeconds(2),
+        fun (s:IScheduler) _ ->
+            Console.WriteLine("Outer Action - Thread:{0}", Thread.CurrentThread.ManagedThreadId)
+            s.Schedule(Unit.Default,
+                fun (s2:IScheduler) _ ->
+                    Console.WriteLine("Inner Action - Thread:{0}", Thread.CurrentThread.ManagedThreadId)
+                    countdownEvent.Signal() |> ignore
+                    Console.WriteLine("Inner Action - Done:{0}", Thread.CurrentThread.ManagedThreadId)
+                    Disposable.Empty
+                )
+                |> ignore
+            countdownEvent.Signal() |> ignore
+            Console.WriteLine("Outer Action - Done")
+            Disposable.Empty
+        )
+        |> ignore
+    Console.WriteLine("After the Schedule, Time: {0}", immediateScheduler.Now)
+    countdownEvent.Wait()
+```
+
 The output is as follows (thread numbers could differ):
 
 ```C#
@@ -300,7 +413,7 @@ Outer Action - Done
 After the Schedule, Time: 24/12/2015 18:00:49 +00:00
 ```
 
-There are a few things to note in this example output. First, all the actions run on the same thread that the initial caller runs on. Second, the inner action is scheduled immediately and not when the outer action completes. Third, the message After the Schedule prints 2 seconds after the call to the `Schedule` method. This is because you pass the `TimeSpan.FromSecond(2)` as an argument to the Schedule method that causes it to block until the dueTime arrives. You should use `ImmediateScheduler` when you need to schedule actions that involve a small amount of work that can be viewed as constant time operations.
+There are a few things to note in this example output. First, all the actions run on the same thread that the initial caller runs on. Second, the inner action is scheduled immediately and not when the outer action completes. Third, the message `After the Schedule` prints **2 seconds** after the call to the `Schedule` method. This is because you pass the `TimeSpan.FromSecond(2)` as an argument to the Schedule method that causes it to block until the `dueTime` arrives. You should use `ImmediateScheduler` when you need to schedule actions that involve a small amount of work that can be viewed as constant time operations.
 
 #### EVENTLOOPSCHEDULER
 
@@ -341,13 +454,13 @@ In both WinForms and XAML platforms, `SynchronizationContext` plays a big part b
 control.BeginInvoke(() => {/* the action code */});
 ```
 
-With XAML platforms (such as WPF or WinRT), you can use the Dispatcher class:
+With XAML platforms (such as WPF or WinRT), you can use the `Dispatcher` class:
 
 ```C#
 Dispatcher.CurrentDispatcher.BeginInvoke(() => {/* the action code */});
 ```
 
-To ease the use of schedulers in those frameworks, Rx provides `ControlScheduler` and `DispatcherScheduler`, which wrap the right synchronization context for WinForms and XAML platforms. To access these schedulers, add a reference to the relevant platform package—[`System.Reactive.Windows.Threading` for XAML platforms such as WPF or UAP](www.nuget.org/packages/System.Reactive.Windows.Threading) and [`System.Reactive.Windows.Forms` for WinForms](www.nuget.org/packages/System.Reactive.Windows.Forms).
+To ease the use of schedulers in those frameworks, Rx provides `ControlScheduler` and `DispatcherScheduler`, which wrap the right synchronization context for WinForms and XAML platforms. To access these schedulers, add a reference to the relevant platform package—`System.Reactive.Windows.Threading` for [XAML platforms such as WPF or UAP](www.nuget.org/packages/System.Reactive.Windows.Threading) and `System.Reactive.Windows.Forms` for [WinForms](www.nuget.org/packages/System.Reactive.Windows.Forms).
 
 ---
 
@@ -384,6 +497,30 @@ static IObservable<int> GeneratePrimes(int amount, IScheduler scheduler = null)
 }
 ```
 
+F#
+
+```fsharp
+let GeneratePrimes (amount:int) (scheduler:IScheduler) =
+    Observable.Create<int>(fun (o:IObserver<int>) ->
+        let cancellation = new CancellationDisposable()
+        let scheduledWork = scheduler.Schedule(fun () ->
+            try
+                let magicalPrimeGenerator = new MagicalPrimeGenerator()
+                for prime in magicalPrimeGenerator.Generate(amount) do
+                    cancellation.Token.ThrowIfCancellationRequested()
+                    o.OnNext(prime)
+                o.OnCompleted()
+            with ex -> o.OnError(ex)
+            ()
+        )
+        new CompositeDisposable(scheduledWork, cancellation)
+        :> IDisposable
+    )
+```
+
+
+
+
 ---
 
 ## 10.2 Using time-based operators
@@ -398,7 +535,7 @@ Because the observable emits notifications at different times, it makes sense to
 
 Figure 10.4 The Timestamp operator adds a timestamp of the emission time to every notification.
 
-The `Timestamp` operator takes no parameters (except for an optional scheduler) and wraps the notification object with the `Timestamped<T>` type that holds the timestamp of the emission:
+The `Timestamp` operator takes no parameters (except for an optional scheduler) and wraps the notification object with the `Timestamped<'T>` type that holds the timestamp of the emission:
 
 ```C#
 IObservable<Timestamped<TSource>> Timestamp<TSource>(
@@ -420,6 +557,18 @@ deviceHeartbeat
     .SubscribeConsole("Heartbeat");
 ```
 
+F#
+
+```fsharp
+    let deviceHeartbeat =
+        Observable.Interval(TimeSpan.FromSeconds(1))
+
+    deviceHeartbeat
+        .Take(3)
+        .Timestamp()
+        .Subscribe(ConsoleObserver "Heartbeat")
+```
+
 Running this example on my machine shows this output:
 
 ```C#
@@ -429,7 +578,7 @@ Heartbeat - OnNext(2@25/12/2015 22:29:26 +00:00)
 Heartbeat - OnCompleted()
 ```
 
-The bolded text values were emitted by the observable. I got this formatted output because of the `Timestamped<T>` type. The `Timestamped<T>` type holds the notification object that was emitted by the timestamped observable and the timestamp of when the notification was emitted. It also implements a nice `ToString` method that helps when debugging.
+The bolded text values were emitted by the observable. I got this formatted output because of the `Timestamped<'T>` type. The `Timestamped<'T>` type holds the notification object that was emitted by the timestamped observable and the timestamp of when the notification was emitted. It also implements a nice `ToString` method that helps when debugging.
 
 The `Timestamp` operator can be useful when you need to investigate what's going on inside your observable and how the time dimension affects your handling.
 
@@ -437,9 +586,9 @@ The `Timestamp` operator can be useful when you need to investigate what's going
 
 Useful as the `Timestamp` operator can be, sometimes all you care about is the time interval between two emissions. Instead of calculating this interval by subtracting the two timestamps, you can use the `TimeInterval` operator, which records the time interval between consecutive elements in the observable. Figure 10.5 shows a marble diagram of the `TimeInterval` operator.
 
-Figure 10.5 The TimeInterval operator computes the time interval between two notifications.
+Figure 10.5 The `TimeInterval` operator computes the time interval between two notifications.
 
-`TimeInterval` wraps every notification object with a `TimeInterval<T>` type:
+`TimeInterval` wraps every notification object with a `TimeInterval<'T>` type:
 
 ```C#
 IObservable<TimeInterval<TSource>> TimeInterval<TSource>(
@@ -460,6 +609,20 @@ var deviceHeartbeat = Observable
 deviceHeartbeat
     .TimeInterval()
     .SubscribeConsole("time from last heartbeat");
+```
+
+F#
+
+```fsharp
+    let deviceHeartbeat = 
+        Observable
+            .Timer(TimeSpan.FromSeconds(1))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(2)))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(4)))
+
+    deviceHeartbeat
+        .TimeInterval()
+        .Subscribe(ConsoleObserver "time from last heartbeat")
 ```
 
 This code prints the following output:
@@ -500,6 +663,20 @@ observable
     .SubscribeConsole("Timeout");
 ```
 
+F#
+
+```fsharp
+    let observable = 
+        Observable.Timer(TimeSpan.FromSeconds(1))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(1)))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(4)))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(4)))
+
+    observable
+        .Timeout(TimeSpan.FromSeconds(3))
+        .Subscribe(ConsoleObserver "Timeout")
+```
+
 Running the example shows this output:
 
 ```
@@ -521,7 +698,7 @@ Figure 10.7 The Delay operator shifts the observable notifications by a time dur
 
 If you want to add a fixed time period for each notification delay, you can accomplish it using the `Delay` operator.
 
-Listing 10.3 Delaying notifications with the Delay operator
+Listing 10.3 Delaying notifications with the `Delay` operator
 
 ```C#
 var observable = Observable
@@ -537,7 +714,23 @@ observable
     .Take(5)
     .SubscribeConsole("Delay");
 Console.ReadLine();
+```
 
+F#
+
+```fsharp
+    let observable = 
+        Observable.Timer(TimeSpan.FromSeconds(1))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(1)))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(4)))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(4)))
+
+    observable
+        .Timestamp()
+        .Delay(TimeSpan.FromSeconds(2))
+        .Timestamp()
+        .Take(5)
+        .Subscribe(ConsoleObserver "Delay")
 ```
 
 Running this example on my machine shows this output:
@@ -578,6 +771,18 @@ observable
     .SubscribeConsole("Delay");
 ```
 
+F#
+
+```fsharp
+    let observable = [4; 1; 2; 3].ToObservable()
+
+    observable
+        .Timestamp()
+        .Delay(fun x -> Observable.Timer(TimeSpan.FromSeconds(x.Value)))
+        .Timestamp()
+        .Subscribe(ConsoleObserver "Delay")
+```
+
 This is the output I got on my machine:
 
 ```C#
@@ -596,7 +801,7 @@ In many cases, handling notifications emitted close to one another adds no real 
 
 To add this kind of behavior to your observable pipeline, so notifications will be dropped unless a predefined period of time has passed without other notifications arriving, you can use the `Throttle` operator, depicted in figure 10.8.
 
-Figure 10.8 The Throttle operator emits an item from an observable only if a particular time span has passed without emitting another item.
+Figure 10.8 The `Throttle` operator emits an item from an observable only if a particular time span has passed without emitting another item.
 
 In the next example, you simulate a case in which multiple updates are arriving, but only if 2 seconds have passed without another update coming will the update be allowed to proceed:
 
@@ -609,6 +814,20 @@ var observable = Observable.Return("Update A")
 
 observable.Throttle(TimeSpan.FromSeconds(2))
     .SubscribeConsole("Throttle");
+```
+
+F#
+
+```fsharp
+    let observable = 
+        Observable.Return("Update A")
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(2)).Map(fun _ -> "Update B"))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Map(fun _ -> "Update C"))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Map(fun _ -> "Update D"))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(3)).Map(fun _ -> "Update E"))
+
+    observable.Throttle(TimeSpan.FromSeconds(2))
+        .Subscribe(ConsoleObserver "Throttle")
 ```
 
 Running the example displays this output:
@@ -649,7 +868,24 @@ observable
                     ? Observable.Empty<long>()
                     : Observable.Timer(TimeSpan.FromSeconds(2)))
     .SubscribeConsole("Variable Throttling");
+```
 
+F#
+
+```fsharp
+    let observable = 
+        Observable.Return("Msg A")
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(2)).Map(always "Msg B"))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Map(always "Immediate Update"))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(1)).Map(always "Msg D"))
+            .Concat(Observable.Timer(TimeSpan.FromSeconds(3)).Map(always "Msg E"))
+
+    observable
+        .Throttle(fun x -> 
+            if x = "Immediate Update"
+            then Observable.Empty<int64>()
+            else Observable.Timer(TimeSpan.FromSeconds(2)))
+        .Subscribe(ConsoleObserver "Variable Throttling")
 ```
 
 Running the example creates this output:
@@ -662,13 +898,13 @@ Variable Throttling - OnNext(Msg E)
 Variable Throttling - OnCompleted()
 ```
 
-In this example, you're checking each element. If it's an Immediate Update, you return an observable that emits a notification immediately (the `OnCompleted` notification). Otherwise, you create an observable that emits a notification after 2 seconds. That's why, even though notifications were emitted less than 2 seconds from when the Immediate Update was emitted, Immediate Update was emitted as well.
+In this example, you're checking each element. If it's an Immediate Update, you return an observable that emits a notification immediately (the `OnCompleted` notification). Otherwise, you create an observable that emits a notification after 2 seconds. That's why, even though notifications were emitted less than 2 seconds from when the `Immediate Update` was emitted, `Immediate Update` was emitted as well.
 
 ### 10.2.6 Sampling the observable in intervals
 
-Another way of handling rapid observables is to slow the reaction rate to the notifications and to sample the emitted values in predefined intervals. The Sample operator lets you define the duration of the interval, so that when an interval ends, the last value emitted by the source observable is emitted by the resulting observable. Figure 10.9 provides a marble diagram of Sample.
+Another way of handling rapid observables is to slow the reaction rate to the notifications and to sample the emitted values in predefined intervals. The `Sample` operator lets you define the duration of the interval, so that when an interval ends, the last value emitted by the source observable is emitted by the resulting observable. Figure 10.9 provides a marble diagram of `Sample`.
 
-Figure 10.9 The Sample operator samples the observable sequence at each interval, emitting the last notification in the interval.
+Figure 10.9 The `Sample` operator samples the observable sequence at each interval, emitting the last notification in the interval.
 
 The next example shows how to take an observable that emits a notification every second and sample it every 3.5 seconds. (I limited the example to only three intervals.) In real-world scenarios, you might want to do that when the source of the notification is fast, but there isn't a lot of advantage to collecting all received values. For example, digital signal processing (DSP) applications usually sample the audio of video signals at a rate that's high enough to reconstruct the signal in a way that makes it understandable, even if some data is lost. (Displaying 24 frames per second is enough to fool our brains into seeing a moving picture.)
 
@@ -677,6 +913,15 @@ Observable.Interval(TimeSpan.FromSeconds(1))
     .Sample(TimeSpan.FromSeconds(3.5))
     .Take(3)
     .SubscribeConsole("Sample");
+```
+
+F#
+
+```fsharp
+    Observable.Interval(TimeSpan.FromSeconds(1))
+        .Sample(TimeSpan.FromSeconds(3.5))
+        .Take(3)
+        .Subscribe(ConsoleObserver "Sample")
 ```
 
 The example yields this output:
@@ -688,7 +933,7 @@ Sample - OnNext(9)
 Sample - OnCompleted()
 ```
 
-The duration of the interval doesn't have to be constant. The next Sample overload lets you control the duration of each interval by passing an observable that emits when the interval ends:
+The duration of the interval doesn't have to be constant. The next `Sample` overload lets you control the duration of each interval by passing an observable that emits when the interval ends:
 
 ```C#
 IObservable<TSource> Sample<TSource, TSample>(
@@ -696,7 +941,7 @@ IObservable<TSource> Sample<TSource, TSample>(
     IObservable<TSample> sampler)
 ```
 
-Upon each emission done by the sampler (sampling tick), the latest element (if any) in the source observable during the last sampling interval is sent to the resulting sequence. All the operators you've learned about in this chapter (and others covered in other chapters) can receive the IScheduler you want them to use for introducing concurrency. But, for the operators that don't introduce concurrency, you can't pass the scheduler. So what do you do if you want to change the execution context in the middle of your observable pipeline? You use the Rx-provided operators that add synchronization.
+Upon each emission done by the sampler (sampling tick), the latest element (if any) in the source observable during the last sampling interval is sent to the resulting sequence. All the operators you've learned about in this chapter (and others covered in other chapters) can receive the `IScheduler` you want them to use for introducing concurrency. But, for the operators that don't introduce concurrency, you can't pass the scheduler. So what do you do if you want to change the execution context in the middle of your observable pipeline? You use the Rx-provided operators that add synchronization.
 
 ## 10.3 Synchronizing the observable emissions
 
@@ -716,14 +961,35 @@ The next example creates an observable from the `TextBox.TextChanged` event and 
 Observable.FromEventPattern(TextBox, "TextChanged")
     .Select(_ => TextBox.Text)
     .Throttle(TimeSpan.FromMilliseconds(400))
-    //.ObserveOn(DispatcherScheduler.Current)
-    .ObserveOn(SynchronizationContext.Current) //System.Threading
+    .ObserveOn(DispatcherScheduler.Current)
+    //.ObserveOn(System.Threading.SynchronizationContext.Current)
     .Subscribe(t => ThrottledResults.Items.Add(t));
+```
+
+xaml
+
+```xaml
+<TextBox x:Name="TextBox" Margin="0,0,0,0"></TextBox>
+<ListBox x:Name="ThrottledResults"></ListBox>
+```
+
+F#
+
+```fsharp
+type RxSearch() as this =
+    inherit RxSearchXaml()
+    let disp =
+        (this.TextBox.TextChanged :> IObservable<_>)
+            .Map(fun x -> this.TextBox.Text)
+            .Throttle(TimeSpan.FromMilliseconds(400))
+            .DistinctUntilChanged()
+            .ObserveOn(System.Reactive.Concurrency.DispatcherScheduler.Current)
+            .Subscribe(fun s -> this.ThrottledResults.Items.Add(s)|>ignore)
 ```
 
 ~~Because the observation on the `Dispatcher` is something that happens frequently, you can use the shortened operator `ObserveOnDispatcher`, which does the same thing.~~ The `ObserveOn` operator also has overloads that let you pass the `SynchronizationContext` or the WinForms Control with which you want to make the observation. Under the hood, the `ObserveOn` operator creates an interceptor in the observable pipeline that intercepts each call done on the observer and executes it on the specified scheduler.
 
-Using `System.Threading.SynchronizationContext.Current` instead of `DispatcherScheduler.Current`.
+Using `System.Threading.SynchronizationContext.Current` instead of `System.Reactive.Concurrency.DispatcherScheduler.Current`.
 
 ### 10.3.2 Changing the subscription/unsubscription execution context
 
@@ -746,6 +1012,17 @@ observable.SubscribeConsole("LongOperation");
 ```
 
 1. Simulating a long operation done in the subscription time
+
+```F#
+    let observable =
+        Observable.Create(fun (o:IObserver<int>) ->
+            Thread.Sleep(TimeSpan.FromSeconds(5)); //1
+            o.OnNext(1)
+            o.OnCompleted()
+            Disposable.Empty
+        )
+    observable.Subscribe(ConsoleObserver "LongOperation")
+```
 
 When running this example, the calling thread will be blocked for 5 seconds, and only afterward do the messages appear. Adding `ObserveOn` to this example won't help because the long operation happens as part of the subscription. What you want is to make the subscription itself on another thread.
 
@@ -792,6 +1069,25 @@ Console.WriteLine("Subscription disposed");
 
 4. Triggers the disposal of the underlying subscription on the event loop
 
+```fsharp
+    let eventLoopScheduler = new EventLoopScheduler();
+    let subscription = 
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Do(fun _ -> Console.WriteLine("Inside Do")) //1
+            .SubscribeOn(eventLoopScheduler) //2
+            .Subscribe()
+    //3
+    eventLoopScheduler.Schedule(1,
+        fun s state ->
+            Console.WriteLine("Before sleep")
+            Thread.Sleep(TimeSpan.FromSeconds(3))
+            Console.WriteLine("After sleep")
+            Disposable.Empty
+        ) |> ignore
+    subscription.Dispose() //4
+    Console.WriteLine("Subscription disposed")
+```
+
 Running the example shows this output:
 
 ```C#
@@ -805,7 +1101,7 @@ Inside Do
 
 Note that the call to `Dispose` happens almost immediately; but, because the real subscription will be disposed of on the event loop, it needs to wait until the long operation completes, and so you see the messages from the `Do` operator.
 
-### 10.3.3 Using SubscribeOn and ObserveOn together
+### 10.3.3 Using `SubscribeOn` and `ObserveOn` together
 
 Depending on the observable you subscribe to, the thread on which you subscribe might also be the thread on which the emissions happens, or they might be totally different threads. You can combine the `SubscribeOn` and `ObserveOn` operators to gain better control over which thread will run in each step of your observable pipeline. And it's important to understand the order in which these operators happen and where their effect is coming into play.
 
@@ -836,11 +1132,32 @@ static IObservable<T> LogWithThread<T>(this IObservable<T> observable,string msg
 }
 ```
 
+F#
+
+```fsharp
+type IObservable<'T> with
+    member observable.LogWithThread<'T> (msg:string) =
+        Observable.Defer(fun () ->
+            Console.WriteLine("{0} Subscription happened on Thread: {1}", msg,
+                            Thread.CurrentThread.ManagedThreadId)
+            observable.Do(
+                (fun x -> Console.WriteLine("{0} - OnNext({1}) Thread: {2}", msg, x,
+                                        Thread.CurrentThread.ManagedThreadId)),
+                (fun ex ->
+                    Console.WriteLine("{0} – OnError Thread:{1}", msg,
+                                        Thread.CurrentThread.ManagedThreadId)
+                    Console.WriteLine("\t {0}", ex)
+                ),
+                (fun () -> Console.WriteLine("{0} - OnCompleted() Thread {1}", msg,
+                                        Thread.CurrentThread.ManagedThreadId)))
+        )
+```
+
 The `LogWithThread` operator prints messages to the console when the observer subscribes and for every notification done by the source observable. With each log message, the thread on which the event happens is also written.
 
 Now let's see what happens when you use `SubscribeOn` and `ObserveOn` with `LogWithThread` to log the details for you. In the next example, you create a simple observable that emits three notifications (one every second), and you use the `SubscribeOn` and `ObserveOn` operators to control the execution context. The example creates an observable that emits five numbers and adds a few operators on it.
 
-Listing 10.7 Testing the order of execution and effects of SubscribeOn and ObserveOn
+Listing 10.7 Testing the order of execution and effects of `SubscribeOn` and `ObserveOn`
 
 ```C#
 new[] {0,1,2,3,4,5}
@@ -851,6 +1168,18 @@ new[] {0,1,2,3,4,5}
     .Select(x => x*x)                       .LogWithThread("D")
     .ObserveOn(TaskPoolScheduler.Default)   .LogWithThread("E")
     .SubscribeConsole("squares by time");
+```
+
+F#
+
+```fsharp
+    Observable.Range(0,6)
+        .Take(3)                                .LogWithThread("A")
+        .Where(fun x -> x % 2 = 0)              .LogWithThread("B")
+        .SubscribeOn(NewThreadScheduler.Default).LogWithThread("C")
+        .Select(fun x -> x * x)                 .LogWithThread("D")
+        .ObserveOn(TaskPoolScheduler.Default)   .LogWithThread("E")
+        .Subscribe(ConsoleObserver "squares by time")
 ```
 
 Running the example on my machine shows this output:
@@ -898,7 +1227,7 @@ Here are the key points in the example output:
 
 - While the notification is observed on thread 4, thread 3 is free to observe the next notification. That's why you see the observation of 0 together with the emission of 2 (the bolded lines).
 
-- 由于System.Reactive版本升级，程序执行的效果可能会修改，请自行测试之。
+- 由于`System.Reactive`版本升级，程序执行的效果可能会修改，请自行测试之。
 
 Next, I'll talk about how to synchronize processing of the notifications in the observable pipeline and between observables.
 
@@ -919,16 +1248,6 @@ class Messenger
 }
 ```
 
-F#
-
-```F#
-type Messenger() =
-    let messageReceived = new Event<EventHandler<string>,string>()
-    
-    [<CLIEvent>]
-    member this.MessageReceived = messageReceived.Publish
-```
-
 This is how to create the observable:
 
 ```C#
@@ -938,12 +1257,6 @@ var messages =
         h => messenger.MessageReceived += h,
         h => messenger.MessageReceived -= h)
     .Select(evt => evt.EventArgs);
-```
-
-F#
-
-```F#
-let messages = messenger.MessageReceived :> IObservable<string>
 ```
 
 And this is how to subscribe to it:
@@ -982,6 +1295,50 @@ messages
     });
 ```
 
+F#
+
+```fsharp
+type Messenger () =
+    let messageReceived = Event<string>()
+
+    [<CLIEvent>]
+    member this.MessageReceived = messageReceived.Publish
+
+    member this.Notify(msg:string) = 
+        messageReceived.Trigger(msg)
+
+let test () =
+    let messenger = new Messenger()
+    let messages = messenger.MessageReceived :> IObservable<string>
+    messages
+        .Synchronize()
+        .Subscribe(fun msg ->
+            Console.WriteLine("Message {0} arrived", msg)
+            Thread.Sleep(1000)
+            Console.WriteLine("Message {0} exit", msg)
+        ) |> ignore
+
+    for i in [0 .. 2] do
+        let msg = sprintf "msg %d" i
+        ThreadPool.QueueUserWorkItem(fun _ ->
+            messenger.Notify(msg)
+        ) |> ignore
+```
+
+------
+[Event<'Args>](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpevent-1.html)
+
+Event implementations for the `IEvent<'Args>` type.
+
+[Event<'Delegate, 'Args>](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpevent-2.html)
+
+Event implementations for a delegate types following the standard .NET Framework convention of a first `sender` argument.
+
+[DelegateEvent<'Delegate>](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpdelegateevent-1.html)
+
+Event implementations for an arbitrary type of delegate.
+
+------
 Now the messages are received in a serialized way, no matter from what thread the emission was made. Internally, the `Synchronize` operator creates a lock around every notification it makes to the observer. The lock is done on an inner object called the `gate`.
 
 #### SYNCHRONIZING MULTIPLE OBSERVABLES
@@ -1000,14 +1357,24 @@ This overload can be useful when you need to share the lock between multiple sub
 var gate = new object();
 
 messages
-    .Select(evt => evt.EventArgs)//
+    .Select(evt => evt.EventArgs) // `evt:string` error!
     .Synchronize(gate)
     .Subscribe(msg => { /* processing the text message */  });
 
 friendRequests
-    .Select(evt => evt.EventArgs)//
+    .Select(evt => evt.EventArgs)
     .Synchronize(gate)
     .Subscribe(request => { /* processing the friend request */ });
+```
+
+F#，`friendRequests`代码与`messages`展示的原理是重复的，可以忽略。
+
+```fsharp
+    let gate = new obj()
+    messages
+        .Synchronize(gate)
+        .Subscribe(ConsoleObserver "gate")
+        |> ignore
 ```
 
 Now the friend requests and the messages will be received in a serialized fashion.
