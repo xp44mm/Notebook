@@ -10,7 +10,7 @@ To control and change the observable temperature—for example, when you want to
 
 ## 7.1 Multicasting with subjects
 
-A type that implements the `IObservable<T>` interface and `IObserver<M>` interface is called a subject. This type acts as both an observer and an observable, as shown in figure 7.1. It allows you to create an object that becomes a hub, which is able to intercept notifications it receives as an observer and push them to its observers. This, for example, can be used inside a shopping-cart class to notify various observers (such as the relevant UI component) about items added or removed from the cart. The cart exposes `Subject` as an observable, and the cart Add and Remove methods call the subject's `OnNext` method to notify about the change.
+A type that implements the `IObservable<'T>` interface and `IObserver<'M>` interface is called a subject. This type acts as both an observer and an observable, as shown in figure 7.1. It allows you to create an object that becomes a hub, which is able to intercept notifications it receives as an observer and push them to its observers. This, for example, can be used inside a shopping-cart class to notify various observers (such as the relevant UI component) about items added or removed from the cart. The cart exposes `Subject` as an observable, and the cart Add and Remove methods call the subject's `OnNext` method to notify about the change.
 
 Figure 7.1 A subject is a type that's both an observable and an observer. It allows multicasting the notifications emitted by the sources to the observers.
 
@@ -26,25 +26,25 @@ interface ISubject<in TSource, out TResult> : IObserver<TSource>, IObservable<TR
 
 The `Subject` type represents a `PubSub` (publisher-subscriber) pattern: the subject consumes notifications on one side (or is triggered by a notification) and emits notifications on the other side. This lets you create types that add special logic (transformations, caching, buffering, and so on) within the notifications received before they're published, or allows multicasting from one source to multiple destinations.
 
-When TSource and TResult generic parameters are of the same type, you can use the simpler version of the ISubject interface.
+When `'TSource` and `'TResult` generic parameters are of the same type, you can use the simpler version of the `ISubject` interface.
 
-Listing 7.2 ISubject interface with Source and Result types that are the same
+Listing 7.2 `ISubject` interface with Source and Result types that are the same
 
 ```C#
-interface ISubject<T> : ISubject<T, T>
+interface ISubject<'T> : ISubject<T, T>
 {
 }
 ```
 
 Rx provides these subject implementations:
 
-  - `Subject<T>`—Broadcasts every observed notification to all observers.
+- `Subject<'T>`—Broadcasts every observed notification to all observers.
 
-  - `AsyncSubject<T>`—Represents an asynchronous operation that emits its value upon completion.
+- `AsyncSubject<'T>`—Represents an asynchronous operation that emits its value upon completion.
 
-  - `ReplaySubject<T>`—Broadcasts notifications for current and future observers.
+- `ReplaySubject<'T>`—Broadcasts notifications for current and future observers.
 
-  - `BehaviorSubject<T>`—Broadcasts notifications and saves the latest value for future observers. When created, it's initialized with a value that emits until changed.
+- `BehaviorSubject<'T>`—Broadcasts notifications and saves the latest value for future observers. When created, it's initialized with a value that emits until changed.
 
 In all the standard implementations of subjects inside the Rx library, the observers receive the notifications sequentially, in the order that they subscribed.
 
@@ -54,11 +54,11 @@ In chapter 1, I mentioned that Rx drew its inspiration from the original GoF obs
 
 ### 7.1.1 Simple broadcasting with Subject
 
-The simplest subject implementation is `Subject<T>`, which serves as a simple broadcaster, as shown in figure 7.2. This type adds no behavior around the received notification. Each observed notification is broadcast to the observers without any additional processing. This is why it makes `Subject<T>` a good fit for a backing field to an observable that's exposed by your class. All you need to do is tell it to push notifications from various methods in the class (such as the shopping cart that needs to notify parts of the application that it has changed).
+The simplest subject implementation is `Subject<'T>`, which serves as a simple broadcaster, as shown in figure 7.2. This type adds no behavior around the received notification. Each observed notification is broadcast to the observers without any additional processing. This is why it makes `Subject<'T>` a good fit for a backing field to an observable that's exposed by your class. All you need to do is tell it to push notifications from various methods in the class (such as the shopping cart that needs to notify parts of the application that it has changed).
 
-Figure 7.2 `Subject<T>` is a broadcaster. Each notification it observes is broadcast to its observers.
+Figure 7.2 `Subject<'T>` is a broadcaster. Each notification it observes is broadcast to its observers.
 
-Because `Subject<T>` is an observer, it exposes the `OnNext`, `OnCompleted`, and `OnError` methods, so when they're called, the same methods are called on all the observers. You can manually signal a subject to emit notifications by calling its exposed methods.
+Because `Subject<'T>` is an observer, it exposes the `OnNext`, `OnCompleted`, and `OnError` methods, so when they're called, the same methods are called on all the observers. You can manually signal a subject to emit notifications by calling its exposed methods.
 
 This example uses a subject to publish two notifications to two observers and then completes:
 
@@ -71,6 +71,20 @@ sbj.SubscribeConsole("Second");
 sbj.OnNext(1);
 sbj.OnNext(2);
 sbj.OnCompleted();
+```
+
+F#,
+
+```fsharp
+    let sbj = new Subject<int>()
+    sbj.Subscribe(ConsoleObserver "First")
+    |> ignore
+    sbj.Subscribe(ConsoleObserver "Second")
+    |> ignore
+
+    sbj.OnNext(1)
+    sbj.OnNext(2)
+    sbj.OnCompleted()
 ```
 
 Running this example displays the following output:
@@ -88,7 +102,7 @@ Each time you call the `OnNext` or `OnCompleted` methods on the subject, the obs
 
 #### MULTIPLE SOURCE, BUT ONE COMPLETION
 
-One misunderstanding I see when working with `Subject<T>` is that although there can be many source observables, only one completion will occur and be passed to the observers. Subjects conform to the observable-observer protocol mandate that after completion, no more notifications are emitted.
+One misunderstanding I see when working with `Subject<'T>` is that although there can be many source observables, only one completion will occur and be passed to the observers. Subjects conform to the observable-observer protocol mandate that after completion, no more notifications are emitted.
 
 Consider this example: a subject subscribes to two observables representing two chat rooms, each emitting messages as they're received from participants. Each observable emits five notifications but at different rates—every 1 second and every 2 seconds. The desired behavior is that the observer subscribing to the subject will receive the messages from both chat rooms and, if one chat room completes (all the participants leave), the messages from the other chat room will continue to be observed. But, confusingly, the real behavior is that the observer will receive the values emitted only until either observable completes; the rest of the notifications from the other observable won't pass through, as shown in figure 7.3.
 
@@ -109,7 +123,27 @@ Observable.Interval(TimeSpan.FromSeconds(2))
     .Subscribe(sbj);
 
 sbj.SubscribeConsole();
+```
 
+F#,
+
+```fsharp
+    let sbj = new Subject<string>()
+
+    Observable.Interval(TimeSpan.FromSeconds(1))
+        .Map(fun x -> $"First: {x}")
+        .Take(5)
+        .Subscribe(sbj)
+    |> ignore
+
+    Observable.Interval(TimeSpan.FromSeconds(2))
+        .Map(fun x -> $"Second: {x}")
+        .Take(5)
+        .Subscribe(sbj)
+    |> ignore
+
+    sbj.Subscribe(ConsoleObserver "sbj")
+    |> ignore
 ```
 
 After running this example, you'll get this output:
@@ -146,27 +180,51 @@ messagesFromDb.ToObservable().Subscribe(sbj);
 realTimeMessages.Subscribe(sbj);
 ```
 
+F#,
+
+```fsharp
+    let sbj = new Subject<string>()
+    sbj.Subscribe(ConsoleObserver "sbj")
+    |> ignore
+
+    //at some point later...
+
+    let messagesFromDb = seq {"a";"b"}
+    let realTimeMessages = 
+        Observable.Range(1,5).Map(fun x -> x.ToString())
+
+    messagesFromDb.ToObservable().Subscribe(sbj)
+    |> ignore
+
+    realTimeMessages.Subscribe(sbj)
+    |> ignore
+```
+
 In the example, you create a subject at the beginning of the application and subscribe an observer to it. (In a real application, the observer can be the screen that shows the messages.) Later, somewhere in the code (for example, after the initialization process), you subscribe the subject to two observables: the first is an enumerable of the items that the database loads (and transforms to the observable), and the second is the observable of the messages received in real time. This creates a simple implementation of a merge; however, the correct way to implement the merge is by using the `Merge` operator.
 
 The first observable is created from a finite collection of messages because a finite number of messages are stored in the database. The moment the subject subscribes to it, all the messages are synchronously emitted, and then the `OnCompleted` method is called on `Subject`.
 
 Calling the `OnCompleted` method at this point means the subject discards any message emitted afterward. This makes the subscription to the second observable useless, as it has no effect.
 
-TIP As a general rule, use subjects (of any kind) with caution, and make sure you're not reinventing the wheel; instead, use the built-in Rx operators.
+------
 
-One problem with `Subject<T>` you may encounter is that if the source observable emits a value before an observer subscribes, this value will be lost. This is specifically problematic if the source always emits only a single notification. Luckily, `AsyncSubject` provides a remedy for those cases.
+TIP: As a general rule, use subjects (of any kind) with caution, and make sure you're not reinventing the wheel; instead, use the built-in Rx operators.
 
-### 7.1.2 Representing asynchronous computation with AsyncSubject
+------
 
-You can add inner behavior to the way subjects handle source notifications. `AsyncSubject<T>` adds logic to your code that fits nicely with asynchronous emissions. This is useful when the source observable might complete before the observer has a chance to subscribe to it, as shown in figure 7.4. This behavior is often seen when dealing with concurrent applications, where order of execution can't be predicted.
+One problem with `Subject<'T>` you may encounter is that if the source observable emits a value before an observer subscribes, this value will be lost. This is specifically problematic if the source always emits only a single notification. Luckily, `AsyncSubject` provides a remedy for those cases.
 
-Figure 7.4 AsyncSubject emits only the last value to current and future observers.
+### 7.1.2 Representing asynchronous computation with `AsyncSubject`
 
-Internally, AsyncSubject stores the most recent value so that when the source observable completes, it emits this value to current and future observers. For example, you can use `AsyncSubject` inside Rx to convert `Task` and `Task<T>` into observables. Listing 7.5 shows the conceptual implementation of this conversion. The Rx implementation for the `ToObservable` operator is different and includes performance optimizations and edge-case handling.
+You can add inner behavior to the way subjects handle source notifications. `AsyncSubject<'T>` adds logic to your code that fits nicely with asynchronous emissions. This is useful when the source observable might complete before the observer has a chance to subscribe to it, as shown in figure 7.4. This behavior is often seen when dealing with concurrent applications, where order of execution can't be predicted.
+
+Figure 7.4 `AsyncSubject` emits only the last value to current and future observers.
+
+Internally, `AsyncSubject` stores the most recent value so that when the source observable completes, it emits this value to current and future observers. For example, you can use `AsyncSubject` inside Rx to convert `Task` and `Task<'T>` into observables. Listing 7.5 shows the conceptual implementation of this conversion. The Rx implementation for the `ToObservable` operator is different and includes performance optimizations and edge-case handling.
 
 The code shows how to create an `AsyncSubject` and redirect each possible completion status for the task to the observable notifications. Even though the task is completed, the subject emits the notification to the observer.
 
-Listing 7.5 Converting `Task<T>` to an observable by using AsyncSubject
+Listing 7.5 Converting `Task<'T>` to an observable by using `AsyncSubject`
 
 ```C#
 var tcs = new TaskCompletionSource<bool>();
@@ -193,6 +251,31 @@ tcs.SetResult(true);
 sbj.SubscribeConsole();
 ```
 
+F#,
+
+```fsharp
+    let tcs = new TaskCompletionSource<bool>()
+    let task = tcs.Task
+
+    let sbj = new AsyncSubject<bool>()
+    task.ContinueWith((fun (t:Task<bool>) ->
+        match (t.Status) with
+        | TaskStatus.RanToCompletion ->
+            sbj.OnNext(t.Result)
+            sbj.OnCompleted()
+        | TaskStatus.Faulted ->
+            sbj.OnError(t.Exception.InnerException)
+        | TaskStatus.Canceled ->
+            sbj.OnError(new TaskCanceledException(t))
+        | _ -> ()
+    ) ,TaskContinuationOptions.ExecuteSynchronously)
+    |> ignore
+
+    tcs.SetResult(true)
+    sbj.Subscribe(ConsoleObserver "sbj")
+    |> ignore
+```
+
 The program output shows that even though the `Task` completed before the observer subscribed, the observer is notified of the result:
 
 ```C#
@@ -202,13 +285,13 @@ The program output shows that even though the `Task` completed before the observ
 
 Keep in mind that `AsyncSubject` emits only one value, and only after the source observable completes. Sometimes, however, you'll want to emit notifications as they come and preserve the ability to cache the latest value for future observers, as `AsyncSubject` does. For that, you need to use `BehaviorSubject`.
 
-### 7.1.3 Preserving the latest state with BehaviorSubject
+### 7.1.3 Preserving the latest state with `BehaviorSubject`
 
-The type `BehaviorSubject<T>` is useful when you need to represent a value that changes over time, such as an object state. Say you need to store an object's possible states (`PreLoad`, `Loaded`, `Rendering`, and so forth).
+The type `BehaviorSubject<'T>` is useful when you need to represent a value that changes over time, such as an object state. Say you need to store an object's possible states (`PreLoad`, `Loaded`, `Rendering`, and so forth).
 
 Every observer that subscribes to `BehaviorSubject` receives the last value and all subsequent notifications, as shown in figure 7.5. Therefore, when creating an instance of `BehaviorSubject`, you pass an initial value (a default). You can also read the last (or initial) value through the Value property that `BehaviorSubject` exposes, making it ideal as a backing field for a state property that allows change notifications.
 
-Figure 7.5 `BehaviorSubject` represents a value that changes over time. Observers receive the last (or initial) value and all subsequent notifications. This example uses BehaviorSubject to maintain the state of the network connectivity while still making changes in the connectivity observable:
+Figure 7.5 `BehaviorSubject` represents a value that changes over time. Observers receive the last (or initial) value and all subsequent notifications. This example uses `BehaviorSubject` to maintain the state of the network connectivity while still making changes in the connectivity observable:
 
 ```C#
 var connection =
@@ -221,6 +304,29 @@ connection.SubscribeConsole("second");
 Console.WriteLine("Connection is {0}", connection.Value);
 ```
 
+F#,
+
+```fsharp
+    let src = Observable.Interval(TimeSpan.FromSeconds(1)).Map((int))
+
+    let connection =
+        new BehaviorSubject<_>(0)
+
+    src.Subscribe(connection)
+    |> ignore
+
+    connection.Subscribe(ConsoleObserver "first")
+    |> ignore
+
+    Thread.Sleep(2000)
+
+    connection.Subscribe(ConsoleObserver "second")
+    |> ignore
+    Console.WriteLine($"Connection is {connection.Value}")
+```
+
+
+
 Running this example shows this output:
 
 ```C#
@@ -232,17 +338,17 @@ Connection is Connected
 
 `BehaviorSubject` keeps a cache of one value only (the last one). For more than one value, use `ReplaySubject`.
 
-### 7.1.4 Caching the sequence with ReplaySubject
+### 7.1.4 Caching the sequence with `ReplaySubject`
 
-`ReplaySubject<T>` is a subject that holds a cache of the notifications it observes inside an inner buffer, as shown in figure 7.6.
+`ReplaySubject<'T>` is a subject that holds a cache of the notifications it observes inside an inner buffer, as shown in figure 7.6.
 
-Figure 7.6 ReplaySubject broadcasts each notification to all subscribed and future observers, subject to buffer trimming policies.
+Figure 7.6 `ReplaySubject` broadcasts each notification to all subscribed and future observers, subject to buffer trimming policies.
 
-ReplaySubject lets you, for example, store notifications and replay them for various observable pipelines that you're testing, and compare the results to see which is the best. To prevent unwanted memory leaks, you can control the caching policy that limits the buffer size, time, or both.
+`ReplaySubject` lets you, for example, store notifications and replay them for various observable pipelines that you're testing, and compare the results to see which is the best. To prevent unwanted memory leaks, you can control the caching policy that limits the buffer size, time, or both.
 
-Listing 7.6 shows how to limit ReplaySubject by time and size. This example uses Rx with a health sensor. Like Microsoft Band, the client application connects to the sensor when started, but the user can add a heart-rate parameter to the UI later. To display a nice graph, you want to keep the last 20 readings from the last 2 minutes.
+Listing 7.6 shows how to limit `ReplaySubject` by time and size. This example uses Rx with a health sensor. Like Microsoft Band, the client application connects to the sensor when started, but the user can add a heart-rate parameter to the UI later. To display a nice graph, you want to keep the last 20 readings from the last 2 minutes.
 
-Listing 7.6 Limiting the ReplaySubject cache by time and size
+Listing 7.6 Limiting the `ReplaySubject` cache by time and size
 
 ```C#
 var heartRate:IObservable<int> = ...
@@ -252,6 +358,22 @@ heartRate.Subscribe(sbj);
 // After the user selected to show the heart rate on the screen
 
 sbj.SubscribeConsole("HeartRate Graph");
+```
+
+F#,
+
+```fsharp
+    let heartRate:IObservable<int> = Observable.Interval(TimeSpan.FromSeconds(1)).Map(int)
+
+    let sbj = new ReplaySubject<int>(bufferSize= 5, window= TimeSpan.FromMinutes(1))
+
+    heartRate.Subscribe(sbj)
+    |> ignore
+
+    // After the user selected to show the heart rate on the screen
+
+    sbj.Subscribe(ConsoleObserver "HeartRate Graph")
+    |> ignore
 ```
 
 For the heart rate, I simulated five readings (70–74) and, instead of displaying a graph, I printed them on screen:
@@ -265,7 +387,7 @@ HeartRate Graph - OnNext(74)
 HeartRate Graph - OnCompleted()
 ```
 
-Like everything that involves caching in software, you should be aware of the memory footprint it leaves and the cache invalidation you use. There's no way to manually clean the cache that ReplaySubject contains (nor access it and read it), so pay special attention when you use the unbounded version of ReplaySubject. You can free the cache's memory only by disposing of ReplaySubject.
+Like everything that involves caching in software, you should be aware of the memory footprint it leaves and the cache invalidation you use. There's no way to manually clean the cache that `ReplaySubject` contains (nor access it and read it), so pay special attention when you use the unbounded version of `ReplaySubject`. You can free the cache's memory only by disposing of `ReplaySubject`.
 
 Next, we'll talk about guidelines and best practices for subjects.
 
@@ -282,19 +404,37 @@ class BankAccount
 }
 ```
 
+F#,
+
+```fsharp
+type BankAccount() =
+    let _inner = new Subject<int>()
+    member this.MoneyTransactions 
+        with get() = _inner :> IObservable<int>
+```
+
 Although you expose the `IObservable` type only, the encapsulation can still be broken. That's because it's possible for a hostile or inexperienced developer to cast the observable back to a subject, as in this example:
 
 ```C#
 var acct = new BankAccount();
 acct.MoneyTransactions.SubscribeConsole("Transferring");
-
 var hackedSubject = acct.MoneyTransactions as Subject<int>;
-
 hackedSubject.OnNext(-9999);
-
 ```
 
-After casting back to Subject (or ISubject), the code can now emit notifications from the outside. This will cause confusion and unwanted bugs.
+F#,
+
+```fsharp
+let acct = new BankAccount()
+acct.MoneyTransactions
+    .Subscribe(ConsoleObserver "Transferring")
+|> ignore
+let hackedSubject = 
+    acct.MoneyTransactions :?> Subject<int>
+hackedSubject.OnNext(-9999)
+```
+
+After casting back to `Subject` (or `ISubject`), the code can now emit notifications from the outside. This will cause confusion and unwanted bugs.
 
 #### HOW TO PROTECT FROM OUTSIDE EMISSIONS
 
@@ -302,10 +442,9 @@ Your subject was compromised because you returned an inner object that has acces
 
 For that purpose, Rx provides the `AsObservable` operator. `AsObservable` creates a proxy that wraps your subject and exposes only the `IObservable` interface, so the observer can still subscribe, but no code can cast the observer to a subject, and no code can access the observers. This is demonstrated in figure 7.7.
 
-实践：`AsObservable`位于名字空间`System.Reactive.Linq`，NuGet包`System.Reactive`。
+提示：`AsObservable`位于名字空间`System.Reactive.Linq`。
 
-
-Figure 7.7 Instead of exposing your subject, use the AsObservable operator to create a proxy that hides the inner subject.
+Figure 7.7 Instead of exposing your subject, use the `AsObservable` operator to create a proxy that hides the inner subject.
 
 The following example proves that the observable returned by the `AsObservable` operator (the proxy) can't be cast to a subject:
 
@@ -322,6 +461,23 @@ Console.WriteLine("proxy as observer is {0}",observer == null
                                                  : "not null");
 ```
 
+F#,
+
+```fsharp
+    let sbj = new Subject<int>()
+    let proxy = sbj.AsObservable()
+    try
+        let _ = proxy :?> Subject<int>
+        ()
+    with e ->
+        Console.WriteLine(e.Message)
+    try
+        let _ = proxy :?> IObserver<int>
+        ()
+    with e ->
+        Console.WriteLine(e.Message)
+```
+
 This, of course, prints the following:
 
 ```C#
@@ -329,29 +485,29 @@ proxy as subject is null
 proxy as observer is null
 ```
 
-Subject plays a big role in Rx operators and is a powerful tool if used correctly. Unfortunately, Subject can be used incorrectly. The next section provides a few guidelines that can help you decide whether Subject is the right object for you to use.
+`Subject` plays a big role in Rx operators and is a powerful tool if used correctly. Unfortunately, `Subject` can be used incorrectly. The next section provides a few guidelines that can help you decide whether Subject is the right object for you to use.
 
 ### 7.1.6 Following best practices and guidelines
 
-One of the areas that causes a lot of debate in the Rx world is whether subjects are good or bad, and if using them is right or wrong. As Erik Meijer once said, 
+One of the areas that causes a lot of debate in the Rx world is whether subjects are good or bad, and if using them is right or wrong. As Erik Meijer once said,
 
 “Once you start seeing yourself using Subject, something is wrong. Because subjects are stateful things.”
 
 But let's set the record straight: subjects aren't bad and, when used correctly, can be useful indeed. They're used extensively inside the Rx code itself. It's true, however, that some developers use subjects when they don't need them. So when should you use a subject and when should you avoid them? The following list contains the points you should consider:
 
-  - Use the built-in factory methods such as `Observable.Create` whenever possible, instead of using a subject. Use a subject only if no suitable built-in factory method exists.
+- Use the built-in factory methods such as `Observable.Create` whenever possible, instead of using a subject. Use a subject only if no suitable built-in factory method exists.
 
-  - Use a subject only if the source of the notifications is local (your code raises the notifications and not an external source); for example, to create a notifying property with `BehaviorSubject`.
+- Use a subject only if the source of the notifications is local (your code raises the notifications and not an external source); for example, to create a notifying property with `BehaviorSubject`.
 
-  - Use a subject for controlling an observable's temperature (as you'll learn next).
+- Use a subject for controlling an observable's temperature (as you'll learn next).
 
-  - Use a subject when creating an operator of your own that needs a notification's hub.
+- Use a subject when creating an operator of your own that needs a notification's hub.
 
-  - Don't expose subjects; use `AsObservable` to prevent that from happening.
+- Don't expose subjects; use `AsObservable` to prevent that from happening.
 
 The important thing to remember is that before you create an operator, you should always check whether an operator that does what you intended to write by yourself already exists in Rx.
 
-Dave Sexton wrote a wonderful blog post about the correct use of subjects that drills down into these guidelines (http://mng.bz/Pv9). I recommend reading it after you read the next section, where I’ll show one area that depends on subjects for its existence—controlling the observable temperature.
+Dave Sexton wrote a wonderful blog post about the correct use of subjects that drills down into these [guidelines](<http://mng.bz/Pv9>). I recommend reading it after you read the next section, where I’ll show one area that depends on subjects for its existence—controlling the observable temperature.
 
 ## 7.2 Introducing temperature: cold and hot observables
 
@@ -376,7 +532,28 @@ var coldObservable =
 coldObservable.SubscribeConsole("o1");
 await Task.Delay(TimeSpan.FromSeconds(0.5));
 coldObservable.SubscribeConsole("o2");
+```
 
+F#,
+
+```fsharp
+    let coldObservable =
+        Observable.Create<string>(fun (o:IObserver<_>) ->
+            task {
+                o.OnNext("Hello")
+                do! Task.Delay(TimeSpan.FromSeconds(1))
+                o.OnNext("Rx")
+            }
+            :> Task
+        )
+
+    task {
+        coldObservable.Subscribe(ConsoleObserver "o1")
+        |> ignore
+        do! Task.Delay(TimeSpan.FromSeconds(0.5))
+        coldObservable.Subscribe(ConsoleObserver "o2")
+        |> ignore
+    }
 ```
 
 Many developers new to Rx find it surprising that the output of this small program shows the message of both observers intertwined:
@@ -456,7 +633,23 @@ Thread.Sleep(2000);
 connectableObservable.SubscribeConsole("Third");
 ```
 
-This small application creates a cold observable that emits five notifications, one every second. The application then makes the observable hot by converting it to a ConnectableObservable (more on that in a moment) and connects it to the source observable (by calling the Connect operator) after two observers subscribe. Then, after another 2 seconds, it subscribes another observer.
+F#,
+
+```fsharp
+    let coldObservable = Observable.Interval(TimeSpan.FromSeconds(1)).Take(5)
+    let connectableObservable = coldObservable.Publish()
+    connectableObservable.Subscribe(ConsoleObserver "First")
+        |> ignore
+    connectableObservable.Subscribe(ConsoleObserver "Second")
+        |> ignore
+    connectableObservable.Connect()
+        |> ignore
+    Thread.Sleep(2000)
+    connectableObservable.Subscribe(ConsoleObserver "Third")
+        |> ignore
+```
+
+This small application creates a cold observable that emits five notifications, one every second. The application then makes the observable hot by converting it to a `ConnectableObservable` (more on that in a moment) and connects it to the source observable (by calling the `Connect` operator) after two observers subscribe. Then, after another 2 seconds, it subscribes another observer.
 
 The output shows that all notifications are indeed shared between all observers:
 
@@ -482,14 +675,14 @@ Third - OnCompleted()
 
 You can see that the same notification values are shared between the observers. A few new concepts have arisen here, so let's explore the first one: `ConnectableObservable`.
 
-### 7.3.2 Using ConnectableObservable
+### 7.3.2 Using `ConnectableObservable`
 
 To turn the cold observable to hot, you need a proxy around it. But you don't want the proxy to create a subscription to the cold observable before you finish setting all the observers you need (otherwise, you might miss some notifications). To help with that, Rx introduces the connectable observable. `ConnectableObservable` implements the `IConnectableObservable` interface and subscribes to the source observable only when explicitly told to do so by calling the `Connect` method.
 
 Listing 7.8 The `IConnectableObservable` interface
 
 ```C#
-interface IConnectableObservable<T> : IObservable<T>
+interface IConnectableObservable<'T> : IObservable<'T>
 {
     IDisposable Connect();
 }
@@ -512,7 +705,7 @@ IConnectableObservable<TSource> Publish<TSource>(
     this IObservable<TSource> source)
 ```
 
-It creates a `ConnectableObservable` that holds a `Subject<T>` internally. So, from the moment you `Connect` it, all the observers share the same notifications. These are the code steps to follow:
+It creates a `ConnectableObservable` that holds a `Subject<'T>` internally. So, from the moment you `Connect` it, all the observers share the same notifications. These are the code steps to follow:
 
 ```C#
 var coldObservable = ...
@@ -525,16 +718,29 @@ connectableObservable.Subscribe(...);
 connectableObservable.Connect();
 ```
 
+F#
+
+```fsharp
+    let coldObservable = Observable.Return(1)
+    let connectableObservable = coldObservable.Publish()
+
+    connectableObservable.Subscribe(ConsoleObserver "A")
+        |> ignore
+    connectableObservable.Subscribe(ConsoleObserver "B")
+        |> ignore
+    connectableObservable.Connect()
+```
+
 In most cases, you'd like to subscribe all observers before calling `Connect`, so no observer will miss a notification; but that's not always the case. In case new observers subscribe later, it's important for you to note that they'll receive only the next notification that follows their subscription.
 
-But you can tweak this behavior so that an observer will immediately receive the latest notification when it subscribes. This is done using the following overloads of `Publish`, which accept an initial value and create the `ConnectableObservable` with an inner `BehaviorSubject<T>`:
+But you can tweak this behavior so that an observer will immediately receive the latest notification when it subscribes. This is done using the following overloads of `Publish`, which accept an initial value and create the `ConnectableObservable` with an inner `BehaviorSubject<'T>`:
 
 ```C#
 IConnectableObservable<TSource> Publish<TSource>(this IObservable<TSource> source,
      TSource initialValue)
 ```
 
-The inner `BehaviorSubject<T>` this overload creates for the `ConnectableObservable` is initialized with an initial value, so every observer that subscribes before `Connect` was called will receive this value. Every observer that subscribes after `Connect` was called will receive the last value that was emitted from the source observable or the initial value, if no notification was yet emitted. This behavior is shown in figure 7.11
+The inner `BehaviorSubject<'T>` this overload creates for the `ConnectableObservable` is initialized with an initial value, so every observer that subscribes before `Connect` was called will receive this value. Every observer that subscribes after `Connect` was called will receive the last value that was emitted from the source observable or the initial value, if no notification was yet emitted. This behavior is shown in figure 7.11
 
 Figure 7.11 Publishing an observable with an initial value. Observers receive either the last value that was emitted from the source observable or the initial value, if no notification was yet emitted.
 
@@ -557,7 +763,20 @@ var zipped = numbers
     .SubscribeConsole("zipped");
 ```
 
-In the example, you use an observable twice in order to create a new observable by using the Zip operator. Because the numbers observable is cold, the sequence is generated twice, and the side effect caused by incrementing the variable i happens twice per notification. Ultimately, what I did in this example is the same as if I had created two different observables that happen to use the same variable i and advance it independently (causing the side effect to be reflected in the other observable); thus the function arguments in iteration k will be with the values a = k and b = k + 1. You can see this effect in the output:
+F#
+
+```fsharp
+    let mutable i = 0
+    let numbers = Observable.Range(1, 5).Map(fun _ -> i <- i+1;i)
+    let zipped = 
+        numbers
+            .Zip(numbers)
+            .Map(fun struct(a,b) -> a + b)
+            .Subscribe(ConsoleObserver "zipped")
+    ()
+```
+
+In the example, you use an observable twice in order to create a new observable by using the `Zip` operator. Because the numbers observable is cold, the sequence is generated twice, and the side effect caused by incrementing the variable `i` happens twice per notification. Ultimately, what I did in this example is the same as if I had created two different observables that happen to use the same variable `i` and advance it independently (causing the side effect to be reflected in the other observable); thus the function arguments in iteration `k` will be with the values `a = k` and `b = k + 1`. You can see this effect in the output:
 
 ```C#
 zipped - OnNext(1)
@@ -574,6 +793,18 @@ You can publish the source observable by yourself, but then it can be hard to de
 var publishedZip = numbers.Publish(published =>
     published.Zip(published, (a, b) => a + b));
 publishedZip.SubscribeConsole("publishedZipped");
+```
+
+F#
+
+```fsharp
+    let publishedZip = 
+        numbers
+            .Publish(fun published ->
+                published
+                    .Zip(published)
+                    .Map(fun struct(a, b) -> a + b))
+    publishedZip.Subscribe(ConsoleObserver "publishedZipped")
 ```
 
 Now, the numbers observable is published, so the notifications are shared among all its observers. The same notification will be received both as a and b. The output is
@@ -600,7 +831,7 @@ IConnectableObservable<TSource> PublishLast<TSource>(
      this IObservable<TSource> source)
 ```
 
-The `PublishLast` operator works similarly to the `Publish` operator, but instead of sharing all notifications from the source observable, the `ConnectableObservable` it creates will share only the last notification emitted before the source observable completes, both for existing observers and future ones. This is similar to working with an asynchronous type, as you saw earlier in this chapter, and `PublishLast` will create an `AsyncSubject<T>` that's used internally by the `ConnectableObservable`. Here's an example that shows it in action:
+The `PublishLast` operator works similarly to the `Publish` operator, but instead of sharing all notifications from the source observable, the `ConnectableObservable` it creates will share only the last notification emitted before the source observable completes, both for existing observers and future ones. This is similar to working with an asynchronous type, as you saw earlier in this chapter, and `PublishLast` will create an `AsyncSubject<'T>` that's used internally by the `ConnectableObservable`. Here's an example that shows it in action:
 
 ```C#
 var coldObservable = Observable.Timer(TimeSpan.FromSeconds(5))
@@ -613,6 +844,41 @@ connectableObservable.Connect();
 
 Thread.Sleep(6000);
 connectableObservable.SubscribeConsole("Third");
+```
+
+F#
+
+```fsharp
+    let coldObservable = Observable.Range(1,5).Map(fun _ -> "Rx")
+    let connectableObservable = coldObservable.PublishLast()
+    connectableObservable.Subscribe(ConsoleObserver "A")
+        |> ignore
+    connectableObservable.Subscribe(ConsoleObserver "B")
+        |> ignore
+    connectableObservable.Connect()
+        |> ignore
+
+    Thread.Sleep(6000)
+    connectableObservable.Subscribe(ConsoleObserver "C")
+```
+
+F#
+
+```fsharp
+    let coldObservable = getColdObservable()
+    let connectableObservable =
+        Observable.Defer(fun () -> coldObservable)
+            .Publish()
+    connectableObservable.Subscribe(ConsoleObserver "Messages Screen")
+        |> ignore
+    connectableObservable.Subscribe(ConsoleObserver "Messages Statistics")
+        |> ignore
+    let subscription = connectableObservable.Connect()
+    //After the application was notified on server outage
+    Console.WriteLine("--Disposing the current connection and reconnecting--")
+    subscription.Dispose()
+    let subscription1 = connectableObservable.Connect()
+    ()
 ```
 
 Running this example shows that the last notification emitted by the source observable was shared among all observers:
@@ -628,7 +894,7 @@ Third - OnCompleted()
 
 ### 7.3.4 Using Multicast
 
-Both Publish and PublishLast are good for all of the common scenarios in which you need to heat a cold observable. But if you need more control or need to enforce policies on an internal subject used inside ConnectableObservable (for example, setting its buffer size and other configurations), then you need to use the `Multicast` operator. `Multicast` lets you pass the pending subject inside the `ConnectableObservable`
+Both Publish and `PublishLast` are good for all of the common scenarios in which you need to heat a cold observable. But if you need more control or need to enforce policies on an internal subject used inside `ConnectableObservable` (for example, setting its buffer size and other configurations), then you need to use the `Multicast` operator. `Multicast` lets you pass the pending subject inside the `ConnectableObservable`
 
 ```C#
 IConnectableObservable<TResult> Multicast<TSource, TResult>(
@@ -636,7 +902,7 @@ IConnectableObservable<TResult> Multicast<TSource, TResult>(
      ISubject<TSource, TResult> subject)
 ```
 
-`Multicast` is a powerful low-level operator that's used to create other operators. All the `Publish` versions use `Multicast` in their implementations. For example, this implementation from the Rx source code for the Publish overload creates a BehaviorSubject for ConnectableObservable:
+`Multicast` is a powerful low-level operator that's used to create other operators. All the `Publish` versions use `Multicast` in their implementations. For example, this implementation from the Rx source code for the Publish overload creates a `BehaviorSubject` for `ConnectableObservable`:
 
 ```C#
 virtual IConnectableObservable<TSource> Publish<TSource>(
@@ -645,12 +911,11 @@ virtual IConnectableObservable<TSource> Publish<TSource>(
 {
     return source.Multicast(new BehaviorSubject<TSource>(initialValue));
 }
-
 ```
 
-As explained earlier, this Publish overload creates a `ConnectableObservable`. Every observer that subscribes to it, after its `Connect` method is called, will receive the last value emitted from the source observable or the initial value, if no notification was yet emitted. The implementation shows that in order to provide this behavior, BehaviorSubject is used as the underlying subject passed to the Multicast operator.
+As explained earlier, this Publish overload creates a `ConnectableObservable`. Every observer that subscribes to it, after its `Connect` method is called, will receive the last value emitted from the source observable or the initial value, if no notification was yet emitted. The implementation shows that in order to provide this behavior, `BehaviorSubject` is used as the underlying subject passed to the Multicast operator.
 
-### 7.3.5 Managing the ConnectableObservable connection
+### 7.3.5 Managing the `ConnectableObservable` connection
 
 After you connect `ConnectableObservable` to the source observable by calling the `Connect` method, you get back the subscription object that enables you to disconnect it whenever you want. What happens if you reconnect again? What if there are still observers? What if the observers are no longer there? To find the answers, keep on reading.
 
@@ -658,7 +923,7 @@ After you connect `ConnectableObservable` to the source observable by calling th
 
 You can reconnect `ConnectableObservable` at any time. Doing so will cause the subscribed observers to see the notifications again. Reconnecting might be useful when you want to keep the observers but need to change the original source of the observable pipeline. For example, if the source observable is a chat server, and you know that server needs to be replaced, you can reconnect, which will cause the new server to be picked up again.
 
-Listing 7.9 Reconnecting ConnectableObservable
+Listing 7.9 Reconnecting `ConnectableObservable`
 
 ```C#
 var connectableObservable =
@@ -674,11 +939,29 @@ subscription.Dispose();
 var subscription1 = connectableObservable.Connect();
 ```
 
+F#
+
+```fsharp
+    let connectableObservable =
+        Observable.Defer(fun () -> ChatServer.Current.ObserveMessages())
+            .Publish()
+
+    connectableObservable.Subscribe(ConsoleObserver "Messages Screen")
+        |> ignore
+    connectableObservable.Subscribe(ConsoleObserver "Messages Statistics")
+        |> ignore
+    let subscription = connectableObservable.Connect()
+    //After the application was notified on server outage
+    Console.WriteLine("--Disposing the current connection and reconnecting--")
+    subscription.Dispose()
+    let _ = connectableObservable.Connect()
+```
+
 In this example, the source observable is created using the `Defer` operator, which makes it a cold observable and, therefore, every observer shares the connection logic.
 
 Because you publish it, the connection happens only once, and the notifications are shared among the observers.
 
-The observer begins to receive notifications when you call `Connect` and stops receiving them when you dispose of the subscription object. When you call `Connect` a second time, an underlying connection to the new server is made (because ChatServer.Current points to the new server), and the observers receive the messages coming from it. This is shown in the program output:
+The observer begins to receive notifications when you call `Connect` and stops receiving them when you dispose of the subscription object. When you call `Connect` a second time, an underlying connection to the new server is made (because `ChatServer.Current` points to the new server), and the observers receive the messages coming from it. This is shown in the program output:
 
 ```C#
 Messages Screen - OnNext(Server0 - Message1)
@@ -722,6 +1005,22 @@ Thread.Sleep(3000);
 subscription2.Dispose();
 ```
 
+F#
+
+```fsharp
+    let publishedObservable = 
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Do(fun x -> Console.WriteLine($"Generating {x}"))
+            .Publish()
+            .RefCount()
+    let subscription1 = publishedObservable.Subscribe(ConsoleObserver "First")
+    let subscription2 = publishedObservable.Subscribe(ConsoleObserver "Second")
+    Thread.Sleep(3000)
+    subscription1.Dispose()
+    Thread.Sleep(3000)
+    subscription2.Dispose()
+```
+
 As you can see from the following program output, after the second observer unsubscribes, no more notifications are emitted:
 
 ```C#
@@ -748,7 +1047,7 @@ We defined a cold observable as an observable that generates the complete sequen
 
 It's important to note that if you have a hot observable, you can make it cold only from the moment you run the conversion. If by the time you make the conversion a notification is already emitted, you can't reproduce them.
 
-To make an observable cold, you need to use the same tools that made a cold observable hot. The only difference is that, in addition to multicasting notifications as they happen, you need to store the notifications and replay them when an observer subscribes. This is what the `Replay` operator does (shown in figure 7.12), and it has many overloads to support doing just that. All of the overloads create a `ReplaySubject<T>` that you can use inside `ConnectableObservable`.
+To make an observable cold, you need to use the same tools that made a cold observable hot. The only difference is that, in addition to multicasting notifications as they happen, you need to store the notifications and replay them when an observer subscribes. This is what the `Replay` operator does (shown in figure 7.12), and it has many overloads to support doing just that. All of the overloads create a `ReplaySubject<'T>` that you can use inside `ConnectableObservable`.
 
 Figure 7.12 Turning a hot observable to a cold observable is necessary when you want to capture emissions and replay them.
 
@@ -761,8 +1060,22 @@ var publishedObservable = Observable.Interval(TimeSpan.FromSeconds(1))
 publishedObservable.Connect();
 var subscription1 = publishedObservable.SubscribeConsole("First");
 Thread.Sleep(3000);
-Var subscription2 = publishedObservable.SubscribeConsole("Second");
+var subscription2 = publishedObservable.SubscribeConsole("Second");
+```
 
+F#
+
+```fsharp
+    let publishedObservable = 
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Take(5)
+            .Replay(2) //Creates a connectable observable that replays the last two items
+    publishedObservable.Connect()
+        |> ignore
+    let subscription1 = publishedObservable.Subscribe(ConsoleObserver "First")
+    Thread.Sleep(3000)
+    let subscription2 = publishedObservable.Subscribe(ConsoleObserver "Second")
+    ()
 ```
 
 Running this application shows this output:
@@ -783,7 +1096,7 @@ Second - OnCompleted()
 
 The preceding results show how the `Replay` operator caches and then reemits notifications from the source observable. Figure 7.13 shows the marble diagram.
 
-Figure 7.13 Marble diagram showing the result of the Replay operator with a buffer size of two items
+Figure 7.13 Marble diagram showing the result of the `Replay` operator with a buffer size of two items
 
 It's important to understand the implications of the operators you use and how they might make an observable hot or cold. By using the operators you've seen in this chapter, such as `Publish` and `Replay`, you can control the temperature so that there will be no doubt about the results of the queries you write, therefore making your code more readable and predictable.
 
@@ -793,26 +1106,26 @@ In this chapter, you've learned the definition of the observable temperature and
 
 Here are the important points of this chapter:
 
-  - A type that's both an observable and an observer is called a subject.
+- A type that's both an observable and an observer is called a subject.
 
-  - Subjects implement the interface `ISubject<TSource, TResult>`, or `ISubject<T>` if the source and result are of the same type.
+- Subjects implement the interface `ISubject<'TSource, 'TResult>`, or `ISubject<'T>` if the source and result are of the same type.
 
-  - Rx provides four built-in subjects: `Subject<T>`, `AsyncSubject<T>`, `ReplaySubject<T>`, and `BehaviorSubject<T>`.
+- Rx provides four built-in subjects: `Subject<'T>`, `AsyncSubject<'T>`, `ReplaySubject<'T>`, and `BehaviorSubject<'T>`.
 
-  - A subject broadcasts the notifications it receives to all its observers.
+- A subject broadcasts the notifications it receives to all its observers.
 
-  - Observables have a notion of temperature; they can be cold or hot.
+- Observables have a notion of temperature; they can be cold or hot.
 
-  - A cold observable emits the full sequence of notifications when the observer subscribes.
+- A cold observable emits the full sequence of notifications when the observer subscribes.
 
-  - A hot observable emits notifications regardless of its observers and may share the notifications among the observers.
+- A hot observable emits notifications regardless of its observers and may share the notifications among the observers.
 
-  - To make a cold observable hot, you use the `Publish` and `Multicast` operators to create a `ConnectableObservable` with an inner subject.
+- To make a cold observable hot, you use the `Publish` and `Multicast` operators to create a `ConnectableObservable` with an inner subject.
 
-  - Calling the `Connect` method on the `ConnectableObservable` subscribes it to the source observable, and the notifications are shared with all observers.
+- Calling the `Connect` method on the `ConnectableObservable` subscribes it to the source observable, and the notifications are shared with all observers.
 
-  - To automatically unsubscribe the `ConnectableObservable` when there are no more observers, use the `RefCount` operator.
+- To automatically unsubscribe the `ConnectableObservable` when there are no more observers, use the `RefCount` operator.
 
-  - The `Replay` operator renders a hot observable cold by replaying the notifications to the observers. You can limit the amount of memory used for replaying by specifying the number of items and/or time to keep the items in memory.
+- The `Replay` operator renders a hot observable cold by replaying the notifications to the observers. You can limit the amount of memory used for replaying by specifying the number of items and/or time to keep the items in memory.
 
 In the next chapter, you'll deepen your knowledge of the querying operators Rx has to offer.

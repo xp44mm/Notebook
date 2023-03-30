@@ -16,7 +16,7 @@ Lastly when we call `incrementParam`, we provide the address of the mutable valu
 
 ## Passing by Reference
 
-Passing an F# value by reference involves byrefs, which are managed pointer types. Guidance for which type to use is as follows:
+Passing an F# value by reference involves `byref`s, which are managed pointer types. Guidance for which type to use is as follows:
 
 - Use `inref<'T>` if you only need to read the pointer.
 - Use `outref<'T>` if you only need to write to the pointer.

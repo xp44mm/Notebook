@@ -36,7 +36,7 @@ Parallel processing (or parallel programming) uses multithreading to maximize th
 
 > A form of concurrency that uses futures or callbacks to avoid unnecessary threads.
 
-A future (or promise) is a type that represents some operation that will complete in the future. Some modern future types in .NET are `Task` and `Task<TResult>`. Older asynchronous APIs use callbacks or events instead of futures. Asynchronous programming is centered around the idea of an asynchronous operation: some operation that is started that will complete some time later. While the operation is in progress, it doesn't block the original thread; the thread that starts the operation is free to do other work. When the operation completes, it notifies its future or invokes its callback or event to let the application know the operation is finished.
+A future (or promise) is a type that represents some operation that will complete in the future. Some modern future types in .NET are `Task` and `Task<'TResult>`. Older asynchronous APIs use callbacks or events instead of futures. Asynchronous programming is centered around the idea of an asynchronous operation: some operation that is started that will complete some time later. While the operation is in progress, it doesn't block the original thread; the thread that starts the operation is free to do other work. When the operation completes, it notifies its future or invokes its callback or event to let the application know the operation is finished.
 
 Asynchronous programming is a powerful form of concurrency, but until recently, it required extremely complex code. The `async` and `await` support in modern languages make asynchronous programming almost as easy as synchronous (non-concurrent) programming.
 
@@ -56,7 +56,7 @@ Asynchronous programming has two primary benefits. The first benefit is for end-
 
 Both benefits of asynchronous programming derive from the same underlying aspect: asynchronous programming frees up a thread. For GUI programs, asynchronous programming frees up the UI thread; this permits the GUI application to remain responsive to user input. For server applications, asynchronous programming frees up request threads; this permits the server to use its threads to serve more requests.
 
-Modern asynchronous .NET applications use two keywords: `async` and `await`. The `async` keyword is added to a method declaration, and performs a double purpose: it enables the `await` keyword within that method and it signals the compiler to generate a state machine for that method, similar to how `yield return` works. An async method may return `Task<TResult>` if it returns a value, `Task` if it doesn't return a value, or any other “task-like” type, such as `ValueTask`. In addition, an async method may return `IAsyncEnumerable<T>` or `IAsyncEnumerator<T>` if it returns multiple values in an enumeration. The task-like types represent futures; they can notify the calling code when the async method completes.
+Modern asynchronous .NET applications use two keywords: `async` and `await`. The `async` keyword is added to a method declaration, and performs a double purpose: it enables the `await` keyword within that method and it signals the compiler to generate a state machine for that method, similar to how `yield return` works. An async method may return `Task<'TResult>` if it returns a value, `Task` if it doesn't return a value, or any other “task-like” type, such as `ValueTask`. In addition, an async method may return `IAsyncEnumerable<'T>` or `IAsyncEnumerator<'T>` if it returns multiple values in an enumeration. The task-like types represent futures; they can notify the calling code when the async method completes.
 
 ##### WARNING
 
@@ -77,15 +77,28 @@ async Task DoSomethingAsync()
 }
 ```
 
+F#
+
+```fsharp
+let DoSomethingAsync() =
+    task {
+      let mutable value = 13
+      do! Task.Delay(TimeSpan.FromSeconds(1))
+      value <- value * 2
+      do! Task.Delay(TimeSpan.FromSeconds(1))
+      Trace.WriteLine(value)
+    }
+```
+
 An async method begins executing synchronously, just like any other method. Within an async method, the `await` keyword performs an asynchronous wait on its argument. First, it checks whether the operation is already complete; if it is, it continues executing (synchronously). Otherwise, it will pause the async method and return an incomplete task. When that operation completes some time later, the async method will resume executing.
 
 You can think of an async method as having several synchronous portions, broken up by `await` statements. The first synchronous portion executes on whatever thread calls the method, but where do the other synchronous portions execute? The answer is a bit complicated.
 
-When you await a task (the most common scenario), a context is captured when the await decides to pause the method. This is the current `SynchronizationContext` unless it's null, in which case the context is the current `TaskScheduler`. The method resumes executing within that captured context. Usually, this context is the UI context (if you're on the UI thread) or the threadpool context (most other situations). If you have an ASP.NET Classic (pre-Core) application, then the context could also be an ASP.NET request context. ASP.NET Core uses the threadpool context rather than a special request context.
+When you await a task (the most common scenario), a context is captured when the await decides to pause the method. This is the current `SynchronizationContext` unless it's null, in which case the context is the current `TaskScheduler`. The method resumes executing within that captured context. Usually, this context is the UI context (if you're on the UI thread) or the thread-pool context (most other situations). If you have an ASP.NET Classic (pre-Core) application, then the context could also be an ASP.NET request context. ASP.NET Core uses the thread-pool context rather than a special request context.
 
-So, in the preceding code, all the synchronous portions will attempt to resume on the original context. If you call DoSomethingAsync from a UI thread, each of its synchronous portions will run on that UI thread; but if you call it from a threadpool thread, each of its synchronous portions will run on any threadpool thread.
+So, in the preceding code, all the synchronous portions will attempt to resume on the original context. If you call `DoSomethingAsync` from a UI thread, each of its synchronous portions will run on that UI thread; but if you call it from a thread-pool thread, each of its synchronous portions will run on any thread-pool thread.
 
-You can avoid this default behavior by awaiting the result of the `ConfigureAwait` extension method and passing false for the `continueOnCapturedContext` parameter. The following code will start on the calling thread, and after it is paused by an await, it'll resume on a threadpool thread:
+You can avoid this default behavior by awaiting the result of the `ConfigureAwait` extension method and passing false for the `continueOnCapturedContext` parameter. The following code will start on the calling thread, and after it is paused by an await, it'll resume on a thread-pool thread:
 
 ```C#
 async Task DoSomethingAsync()
@@ -100,15 +113,28 @@ async Task DoSomethingAsync()
 }
 ```
 
+F#
+
+```fsharp
+let DoSomethingAsync2() =
+    task {
+      let mutable value = 13
+      do! Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false)
+      value <- value * 2
+      do! Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false)
+      Trace.WriteLine(value)
+    }
+```
+
 ##### TIP
 
 It's good practice to always call `ConfigureAwait` in your core “library” methods, and only resume the context when you need it—in your outer “user interface” methods.
 
-The `await` keyword is not limited to working with tasks; it can work with any kind of awaitable that follows a certain pattern. As an example, the Base Class Library includes the `ValueTask<T>` type, which reduces memory allocations if the result is commonly synchronous; for example, if the result can be read from an in-memory cache. `ValueTask<T>` is not directly convertible to `Task<T>`, but it does follow the awaitable pattern, so you can directly await it. There are other examples, and you can build your own, but most of the time await will take a `Task` or `Task<TResult>`.
+The `await` keyword is not limited to working with tasks; it can work with any kind of awaitable that follows a certain pattern. As an example, the Base Class Library includes the `ValueTask<'T>` type, which reduces memory allocations if the result is commonly synchronous; for example, if the result can be read from an in-memory cache. `ValueTask<'T>` is not directly convertible to `Task<'T>`, but it does follow the awaitable pattern, so you can directly await it. There are other examples, and you can build your own, but most of the time await will take a `Task` or `Task<'TResult>`.
 
-There are two basic ways to create a `Task` instance. Some tasks represent actual code that a CPU has to execute; these computational tasks should be created by calling `Task.Run` (or `TaskFactory.StartNew` if you need them to run on a particular scheduler). Other tasks represent a notification; these kinds of event-based tasks are created by `TaskCompletionSource<TResult>` (or one of its shortcuts). Most I/O tasks use `TaskCompletionSource<TResult>`.
+There are two basic ways to create a `Task` instance. Some tasks represent actual code that a CPU has to execute; these computational tasks should be created by calling `Task.Run` (or `TaskFactory.StartNew` if you need them to run on a particular scheduler). Other tasks represent a notification; these kinds of event-based tasks are created by `TaskCompletionSource<'TResult>` (or one of its shortcuts). Most I/O tasks use `TaskCompletionSource<'TResult>`.
 
-Error handling is natural with `async` and `await`. In the code snippet that follows, `PossibleExceptionAsync` may throw a `NotSupportedException`, but TrySomethingAsync can catch the exception naturally. The caught exception has its stack trace properly preserved and isn't artificially wrapped in a `TargetInvocationException` or `AggregateException`:
+Error handling is natural with `async` and `await`. In the code snippet that follows, `PossibleExceptionAsync` may throw a `NotSupportedException`, but `TrySomethingAsync` can catch the exception naturally. The caught exception has its stack trace properly preserved and isn't artificially wrapped in a `TargetInvocationException` or `AggregateException`:
 
 ```C#
 async Task TrySomethingAsync()
@@ -125,7 +151,20 @@ async Task TrySomethingAsync()
 }
 ```
 
-When an async method throws (or propagates) an exception, the exception is placed on its returned `Task` and the `Task` is completed. When that `Task` is awaited, the `await` operator will retrieve that exception and (re)throw it in a way such that its original stack trace is preserved. Thus, code such as the following example would work as expected if PossibleExceptionAsync was an async method:
+F#
+
+```fsharp
+let TrySomethingAsync() =
+    task {
+      try
+        do! PossibleExceptionAsync()
+      with (ex:NotSupportedException) ->
+        LogException(ex)
+        raise(ex)
+    }
+```
+
+When an async method throws (or propagates) an exception, the exception is placed on its returned `Task` and the `Task` is completed. When that `Task` is awaited, the `await` operator will retrieve that exception and (re)throw it in a way such that its original stack trace is preserved. Thus, code such as the following example would work as expected if `PossibleExceptionAsync` was an async method:
 
 ```C#
 async Task TrySomethingAsync()
@@ -145,7 +184,21 @@ async Task TrySomethingAsync()
 }
 ```
 
-There's one other important guideline when it comes to async methods: once you start using `async`, it's best to allow it to grow through your code. If you call an async method, you should (eventually) await the task it returns. Resist the temptation to call `Task.Wait()`, `Task<TResult>.Result`, or `Task.GetAwaiter().GetResult()`; doing so could cause a deadlock. Consider the following method:
+F#
+
+```fsharp
+let TrySomethingAsync2() =
+    task {
+      let task = PossibleExceptionAsync()
+      try
+        do! task
+      with (ex:NotSupportedException) ->
+        LogException(ex)
+        raise(ex)
+    }
+```
+
+There's one other important guideline when it comes to async methods: once you start using `async`, it's best to allow it to grow through your code. If you call an `async` method, you should (eventually) `await` the task it returns. Resist the temptation to call `Task.Wait()`, `Task<TResult>.Result`, or `Task.GetAwaiter().GetResult()`; doing so could cause a deadlock. Consider the following method:
 
 ```C#
 async Task WaitAsync()
@@ -163,15 +216,31 @@ void Deadlock()
 }
 ```
 
-The code in this example will deadlock if called from a UI or ASP.NET Classic context because both of those contexts only allow one thread in at a time. `Deadlock` will call WaitAsync, which begins the delay. `Deadlock` then (synchronously) waits for that method to complete, blocking the context thread.
+F#
 
-When the delay completes, await attempts to resume WaitAsync within the captured context, but it cannot because there's already a thread blocked in the context, and the context only allows one thread at a time. `Deadlock` can be prevented two ways: you can use `ConfigureAwait(false)` within WaitAsync (which causes await to ignore its context), or you can await the call to WaitAsync (making `Deadlock` into an async method).
+```fsharp
+let WaitAsync()=
+    task {
+      // This await will capture the current context ...
+      do! Task.Delay(TimeSpan.FromSeconds(1))
+      // ... and will attempt to resume the method here in that context.
+    }
+let Deadlock()=
+    // Start the delay.
+    let task = WaitAsync()
+    // Synchronously block, waiting for the async method to complete.
+    task.Wait()
+```
+
+The code in this example will dead-lock if called from a UI or ASP.NET Classic context because both of those contexts only allow one thread in at a time. `Deadlock` will call `WaitAsync`, which begins the delay. `Deadlock` then (synchronously) waits for that method to complete, blocking the context thread.
+
+When the delay completes, await attempts to resume `WaitAsync` within the captured context, but it cannot because there's already a thread blocked in the context, and the context only allows one thread at a time. `Deadlock` can be prevented two ways: you can use `ConfigureAwait(false)` within `WaitAsync` (which causes await to ignore its context), or you can await the call to `WaitAsync` (making `Deadlock` into an async method).
 
 ##### WARNING
 
 If you use `async`, it's best to use `async` all the way.
 
-For a more complete introduction to `async`, the online documentation that Microsoft has provided for async is fantastic; I recommend reading at least the Asynchronous Programming overview and the Task-based Asynchronous Pattern (TAP) overview. If you want to go a bit deeper, there's also the Async in Depth documentation.
+For a more complete introduction to `async`, the online documentation that Microsoft has provided for async is fantastic; I recommend reading at least [the Asynchronous Programming overview](https://learn.microsoft.com/en-us/gaming/gdk/_content/gc/system/overviews/async-toc) and [the Task-based Asynchronous Pattern (TAP) overview](https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap). If you want to go a bit deeper, there's also the Async in Depth documentation.
 
 **Asynchronous streams** take the groundwork of `async` and `await` and extend it to handle multiple values. Asynchronous streams are built around the concept of asynchronous enumerables, which are like regular enumerables, except that they enable asynchronous work to be done when retrieving the next item in the sequence. This is an extremely powerful concept that Chapter 3 covers in more detail. Asynchronous streams are especially useful whenever you have a sequence of data that arrives either one at a time or in chunks. For example, if your application processes the response of an API that uses paging with limit and offset parameters, then asynchronous streams are an ideal abstraction. As of the time of this writing, asynchronous streams are only available on the newest .NET platforms.
 
@@ -294,6 +363,16 @@ Observable.Interval(TimeSpan.FromSeconds(1))
     .Subscribe(x => Trace.WriteLine(x));
 ```
 
+F#
+
+```fsharp
+    Observable.Interval(TimeSpan.FromSeconds(1))
+        .Timestamp()
+        .Filter(fun x -> x.Value % 2L = 0L)
+        .Map(fun x -> x.Timestamp)
+        .Subscribe(fun x -> Trace.WriteLine(x))
+```
+
 The example code starts with a counter running off a periodic timer (`Interval`) and adds a timestamp to each event (`Timestamp`). It then filters the events to only include even counter values (`Where`), selects the timestamp values (`Timestamp`), and then as each resulting timestamp value arrives, writes it to the debugger (`Subscribe`). Don't worry if you don't understand the new operators, such as `Interval`: these are covered later in this book. For now, just keep in mind that this is a LINQ query very similar to the ones you're already familiar with. The main difference is that LINQ to Objects and LINQ to Entities use a “pull” model, where the enumeration of a LINQ query pulls the data through the query, while LINQ to Events (`System.Reactive`) uses a “push” model, where the events arrive and travel through the query by themselves. The definition of an observable stream is independent from its subscriptions. The last example is the same as the following code:
 
 ```C#
@@ -305,7 +384,18 @@ var timestamps = // IObservable<DateTimeOffset>
 timestamps.Subscribe(x => Trace.WriteLine(x));
 ```
 
-It is normal for a type to define the observable streams and make them available as an `IObservable<TResult>` resource. Other types can then subscribe to those streams or combine them with other operators to create another observable stream.
+F#
+
+```fsharp
+    let timestamps =
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Timestamp()
+            .Filter(fun x -> x.Value % 2L = 0L)
+            .Map(fun x -> x.Timestamp)
+    timestamps.Subscribe(fun x -> Trace.WriteLine(x))
+```
+
+It is normal for a type to define the observable streams and make them available as an `IObservable<'TResult>` resource. Other types can then subscribe to those streams or combine them with other operators to create another observable stream.
 
 A `System.Reactive` subscription is also a resource. The `Subscribe` operators return an `IDisposable` that represents the subscription. When your code is done listening to an observable stream, it should dispose its subscription. Subscriptions behave differently with hot and cold observables. A hot observable is a stream of events that is always going on, and if there are no subscribers when the events come in, they are lost. For example, mouse movement is a hot observable. A cold observable is an observable that doesn't have incoming events all the time. A cold observable will react to a subscription by starting the sequence of events. For example, an HTTP download is a cold observable; the subscription causes the HTTP request to be sent.
 
@@ -320,7 +410,19 @@ Observable.Interval(TimeSpan.FromSeconds(1))
         ex => Trace.WriteLine(ex));
 ```
 
-`Subject<TResult>` is one type that is useful when experimenting with `System.Reactive`. This “subject” is like a manual implementation of an observable stream. Your code can call `OnNext`, `OnError`, and `OnCompleted`, and the subject will forward those calls to its subscribers. `Subject<TResult>` is great for experimenting, but in production code, you should strive to use operators like those covered in Chapter 6.
+F#
+
+```fsharp
+    Observable.Interval(TimeSpan.FromSeconds(1))
+        .Timestamp()
+        .Filter(fun x -> x.Value % 2L = 0L)
+        .Map(fun x -> x.Timestamp)
+        .Subscribe(
+            (fun x -> Trace.WriteLine(x)),
+            (fun (ex:exn) -> Trace.WriteLine(ex)))
+```
+
+`Subject<'TResult>` is one type that is useful when experimenting with `System.Reactive`. This “subject” is like a manual implementation of an observable stream. Your code can call `OnNext`, `OnError`, and `OnCompleted`, and the subject will forward those calls to its subscribers. `Subject<'TResult>` is great for experimenting, but in production code, you should strive to use operators like those covered in Chapter 6.
 
 There are tons of useful `System.Reactive` operators, and I only cover a few selected ones in this book. For more information on `System.Reactive`, I recommend the excellent online book Introduction to Rx.
 
