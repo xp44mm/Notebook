@@ -16,11 +16,23 @@ solidworks入门，~~工程图~~。
 
 搜索帮助：焊件 - 生成自定义轮廓。
 
-SOLIDWORKS 202x Routing Library Manager
 
-Routing 文件位置和设定
 
 工具，草图工具，分割实体
 
+库特征
 
+将自定义轮廓保存在单独文件夹结构中
+
+设计库
+
+“SOLIDWORKS Routing 帮助”的位置：
+
+C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\lang\chinese-simplified\sldpiping.chm
+
+此文件夹下面，ot开头是跟练教程
+
+开始菜单，“SOLIDWORKS 202x Routing Library Manager”程序，右下角的“帮助”打开的是“SOLIDWORKS Routing 帮助”
+
+Routing 文件位置和设定
 
