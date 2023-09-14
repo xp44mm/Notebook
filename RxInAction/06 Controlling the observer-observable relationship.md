@@ -44,7 +44,7 @@ By far, the most desirable way to create an observer is doing it without leaving
 
 Figure 6.3 Creating the observer and subscribing it as part of the pipeline with the Subscribe operator
 
-Here's an example that creates and subscribes an observer that prints to the screen (much like the ConsoleObserver created in chapter 4). In this case, you pass all the observer's functions as arguments to the `Subscribe` operator:
+Here's an example that creates and subscribes an observer that prints to the screen (much like the `ConsoleObserver` created in chapter 4). In this case, you pass all the observer's functions as arguments to the `Subscribe` operator:
 
 ```C#
 Observable.Range(1, 5)
@@ -100,11 +100,27 @@ Observable.Range(1, 5)
         ex =>{/* do something with the exception */});
 ```
 
+F#,在release模式运行
+
+```fsharp
+    Observable
+        .Range(1, 5)
+        .Map(fun x -> x/(x - 3))
+        .Subscribe({
+            new IObserver<_> with
+                member this.OnNext(x) = Console.WriteLine($"{x}")
+                member this.OnError err = Console.WriteLine(err.Message)
+                member this.OnCompleted() = 
+                    Console.WriteLine("done!")
+        })
+    |> ignore
+```
+
 Now, the raised exception won't crash the application; instead, the error-handling code will run, and the observer will be detached from the observable.
 
 Leaving the error-handling code empty is possible, of course, just like creating an empty catch block, which is known as exception swallowing or error hiding, but this is considered bad practice because doing so will hinder your ability to investigate any bugs in your application, especially when asynchronicity is involved.
 
-### 6.1.3 Not passing OnError and asynchronous observables
+### 6.1.3 Not passing `OnError` and asynchronous observables
 
 In the previous chapter, you saw ways to create observables that perform asynchronous behaviors. Let's explore what happens if you add asynchronicity to our example. What do you think will happen if you write this:
 
@@ -115,6 +131,17 @@ Observable.Range(1, 5)
     .Subscribe(x => Console.WriteLine("{0}", x));
 Console.WriteLine("Press any key to continue...");
 Console.ReadKey();
+```
+
+F#
+
+```fsharp
+    Observable
+        .Range(1, 5)
+        .Map(fun x -> Task.Run(fun () -> x / (x - 3)))
+        .Concat()
+        .Subscribe(fun x -> Console.WriteLine($"{x}"))
+    |> ignore
 ```
 
 Running the example provides this output:
@@ -142,7 +169,6 @@ void Subscribe<T>(
     this IObservable<T> source,
     /* onNext,OnCompleted,OnError permutations */,
     CancellationToken token)
-
 ```
 
 These variations of `Subscribe` return void instead of `IDisposable`, so the ability to unsubscribe the observer needs to be provided in some other way. This is the job of `CancellationToken`. As figure 6.4 shows, Rx monitors `CancellationToken` for cancellation and, when this happens, it disposes of the inner subscription and disconnects the observer from the observable.
@@ -159,6 +185,21 @@ Observable.Interval(TimeSpan.FromSeconds(1))
     .Subscribe(x => Console.WriteLine(x), cts.Token);
 
 cts.CancelAfter(TimeSpan.FromSeconds(5));
+```
+
+F#
+
+```fsharp
+    let cts = new CancellationTokenSource();
+    cts.Token.Register(fun () -> 
+        Console.WriteLine("Subscription canceled"))
+    |> ignore
+
+    Observable
+        .Interval(TimeSpan.FromSeconds(1))
+        .Subscribe(cts.Token)
+
+    cts.CancelAfter(TimeSpan.FromSeconds(5))
 ```
 
 Passing a cancellation token to the `Subscribe` method can be useful when you need to synchronize the cancellation of other parts of your system (such as other tasks).
@@ -186,13 +227,32 @@ Here's a small example that creates an observer that prints only the notificatio
 
 ```C#
 var observer = Observer.Create<string>(x => Console.WriteLine(x))
-    
+
 Observable.Interval(TimeSpan.FromSeconds(1))
     .Select(x=> "X" + x)
     .Subscribe(observer);
 Observable.Interval(TimeSpan.FromSeconds(2))
     .Select(x => "YY" + x)
     .Subscribe(observer);
+```
+
+F#
+
+```fsharp
+    let observer = Observer.Create<string>(fun x -> Console.WriteLine(x))
+    
+    Observable
+        .Interval(TimeSpan.FromSeconds(1))
+        .Select(fun x -> $"X{x}")
+        .Subscribe(observer)
+    |> ignore
+
+    Observable
+        .Interval(TimeSpan.FromSeconds(2))
+        .Select(fun x -> $"YY{x}")
+        .Subscribe(observer)
+    |> ignore
+
 ```
 
 Running this example for 5 seconds shows this output:
@@ -206,11 +266,13 @@ YY1
 X3
 ```
 
-In the example, you create two observables—one that emits a value every 1 second (prefixed with X) and another that emits a value every 2 seconds (prefixed with YY). You then use the same observer to subscribe to both observables. Figure 6.5 shows the marble diagram of this program.
+In the example, you create two observables—one that emits a value every 1 second (prefixed with X) and another that emits a value every 2 seconds (prefixed with `YY`). You then use the same observer to subscribe to both observables. Figure 6.5 shows the marble diagram of this program.
 
 Figure 6.5 Subscribing the same observer to multiple observables lets you share and reuse the subscriber's functionality.
 
 In most cases, manually creating an instance of the observer is unnecessary, but when it's needed, use `Observer.Create`. This will ensure that the observer behaves correctly with regard to the observable-observer protocol.
+
+------
 
 NOTE `Observer.Create`源代码位于reactive/Rx.NET/Source/src/System.Reactive/Observer.Extensions.cs 
 
@@ -220,6 +282,8 @@ public class AnonymousObserver<T> : ObserverBase<T>
 ```
 
 Create生成的观察者是匿名观察者，创造本身只检查输入参数，保证不为空。匿名观察者作用是保证输入参数不为空。`ObserverBase`实现了协议逻辑。我们应该给出 `OnNextCore`, `OnErrorCore`, and `OnCompletedCore` 三个抽象方法。
+
+------
 
 After an observer is created and subscribed, you might want to end the relationship at some point. In addition, you might want to gain better control of when the relationship starts. Rx gives you tools to control the lifetime of your observer.
 
@@ -289,6 +353,22 @@ Console.WriteLine("Creating subscription at {0}", DateTime.Now);
 observable.SubscribeConsole();
 ```
 
+F#,`DelaySubscription`
+
+```fsharp
+    Console.WriteLine("Creating the observable pipeline at {0}", DateTime.Now)
+    let observable =
+        Observable
+            .Range(1, 5)
+            .Timestamp()
+            .DelaySubscription(TimeSpan.FromSeconds(5))
+    Thread.Sleep(TimeSpan.FromSeconds(2))
+    Console.WriteLine("Creating subscription at {0}", DateTime.Now)
+    observable
+        .Subscribe(ConsoleObserver "DelaySubscription")
+    |> ignore
+```
+
 Now, when you run this example, you get these results:
 
 ```C#
@@ -320,6 +400,17 @@ Observable.Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
     .SubscribeConsole("TakeUntil(time)");
 ```
 
+F#, `TakeUntil`
+
+```fsharp
+    Observable
+        .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
+        .Map(fun t -> DateTimeOffset.Now)
+        .TakeUntil(DateTimeOffset.Now.AddSeconds(5))
+        .Subscribe(ConsoleObserver "TakeUntil(time)")
+    |> ignore
+```
+
 This generates the following output:
 
 ```C#
@@ -343,7 +434,7 @@ IObservable<TSource> TakeUntil<TSource>(
 
 Rx makes it easy to combine observables to build powerful pipelines. Among those operators that allow combining observables is another variation of `TakeUntil`. This lets you make the observable stop emitting notifications based on external conditions that are represented by another observable emission, as shown in figure 6.7.
 
-Figure 6.7 The TakeUntil operator allows notifications from the observable source to proceed until the other observable emits a notification.
+Figure 6.7 The `TakeUntil` operator allows notifications from the observable source to proceed until the other observable emits a notification.
 
 If you want your observable to stop emitting notifications after a certain period (instead of an absolute time), you can write code like this:
 
@@ -353,6 +444,18 @@ Observable.Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
     .TakeUntil(
            Observable.Timer(TimeSpan.FromSeconds(5)))
     .SubscribeConsole("TakeUntil(observable)");
+```
+
+F#,
+
+```fsharp
+    Observable
+        .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
+        .Map(fun t -> DateTimeOffset.Now)
+        .TakeUntil(
+               Observable.Timer(TimeSpan.FromSeconds(5)))
+        .Subscribe(ConsoleObserver "TakeUntil(observable)")
+    |> ignore
 ```
 
 Running this code produces
@@ -391,6 +494,25 @@ messages
         () => { /* completion handling */});
 ```
 
+F#,
+
+```fsharp
+    let messages = 
+        Observable
+            .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
+            .Map(fun t -> t.ToString())
+
+    let controlChannel =
+        Observable
+            .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
+            .Map(fun t -> t.ToString())
+
+    messages
+        .TakeUntil(controlChannel.Filter((=) "3"))
+        .Subscribe(ConsoleObserver "TakeUntil(EXTRIGGERS)")
+    |> ignore
+```
+
 Using observables as the parameter for an operator is seen frequently in Rx and is a flexible mechanism of control.
 
 ### 6.2.4 Skipping notifications
@@ -401,7 +523,7 @@ At times you might want to subscribe an observer to an observable, but receive n
 
 The `SkipUntil` operator, depicted in figure 6.8, lets you specify when to start receiving notifications from the observable source, giving you finer control over your application's operations.
 
-Figure 6.8 The SkipUntil operator lets you skip notifications from the observable source until the other observable emits a notification.
+Figure 6.8 The `SkipUntil` operator lets you skip notifications from the observable source until the other observable emits a notification.
 
 Suppose a chat application needs to start showing messages from a certain user only when a specific control message is sent, like the traffic cop who allows traffic to proceed only after receiving an order from the commander. This is how it could be done:
 
@@ -414,7 +536,25 @@ messages
         msg => {/* add to message screen */ },
         ex => { /* error handling */},
         () => { /* completion handling */});
+```
 
+F#,
+
+```fsharp
+    let messages = 
+        Observable
+            .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
+            .Map(fun t -> t.ToString())
+
+    let controlChannel =
+        Observable
+            .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
+            .Map(fun t -> t.ToString())
+
+    messages
+        .SkipUntil(controlChannel.Filter((=) "2"))
+        .Subscribe(ConsoleObserver "TakeUntil(EXTRIGGERS)")
+    |> ignore
 ```
 
 The `SkipUntil` operator has two overloads: one that accepts a `DateTimeOffset` for absolute time scheduling (which is relatively straightforward at this point) and one that accepts an observable that acts as an external trigger. For example:
@@ -430,7 +570,7 @@ TIP You can also skip items based on relative time by using the `Skip` operator.
 
 #### SKIPPING A NUMBER OF NOTIFICATIONS
 
-Sometimes you want to skip notifications by a predefined number of items (for example, you want to combine an observable with a shifted version of itself, so you can process two adjacent notifications). Just as in LINQ, you can use the Skip operator to do that:
+Sometimes you want to skip notifications by a predefined number of items (for example, you want to combine an observable with a shifted version of itself, so you can process two adjacent notifications). Just as in LINQ, you can use the `Skip` operator to do that:
 
 ```C#
 IObservable<TSource> Skip<TSource>(this IObservable<TSource> source,
@@ -443,6 +583,16 @@ The following shows an example for bypassing the first two notifications:
 Observable.Range(1, 5)
     .Skip(2)
     .SubscribeConsole("Skip(2)");
+```
+
+F#,
+
+```fsharp
+    Observable
+        .Range(1, 5)
+        .Skip(2)
+        .Subscribe(ConsoleObserver "Skip(2)")
+    |> ignore
 ```
 
 This example produces this output:
@@ -473,9 +623,9 @@ IObservable<TSource> SkipWhile<TSource>(this IObservable<TSource> source,
 
 Figures 6.9 and 6.10 show that when the predicate evaluates to true, something happens—either you start or you stop accepting notifications.
 
-Figure 6.9 The TakeWhile operator accepts notifications while a predicate function evaluates to true and discards all items after the predicate evaluates to false.
+Figure 6.9 The `TakeWhile` operator accepts notifications while a predicate function evaluates to true and discards all items after the predicate evaluates to false.
 
-Figure 6.10 The SkipWhile operator discards the notifications as long as a predicate evaluates to true and accepts all notifications after the predicate evaluates to false.
+Figure 6.10 The `SkipWhile` operator discards the notifications as long as a predicate evaluates to true and accepts all notifications after the predicate evaluates to false.
 
 You can use the two operators together to observe only a subrange of values:
 
@@ -484,6 +634,17 @@ Observable.Range(1, 10)
     .SkipWhile(x => x < 2)
     .TakeWhile(x => x < 7)
     .SubscribeConsole();
+```
+
+F#,
+
+```fsharp
+    Observable
+        .Range(1, 10)
+        .SkipWhile(flip (<) 2)
+        .TakeWhile(flip (<) 7)
+        .Subscribe(ConsoleObserver "SkipWhile")
+    |> ignore
 ```
 
 This example allows only a range of numbers between 2 (inclusive) and 7 (exclusive) to be observed:
@@ -509,6 +670,16 @@ To automatically resubscribe in Rx, you use the `Repeat` operator. For example, 
 Observable.Range(1, 3)
     .Repeat(2)
     .SubscribeConsole("Repeat(2)");
+```
+
+F#,
+
+```fsharp
+    Observable
+        .Range(1, 3)
+        .Repeat(2)
+        .Subscribe(ConsoleObserver "Repeat(2)")
+    |> ignore
 ```
 
 This example generates this output
@@ -558,6 +729,19 @@ Observable.Range(1, 5)
     .SubscribeConsole("final");
 ```
 
+F#,
+
+```fsharp
+    Observable
+        .Range(1, 5)
+        .Do(fun x -> Console.WriteLine("{0} was emitted",x))
+        .Filter(flip(%)2>>(=)0)
+        .Do(fun x -> Console.WriteLine("{0} survived the Filter()", x))
+        .Map(( * )3)
+        .Subscribe(ConsoleObserver "final")
+    |> ignore
+```
+
 This little application creates an observable that emits a range of values (1 to 5), filters the odd numbers, and multiplies the even numbers by 3. Between each operator, you added code to print to the console with the Do operator. This is the output:
 
 ```C#
@@ -594,7 +778,7 @@ IObservable<TSource> Do<TSource>(this IObservable<TSource> source,
 
 You can take the logging example one step further and create a reusable Log operator that prints all the source observable notifications for you. The Log operator will use Do to print various emissions coming from the observable source.
 
-Listing 6.1 The Log operator
+Listing 6.1 The `Log` operator
 
 ```C#
 public static IObservable<T> Log<T>(this IObservable<T> observable,
@@ -611,7 +795,14 @@ public static IObservable<T> Log<T>(this IObservable<T> observable,
 }
 ```
 
-This Log operator is nice to play with when investigating your observable's pipeline, and you might find it useful in your applications. Here's how I use it in the example:
+F#
+
+```fsharp
+let Log (msg:string) (observable:IObservable<_>) =
+    observable.Do(ConsoleObserver msg)
+```
+
+This `Log` operator is nice to play with when investigating your observable's pipeline, and you might find it useful in your applications. Here's how I use it in the example:
 
 ```C#
 Observable.Range(1, 5)
@@ -620,7 +811,19 @@ Observable.Range(1, 5)
     .Log("where")
     .Select(x => x*3)
     .SubscribeConsole("final");
+```
 
+F#,
+
+```fsharp
+    Observable
+        .Range(1, 5)
+        .Do(ConsoleObserver "range")
+        .Filter(flip(%)2>>(=)0)
+        .Do(ConsoleObserver "filter")
+        .Map(( * )3)
+        .Subscribe(ConsoleObserver "final")
+    |> ignore
 ```
 
 This produces
@@ -650,7 +853,7 @@ You can take advantage of this to create a reactive drawing application. The app
 
 Figure 6.12 The Reactive Draw application. A line is created by adding points based on the position of the mouse, starting from the point the mouse button is down and stopping when it's up.
 
-This is how the application looks when writing it in a WPF window. First, you need to create observables from the traditional MouseDown, MouseUp, and MouseMove events:
+This is how the application looks when writing it in a WPF window. First, you need to create observables from the traditional `MouseDown`, `MouseUp`, and `MouseMove` events:
 
 ```C#
 var mouseDowns =
@@ -659,7 +862,6 @@ var mouseUp =
     Observable.FromEventPattern<MouseButtonEventArgs>(this, "MouseUp");
 var movements =
     Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove");
-
 ```
 
 Now, for each movement, you select the mouse position and add a point to a polyline drawn in the window's inner panel:
@@ -679,7 +881,7 @@ movements
     .Subscribe(pos => line.Points.Add(pos));
 ```
 
-Here the mouseUp observable is passed to the `TakeUntil` operator. When a notification that that mouse button is up is emitted, the observer will be detached from the observable.
+Here the `mouseUp` observable is passed to the `TakeUntil` operator. When a notification that that mouse button is up is emitted, the observer will be detached from the observable.
 
 You still need to add the trigger to start drawing the line when the mouse button is down. This is achieved by using the `SkipUntil` operator. For example:
 
@@ -689,7 +891,6 @@ movements
     .Select(m => m.EventArgs.GetPosition(this))
     .TakeUntil(mouseUp)
     .Subscribe(pos => line.Points.Add(pos));
-
 ```
 
 After a mouse-button-down notification is emitted, the mouse movements are observed by the observer that adds the points to the line. And when the mouse button is up, the observer stops.
@@ -703,12 +904,11 @@ movements
     .TakeUntil(mouseUp)
     .Repeat()
     .Subscribe(pos => line.Points.Add(pos));
-
 ```
 
 Great, you now have an application that draws a line, but it always adds points to the same line. A drawing application that draws only one line, reactive as it may be, isn't useful.
 
-What you want is to add a new line when the mouse button is down and have the points received from the mouse move added to that line, which becomes the current line. This is a side effect you need to take care of. Luckily, you have the `Do` operator. The following listing shows the complete application code that handles the drawing. As always, you can find the entire application's source code in the book's Git repo (http://mng.bz/IZ4B).
+What you want is to add a new line when the mouse button is down and have the points received from the mouse move added to that line, which becomes the current line. This is a side effect you need to take care of. Luckily, you have the `Do` operator. The following listing shows the complete application code that handles the drawing. As always, you can find the entire application's source code in the book's Git [repo](http://mng.bz/IZ4B).
 
 Listing 6.2 Reactive Draw application—full code
 
@@ -717,7 +917,7 @@ Polyline line = null;
 
 movements
     .SkipUntil(
-    mouseDowns.Do(_ =>
+        mouseDowns.Do(_ =>
         {
             line = new Polyline() {Stroke = Brushes.Black, StrokeThickness = 3};
             canvas.Children.Add(line);
@@ -726,6 +926,53 @@ movements
     .Select(m => m.EventArgs.GetPosition(this))
     .Repeat()
     .Subscribe(pos => line.Points.Add(pos));
+```
+
+xaml
+
+```xaml
+<Window 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Reactive Draw" Height="350" Width="525">
+	<Canvas x:Name="canvas"></Canvas>
+</Window>
+```
+
+F#
+
+```fsharp
+type ReactiveDraw() as this =
+    inherit ReactiveDrawXaml()
+
+    let mouseDowns = 
+        (this.MouseDown :> IObservable<_>)
+            .Synchronize()
+    let mouseUp =
+        (this.MouseUp :> IObservable<_>)
+            .Synchronize()            
+    let movements = 
+        (this.MouseMove :> IObservable<_>)
+            .Synchronize()
+
+    let lastLine() =
+        let ls = this.canvas.Children
+        ls.[ls.Count-1] :?> Polyline
+
+    let _subscription = 
+        movements
+            .SkipUntil(
+                mouseDowns.Do(fun _ ->
+                    let line = Polyline(Stroke = Brushes.Black, StrokeThickness = 3)
+                    this.canvas.Children.Add(line) |> ignore
+                ))
+            .TakeUntil(mouseUp)
+            .Map(fun m -> m.GetPosition(this))
+            .Repeat()
+            .Subscribe(fun pos -> lastLine().Points.Add(pos))
 ```
 
 This example shows the beauty of the operator composability you have in Rx. Each operator logically follows another to create a clear chain of execution, in which one observable created by an operator becomes the source observable of the next operator. You created a complete drawing application with just a few lines of code, and modifying our pipeline as you built it was simple.
@@ -758,6 +1005,5 @@ Here's what you learned in this chapter:
 
   * The Reactive Drawing application you created in this chapter used many of these operators to make a powerful application with just a few lines of code.
 
-  * In the next chapter, you'll explore the concept of an observable's temperature and learn what cold and hot observables mean.
-
+In the next chapter, you'll explore the concept of an observable's temperature and learn what cold and hot observables mean.
 

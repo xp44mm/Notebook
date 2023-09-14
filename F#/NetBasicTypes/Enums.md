@@ -229,3 +229,41 @@ let ok = a ^^^ b >= 0
 ```
 
 ~~If you are a Visual Basic 6 developer, you have surely used `And` and `Or` operators to combine `Boolean` expressions in If statements. Visual Basic 2005 still supports these operators when used in this fashion, but it is recommended that you switch to the newer `AndAlso` and `OrElse` logical operators, which are illustrated next.~~
+
+
+
+## Enumerated Types
+
+The `enum` operator is a generic operator that takes one type parameter that represents the type of the `enum` to convert to. When it converts to an enumerated type, type inference attempts to determine the type of the `enum` that you want to convert to. In the following example, the variable `col1` is not explicitly annotated, but its type is inferred from the later equality test. Therefore, the compiler can deduce that you are converting to a `Color` enumeration. Alternatively, you can supply a type annotation, as with `col2` in the following example.
+
+```fsharp
+type Color =
+    | Red = 1
+    | Green = 2
+    | Blue = 3
+
+// The target type of the conversion cannot be determined by type inference, so the type parameter must be explicit.
+let col1 = enum<Color> 1
+
+// The target type is supplied by a type annotation.
+let col2 : Color = enum 2
+```
+
+You can also specify the target enumeration type explicitly as a type parameter, as in the following code:
+
+F#
+
+```fsharp
+let col3 = enum<Color> 3
+```
+
+Note that the enumeration casts work only if the underlying type of the enumeration is compatible with the type being converted. In the following code, the conversion fails to compile because of the mismatch between `int32` and `uint32`.
+
+F#
+
+```fsharp
+// Error: types are incompatible
+let col4 : Color = enum 2u
+```
+
+For more information, see [Enumerations](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/enumerations).

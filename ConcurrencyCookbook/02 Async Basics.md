@@ -24,6 +24,16 @@ async Task<T> DelayResult<T>(T result, TimeSpan delayTime)
 }
 ```
 
+F#
+
+```fsharp
+let DelayResult (result) (delayTime:TimeSpan) =
+    task {
+      do! Task.Delay(delayTime)
+      return result
+    }
+```
+
 **Exponential backoff** is a strategy in which you increase the delays between retries. Use it when working with web services to ensure that the server doesn't get flooded with retries. The next example is a simple implementation of exponential backoff:
 
 ```C#
@@ -48,6 +58,28 @@ async Task<string> DownloadStringWithRetries(HttpClient client, string uri)
 }
 ```
 
+F#
+
+```fsharp
+open System.Net.Http
+let DownloadStringWithRetries(client:HttpClient) (uri:string) =
+    // Retry after 1 second, then after 2 seconds, then 4.
+    let mutable nextDelay = TimeSpan.FromSeconds(1)
+    let rec loop i =
+        task {
+            if i = 1 then
+                return! client.GetStringAsync(uri)
+            else
+                try
+                    return! client.GetStringAsync(uri)
+                with _ ->
+                    nextDelay <- nextDelay * 2.0
+                    do! Task.Delay(nextDelay)
+                    return! loop (i-1)
+        }
+    loop 3
+```
+
 ##### TIP
 
 For production code, I'd recommend a more thorough solution, such as the `Polly` NuGet library; this code is just a simple example of `Task.Delay` usage.
@@ -65,6 +97,21 @@ async Task<string> DownloadStringWithTimeout(HttpClient client, string uri)
     return null;
   return await downloadTask;
 }
+```
+
+F#
+
+```fsharp
+let DownloadStringWithTimeout(client:HttpClient) (uri:string) =
+    task {
+        use cts = new CancellationTokenSource(TimeSpan.FromSeconds(3))
+        let downloadTask = client.GetStringAsync(uri)
+        let timeoutTask = Task.Delay(Timeout.InfiniteTimeSpan, cts.Token)
+        let! completedTask = Task.WhenAny(downloadTask, timeoutTask)
+        if completedTask = timeoutTask
+        then return ""
+        else return! downloadTask
+    }
 ```
 
 While it's possible to use `Task.Delay` as a “soft timeout,” this approach has limitations. If the operation times out, it's not canceled; in the previous example, the download task continues downloading and will download the full response before discarding it. The preferred approach is to use a cancellation token as the timeout and pass it directly to the operation (`GetStringAsync` in the last example). That said, sometimes the operation is not cancelable, and in that case `Task.Delay` may be used by other code to act like the operation timed out.
@@ -87,7 +134,7 @@ You need to implement a synchronous method with an asynchronous signature. This 
 
 ### Solution
 
-You can use `Task.FromResult` to create and return a new `Task<T>` that is already completed with the specified value:
+You can use `Task.FromResult` to create and return a new `Task<'T>` that is already completed with the specified value:
 
 ```C#
 interface IMyAsyncInterface
@@ -101,6 +148,24 @@ class MySynchronousImplementation : IMyAsyncInterface
     return Task.FromResult(13);
   }
 }
+```
+
+F#
+
+```fsharp
+type IMyAsyncInterface =
+  abstract GetValueAsync: unit->Task<int>
+
+type MySynchronousImplementation() =
+    interface IMyAsyncInterface with
+        member this.GetValueAsync() = 
+            Task.FromResult(13)
+let test1() =
+    let x =  MySynchronousImplementation()
+    task {
+        let! t = (x:>IMyAsyncInterface).GetValueAsync()
+        Console.WriteLine(t)
+    }
 ```
 
 For methods that don't have a return value, you can use `Task.CompletedTask`, which is a cached `Task` that is successfully completed:
@@ -119,6 +184,24 @@ class MySynchronousImplementation : IMyAsyncInterface
 }
 ```
 
+F#
+
+```fsharp
+    type IMyAsyncInterface =
+      abstract DoSomethingAsync: unit->Task
+
+    type MySynchronousImplementation() =
+        interface IMyAsyncInterface with
+            member this.DoSomethingAsync() = 
+                Task.CompletedTask
+    let test() =
+        let x =  MySynchronousImplementation()
+        task {
+            let! t = (x:>IMyAsyncInterface).DoSomethingAsync()
+            Console.WriteLine("done!")
+        }
+```
+
 `Task.FromResult` provides completed tasks only for successful results. If you need a task with a different kind of result (e.g., a task that is completed with a `NotImplementedException`), then you can use `Task.FromException`:
 
 ```C#
@@ -126,6 +209,13 @@ Task<T> NotImplementedAsync<T>()
 {
   return Task.FromException<T>(new NotImplementedException());
 }
+```
+
+F#
+
+```fsharp
+let NotImplementedAsync<'T> () =
+    Task.FromException<'T>(new NotImplementedException())
 ```
 
 Similarly, there's a `Task.FromCanceled` for creating tasks that have already been canceled from a given `CancellationToken`:
@@ -137,6 +227,16 @@ Task<int> GetValueAsync(CancellationToken cancellationToken)
     return Task.FromCanceled<int>(cancellationToken);
   return Task.FromResult(13);
 }
+```
+
+F#
+
+```fsharp
+let GetValueAsync(cancellationToken:CancellationToken) =
+    if cancellationToken.IsCancellationRequested then
+        Task.FromCanceled<int>(cancellationToken)
+    else
+        Task.FromResult(13)
 ```
 
 If it is possible for your synchronous implementation to fail, then you should capture exceptions and use `Task.FromException` to return them, as such:
@@ -163,9 +263,25 @@ class MySynchronousImplementation : IMyAsyncInterface
 }
 ```
 
+F#
+
+```fsharp
+    type IMyAsyncInterface =
+      abstract DoSomethingAsync: unit->Task
+
+    type MySynchronousImplementation () =
+        interface IMyAsyncInterface with
+            member this.DoSomethingAsync()=
+                try
+                  //DoSomethingSynchronously()
+                  Task.CompletedTask
+                with (ex:exn) ->
+                  Task.FromException(ex)
+```
+
 ### Discussion
 
-If you're implementing an asynchronous interface with synchronous code, avoid any form of blocking. It isn't ideal for an asynchronous method to block and then return a completed task, when it is possible for the method to be implemented asynchronously. For a counterexample, consider the `Console` text readers in the .NET BCL. `Console.In.ReadLineAsync` will actually block the calling thread until a line is read, and then it will return a completed task. This behavior isn't intuitive and has surprised many developers. If an asynchronous method blocks, it prevents the calling thread from starting other tasks, which interferes with concurrency and may even cause a deadlock.
+If you're implementing an asynchronous interface with synchronous code, avoid any form of blocking. It isn't ideal for an asynchronous method to block and then return a completed task, when it is possible for the method to be implemented asynchronously. For a counter example, consider the `Console` text readers in the .NET BCL. `Console.In.ReadLineAsync` will actually block the calling thread until a line is read, and then it will return a completed task. This behavior isn't intuitive and has surprised many developers. If an asynchronous method blocks, it prevents the calling thread from starting other tasks, which interferes with concurrency and may even cause a deadlock.
 
 If you regularly use `Task.FromResult` with the same value, consider caching the actual task. For example, if you create a `Task<int>` with a zero result once, then you avoid creating extra instances that will have to be garbage-collected:
 
@@ -177,7 +293,14 @@ Task<int> GetValueAsync()
 }
 ```
 
-Logically, `Task.FromResult`, `Task.FromException`, and `Task.FromCanceled` are all helper methods and shortcuts for the general-purpose `TaskCompletionSource<T>`. `TaskCompletionSource<T>` is a lower-level type that is useful for interoperating with other forms of asynchronous code. Generally, you should use the shorthand `Task.FromResult` and friends if you want to return a task that's already been completed. Use `TaskCompletionSource<T>` to return a task that is completed at some future time.
+F#
+
+```fsharp
+let zeroTask:Task<int> = Task.FromResult(0)
+let GetValueAsync() = zeroTask
+```
+
+Logically, `Task.FromResult`, `Task.FromException`, and `Task.FromCanceled` are all helper methods and shortcuts for the general-purpose `TaskCompletionSource<'T>`. `TaskCompletionSource<'T>` is a lower-level type that is useful for interoperating with other forms of asynchronous code. Generally, you should use the shorthand `Task.FromResult` and friends if you want to return a task that's already been completed. Use `TaskCompletionSource<'T>` to return a task that is completed at some future time.
 
 ### See Also
 
@@ -185,7 +308,7 @@ Recipe 7.1 covers unit testing asynchronous methods.
 
 Recipe 11.1 covers inheritance of async methods.
 
-Recipe 8.3 shows how `TaskCompletionSource<T>` can be used for general-purpose interop with other asynchronous code.
+Recipe 8.3 shows how `TaskCompletionSource<'T>` can be used for general-purpose interop with other asynchronous code.
 
 ## 2.3 Reporting Progress
 
@@ -195,7 +318,7 @@ You need to respond to progress while an operation is executing.
 
 ### Solution
 
-Use the provided `IProgress<T>` and `Progress<T>` types. Your async method should take an `IProgress<T>` argument; the `T` is whatever type of progress you need to report:
+Use the provided `IProgress<'T>` and `Progress<'T>` types. Your async method should take an `IProgress<'T>` argument; the `'T` is whatever type of progress you need to report:
 
 ```C#
 async Task MyMethodAsync(IProgress<double> progress = null)
@@ -208,6 +331,19 @@ async Task MyMethodAsync(IProgress<double> progress = null)
     progress?.Report(percentComplete);
   }
 }
+```
+
+F#
+
+```fsharp
+let MyMethodAsync (progress:IProgress<float>) =
+    task {
+        let mutable dn = false
+        let mutable percentComplete = 0.0
+        while not dn do
+            // ...
+            progress.Report(percentComplete)
+    }
 ```
 
 Calling code can use it as such:
@@ -224,15 +360,25 @@ async Task CallMyMethodAsync()
 }
 ```
 
+F#
+
+```fsharp
+let CallMyMethodAsync()=
+    let progress = new Progress<float>()
+    progress.ProgressChanged.Add(fun e -> 
+        Console.WriteLine($"xxx{e}"))
+    MyMethodAsync(progress)
+```
+
 ### Discussion
 
-By convention, the `IProgress<T>` parameter may be null if the caller doesn't need progress reports, so be sure to check for this in your async method. Bear in mind that the `IProgress<T>.Report` method is usually asynchronous. This means that MyMethodAsync may continue executing before the progress is reported. For this reason, it's best to define T as an immutable type or at least a value type. If T is a mutable reference type, then you'll have to create a separate copy yourself each time you call `IProgress<T>.Report`.
+By convention, the `IProgress<'T>` parameter may be null if the caller doesn't need progress reports, so be sure to check for this in your async method. Bear in mind that the `IProgress<'T>.Report` method is usually asynchronous. This means that `MyMethodAsync` may continue executing before the progress is reported. For this reason, it's best to define T as an immutable type or at least a value type. If T is a mutable reference type, then you'll have to create a separate copy yourself each time you call `IProgress<'T>.Report`.
 
-`Progress<T>` will capture the current context when it is constructed and will invoke its callback within that context. This means that if you construct the `Progress<T>` on the UI thread, then you can update the UI from its callback, even if the asynchronous method is invoking `Report` from a background thread.
+`Progress<'T>` will capture the current context when it is constructed and will invoke its callback within that context. This means that if you construct the `Progress<'T>` on the UI thread, then you can update the UI from its callback, even if the asynchronous method is invoking `Report` from a background thread.
 
 When a method supports progress reporting, it should also make a best effort to support cancellation.
 
-`IProgress<T>` is not exclusively for asynchronous code; both progress and cancellation can (and should) be used in long-running synchronous code as well.
+`IProgress<'T>` is not exclusively for asynchronous code; both progress and cancellation can (and should) be used in long-running synchronous code as well.
 
 ### See Also
 
@@ -255,6 +401,15 @@ Task task3 = Task.Delay(TimeSpan.FromSeconds(1));
 await Task.WhenAll(task1, task2, task3);
 ```
 
+F#
+
+```fsharp
+    let task1 = Task.Delay(TimeSpan.FromSeconds(1))
+    let task2 = Task.Delay(TimeSpan.FromSeconds(2))
+    let task3 = Task.Delay(TimeSpan.FromSeconds(1))
+    Task.WhenAll(task1, task2, task3)
+```
+
 If all the tasks have the same result type and they all complete successfully, then the `Task.WhenAll` task will return an array containing all the task results:
 
 ```C#
@@ -263,6 +418,19 @@ Task<int> task2 = Task.FromResult(5);
 Task<int> task3 = Task.FromResult(7);
 int[] results = await Task.WhenAll(task1, task2, task3);
 // "results" contains { 3, 5, 7 }
+```
+
+F#
+
+```fsharp
+    let task1 = Task.FromResult(3)
+    let task2 = Task.FromResult(5)
+    let task3 = Task.FromResult(7)
+    task {
+        let! res = Task.WhenAll(task1, task2, task3)
+        Console.WriteLine($"{stringify res}")
+        // [|3;5;7|]
+    }
 ```
 
 There is an overload of `Task.WhenAll` that takes an `IEnumerable` of tasks; however, I don't recommend that you use it. Whenever I mix asynchronous code with LINQ, I find the code is clearer when I explicitly “reify” the sequence (i.e., evaluate the sequence, creating a collection):
@@ -281,6 +449,20 @@ async Task<string> DownloadAllAsync(HttpClient client, IEnumerable<string> urls)
   string[] htmlPages = await Task.WhenAll(downloadTasks);
   return string.Concat(htmlPages);
 }
+```
+
+F#
+
+```fsharp
+let DownloadAllAsync (client:HttpClient) (urls:seq<string>) =
+    task {
+        let downloadTasks = 
+            urls 
+            |> Seq.map(fun url -> client.GetStringAsync(url))
+            |> Seq.toArray
+        let! htmlPages = Task.WhenAll(downloadTasks)
+        return htmlPages |> String.concat "\r\n"
+    }
 ```
 
 ### Discussion
@@ -327,6 +509,38 @@ async Task ObserveAllExceptionsAsync()
 }
 ```
 
+F#
+
+```fsharp
+let ThrowNotImplementedExceptionAsync() =
+  Task.FromException(NotImplementedException())
+
+let ThrowInvalidOperationExceptionAsync() =
+  Task.FromException(InvalidOperationException())
+
+let ObserveOneExceptionAsync() =
+    task {
+        let task1 = ThrowNotImplementedExceptionAsync()
+        let task2 = ThrowInvalidOperationExceptionAsync()
+        try
+            return! Task.WhenAll(task1, task2)
+        with (ex) ->
+            // "ex" is either NotImplementedException or InvalidOperationException.
+            raise ex
+        }
+let ObserveAllExceptionsAsync() =
+    task {
+        let task1 = ThrowNotImplementedExceptionAsync()
+        let task2 = ThrowInvalidOperationExceptionAsync()
+        let allTasks = Task.WhenAll(task1, task2)
+        try
+            do! allTasks
+        with (ex) ->
+            let allExceptions = allTasks.Exception
+            // ...
+    }
+```
+
 Most of the time, I do not observe all the exceptions when using `Task.WhenAll`. It's usually sufficient to respond to only the first error that was thrown, rather than all of them.
 
 Note that in the preceding example, the `ThrowNotImplementedExceptionAsync` and `ThrowInvalidOperationExceptionAsync` methods don't throw their exceptions directly; they use the `async` keyword, so their exceptions are captured and placed on a task that is returned normally. This is the normal and expected behavior of methods that return awaitable types.
@@ -363,6 +577,20 @@ async Task<int> FirstRespondingUrlAsync(HttpClient client, string urlA, string u
   byte[] data = await completedTask;
   return data.Length;
 }
+```
+
+F#
+
+```fsharp
+let FirstRespondingUrlAsync (client:HttpClient) (urlA:string) (urlB:string) =
+    task {
+        let downloadTaskA = client.GetByteArrayAsync(urlA)
+        let downloadTaskB = client.GetByteArrayAsync(urlB)
+        let! completedTask =
+            Task.WhenAny(downloadTaskA, downloadTaskB)
+        let! data = completedTask
+        return data.Length
+    }
 ```
 
 ### Discussion
@@ -415,6 +643,31 @@ async Task ProcessTasksAsync()
 }
 ```
 
+F#
+
+```fsharp
+let DelayAndReturnAsync(value:int)=
+    task {
+        do! Task.Delay(TimeSpan.FromSeconds(value))
+        return value
+    }
+
+// Currently, this method prints "2", "3", and "1".
+// The desired behavior is for this method to print "1", "2", and "3".
+let ProcessTasksAsync() =
+    task {
+        // Create a sequence of tasks.
+        let taskA = DelayAndReturnAsync(2)
+        let taskB = DelayAndReturnAsync(3)
+        let taskC = DelayAndReturnAsync(1)
+        let tasks = [ taskA; taskB; taskC ]
+        // Await each task in order.
+        for task in tasks do
+            let! result = task
+            Trace.WriteLine(result)
+    }
+```
+
 The code currently awaits each task in sequence order, even though the third task in the sequence is the first one to complete. You want the code to do the processing (e.g., `Trace.WriteLine`) as each task completes without waiting for the others.
 
 ### Solution
@@ -451,6 +704,32 @@ async Task ProcessTasksAsync()
 }
 ```
 
+F#
+
+```fsharp
+let AwaitAndProcessAsync(tsk:Task<int>)=
+    task {
+      let! result = tsk
+      Trace.WriteLine(result)
+    }
+// This method now prints "1", "2", and "3".
+let ProcessTasksAsync()=
+    task {
+        // Create a sequence of tasks.
+        let taskA = DelayAndReturnAsync(2)
+        let taskB = DelayAndReturnAsync(3)
+        let taskC = DelayAndReturnAsync(1)
+        let tasks = [ taskA; taskB; taskC ]
+        let processingTasks =
+            tasks
+            |> Seq.map(fun t -> AwaitAndProcessAsync(t))
+            |> Seq.toArray
+        // Await all processing to complete
+        let! _ = Task.WhenAll(processingTasks)
+        ()
+    }
+```
+
 Alternatively, this code can be written like this:
 
 ```C#
@@ -475,6 +754,29 @@ async Task ProcessTasksAsync()
   // Await all processing to complete
   await Task.WhenAll(processingTasks);
 }
+```
+
+F#
+
+```fsharp
+open System.Linq
+// This method now prints "1", "2", and "3".
+let ProcessTasksAsync() =
+    task {
+        let taskA = DelayAndReturnAsync(2);
+        let taskB = DelayAndReturnAsync(3);
+        let taskC = DelayAndReturnAsync(1);
+        let tasks = [ taskA; taskB; taskC ]
+        let processingTasks = 
+            tasks.Select(fun t ->
+                task {
+                    let! result = t
+                    Trace.WriteLine(result)
+                }).ToArray()
+        // Await all processing to complete
+        let! _ = Task.WhenAll(processingTasks)
+        ()
+    }
 ```
 
 The refactoring shown is the cleanest and most portable way to solve this problem. Note that it is subtly different than the original code. This solution will do the task processing concurrently, whereas the original code would do the task processing one at a time. Typically this isn't a problem, but if it's not acceptable for your situation, then consider using locks (Recipe 12.2) or the following alternative solution.
@@ -541,6 +843,21 @@ async Task ResumeWithoutContextAsync()
 
 表示离去了就不回来了，忘记来时路。
 
+```fsharp
+let ResumeOnContextAsync() =
+    task {
+      do! Task.Delay(TimeSpan.FromSeconds(1))
+      // This method resumes within the same context.
+    }
+let ResumeWithoutContextAsync() =
+    task {
+      do! Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false)
+      // This method discards its context when it resumes.
+    }
+```
+
+
+
 ### Discussion
 
 Having too many continuations run on the UI thread can cause a performance problem. This type of performance problem is difficult to diagnose, since it's not a single method that is slowing down the system. Rather, the UI performance begins to suffer from “thousands of paper cuts” as the application grows more complex.
@@ -573,6 +890,16 @@ async Task ThrowExceptionAsync()
 }
 ```
 
+F#
+
+```fsharp
+let ThrowExceptionAsync() =
+    task {
+      do! Task.Delay(TimeSpan.FromSeconds(1))
+      raise(InvalidOperationException("Test"))
+    }:>Task
+```
+
 Exceptions raised from async Task methods are placed on the returned `Task`. They are only raised when the returned `Task` is awaited:
 
 ```C#
@@ -590,6 +917,22 @@ async Task TestAsync()
     // The exception is correctly caught here.
   }
 }
+```
+
+F#
+
+```fsharp
+let TestAsync()=
+    // The exception is thrown by the method and placed on the `tsk`.
+    let tsk = ThrowExceptionAsync()
+    task {
+        try
+            // The exception is re-raised here, where the `tsk` is awaited.
+            do! tsk
+        with :? InvalidOperationException as e ->
+            // The exception is correctly caught here.
+            ()
+    }
 ```
 
 ### Discussion
@@ -635,6 +978,16 @@ sealed class MyAsyncCommand : ICommand
 }
 ```
 
+F#
+
+```fsharp
+open System.Windows.Input
+
+type MyAsyncCommand() =
+    interface ICommand with
+        member this.Execute(parameter) =
+```
+
 It's best to avoid propagating exceptions out of async void methods. If you must use an async void method, consider wrapping all of its code in a try block and handling the exception directly.
 
 There is another solution for handling exceptions from async void methods. When an async void method propagates an exception, that exception is then raised on the `SynchronizationContext` that was active at the time the async void method started executing. If your execution environment provides a `SynchronizationContext`, then it usually has a way to handle these top-level exceptions at a global scope. For example, WPF has `Application.DispatcherUnhandledException`, Universal Windows has `Application.UnhandledException`, and ASP.NET has the `UseExceptionHandler` middleware.
@@ -664,9 +1017,18 @@ static class Program
 }
 ```
 
+F#
+
+```fsharp
+    try
+      AsyncContext.Run(fun () -> MainAsync(args))
+    with (ex:exn) ->
+      Console.Error.WriteLine(ex)
+```
+
 ### Discussion
 
-One reason to prefer `async Task` over `async void` is that Task-returning methods are easier to test. At the very least, overloading void-returning methods with Task-returning methods will give you a testable API surface. If you do need to provide your own `SynchronizationContext` type (for example, `AsyncContext`), be sure not to install that `SynchronizationContext` on any threads that don't belong to you. As a general rule, you shouldn't place this type on any thread that already has one (such as UI or ASP.NET classic request threads); nor should you place a `SynchronizationContext` on `threadpool` threads. The main thread of a Console application does belong to you, and so do any threads you manually create yourself.
+One reason to prefer `async Task` over `async void` is that Task-returning methods are easier to test. At the very least, overloading void-returning methods with Task-returning methods will give you a testable API surface. If you do need to provide your own `SynchronizationContext` type (for example, `AsyncContext`), be sure not to install that `SynchronizationContext` on any threads that don't belong to you. As a general rule, you shouldn't place this type on any thread that already has one (such as UI or ASP.NET classic request threads); nor should you place a `SynchronizationContext` on thread-pool threads. The main thread of a Console application does belong to you, and so do any threads you manually create yourself.
 
 ##### TIP
 
@@ -686,9 +1048,9 @@ You need to implement a method that returns `ValueTask<T>`.
 
 ### Solution
 
-`ValueTask<T>` is used as a return type in scenarios where there's usually a synchronous result that can be returned and asynchronous behavior is more rare. As a general rule, for your own application code, you should use `Task<T>` as a return type and not `ValueTask<T>`. Only consider using `ValueTask<T>` as a return type in your own application after profiling shows that you'd see a performance increase. That said, there are situations where you need to implement a method that returns `ValueTask<T>`. One such situation is `IAsyncDisposable`, whose DisposeAsync method returns `ValueTask`. See Recipe 11.6 for a more detailed discussion of asynchronous disposal.
+`ValueTask<'T>` is used as a return type in scenarios where there's usually a synchronous result that can be returned and asynchronous behavior is more rare. As a general rule, for your own application code, you should use `Task<'T>` as a return type and not `ValueTask<'T>`. Only consider using `ValueTask<'T>` as a return type in your own application after profiling shows that you'd see a performance increase. That said, there are situations where you need to implement a method that returns `ValueTask<'T>`. One such situation is `IAsyncDisposable`, whose `DisposeAsync` method returns `ValueTask`. See Recipe 11.6 for a more detailed discussion of asynchronous disposal.
 
-The easiest way to implement a method that returns `ValueTask<T>` is to use async and await just like a normal async method:
+The easiest way to implement a method that returns `ValueTask<'T>` is to use async and await just like a normal async method:
 
 ```C#
 public async ValueTask<int> MethodAsync()
@@ -698,7 +1060,7 @@ public async ValueTask<int> MethodAsync()
 }
 ```
 
-Many times a method returning `ValueTask<T>` is capable of returning a value immediately; in that case, you can optimize for that scenario using the `ValueTask<T>` constructor, and then forward to the slow asynchronous method only if necessary:
+Many times a method returning `ValueTask<'T>` is capable of returning a value immediately; in that case, you can optimize for that scenario using the `ValueTask<'T>` constructor, and then forward to the slow asynchronous method only if necessary:
 
 ```C#
 public ValueTask<int> MethodAsync()
@@ -710,7 +1072,7 @@ public ValueTask<int> MethodAsync()
 private Task<int> SlowMethodAsync();
 ```
 
-A similar approach is possible for the non-generic `ValueTask`. Here, the `ValueTask` default constructor is used to return a successfully completed `ValueTask`. The following example shows an `IAsyncDisposable` implementation that only runs its asynchronous disposal logic once; on future invocations, the DisposeAsync method completes successfully and synchronously:
+A similar approach is possible for the non-generic `ValueTask`. Here, the `ValueTask` default constructor is used to return a successfully completed `ValueTask`. The following example shows an `IAsyncDisposable` implementation that only runs its asynchronous disposal logic once; on future invocations, the `DisposeAsync` method completes successfully and synchronously:
 
 ```C#
 private Func<Task> _disposeLogic;
@@ -729,15 +1091,15 @@ public ValueTask DisposeAsync()
 
 ### Discussion
 
-Most of your methods should return `Task<T>`, since consuming `Task<T>` has fewer pitfalls than consuming `ValueTask<T>`. See Recipe 2.11 for details on these pitfalls.
+Most of your methods should return `Task<'T>`, since consuming `Task<'T>` has fewer pitfalls than consuming `ValueTask<'T>`. See Recipe 2.11 for details on these pitfalls.
 
-Most often, if you're just implementing interfaces that use `ValueTask` or `ValueTask<T>`, then you can simply use async and await. The more advanced implementations are for when you want to use `ValueTask<T>` yourself.
+Most often, if you're just implementing interfaces that use `ValueTask` or `ValueTask<'T>`, then you can simply use async and await. The more advanced implementations are for when you want to use `ValueTask<'T>` yourself.
 
-The approaches covered in this recipe are the simpler and more common approaches to creating `ValueTask<T>` and `ValueTask` instances. There is another approach more suitable to more advanced scenarios, when you need to absolutely minimize the allocations used. This more advanced approach enables you to cache or pool an `IValueTaskSource<T>` implementation and reuse it for multiple asynchronous method invocations. To get started with the advanced scenario, see the Microsoft docs for the `ManualResetValueTaskSourceCore<T>` type.
+The approaches covered in this recipe are the simpler and more common approaches to creating `ValueTask<'T>` and `ValueTask` instances. There is another approach more suitable to more advanced scenarios, when you need to absolutely minimize the allocations used. This more advanced approach enables you to cache or pool an `IValueTaskSource<'T>` implementation and reuse it for multiple asynchronous method invocations. To get started with the advanced scenario, see the Microsoft docs for the `ManualResetValueTaskSourceCore<'T>` type.
 
 ### See Also
 
-Recipe 2.11 covers limitations of consuming `ValueTask<T>` and `ValueTask` types.
+Recipe 2.11 covers limitations of consuming `ValueTask<'T>` and `ValueTask` types.
 
 Recipe 11.6 covers asynchronous disposal.
 
@@ -745,11 +1107,11 @@ Recipe 11.6 covers asynchronous disposal.
 
 ### Problem
 
-You need to consume a `ValueTask<T>` value.
+You need to consume a `ValueTask<'T>` value.
 
 ### Solution
 
-Using await is the most straightforward and common way to consume a `ValueTask<T>` or `ValueTask` value. The majority of the time, this is all you need to do:
+Using await is the most straightforward and common way to consume a `ValueTask<'T>` or `ValueTask` value. The majority of the time, this is all you need to do:
 
 ```C#
 ValueTask<int> MethodAsync();
@@ -759,7 +1121,7 @@ async Task ConsumingMethodAsync()
 }
 ```
 
-You can also do the await after doing a concurrent operation, as with `Task<T>`:
+You can also do the await after doing a concurrent operation, as with `Task<'T>`:
 
 ```C#
 ValueTask<int> MethodAsync();

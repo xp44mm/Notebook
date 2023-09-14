@@ -2,7 +2,7 @@
 
 ------
 
-*Using recursive combinators to enhance functional composition, with special guests the Mockingbird, Widowbird, and Why Bird*
+Using recursive combinators to enhance functional composition, with special guests the Mockingbird, Widowbird, and Why Bird
 
 ------
 
@@ -18,11 +18,11 @@ We’ll begin our exploration with a look at the *mockingbird*, also called the 
 
 ------
 
-### recursion and binding
+## recursion and binding
 
 > As the number of people discussing recursion in an online forum increases, the probability that someone will quote the definition for recursion as *Recursion: see ‘recursion’*, approaches one.
 
-This is a function that computes exponentiation. If we want to compute something like `2**8` (two to the power of eight), we can compute it like this: 
+This is a function that computes exponentiation. If we want to compute something like `2**8` (two to the power of eight), we can compute it like this:
 
 ```js
 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2
@@ -53,7 +53,7 @@ So within the body of the `exponent` function, the function itself is bound to t
 
 But it’s not *always* exactly what we want. If we want even more performance, we might consider [memoizing](https://en.wikipedia.org/wiki/Memoization) the function.
 
-Here’s a memoization decorator, snarfed from [Time, Space, and Life As We Know It ](http://raganwald.com/2017/01/12/time-space-life-as-we-know-it.html):
+Here’s a memoization decorator, snarfed from [Time, Space, and Life As We Know It](http://raganwald.com/2017/01/12/time-space-life-as-we-know-it.html):
 
 ```js
 const memoized = (fn, keymaker = JSON.stringify) => {
@@ -80,7 +80,7 @@ mExponent(2, 8)
 
 There is a hitch with this solution: Although we are invoking `mExponent`, internally `exponent` is invoking itself directly, without memoization. So if we write:
 
-```
+```js
 const mExponent = memoized(exponent);
 
 mExponent(2, 8)
@@ -454,7 +454,7 @@ The combinator that decouples recursion using a parameter, but doesn’t require
 
 A compact JavaScript implementation looks like this:
 
-```
+```js
 const Y =
   fn =>
     (x => x(x))(m => a => fn(m(m))(a));
@@ -464,7 +464,7 @@ Without getting into exactly how it works, we can see that the disadvantage of t
 
 Here’s an idiomatic JavaScript version, called the Why Bird. It handles functions with more than one argument:
 
-```
+```js
 const why =
   fn =>
     (x => x(x))(
@@ -476,7 +476,7 @@ const why =
 
 Armed with our why bird, we can write recursive functions that look a little more idiomatic. This implementation of `map` is gratuitously recursive, but demonstrates that using the why bird, we need not pass `myself` along when `map` calls itself recursively:
 
-```
+```js
 const _map =
   (myself, fn, input) => {
     if (input.length === 0) {

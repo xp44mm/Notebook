@@ -348,8 +348,8 @@ F#
 open System.Reactive.Threading.Tasks
 let testToObservable () =
     let path fl = Path.Combine(__SOURCE_DIRECTORY__, fl+".fs")
-    let resultsA = File.ReadAllLinesAsync(path "Search").ToObservable()
-    let resultsB = File.ReadAllLinesAsync(path "Program").ToObservable()
+    let resultsA = File.ReadAllLinesAsync(path "a").ToObservable()
+    let resultsB = File.ReadAllLinesAsync(path "b").ToObservable()
 
     resultsA
         .Concat(resultsB)
@@ -377,7 +377,7 @@ Still, after you concatenate the observables, you get `IObservable<IEnumerable<s
 ```C#
 IObservable<TResult> SelectMany<TSource, TResult>(
     this IObservable<TSource> source, 
-    Func<TSource, IEnumerable<TResult>> selector)           
+    Func<TSource, IEnumerable<TResult>> selector)
 ```
 
 Figure 5.5 The `SelectMany` operator marble diagram. Each item produces an enumerable by the selector, and the items from each enumerable are emitted to the resulting observable.
@@ -411,11 +411,11 @@ var subscription = Observable.Range(1, 10)
     .SubscribeConsole("AsyncWhere");
 ```
 
-The Where operator expects from the given predicate to return a `bool` that will determine whether the item will be allowed to proceed on the observable. But the `IsPrimeAsync` method returns a `Task<bool>` so you naïvely try to await it, which causes your lambda expression return type to again be `Task<bool>`. Unfortunately, `Where` (and most other operators) doesn't support tasks, and that's why your code doesn't compile. But don't lose hope; together we can make it work!
+The `Where` operator expects from the given predicate to return a `bool` that will determine whether the item will be allowed to proceed on the observable. But the `IsPrimeAsync` method returns a `Task<bool>` so you naïvely try to await it, which causes your lambda expression return type to again be `Task<bool>`. Unfortunately, `Where` (and most other operators) doesn't support tasks, and that's why your code doesn't compile. But don't lose hope; together we can make it work!
 
 ---
 
-NOTE: In the observer's `OnNext` method, nothing prevents you from running code with async-await (as long as the method is marked with async). But remember that because the method returns void, it will return to the caller the moment the first await is reached, so that the next `OnNext` might be called while still processing the previous one. Many times, this process turns out to be confusing and hard to track.
+NOTE: In the observer's `OnNext` method, nothing prevents you from running code with async-await (as long as the method is marked with async). But remember that because the method returns `void`, it will return to the caller the moment the first await is reached, so that the next `OnNext` might be called while still processing the previous one. Many times, this process turns out to be confusing and hard to track.
 
 ---
 
@@ -455,6 +455,30 @@ subscription =
         .Where(x => x.isPrime)
         .Select(x => x.number)
         .SubscribeConsole("primes")
+```
+
+F#，太长不看
+
+```fsharp
+    let path fl = Path.Combine(__SOURCE_DIRECTORY__, fl+".fs")
+
+    let IsPrimeAsync number = 
+        File
+            .ReadAllLinesAsync(path "FlatMap")
+            .ToObservable()
+            .Map(fun ln -> ln.Length > number)
+
+    Observable
+        .Range(36, 9)
+        .FlatMap(fun number -> 
+            let isPrime = IsPrimeAsync(number)
+            isPrime
+                .Map(fun x -> number, x)
+            )
+        .Filter(snd)
+        .Map(fst)
+        .Subscribe(ConsoleObserver "primes")
+    |> ignore
 ```
 
 These are the printed results when I run it on my machine:
@@ -559,6 +583,25 @@ IObservable<int> primes =
         .Select(x => x.number);
 ```
 
+F#，太长不看
+
+```fsharp
+    Observable
+        .Range(36, 9)
+        .Map(fun number -> 
+            task {
+                let! lns = File.ReadAllLinesAsync(path "FlatMap")
+                let isPrime = lns.Length > number
+                return number,isPrime
+            })
+        .Concat()
+        .Filter(snd)
+        .Map(fst)
+        .Subscribe(ConsoleObserver "primes")
+    |> ignore
+
+```
+
 Running the example gives this output, which keeps the numbers ordered:
 
 ```
@@ -616,10 +659,10 @@ public partial class MessagesWindow : Window
 
         var updatesWebService = new UpdatesWebService();
         _subscription = Observable
-            .Interval(TimeSpan.FromMinutes(1))               
+            .Interval(TimeSpan.FromMinutes(1))
             .SelectMany(_ => updatesWebService.GetUpdatesAsync())  
-            .SelectMany(updates => updates)              
-            .ObserveOnDispatcher() 
+            .SelectMany(updates => updates)
+            .ObserveOnDispatcher()
             .Subscribe(/*an observer the update the ListBox*/);
     }
 }
@@ -627,7 +670,19 @@ public partial class MessagesWindow : Window
 
 Keeping the periodic call to the web service in the observable pipeline allows you to create elegant solutions, as you can see in the previous example. I owe you an explanation on the `ObserveOnDispatcher` operator. Until now, I deliberately ignored the elephant in the room: where are the Intervals coming from, on which threads? In chapter 10, you'll learn the concurrency model that Rx uses and see the connection to the Interval operator as well as other time-based operators. For now, you should know that by default, the Interval operator runs on a different thread of the observer subscription. In WPF and other GUI frameworks, code that mutates the UI controls can run in only the UI thread. The `ObserveOnDispatcher` operator guarantees that the observer code will run on the UI thread (by using the WPF Dispatcher).
 
-NOTE In the example, it's possible that a call to the web service will happen even if the previous one hasn't yet returned. The `Interval` operator has no knowledge about the asynchronous action you perform at each cycle.
+```fsharp
+// initial context or it is null in WPF.
+System.Threading.SynchronizationContext.SetSynchronizationContext(
+    new System.Windows.Threading.DispatcherSynchronizationContext())
+ // ObserveOnDispatcher()
+.ObserveOn(System.Threading.SynchronizationContext.Current)
+```
+
+------
+
+NOTE: In the example, it's possible that a call to the web service will happen even if the previous one hasn't yet returned. The `Interval` operator has no knowledge about the asynchronous action you perform at each cycle.
+
+------
 
 It's important to note that the `Interval` operator supports the same period between all emissions, including the first one. The Timer operator that you'll see next gives more flexibility.
 
@@ -695,6 +750,38 @@ immediateObservable
     .Switch()
     .Timestamp()
     .SubscribeConsole("timer switch");
+```
+
+F#
+
+```fsharp
+    let firstObservable:IObservable<string> =
+        Observable
+            .Interval(TimeSpan.FromSeconds(1))
+            .Select(fun x -> $"value{x}")
+
+    let secondObservable:IObservable<string> =
+        Observable
+            .Interval(TimeSpan.FromSeconds(2))
+            .Select(fun x -> $"second{x}")
+            .Take(5)
+
+    let immediateObservable:IObservable<IObservable<string>> =
+        Observable.Return(firstObservable)
+
+    //Scheduling the second observable emission
+    let scheduledObservable:IObservable<IObservable<string>> =
+        Observable
+            .Timer(TimeSpan.FromSeconds(5))
+            .Select(fun x -> secondObservable)
+
+    immediateObservable
+        .Merge(scheduledObservable)
+        .Switch()
+        .Timestamp()
+        .Subscribe(ConsoleObserver "timer switch")
+
+    |> ignore
 ```
 
 Running this example yields this output on my machine:

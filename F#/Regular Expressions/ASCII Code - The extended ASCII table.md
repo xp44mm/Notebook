@@ -1,6 +1,6 @@
 # ASCII Code - The extended ASCII table
 
-<https://www.ascii-code.com/>
+source from [url](https://www.ascii-code.com/)
 
 **ASCII**, stands for American Standard Code for Information Interchange. It's a 7-bit character code where every single bit represents a unique character. On this webpage you will find 8 bits, 256 characters, ASCII table according to Windows-1252 (code page 1252) which is a superset of ISO 8859-1 in terms of printable characters. In the range 128 to 159 (hex 80 to 9F), ISO/IEC 8859-1 has invisible control characters, while Windows-1252 has writable characters. Windows-1252 is probably the most-used 8-bit character encoding in the world.
 
@@ -289,7 +289,7 @@ There are several different variations of the 8-bit ASCII table. The table below
 | 255 | 377 | FF | ÿ      | &yuml;    | Latin small letter y with diaeresis        |
 ```
 
-# ASCII 可打印字符与控制字符
+## ASCII 可打印字符与控制字符
 
 基本的 ASCII 字符集共有 128 个字符，其中有 95 个可打印字符，包括常用的字母、数字、标点符号等，另外还有 33 个控制字符。标准 ASCII 码使用 7 个二进位对字符进行编码，对应的 ISO 标准为 ISO646 标准。
 
@@ -301,8 +301,9 @@ There are several different variations of the 8-bit ASCII table. The table below
 
 在ASCII码中，第32~126号（共95个）是可打印字符，也就是在显示器上输出能够看得见的。
 
-# 标点符号的英语名称
+## 标点符号的英语名称
 
+```fsharp
 ． period / full stop 句号
 ， comma 逗号
 ： colon 冒号
@@ -332,11 +333,13 @@ _ underscore
 → arrow 箭号；参见号
 | vertical bar 竖线
 \ backslash 反斜线
+```
 
 ---
 
 附：部分数学符号的英文名称
 
+```fsharp
 ＋ plus 加号；正号
 － minus 减号；负号
 ± plus or minus 正负号
@@ -377,3 +380,4 @@ _ underscore
 ＃ number …号
 ℃ Celsius system 摄氏度
 ＠ at 在
+```

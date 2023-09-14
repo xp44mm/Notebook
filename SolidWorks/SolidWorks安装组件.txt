@@ -1,0 +1,15 @@
+﻿SOLIDWORKS 
+-SOLIDWORKS Toolbox
+-SOLIDWORKS Routing
+-范例文件
+-手册
+-帮助文件
+SOLIDWORKS 语言
+-英文
+-简体中文
+eDrawings
+SOLIDWORKS File Utilities
+
+互斥二选一：
+SOLIDWORKS PDM Client
+SOLIDWORKS PDM 服务器

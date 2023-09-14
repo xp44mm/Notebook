@@ -1,0 +1,42 @@
+# solidworks学习日志
+
+配置总结：
+
+
+
+solidworks资源，欢迎使用solidworks，学习，逐步教程。
+
+课程选择：
+
+solidworks入门，~~工程图~~。
+
+第1课：零件
+
+第2课：装配体
+
+第3课：3D 草图绘制
+
+焊件，焊件零件，~~添加顶端盖~~，~~添加角撑板~~，~~添加圆角焊缝~~，~~创建子焊件~~
+
+搜索帮助：焊件 - 生成自定义轮廓。
+
+
+
+工具，草图工具，分割实体
+
+库特征
+
+将自定义轮廓保存在单独文件夹结构中
+
+设计库
+
+“SOLIDWORKS Routing 帮助”的位置：
+
+C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\lang\chinese-simplified\sldpiping.chm
+
+此文件夹下面，ot开头是跟练教程
+
+开始菜单，“SOLIDWORKS 202x Routing Library Manager”程序，右下角的“帮助”打开的是“SOLIDWORKS Routing 帮助”
+
+Routing 文件位置和设定
+

@@ -2,7 +2,6 @@
 
 ------
 
-
 > A trampoline is a loop that iteratively invokes [thunk](https://en.wikipedia.org/wiki/Thunk_(functional_programming))-returning functions ([continuation-passing style](https://en.wikipedia.org/wiki/Continuation-passing_style)). A single trampoline is sufficient to express all control transfers of a program; a program so expressed is trampolined, or in trampolined style; converting a program to trampolined style is trampolining. Trampolined functions can be used to implement [tail-recursive](https://en.wikipedia.org/wiki/Tail-recursive_function) function calls in stack-oriented programming languages.–[Wikipedia](https://en.wikipedia.org/wiki/Trampoline_(computing))
 
 This description is precise and appropriate for a reference work, but it is nearly impossible to go out and read about thunks, continuation-passing style, and tail-recursion without learning about trampolining along the way.
@@ -11,7 +10,7 @@ So it is exactly how one ought to answer the question “define trampolining” 
 
 Let’s begin with a use case.
 
-### recursion, see recursion
+## recursion, see recursion
 
 You are asked to demonstrate that you know how to write a recursive function, perhaps in one of those job interviews where they like to take a small snippet of code and use it as an excuse to talk about programming philosophies.
 
@@ -104,9 +103,15 @@ factorial(32768)
 
 So what to do? Well, naturally we’re asked to Greenspun tail-call elimination on top of JavaScript.
 
+------
+
 > Greenspun’s Tenth Rule: Any sufficiently complicated C or Fortran program contains an ad hoc, informally-specified, bug-ridden, slow implementation of half of Common Lisp.
 
+------
+
 > Steele & Crockford’s Corollary to Greenspun’s Tenth Rule: Any sufficiently interesting JavaScript library contains an ad hoc, informally-specified, bug-ridden, slow implementation of half of Haskell.[2](http://raganwald.com/2013/03/28/trampolines-in-javascript.html#fn:corollary)
+
+------
 
 ### trampolining
 
@@ -118,7 +123,7 @@ What’s a thunk? I didn’t explain that? For our purposes, a *thunk* is a func
 
 An extremely simple and useful implementation of trampolining can be found in the [Lemonad](http://fogus.github.com/lemonad/) library. It works provided that you want to trampoline a function that doesn’t return a function. Here it is:
 
-```
+```js
 L.trampoline = function(fun /*, args */) {
   var result = fun.apply(fun, _.rest(arguments));
 
@@ -132,7 +137,7 @@ L.trampoline = function(fun /*, args */) {
 
 We’ll rewrite it in [allong.es](https://github.com/raganwald/allong.es) style for consistency with other posts in this blog. Meaning, we write it as a function decorator:
 
-```
+```js
 npm install allong.es
 
 var variadic = require('allong.es').variadic;
@@ -153,7 +158,7 @@ var trampoline = function (fn) {
 
 Now here’s our implementation of `factorial` that is wrapped around a trampolined tail recursive function:
 
-```
+```js
 function factorial (n) {
   var _factorial = trampoline( function myself (acc, n) {
     return n
@@ -172,7 +177,7 @@ factorial(32768);
 
 Presto, it runs for `n = 32768`. Now we’d better fix the “infinity” problem, caused by JavaScript’s limitations on integers. Here’s our finished work:
 
-```
+```js
 npm install big-integer
 
 var variadic = require('allong.es').variadic,
@@ -223,7 +228,7 @@ The limitation of this simple implementation is that because it tests for the fu
 
 Here’s our factorial done with bilby:
 
-```
+```js
 var B = require('bilby'),
     cont = B.cont,
     done = B.done,

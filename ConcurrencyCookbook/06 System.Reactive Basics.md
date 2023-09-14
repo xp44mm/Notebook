@@ -1,8 +1,8 @@
-# Chapter 6. System.Reactive Basics
+# Chapter 6. `System.Reactive` Basics
 
-LINQ is a set of language features that enable developers to query sequences. The two most common LINQ providers are the built-in LINQ to Objects (which is based on `IEnumerable<T>`) and LINQ to Entities (based on `IQueryable<T>`). There are many other providers available, and most providers have the same general structure. Queries are lazily evaluated, and the sequences produce values as necessary. Conceptually, this is a pull model; during evaluation, value items are pulled from the query one at a time.
+LINQ is a set of language features that enable developers to query sequences. The two most common LINQ providers are the built-in LINQ to Objects (which is based on `IEnumerable<'T>`) and LINQ to Entities (based on `IQueryable<'T>`). There are many other providers available, and most providers have the same general structure. Queries are lazily evaluated, and the sequences produce values as necessary. Conceptually, this is a pull model; during evaluation, value items are pulled from the query one at a time.
 
-`System.Reactive` (Rx) treats events as sequences of data that arrive over time. As such, you can think of Rx as LINQ to Events (based on `IObservable<T>`). The main difference between observables and other LINQ providers is that Rx is a “push” model, meaning that the query defines how the program reacts as events arrive. Rx builds on top of LINQ, adding some powerful new operators as extension methods.
+`System.Reactive` (Rx) treats events as sequences of data that arrive over time. As such, you can think of Rx as LINQ to Events (based on `IObservable<'T>`). The main difference between observables and other LINQ providers is that Rx is a “push” model, meaning that the query defines how the program reacts as events arrive. Rx builds on top of LINQ, adding some powerful new operators as extension methods.
 
 This chapter looks at some of the more common Rx operations. Bear in mind that all of the LINQ operators are also available, so simple operations, such as filtering (`Where`) and projection (`Select`), work conceptually the same as they do with any other LINQ provider. We won't cover these common LINQ operations here; we'll focus on the new capabilities that Rx builds on top of LINQ, particularly those dealing with time.
 
@@ -31,6 +31,18 @@ var progressReports = // as IObservable<EventPattern<int>>
 progressReports.Subscribe(data => Trace.WriteLine("OnNext: " + data.EventArgs));
 ```
 
+F#
+
+```fsharp
+    let progress = new Progress<int>()
+    let progressReports =
+        progress.ProgressChanged :> IObservable<int>
+    progressReports.Subscribe(fun data -> 
+        Trace.WriteLine($"OnNext: {data}"))
+        |> ignore
+    (progress :> IProgress<_>).Report(10)
+```
+
 Note here that the `data.EventArgs` is strongly typed to be an `int`. The type argument to `FromEventPattern` (int in the previous example) is the same as the type T in `EventHandler<T>`. The two lambda arguments to `FromEventPattern` enable `System.Reactive` to subscribe and unsubscribe from the event.
 
 The newer user interface frameworks use `EventHandler<T>`, and can easily be used with `FromEventPattern`, but older types often define a unique delegate type for each event. These can also be used with `FromEventPattern`, but it takes a bit more work. For example, the `System.Timers.Timer` type defines an `Elapsed` event, which is of type `ElapsedEventHandler`. You can wrap older events like this with `FromEventPattern`:
@@ -45,6 +57,7 @@ var ticks = // as IObservable<EventPattern<ElapsedEventArgs>>
         handler => tmr.Elapsed -= handler);
 ticks.Subscribe(data => Trace.WriteLine("OnNext: " + data.EventArgs.SignalTime));
 ```
+F#代码见本节末。
 
 Note that in this example that `data.EventArgs` is still strongly typed. The type arguments to `FromEventPattern` are now the unique handler type and the derived `EventArgs` type. The first lambda argument to `FromEventPattern` is a converter from `EventHandler<ElapsedEventArgs>` to `ElapsedEventHandler`; the converter should do nothing more than pass along the event.
 
@@ -56,6 +69,19 @@ var tmr = new Timer(interval: 1000) { Enabled = true };
 var ticks = // as IObservable<EventPattern<object>>
     Observable.FromEventPattern(tmr, nameof(Timer.Elapsed));
 ticks.Subscribe(data => Trace.WriteLine("OnNext: " + ((ElapsedEventArgs)data.EventArgs).SignalTime));
+```
+
+F#
+
+```fsharp
+open System.Timers
+let timer() =
+    let tmr = new Timer(interval= 1000,Enabled = true)
+    let ticks =
+        tmr.Elapsed :> IObservable<ElapsedEventArgs>
+    ticks.Subscribe(fun data -> 
+        Trace.WriteLine($"OnNext: {data.SignalTime}"))
+        |> ignore
 ```
 
 With this approach, the call to `FromEventPattern` is much easier. Note that there's one drawback to this approach: the consumer doesn't get strongly typed data. Because `data.EventArgs` is of type object, you have to cast it to `ElapsedEventArgs` yourself.
@@ -85,6 +111,28 @@ downloadedStrings.Subscribe(
 client.DownloadStringAsync(new Uri("http://invalid.example.com/"));
 ```
 
+F#
+
+```fsharp
+open System.Net
+let web() =
+    let client = new WebClient()
+    let downloadedStrings =
+        client.DownloadStringCompleted :> IObservable<_>
+
+    downloadedStrings.Subscribe(        
+        (fun eventArgs ->
+            if (eventArgs.Error <> null) then
+                Trace.WriteLine($"OnNext: (Error) {eventArgs.Error}")
+            else
+                Trace.WriteLine($"OnNext: {eventArgs.Result}")
+        ),
+        (fun (ex:exn) -> Trace.WriteLine($"OnError: {ex.Message}")),
+        (fun () -> Trace.WriteLine("OnCompleted"))
+        ) |> ignore
+    client.DownloadStringAsync(Uri("https://news.cnblogs.com/"))
+```
+
 When `WebClient.DownloadStringAsync` completes with an error, the event is raised with an exception in `AsyncCompletedEventArgs.Error`. Unfortunately, `System.Reactive` sees this as a data event, so if you then run the preceding code you will see `OnNext: (Error)` printed instead of `OnError:`.
 
 Some event subscriptions and unsubscriptions must be done from a particular context. For example, events on many UI controls must be subscribed to from the UI thread. `System.Reactive` provides an operator that will control the context for subscribing and unsubscribing: `SubscribeOn`. The `SubscribeOn` operator isn't necessary in most situations because most of the time a UI-based subscription is done from the UI thread.
@@ -105,7 +153,7 @@ Recipe 6.4 covers how to throttle events so subscribers aren't overwhelmed.
 
 `System.Reactive` does its best to be thread agnostic. So, it'll raise notifications (e.g., `OnNext`) in whatever thread happens to be current. Each `OnNext` notification will happen sequentially, but not necessarily on the same thread.
 
-You often want these notifications raised in a particular context. For example, UI elements should only be manipulated from the UI thread that owns them, so if you're updating a UI in response to a notification that is arriving on a threadpool thread, then you'll need to move over to the UI thread.
+You often want these notifications raised in a particular context. For example, UI elements should only be manipulated from the UI thread that owns them, so if you're updating a UI in response to a notification that is arriving on a thread-pool thread, then you'll need to move over to the UI thread.
 
 ### Solution
 
@@ -123,6 +171,15 @@ private void Button_Click(object sender, RoutedEventArgs e)
 }
 ```
 
+F#，注意示例代码的`Button_Click`仅仅是代码的容器，其内容可以放在其他合适的位置，不影响功能。
+
+```fsharp
+  Trace.WriteLine($"UI thread is {Environment.CurrentManagedThreadId}")
+  Observable.Interval(TimeSpan.FromSeconds(1))
+      .Subscribe(fun i -> Trace.WriteLine(
+          $"Interval {i} on thread {Environment.CurrentManagedThreadId}"))
+```
+
 On my machine, the output looks like the following:
 
 ```C#
@@ -136,7 +193,7 @@ Interval 5 on thread 11
 Interval 6 on thread 11
 ```
 
-Since `Interval` is based on a timer (without a specific thread), the notifications are raised on a threadpool thread, rather than the UI thread. If you need to update a UI element, you can pipe those notifications through `ObserveOn` and pass a synchronization context representing the UI thread:
+Since `Interval` is based on a timer (without a specific thread), the notifications are raised on a thread-pool thread, rather than the UI thread. If you need to update a UI element, you can pipe those notifications through `ObserveOn` and pass a synchronization context representing the UI thread:
 
 ```C#
 private void Button_Click(object sender, RoutedEventArgs e)
@@ -150,7 +207,24 @@ private void Button_Click(object sender, RoutedEventArgs e)
 }
 ```
 
-Another common usage of `ObserveOn` is to move off the UI thread when necessary. Consider a situation where you need to do some CPU-intensive computation whenever the mouse moves. By default, all mouse moves are raised on the UI thread, so you can use `ObserveOn` to move those notifications to a threadpool thread, do the computation, and then move the result notifications back to the UI thread:
+F#
+
+```fsharp
+        Trace.WriteLine($"UI thread is {Environment.CurrentManagedThreadId}")
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(fun x -> Trace.WriteLine(
+                $"Interval {x} on thread{Environment.CurrentManagedThreadId}"))
+```
+
+在应用入口（全局）设置如下代码：
+
+```fsharp
+    System.Threading.SynchronizationContext.SetSynchronizationContext(
+        new System.Windows.Threading.DispatcherSynchronizationContext())
+```
+
+Another common usage of `ObserveOn` is to move off the UI thread when necessary. Consider a situation where you need to do some CPU-intensive computation whenever the mouse moves. By default, all mouse moves are raised on the UI thread, so you can use `ObserveOn` to move those notifications to a thread-pool thread, do the computation, and then move the result notifications back to the UI thread:
 
 ```C#
 var uiContext = SynchronizationContext.Current; // as SynchronizationContext
@@ -175,7 +249,27 @@ Observable.FromEventPattern<MouseEventHandler, MouseEventArgs>(
         $"Result {x} on thread {Environment.CurrentManagedThreadId}"));
 ```
 
-If you execute this sample, you'll see the calculations done on a threadpool thread and the results printed on the UI thread. However, you'll also notice that the calculations and results will lag behind the input; they'll queue up because the mouse location updates more often than every 100 ms. `System.Reactive` has several techniques for handling this situation; one common one covered in Recipe 6.4 is throttling the input.
+F#
+
+```fsharp
+    use subscr =
+        Trace.WriteLine($"UI thread is {Environment.CurrentManagedThreadId}")
+        (this.MouseMove :> IObservable<_>)
+            .Map(fun args -> args.GetPosition(this))
+            .ObserveOn(System.Reactive.Concurrency.Scheduler.Default)
+            .Map(fun position ->
+                Thread.Sleep(100)
+                let result = position.X + position.Y
+                let thread = Environment.CurrentManagedThreadId
+                Trace.WriteLine($"Calculated result {result} on thread {thread}")
+                result
+            )
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(fun x -> Trace.WriteLine(
+                $"Result {x} on thread {Environment.CurrentManagedThreadId}"))
+```
+
+If you execute this sample, you'll see the calculations done on a thread-pool thread and the results printed on the UI thread. However, you'll also notice that the calculations and results will lag behind the input; they'll queue up because the mouse location updates more often than every 100 ms. `System.Reactive` has several techniques for handling this situation; one common one covered in Recipe 6.4 is throttling the input.
 
 ### Discussion
 
@@ -201,7 +295,7 @@ You have a sequence of events, and you want to group the incoming events as they
 
 ### Solution
 
-`System.Reactive` provides a pair of operators that group incoming sequences: `Buffer` and `Window`. `Buffer` will hold on to the incoming events until the group is complete, at which time it forwards them all at once as a collection of events. `Window` will logically group the incoming events but will pass them along as they arrive. The return type of `Buffer` is `IObservable<IList<T>>` (an event stream of collections); the return type of `Window` is `IObservable<IObservable<T>>` (an event stream of event streams).
+`System.Reactive` provides a pair of operators that group incoming sequences: `Buffer` and `Window`. `Buffer` will hold on to the incoming events until the group is complete, at which time it forwards them all at once as a collection of events. `Window` will logically group the incoming events but will pass them along as they arrive. The return type of `Buffer` is `IObservable<IList<'T>>` (an event stream of collections); the return type of `Window` is `IObservable<IObservable<'T>>` (an event stream of event streams).
 
 The following example uses the `Interval` operator to create `OnNext` notifications once a second and then buffers them two at a time:
 
@@ -210,6 +304,16 @@ var subscription = Observable.Interval(TimeSpan.FromSeconds(1))
     .Buffer(2)
     .Subscribe(arr => Trace.WriteLine(
         $"{DateTime.Now.Second}: Got {arr[0]} and {arr[1]}"));
+```
+
+F#
+
+```fsharp
+    use subscription = 
+        Observable.Interval(TimeSpan.FromSeconds(1))
+            .Buffer(2)
+            .Subscribe(fun arr -> Trace.WriteLine(
+                $"{DateTime.Now.Second}: Got {arr.[0]} and {arr.[1]}"))
 ```
 
 On my machine, this code produces a pair of outputs every two seconds:
@@ -234,6 +338,20 @@ Observable.Interval(TimeSpan.FromSeconds(1))
           i => Trace.WriteLine($"{DateTime.Now.Second}: Saw {i}"),
           () => Trace.WriteLine($"{DateTime.Now.Second}: Ending group"));
     });
+```
+
+F#
+
+```fsharp
+    Observable.Interval(TimeSpan.FromSeconds(1))
+        .Window(2)
+        .Subscribe(fun grp ->
+            Trace.WriteLine($"{DateTime.Now.Second}: Starting new group")
+            grp.Subscribe(
+                (fun i -> Trace.WriteLine($"{DateTime.Now.Second}: Saw {i}")),
+                (fun () -> Trace.WriteLine($"{DateTime.Now.Second}: Ending group"))
+                ) |> ignore
+        )
 ```
 
 On my machine, this `Window` example produces this output:
@@ -269,6 +387,16 @@ private void Button_Click(object sender, RoutedEventArgs e)
       .Subscribe(g => Trace.WriteLine(
           $"{DateTime.Now.Second}: Saw {g.Count} items."));
 }
+```
+
+F#
+
+```fsharp
+    let subscr =
+        (this.MouseMove :> IObservable<MouseEventArgs>)
+            .Buffer(TimeSpan.FromSeconds(1))
+            .Subscribe(fun g -> Trace.WriteLine(
+                $"{DateTime.Now.Second}: Saw {g.Count} items."))
 ```
 
 Depending on how you move the mouse, you should see output like the following:
@@ -323,6 +451,17 @@ private void Button_Click(object sender, RoutedEventArgs e)
 }
 ```
 
+F#
+
+```fsharp
+    let Throttling () =
+        (this.MouseMove :> IObservable<MouseEventArgs>)
+            .Map(fun args -> args.GetPosition(this))
+            .Throttle(TimeSpan.FromSeconds(1))
+            .Subscribe(fun x -> Trace.WriteLine(
+                $"{DateTime.Now.Second}: Saw {x.X + x.Y}"))
+```
+
 The output varies considerably based on mouse movement, but one example run on my machine looked like this:
 
 ```C#
@@ -350,6 +489,17 @@ private void Button_Click(object sender, RoutedEventArgs e)
       .Subscribe(x => Trace.WriteLine(
           $"{DateTime.Now.Second}: Saw {x.X + x.Y}"));
 }
+```
+
+F#
+
+```fsharp
+    let Sampling () =
+        (this.MouseMove :> IObservable<MouseEventArgs>)
+            .Map(fun args -> args.GetPosition(this))
+            .Sample(TimeSpan.FromSeconds(1))
+            .Subscribe(fun x -> Trace.WriteLine(
+                $"{DateTime.Now.Second}: Saw {x.X + x.Y}"))
 ```
 
 Here's the output on my machine when I first left the mouse still for a few seconds and then continuously moved it:
@@ -396,6 +546,20 @@ void GetWithTimeout(HttpClient client)
 }
 ```
 
+F#
+
+```fsharp
+open System.Net.Http
+let GetWithTimeout(client:HttpClient) =
+    client.GetStringAsync("http://www.example.com/")
+        .ToObservable()
+        .Timeout(TimeSpan.FromSeconds(1))
+        .Subscribe(
+            (fun t -> Trace.WriteLine($"{DateTime.Now.Second}: Saw {t.Length}")),
+            (fun (ex:exn) -> Trace.WriteLine(ex))
+        )
+```
+
 `Timeout` is ideal for asynchronous operations, such as web requests, but it can be applied to any event stream. The following example applies `Timeout` to mouse movements, which are easier to play around with:
 
 ```C#
@@ -411,6 +575,19 @@ private void Button_Click(object sender, RoutedEventArgs e)
           x => Trace.WriteLine($"{DateTime.Now.Second}: Saw {x.X + x.Y}"),
           ex => Trace.WriteLine(ex));
 }
+```
+
+F#
+
+```fsharp
+    let Timeouting () =
+        (this.MouseMove :> IObservable<MouseEventArgs>)
+            .Map(fun args -> args.GetPosition(this))
+            .Timeout(TimeSpan.FromSeconds(1))
+            .Subscribe(
+                (fun x -> Trace.WriteLine($"{DateTime.Now.Second}: Saw {x.X + x.Y}")),
+                (fun (ex:exn) -> Trace.WriteLine(ex))
+                )
 ```
 
 On my machine, I moved the mouse a bit and then kept it still for a second, and got these results:
@@ -447,6 +624,22 @@ private void Button_Click(object sender, RoutedEventArgs e)
           x => Trace.WriteLine($"{DateTime.Now.Second}: Saw {x.X}, {x.Y}"),
           ex => Trace.WriteLine(ex));
 }
+```
+
+F#
+
+```fsharp
+    let clicks =
+        (this.MouseDown :> IObservable<MouseButtonEventArgs>)
+            .Map(fun args -> args.GetPosition(this))
+    let subscr =
+        (this.MouseMove :> IObservable<MouseEventArgs>)
+            .Map(fun args -> args.GetPosition(this))
+            .Timeout(TimeSpan.FromSeconds(1), clicks)
+            .Subscribe(
+                (fun x -> Trace.WriteLine($"{DateTime.Now.Second}: Saw {x.X + x.Y}")),
+                (fun (ex:exn) -> Trace.WriteLine(ex))
+                )
 ```
 
 On my machine, I moved the mouse a bit, then held it still for a second, and then clicked a couple of different points. The following outputs shows the mouse movements quickly moving through until the timeout, and then the two clicks:

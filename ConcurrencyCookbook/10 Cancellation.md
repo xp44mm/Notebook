@@ -23,6 +23,15 @@ public void CancelableMethodWithDefault(CancellationToken cancellationToken = de
 }
 ```
 
+F#
+
+```fsharp
+type T()=
+    static member CancelableMethodWithOverload (cancellationToken:CancellationToken) = ()
+    static member CancelableMethodWithOverload() =
+        T.CancelableMethodWithOverload(CancellationToken.None)
+```
+
 `CancellationToken.None` represents a cancellation token that will never be canceled, and is a special value that is equivalent to `default(CancellationToken)`. Consumers pass this value when they don't ever want the operation to be canceled.
 
 Asynchronous streams have a similar but more complex way of handling cancellation. Canceling asynchronous streams is covered in detail in Recipe 3.4.
@@ -50,6 +59,17 @@ void IssueCancelRequest()
   // Issue the cancellation request.
   cts.Cancel();
 }
+```
+
+F#
+
+```fsharp
+let IssueCancelRequest() =
+    use cts = new CancellationTokenSource()
+    let task = CancelableMethodAsync(cts.Token)
+    // At this point, the operation has been started.
+    // Issue the cancellation request.
+    cts.Cancel()
 ```
 
 In the preceding example code, the task variable is ignored after it has started running; in real-world code, that task would probably be stored somewhere and awaited so that the end user is aware of the final result.
@@ -84,6 +104,32 @@ async Task IssueCancelRequestAsync()
     throw;
   }
 }
+```
+
+F#
+
+```fsharp
+let IssueCancelRequestAsync() =
+    task {
+        use cts = new CancellationTokenSource()
+        let task = CancelableMethodAsync(cts.Token)
+        // At this point, the operation is happily running.
+        // Issue the cancellation request.
+        cts.Cancel()
+        // (Asynchronously) wait for the operation to finish.
+        try
+            do! task;
+            // If we get here, the operation completed successfully
+            //  before the cancellation took effect.
+        with 
+        | :? OperationCanceledException ->
+            // If we get here, the operation was canceled before it completed.
+            ()
+        | _ ->
+            // If we get here, the operation completed with an error
+            //  before the cancellation took effect.
+            ()
+    }
 ```
 
 Normally, setting up the `CancellationTokenSource` and issuing the cancellation are in separate methods. Once you cancel a `CancellationTokenSource` instance, it is permanently canceled. If you need another source, you must create another instance. The following code is a more realistic GUI-based example that uses one button to start an asynchronous operation and another button to cancel it. It also disables and enables `StartButton` and `CancelButton` so that there can only be one operation at a time:
@@ -123,6 +169,58 @@ private void CancelButton_Click(object sender, RoutedEventArgs e)
 }
 ```
 
+xaml
+
+```xaml
+        <Button Name="StartButton">
+            <TextBlock Text="Start" FontSize="18"></TextBlock>
+        </Button>
+
+        <Button Name="CancelButton" IsEnabled="False">
+            <TextBlock Text="Cancel" FontSize="18"></TextBlock>
+        </Button>
+```
+
+F#
+
+```fsharp
+type CancellationTokenSourceWindow() as this =
+    inherit CancellationTokenSourceWindowXaml()
+    [<DefaultValue>]
+    val mutable _cts: CancellationTokenSource
+    let startTask () =
+        task {
+            try
+                try
+                    this.StartButton.IsEnabled <- false
+                    this.CancelButton.IsEnabled <- true
+                    this._cts <- new CancellationTokenSource()
+                    let token = this._cts.Token
+                    do! Task.Delay(TimeSpan.FromSeconds(5), token)
+                    Trace.WriteLine("Delay completed successfully.")
+                with
+                | :? OperationCanceledException ->
+                    Trace.WriteLine("Delay was canceled.")
+                | ex ->
+                    Trace.WriteLine("Delay completed with error.")
+                    raise(ex)
+            finally
+                this.StartButton.IsEnabled <- true
+                this.CancelButton.IsEnabled <- false
+        } :> Task
+
+    let subscr1 =
+        (this.StartButton.Click :> IObservable<_>)
+            .FlatMap(fun _ -> startTask().ToObservable())
+            .Subscribe()
+    let subscr2 =
+        (this.CancelButton.Click :> IObservable<_>)
+            .Subscribe(fun _ -> 
+                this._cts.Cancel()
+                this.CancelButton.IsEnabled <- false
+            )
+```
+
 ### Discussion
 
 The most realistic example in this recipe used a GUI application, but don't get the impression that cancellation is just for user interfaces. Cancellation has its place on the server as well; for example, ASP.NET provides a cancellation token representing the request timeout or client disconnect. It's true that cancellation token sources are rarer on the server side, but there's no reason you can't use them; they're useful if you need to cancel for some reason not covered by ASP.NET cancellation, such as an additional timeout for a portion of the request processing.
@@ -159,6 +257,16 @@ public int CancelableMethod(CancellationToken token)
 }
 ```
 
+F#,
+
+```fsharp
+let CancelableMethod(token:CancellationToken) =
+    for i in [ 0 .. 100] do
+        Thread.Sleep(1000)
+        token.ThrowIfCancellationRequested()
+    42
+```
+
 If your loop is very tight (i.e., if the body of your loop executes very quickly), then you may want to limit how often you check your cancellation token. As always, measure your performance before and after a change like this before deciding which way is best. The following code is similar to the previous example, but it has more iterations of a faster loop, so I added a limit to how often the token is checked:
 
 ```C#
@@ -172,6 +280,17 @@ public int CancelableMethod(CancellationToken token)
   }
   return 42;
 }
+```
+
+F#,
+
+```fsharp
+let CancelableMethod2 (token:CancellationToken) =
+    for i in [ 0 .. 100000] do
+        Thread.Sleep(1)
+        if i % 1000 = 0 then
+            token.ThrowIfCancellationRequested()
+    42
 ```
 
 The proper limit to use depends entirely on how much work you're doing and how responsive the cancellation needs to be.
@@ -219,6 +338,17 @@ async Task IssueTimeoutAsync()
 }
 ```
 
+F#,
+
+```fsharp
+let IssueTimeoutAsync() =
+  use cts = new CancellationTokenSource(TimeSpan.FromSeconds(5))
+  let token = cts.Token
+  task {
+      do! Task.Delay(TimeSpan.FromSeconds(10), token)
+  }
+```
+
 Alternatively, if you already have a `CancellationTokenSource` instance, you can start a timeout for that instance:
 
 ```C#
@@ -229,6 +359,18 @@ async Task IssueTimeoutAsync()
   cts.CancelAfter(TimeSpan.FromSeconds(5));
   await Task.Delay(TimeSpan.FromSeconds(10), token);
 }
+```
+
+F#
+
+```fsharp
+let IssueTimeoutAsync2 () =
+    use cts = new CancellationTokenSource()
+    let token = cts.Token
+    cts.CancelAfter(TimeSpan.FromSeconds(5))
+    task {
+        do! Task.Delay(TimeSpan.FromSeconds(10), token)
+    }
 ```
 
 ### Discussion
@@ -335,7 +477,7 @@ So, I recommend supporting cancellation whenever you do parallel computation (or
 
 Recipe 10.1 covers issuing a cancellation request.
 
-## 10.6 Canceling System.Reactive Code
+## 10.6 Canceling `System.Reactive` Code
 
 ### Problem
 
@@ -367,6 +509,28 @@ void CancelButton_Click(object sender, RoutedEventArgs e)
 }
 ```
 
+F#
+
+```fsharp
+    [<DefaultValue>]
+    val mutable _mouseMovesSubscription:IDisposable
+
+    do
+        this.StartButton.Click.Add(fun _ ->
+            let mouseMoves =
+                (this.MouseMove:>IObservable<_>)
+                    .Map(fun args -> args.GetPosition(this))
+            this._mouseMovesSubscription <-
+                mouseMoves.Subscribe(fun value ->
+                this.MousePositionLabel.Content <- $"({value.X}, {value.Y})"
+                )
+        )
+        this.CancelButton.Click.Add(fun _ ->
+            if (this._mouseMovesSubscription <> null) then
+                this._mouseMovesSubscription.Dispose()
+        )
+```
+
 It's quite convenient to make `System.Reactive` work with the `CancellationTokenSource`/`CancellationToken` system that everything else uses for cancellation. The rest of this recipe covers ways that `System.Reactive` observables interact with `CancellationToken`.
 
 The first major use case is when the observable code is wrapped in asynchronous code. The basic approach was covered in Recipe 8.5, and now you want to add `CancellationToken` support. In general, the easiest way to do this is to perform all operations using reactive operators and then call `ToTask` to convert the last resulting element to an awaitable task. The following code shows how to asynchronously take the last element in a sequence:
@@ -396,6 +560,24 @@ var allElements = // as IList<int>
     await observable.ToList().ToTask(tok);
 ```
 
+F#,
+
+```fsharp
+let totask () =
+    use cts = new CancellationTokenSource()
+    task {
+        let observable = Observable.Range(1,3)
+        let! lastElement = observable.LastAsync().ToTask(cts.Token)
+        Trace.WriteLine(lastElement)
+        let! lastElement = observable.ToTask(cts.Token)
+        Trace.WriteLine(lastElement)
+        let! nextElement = observable.FirstAsync().ToTask(cts.Token)
+        Trace.WriteLine(nextElement)
+        let! allElements = observable.ToList().ToTask(cts.Token)
+        Trace.WriteLine(stringify(List.ofSeq allElements))
+    }
+```
+
 Finally, let's consider the reverse situation. We've looked at several ways to handle situations where `System.Reactive` code responds to `CancellationToken`—that is, where a `CancellationTokenSource` cancel request is translated into a disposal of that subscription. It's also possible to go the other way: issuing a cancellation request as a response to disposal.
 
 The `FromAsync`, `StartAsync`, and `SelectMany` operators all support cancellation, as seen in Recipe 8.6. These operators cover the vast majority of use cases. Rx also provides a `CancellationDisposable` type that cancels a `CancellationToken` when disposed. You can use `CancellationDisposable` directly, like this:
@@ -407,6 +589,14 @@ using (var cancellation = new CancellationDisposable())
   // Pass the token to methods that respond to it.
 }
 // At this point, the token is canceled.
+```
+
+F#,
+
+```fsharp
+    use cancellation = new CancellationDisposable()
+    let token = cancellation.Token
+    // Pass the token to methods that respond to it.
 ```
 
 ### Discussion
@@ -491,6 +681,21 @@ public async Task<HttpResponseMessage> GetWithTimeoutAsync(
 }
 ```
 
+F#
+
+```fsharp
+open System.Net.Http
+let GetWithTimeoutAsync(
+    client:HttpClient,
+    url:string,
+    tok:CancellationToken) =
+    use cts:CancellationTokenSource =
+        CancellationTokenSource.CreateLinkedTokenSource(tok)
+    cts.CancelAfter(TimeSpan.FromSeconds(2))
+    let combinedToken = cts.Token
+    client.GetAsync(url, combinedToken)
+```
+
 The resulting `combinedToken` is canceled when either the user cancels the existing `tok` or when the linked source is canceled by `CancelAfter`.
 
 ### Discussion
@@ -528,6 +733,20 @@ async Task<PingReply> PingAsync(string hostNameOrAddress, CancellationToken tok)
       tok.Register(() => ping.SendAsyncCancel());
   return await task;
 }
+```
+
+F#
+
+```fsharp
+open System.Net.NetworkInformation
+let PingAsync(hostNameOrAddress:string, tok:CancellationToken) =
+    use ping = new Ping()
+    let tsk:Task<PingReply> = ping.SendPingAsync(hostNameOrAddress)
+    use _:CancellationTokenRegistration =
+        tok.Register(fun () -> ping.SendAsyncCancel())
+    task {
+        return! tsk
+    }
 ```
 
 Now, when a cancellation is requested, the `CancellationToken` will invoke the `SendAsyncCancel` method for you, canceling the `SendPingAsync` method.

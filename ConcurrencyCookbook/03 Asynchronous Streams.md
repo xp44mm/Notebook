@@ -4,25 +4,25 @@ Asynchronous streams are a way to asynchronously receive multiple data items. Th
 
 I find it useful to contrast asynchronous streams with other types that may be more familiar and to consider the differences. This helps me remember when to use asynchronous streams and when other types would be more appropriate.
 
-#### Asynchronous Streams and Task<T>
+#### Asynchronous Streams and `Task<T>`
 
 The standard asynchronous approach with `Task<T>` is only sufficient for asynchronously handling a single data value. Once a given `Task<T>` completes, that's it; a single `Task<T>` cannot provide more than one value of T for its consumers. Even if T is a collection, the value can only be provided once. See “Introduction to Asynchronous Programming” and Chapter 2 for more on using async with `Task<T>`.
 
 When comparing `Task<T>` to asynchronous streams, the asynchronous streams are more similar to enumerables. Specifically, an `IAsyncEnumerator<T>` may provide any number of T values, one at a time. Like `IEnumerator<T>`, an `IAsyncEnumerator<T>` may be infinite in length.
 
-#### Asynchronous Streams and IEnumerable<T>
+#### Asynchronous Streams and `IEnumerable<T>`
 
 `IAsyncEnumerable<T>`, as the name would imply, is similar to `IEnumerable<T>`. This is perhaps not a surprise; they both enable consumers to retrieve elements from them one at a time. The big difference is in the name: one is asynchronous and the other is not.
 
 When your code iterates over an `IEnumerable<T>`, it blocks as it retrieves each element from the enumerable. If the `IEnumerable<T>` is representing some I/O-bound operation, such as a database query or API call, then the consuming code ends up blocking on I/O, which is not ideal. `IAsyncEnumerable<T>` works just like an `IEnumerable<T>`, except that it asynchronously retrieves each next element.
 
-#### Asynchronous Streams and Task<IEnumerable<T>>
+#### Asynchronous Streams and `Task<IEnumerable<T>>`
 
 It is entirely possible to asynchronously return a collection with more than one item; one common example is `Task<List<T>>`. Still, async methods that return `List<T>` only get one return statement; the collection must be completely populated before it is returned. Even methods returning `Task<IEnumerable<T>>` may asynchronously return an enumerable, but then that enumerable is evaluated synchronously. Consider that LINQ-to-Entities has a `ToListAsync` LINQ method that returns `Task<List<T>>`. When a LINQ provider executes this, it has to communicate with the database and get all the matching responses back before it can finish populating the list and return it.
 
 The limitation of `Task<IEnumerable<T>>` is that it cannot return items as it gets them; if returning a collection, it has to load all of its items into memory, populate the collection, and then return the entire collection all at once. Even if it returns a LINQ query, it can asynchronously build that query, but once the query is returned, each item is retrieved from that query synchronously. `IAsyncEnumerable<T>` also returns multiple items asynchronously, but the difference is that `IAsyncEnumerable<T>` can act asynchronously for each item returned. It's a true asynchronous stream of items.
 
-#### Asynchronous Streams and IObservable<T>
+#### Asynchronous Streams and `IObservable<T>`
 
 Observables are a true notion of asynchronous streams; they produce their notifications one at a time with true support for asynchronous production (no blocking). But the consumption pattern for `IObservable<T>` is completely different than that of `IAsyncEnumerable<T>`. See Chapter 6 for more details about `IObservable<T>`.
 
@@ -46,13 +46,13 @@ If our method returns `IAsyncEnumerable<T>`, we can have a natural loop that use
 
 Table 3-1. Type classifications
 
-|        Type         | Single or multiple value | Asynchronous or synchronous | Push or pull |
-| ------------------- | ------------------------ | --------------------------- | ------------ |
-| T                   | Single value             | Synchronous                 | N/A          |
-| IEnumerable<T>      | Multiple values          | Synchronous                 | N/A          |
-| Task<T>             | Single value             | Asynchronous                | Pull         |
-| IAsyncEnumerable<T> | Multiple values          | Asynchronous                | Pull         |
-| IObservable<T>      | Single or multiple       | Asynchronous                | Push         |
+| Type                  | Single or multiple value | Asynchronous or synchronous | Push or pull |
+| --------------------- | ------------------------ | --------------------------- | ------------ |
+| T                     | Single value             | Synchronous                 | N/A          |
+| `IEnumerable<T>`      | Multiple values          | Synchronous                 | N/A          |
+| `Task<T>`             | Single value             | Asynchronous                | Pull         |
+| `IAsyncEnumerable<T>` | Multiple values          | Asynchronous                | Pull         |
+| `IObservable<T>`      | Single or multiple       | Asynchronous                | Push         |
 
 ##### WARNING
 
@@ -387,5 +387,4 @@ Recipe 3.1 covers producing asynchronous streams.
 Recipe 3.2 covers consuming asynchronous streams.
 
 Chapter 10 covers cooperative cancellation across multiple technologies.
-
 
