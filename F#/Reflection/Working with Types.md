@@ -4,7 +4,7 @@ The `System.Type` class is central to all reflection actions. It represents a ma
 
 An interesting detail: a `Type` object that represents a managed type is unique in a given `AppDomain`. This means that when you retrieve the `Type` object corresponding to a given type (for example, `System.String`) you always get the same instance, regardless of how you retrieve the `Type` object. This feature allows for the automatic synchronization of multiple static method invocations, among other benefits.
 
-## 反射继承
+### 反射继承
 
 ```mermaid
 graph BT
@@ -210,8 +210,8 @@ This code lists only the public, non-static, and non-inherited members of the `S
 ```F#
 // Get all public, instance, noninherited members of String type.
 let minfo: MemberInfo[] = typeof<String>.GetMembers(
-        BindingFlags.Public ||| 
-        BindingFlags.Instance ||| 
+        BindingFlags.Public |||
+        BindingFlags.Instance |||
         BindingFlags.DeclaredOnly)
 ```
 
@@ -231,7 +231,7 @@ for itf: Type in typeof<String>.GetInterfaces() do
     Console.WriteLine(itf.FullName)
 ```
 
-All the `GetXxxxs` methods—with the exception of `GetDefaultMembers` and `GetInterfaces`—can take an optional `BindingFlags` argument to restrict the enumeration to public or nonpublic, static or instance, and declared or inherited members. For more sophisticated searches, you can use the `FindMembers` or `FindInterfaces` method, which takes a delegate pointing to a function that filters individual members or interfaces. (See MSDN documentation for additional information.)
+All the `GetXxxxs` methods—with the exception of `GetDefaultMembers` and `GetInterfaces` — can take an optional `BindingFlags` argument to restrict the enumeration to public or nonpublic, static or instance, and declared or inherited members. For more sophisticated searches, you can use the `FindMembers` or `FindInterfaces` method, which takes a delegate pointing to a function that filters individual members or interfaces. (See MSDN documentation for additional information.)
 
 In many cases, you don't need to enumerate a type's members because you have other ways to find out the name of the field, property, methods, or event you want to get information about. You can use the `GetMember` or other `GetXxxx` methods (where `Xxxx` is a singular word) of the `Type` class—namely, `GetMember`, `GetField`, `GetProperty`, `GetMethod`, `GetEvent`, `GetInterface`, `GetConstructor`, and `GetNestedType`—to get the corresponding `MemberInfo` (or a more specific object):
 
@@ -471,7 +471,7 @@ mi.GetParameters()
         | null -> sprintf "%A" pi.ParameterType
         | tyName -> 
             tyName
-                .Replace("[", "(").Replace("]", ")")// Convert [] into () 
+                .Replace("[", "(").Replace("]", ")") // Convert [] into () 
                 .Replace("&", "")//and drop the & character (included if parameter is ByRef).
 
     [
@@ -1249,5 +1249,4 @@ let GetMemberSyntax(mi : MemberInfo) : String =
 ```
 
 As provided, the utility displays output in a purely textual format. It is easy, however, to change the argument of `String.Format` methods so that it outputs XML or HTML text, which would greatly improve the appearance of the result. (The complete demo program contains modified versions of this code that outputs HTML and XML text.)
-
 

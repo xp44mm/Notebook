@@ -53,7 +53,9 @@ let o: Object = ci.Invoke(args)
 
 Regardless of the technique you used to create an instance of the type, you usually assign the instance you've created to an `Object` variable, as opposed to a strongly typed variable. (If you knew the name of the type at compile time, you wouldn't need to use reflection in the first place.) There is only one relevant exception to this rule: when you know in advance that the type being instantiated derives from a specific base class (or implements a given interface), you can cast the `Object` variable to a variable typed after that base class (or interface) and access all the members that the object inherits from the base class (or interface).
 
-**Version 2005 of VB or Version 2.0 of .NET** The new `MakeArrayType` method of the `Type` class makes it very simple to instantiate arrays using reflection, as you can see in this code:
+**Version 2005 of VB or Version 2.0 of .NET**
+
+The new `MakeArrayType` method of the `Type` class makes it very simple to instantiate arrays using reflection, as you can see in this code:
 
 ``` F#
 // Create an array of Double. (You can pass an integer argument to the MakeArrayType
@@ -61,8 +63,10 @@ Regardless of the technique you used to create an instance of the type, you usua
 let arrType: Type = typeof<Double>.MakeArrayType()
 // The new array has 10 elements.
 let arr: Array = Activator.CreateInstance(arrType, 10) :?> Array
+
 //创建数组的专用方法
 // = (Array.CreateInstance:Type*int->Array)(typeof<Double>, 10)
+
 // Prove that an array of 10 elements has been created.
 Console.WriteLine("{0} {1} elements", arr.Length, arr.GetValue(0).GetType.Name)
 ```

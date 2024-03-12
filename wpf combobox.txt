@@ -1,0 +1,5 @@
+设置ComboBox的下面三个属性可以实现帮助: 
+                  
+                  DisplayMemberPath="CompanyName" 
+                  SelectedValuePath="SupplierID" 
+                  SelectedValue ="{Binding Source={StaticResource productViewSource},Path=SupplierID, Mode=TwoWay, NotifyOnValidationError=true, ValidatesOnExceptions=true}" 
