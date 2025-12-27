@@ -123,13 +123,12 @@ Writing declaratively means that you can hide the complexity required to achieve
 
 Writing code that's concise makes you more productive when creating new code or when changing existing code, even if it's new to you. Figure 3.3 displays the key elements for productivity.
 
-```
 Functional thinking makes you productive:
-    Declarative code
-    Fewer lines of code
-    Reduction of errors in code
-    Predictable code
-```
+  - Declarative code
+  - Fewer lines of code
+  - Reduction of errors in code
+  - Predictable code
+
 
 Figure 3.3 The key benefit of functional programming is that it makes you more productive. The key elements for productivity are illustrated here.
 
@@ -192,7 +191,9 @@ CompareLength returned: True
 
 Beginning with C# 2.0 it's much easier to create delegates. You can simply assign the method to the delegate variable (or parameter):
 
+```C#
 ComparisonTest test2 = comparators.CompareContent;
+```
 
 With delegates, you can make something similar to the higher-order functions that functional programming languages have. The next method checks whether two string arrays are similar by traversing the items in both collections and checking them against each other using a comparison function that was passed to a delegate reference.
 
@@ -304,7 +305,7 @@ for (var i = 0; i < 5; i++)
 }
 foreach (var act in actions) act();       
 ```
-          
+
 The output of this example might not be what you expected. Instead of printing the numbers 0 to 4, this code prints the number 5 five times. This is because when each action is executed, it reads the value of i, and the value of i is the value it received in the last iteration of the loop, which is 4. 
 
 ### 3.2.3 Lambda expressions
@@ -367,7 +368,7 @@ You name the two delegate types after the functionality that the assigned code n
 delegate bool OneParameterReturnsBoolean(string parameter);
 ```
 
-Now you have a delegate type that's reusable, but only to code that has access to your definition, which cries for a standard implementation. The .NET Framework contains reusable delegate type definitions named `Func<>` and `Action<>`:
+Now you have a delegate type that's reusable, but only to code that has access to your definition, which cries for a standard implementation. The .NET Framework contains reusable delegate type definitions named `Func<_>` and `Action<_>`:
 
   * Func is a delegate type that returns a value and can receive parameters.
 
@@ -1065,23 +1066,14 @@ Table 3.1 The most used LINQ query operators
 
 ```
 Aggregation
-
 Element operations
-
 Filtering
-
 Grouping data
-
 Join
-
 Partitioning
-
 Projection
-
 Quantifier operations
-
 Set operations
-
 Sorting
 ```
 

@@ -262,9 +262,9 @@ else
 
 ```
 
-You can overcome this problem by using the .NET ConcurrentDictionary. This lock-free collection internally synchronizes the readers and writers so no exception will be thrown.
+You can overcome this problem by using the .NET `ConcurrentDictionary`. This lock-free collection internally synchronizes the readers and writers so no exception will be thrown.
 
-Unfortunately, ConcurrentDictionary isn't enough, because the ticks aren't synchronized by StockTicker. If you handle two (or more) ticks of the same stock at the same time, what's the value of the PrevPrice property? There's a nondeterministic answer to that question: the last one wins. But the last one isn't necessarily the last tick that was raised, because the order in which the threads are running is determined by the OS and isn't deterministic. This makes your code unreliable, because the end user could be notified on an incorrect conclusion that your code makes. The OnStockTick event handler holds a critical section, and the way to protect it is by using a lock.
+Unfortunately, `ConcurrentDictionary` isn't enough, because the ticks aren't synchronized by StockTicker. If you handle two (or more) ticks of the same stock at the same time, what's the value of the PrevPrice property? There's a nondeterministic answer to that question: the last one wins. But the last one isn't necessarily the last tick that was raised, because the order in which the threads are running is determined by the OS and isn't deterministic. This makes your code unreliable, because the end user could be notified on an incorrect conclusion that your code makes. The OnStockTick event handler holds a critical section, and the way to protect it is by using a lock.
 
 Listing 2.8 Locked version of OnStockTick
 
@@ -542,6 +542,13 @@ var ticks = Observable.FromEventPattern<EventHandler<StockTick>, StockTick>(
     .Select(tickEvent => tickEvent.EventArgs)
 ```
 
+F#的事件定义了IObservable<_>接口，等价于上面的代码，只需将事件对象转换成这个接口即可：
+
+```F#
+(ticker.StockTick:?>IObservable<_>)
+    .Select(fun tickEvent -> tickEvent.EventArgs)
+```
+
 ### 2.3.2 Grouping stocks by symbol
 
 Now that you have an observable that carries the ticks (updates on the stocks), you can start writing your query around it. The first thing to do is to group the ticks by their symbols so you can handle each group (stock) separately. With Rx, this is an easy task, as shown in figure 2.9.
@@ -557,8 +564,8 @@ This expression creates an observable that provides the groups. Each group repre
 
 Figure 2.10 The ticks observable is grouped into two company groups, each one for a different symbol. As the notifications are pushed on the ticks observable, they're routed to their group observable. If it's the first time the symbol appears, a new observable is created for the group. This grouping is written with a query expression. Query expressions are written in a declarative query syntax but are a sugar syntax that the compiler turns into a real chain of method calls. This is the same expression written in a method syntax:
 
-```C#
-ticks.GroupBy(tick => tick.QuoteSymbol);
+```F#
+ticks.GroupBy(fun tick -> tick.QuoteSymbol);
 ```
 
 ### 2.3.3 Finding the difference between ticks

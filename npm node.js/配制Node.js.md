@@ -4,17 +4,22 @@
 
 从[Node.js (nodejs.org)](https://nodejs.org/en/)下载最新版安装文件。
 
+以管理员身份执行安装。
+
+
+查看node.js版本，查看npm版本：
+
+```bash
+node -v
+npm -v
+```
 查看npm全局包有哪些：
 
 ```bash
 npm list -g --depth=0
 ```
 
-查看npm版本：
 
-```bash
-npm -v
-```
 查看哪些包有更新：
 
 ```bash

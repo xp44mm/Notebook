@@ -10,13 +10,13 @@ In the .NET world, error means an exception, and an exception can be thrown for 
 
 In the reactive pipeline, errors can happen in these four places:
 
-  - In the observable `Subscribe` method call during subscription
+- In the observable `Subscribe` method call during subscription
 
-  - In the observable code as it prepares the values to emit after subscription (for example, the observable tries to pull data from an external source that's disconnected)
+- In the observable code as it prepares the values to emit after subscription (for example, the observable tries to pull data from an external source that's disconnected)
 
-  - In operator code (for example, the selector function you provided for the `Select` operator throws an exception)
+- In operator code (for example, the selector function you provided for the `Select` operator throws an exception)
 
-  - In the observer's `OnNext`, `OnCompleted`, and `OnError` functions
+- In the observer's `OnNext`, `OnCompleted`, and `OnError` functions
 
 For the first three cases, the Rx guidelines state that the observer should be notified of the error via its `OnError` function and the observer subscription will terminate, meaning no more notifications from the observable will be observed by the observer.
 
@@ -24,11 +24,9 @@ In the last case, where the observer is the one responsible for the error, it's 
 
 ------
 
-NOTE I'd like to stress the last point again. If the code inside the observer function throws an exception, there's nothing in the Rx package to save you. So if you didn't provide an error-handling routine using a try-catch block around the “risky” code, the caller thread will have an unhandled exception. This will cause your process to terminate. This isn't different from any other code in your application that throws an exception that nobody handled. Your only option here is to make sure your code doesn't throw unwanted exceptions.
+NOTE: I'd like to stress the last point again. If the code inside the observer function throws an exception, there's nothing in the Rx package to save you. So if you didn't provide an error-handling routine using a try-catch block around the “risky” code, the caller thread will have an unhandled exception. This will cause your process to terminate. This isn't different from any other code in your application that throws an exception that nobody handled. Your only option here is to make sure your code doesn't throw unwanted exceptions.
 
 ------
-
-
 
 ### 11.1.1 Errors from the observable side
 
@@ -42,7 +40,7 @@ Listing 11.1 creates an observable that produces an error of type `OutOfMemoryEx
 
 Listing 11.1 Typical implementation of the observer's `OnError` function
 
-```C#
+```CSharp
 var weatherSimulationResults = // IObservable<WeatherSimulation>
     Observable.Throw<WeatherSimulation>(new OutOfMemoryException());
 
@@ -53,7 +51,7 @@ weatherSimulationResults
         {
             if (e is OutOfMemoryException)
             {
-			   GCSettings.LargeObjectHeapCompactionMode =
+               GCSettings.LargeObjectHeapCompactionMode =
                     GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -61,26 +59,26 @@ weatherSimulationResults
         });
 ```
 
-F#
+FSharp
 
 ```fsharp
-    // This the most basic way you would work with OnError.
-    // But its not ideal, consider using the 'Catch' operator
-    let weatherSimulationResults =
-        Observable.Throw<WeatherSimulation>(new OutOfMemoryException())
+// This the most basic way you would work with OnError.
+// But its not ideal, consider using the 'Catch' operator
+let weatherSimulationResults =
+    Observable.Throw<WeatherSimulation>(new OutOfMemoryException())
 
-    weatherSimulationResults
-        .Subscribe(
-            (fun _ -> ()),
-            (fun (e:exn) ->
-                if e.GetType() = typeof<OutOfMemoryException> then
-                    //a last attampt to free some memory
-                    GCSettings.LargeObjectHeapCompactionMode <-
-                        GCLargeObjectHeapCompactionMode.CompactOnce
-                    GC.Collect()
-                    GC.WaitForPendingFinalizers()
-                    Console.WriteLine("GC Done")
-            ))
+weatherSimulationResults
+    .Subscribe(
+        (fun _ -> ()),
+        (fun (e:exn) ->
+            if e.GetType() = typeof<OutOfMemoryException> then
+                //a last attampt to free some memory
+                GCSettings.LargeObjectHeapCompactionMode <-
+                    GCLargeObjectHeapCompactionMode.CompactOnce
+                GC.Collect()
+                GC.WaitForPendingFinalizers()
+                Console.WriteLine("GC Done")
+        ))
 ```
 
 One thing that you might think when looking at this example from the developer's standpoint is that reacting to errors isn't code friendly. You're absolutely right. You have to do type checking to see what the exception type is and, for each type of exception, the error handling requires your manual intervention, even if all you want to do is to dismiss it.
@@ -99,7 +97,7 @@ Figure 11.2 The `Catch` operator lets you handle a specific exception type and s
 
 In the next example, you improve the error handling for the weather simulation observable shown in listing 11.1. Now, you add the Catch operator to handle the `OutOfMemoryException` and gracefully close the observable pipeline:
 
-```C#
+```CSharp
 var weatherSimulationResults = //IObservable<WeatherSimulation>
   Observable.Throw<WeatherSimulation>(new OutOfMemoryException());
 
@@ -112,33 +110,33 @@ weatherSimulationResults
     .SubscribeConsole("Catch (source throws)");
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let weatherSimulationResults =
-        Observable.Throw<WeatherSimulation>(new OutOfMemoryException())
+let weatherSimulationResults =
+    Observable.Throw<WeatherSimulation>(new OutOfMemoryException())
 
-    weatherSimulationResults
-        .Catch(fun (ex:OutOfMemoryException) ->
-            Console.WriteLine("handling OOM exception")
-            Observable.Empty<WeatherSimulation>()
-        )
-        .Subscribe(ConsoleObserver "Catch (source throws)")
+weatherSimulationResults
+    .Catch(fun (ex:OutOfMemoryException) ->
+        Console.WriteLine("handling OOM exception")
+        Observable.Empty<WeatherSimulation>()
+    )
+    .Subscribe(ConsoleObserver "Catch (source throws)")
 ```
 
 The output is as follows:
 
-```C#
+```CSharp
 handling OOM exception
 Catch (source throws) - OnCompleted()
 ```
 
 `Catch` receives a function that handles a specific exception type; the function returns the observable that will be used for continuing execution of the observable pipeline. In this example, you return an empty observable so that the observable pipeline will complete, but in your code, this can be a fallback observable that will emit values instead of the original observable.
 
-```C#
+```CSharp
 IObservable<TSource> Catch<TSource, TException>(
-     IObservable<TSource> source,
-     Func<TException, IObservable<TSource>> handler)
+    this IObservable<TSource> source,
+    Func<TException, IObservable<TSource>> handler)
 where TException: Exception
 ```
 
@@ -146,19 +144,19 @@ If you want to return the same observable for any type of exception that might b
 
 The next error gracefully finishes, in case the weather simulation observable signals an error:
 
-```C#
+```CSharp
 weatherSimulationResults
     .Catch(Observable.Empty<WeatherSimulation>())
     .SubscribeConsole("Catch (handling all exception types)");
 ```
 
-F#
+FSharp
 
 ```fsharp
-    //Catch is not limited to a single exception type, it can be general to ALL exceptions 
-    weatherSimulationResults
-        .Catch(Observable.Empty<WeatherSimulation>())
-        .Subscribe(ConsoleObserver "Catch (handling all exception types)")
+// Catch is not limited to a single exception type, it can be general to ALL exceptions 
+weatherSimulationResults
+    .Catch(Observable.Empty<WeatherSimulation>())
+    .Subscribe(ConsoleObserver "Catch (handling all exception types)")
 ```
 
 #### ONERRORRESUMENEXT—A VARIANT OF CATCH
@@ -169,7 +167,7 @@ Figure 11.3 The `OnErrorResumeNext` operator is a hybrid of the `Catch` operator
 
 The next example shows how to concatenate weather reports coming from two weather stations. The example shows that even if the first weather station observable (Station A) is terminated with an error, the second observable (Station B) is concatenated:
 
-```C#
+```CSharp
 var weatherStationA = // IObservable<WeatherReport>
   Observable.Throw<WeatherReport>(new OutOfMemoryException());
 var weatherStationB = // IObservable<WeatherReport>
@@ -184,7 +182,7 @@ weatherStationB
     .SubscribeConsole("OnErrorResumeNext(source completed)");
 ```
 
-F#
+FSharp
 
 ```fsharp
 type WeatherReport = { Temperature:float; Station:string }
@@ -195,11 +193,12 @@ let test4 () =
 
     let weatherStationB =
         Observable.Return<_>({ Station = "B"; Temperature = 20.0 })
-
+	// A
     weatherStationA
         .OnErrorResumeNext(weatherStationB)
         .Subscribe(ConsoleObserver "OnErrorResumeNext(source throws)")
         |> ignore
+    // B
     weatherStationB
         .OnErrorResumeNext(weatherStationB)
         .Subscribe(ConsoleObserver "OnErrorResumeNext(source completed)")
@@ -208,9 +207,11 @@ let test4 () =
 
 Running the example shows this output, where only Station B reports are received:
 
-```C#
+```CSharp
+// A语句的输出
 OnErrorResumeNext(source throws) - OnNext(Station: B, Temperature: 20)
 OnErrorResumeNext(source throws) - OnCompleted()
+// B语句的输出
 OnErrorResumeNext(source completed) - OnNext(Station: B, Temperature: 20)
 OnErrorResumeNext(source completed) - OnNext(Station: B, Temperature: 20)
 OnErrorResumeNext(source completed) - OnCompleted()
@@ -226,13 +227,15 @@ The `Retry` operator, illustrated in figure 11.4, resubscribes an observer to th
 
 Figure 11.4 The `Retry` operator resubscribes the observer to the observable when an error is emitted. In the case of a hot observable, as shown in the figure, the observer receives the rest of the emitted notifications.
 
+`Retry`的来源是热可观察
+
 In the next example, the observable simulates weather reports received from a weather station. It's possible that the connection to the station fails due to a transient error (such as a low network reception) and retrying is the best possible option. Of course, it's possible that the error isn't transient, so you'll want to limit the number of retries (in this case to three attempts), as shown in figure 11.5.
 
 A transient is a property of any element in the system that is temporary. 
 
 Figure 11.5 The `Retry` operator automatically resubscribes to the weather station observable in the case of an error.
 
-```C#
+```CSharp
 var weatherStationA = //IObservable<WeatherReport>
     Observable.Throw<WeatherReport>(new OutOfMemoryException());
 weatherStationA
@@ -241,21 +244,21 @@ weatherStationA
     .SubscribeConsole("Retry");
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let weatherStationA =
-        Observable.Throw<WeatherReport>(new OutOfMemoryException())
+let weatherStationA =
+    Observable.Throw<WeatherReport>(new OutOfMemoryException())
 
-    weatherStationA
-        .Do(ConsoleObserver "Log")
-        .Retry(3)
-        .Subscribe(ConsoleObserver "Retry")
+weatherStationA
+    .Do(ConsoleObserver "Log")
+    .Retry(3)
+    .Subscribe(ConsoleObserver "Retry")
 ```
 
 Running the example shows this output (I removed some of the output for readability):
 
-```C#
+```CSharp
 - OnError:
          System.OutOfMemoryException: Insufficient memory to continue ...
 - OnError:
@@ -270,7 +273,7 @@ You can see that the error is thrown four times. The first three messages are pr
 
 ------
 
-NOTE If you leave the `Retry` operator empty (without passing a number), the retries occur infinite times.
+NOTE: If you leave the `Retry` operator empty (without passing a number), the retries occur infinite times.
 
 ------
 
@@ -288,9 +291,9 @@ In .NET, the GC deallocates managed objects in a nondeterministic way. Even if a
 
 In .NET, you can achieve a deterministic disposal of resources by implementing the `IDisposable` interface on the class that holds the resource and by implementing the `Dispose` method with the code that frees the resource. During runtime, when you're finished using the resource (and the object that wraps it), you can invoke the `Dispose` method to free the resource. Of course, the managed memory of the wrapping object or any other objects used by the resource is reclaimed by the `GC` (garbage collection is nondeterministic in nature).
 
-In C#, the easiest and safest way of working with an object of a type that implements the `IDisposable` interface is with the using statement:
+In CSharp, the easiest and safest way of working with an object of a type that implements the `IDisposable` interface is with the using statement:
 
-```C#
+```CSharp
 class DisposableType : IDisposable
 {
     public void Dispose() { /*Freeing the resource*/ }
@@ -304,7 +307,7 @@ private static void TraditionalUsingStatement()
 }
 ```
 
-F#
+FSharp
 
 ```fsharp
 type DisposableType () =
@@ -323,7 +326,7 @@ Because you'd like to use the same semantics of deterministic disposal inside yo
 
 In our sample application, suppose you need to work with an observable that emits notifications coming from a heat sensor, and you're trying to trace a problem that's happening in your code. You want to write the notifications to a log file so you can analyze it later. When working with files, it's important to close the file when you're finished; otherwise, no one else can work with it, and the data that wasn't flushed to it disappears. Here's how to make sure the file handle will be disposed of:
 
-```C#
+```CSharp
 var logFilePath = ... as string;
 var sensorData = ... as IObservable<SensorData>;
 var sensorDataWithLogging = Observable
@@ -335,7 +338,7 @@ var sensorDataWithLogging = Observable
 sensorDataWithLogging.SubscribeConsole("sensor");
 ```
 
-F#
+FSharp
 
 ```fsharp
 open System.Reflection
@@ -346,11 +349,12 @@ let test6 () =
         "example.log")
     let sensorData =
         Observable.Range(1, 3)
-            .Map(fun x -> { Data = x |> uint64 })
+            .Select(fun x -> { Data = uint64 x })
 
     let sensorDataWithLogging =
-        Observable.Using((fun () -> new StreamWriter(logFilePath)),
-            (fun (writer:StreamWriter) -> sensorData.Do(fun x -> x.Data |> writer.WriteLine))
+        Observable.Using(
+            (fun () -> new StreamWriter(logFilePath)),
+            (fun (writer:StreamWriter) -> sensorData.Do(fun x -> writer.WriteLine(x.Data)))
             )
 
     sensorDataWithLogging.Subscribe(ConsoleObserver "sensor")
@@ -366,7 +370,7 @@ The `Using` operator returns an observable that wraps the process of invoking th
 
 Here's an example that proves it:
 
-```C#
+```CSharp
 var subject = new Subject<int>();
 var observable =
     Observable.Using(
@@ -388,33 +392,33 @@ var subscription = observable.SubscribeConsole();
 subscription.Dispose();
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let initial () =
-        let subject = new Subject<int>()
-        let observable =
-            Observable.Using(
-                (fun () -> Disposable.Create(fun ()-> Console.WriteLine("DISPOSED"))),
-                (fun _ -> subject:>IObservable<_>))
-        subject,observable
+let initial () =
+    let subject = new Subject<int>()
+    let observable =
+        Observable.Using(
+            (fun () -> Disposable.Create(fun ()-> Console.WriteLine("DISPOSED"))),
+            (fun _ -> subject :> IObservable<_>))
+    subject, observable
 
-    let subject,observable = initial()
-    Console.WriteLine("Disposed when completed")
-    observable.Subscribe(ConsoleObserver "")
-        |> ignore
-    subject.OnCompleted()
+let subject, observable = initial()
+Console.WriteLine("Disposed when completed") // a
+observable.Subscribe(ConsoleObserver "")
+    |> ignore
+subject.OnCompleted()
 
-    let subject,observable = initial()
-    Console.WriteLine("Disposed when error occurs")
-    observable.Subscribe(ConsoleObserver "")
-        |> ignore
-    subject.OnError(new Exception("error"))
+let subject, observable = initial()
+Console.WriteLine("Disposed when error occurs") // b
+observable.Subscribe(ConsoleObserver "")
+    |> ignore
+subject.OnError(new Exception("error"))
 
-    let subject,observable = initial()
-    Console.WriteLine("Disposed when subscription disposed")
-    let subscription = observable.Subscribe(ConsoleObserver "")
-    subscription.Dispose()
+let subject,observable = initial()
+Console.WriteLine("Disposed when subscription disposed") // c
+let subscription = observable.Subscribe(ConsoleObserver "")
+subscription.Dispose()
 ```
 
 In the resource factory, you create a disposable object that prints a message when it's disposed of. You use a `Subject` as the observable that you return from the observable factory. You then test what happens when the subject emits the notifications of `OnCompleted` and `OnError`, and also what happens when the subscription object itself is disposed of.
@@ -423,7 +427,7 @@ In all of these tests, the resource is disposed of. Note that between each test 
 
 If you run this program, this is the output you'll see:
 
-```C#
+```CSharp
 Disposed when completed
  - OnCompleted()
 DISPOSED
@@ -441,7 +445,7 @@ This proves that for any termination of the observable, or the subscription, the
 
 The `Using` operator also includes an asynchronous version, in which the resource factory and the observable factory return Tasks:
 
-```C#
+```CSharp
 IObservable<TResult> Using<TResult, TResource>(
     Func<CancellationToken, Task<TResource>> resourceFactoryAsync,
     Func<TResource, CancellationToken, Task<IObservable<TResult>>> observableFactoryAsync)
@@ -449,11 +453,11 @@ IObservable<TResult> Using<TResult, TResource>(
 
 Because the factories are asynchronous, they both receive a cancellation token that will report cancellation in case the subscription was disposed of while the factories are still running. Other than that, the asynchronous version works the same as what you saw in the preceding synchronous version.
 
-The `Using` operator works amazingly well when you need to dispose of resources. Nonetheless, in some cases cleanup operations aren't exposed through a disposable object. In C#, when you have a piece of code that needs to run at the end of an operation, no matter whether the operation succeeded or failed, you use the try-finally statement. Rx provides similar semantics.
+The `Using` operator works amazingly well when you need to dispose of resources. Nonetheless, in some cases cleanup operations aren't exposed through a disposable object. In CSharp, when you have a piece of code that needs to run at the end of an operation, no matter whether the operation succeeded or failed, you use the try-finally statement. Rx provides similar semantics.
 
 ### 11.2.2 Deterministic finalization
 
-The `Finally` operator, illustrated in figure 11.7, works similarly to the finally block in C#. At the end of an operation, no matter whether it succeeded or failed, a piece of code is executed.
+The `Finally` operator, illustrated in figure 11.7, works similarly to the finally block in CSharp. At the end of an operation, no matter whether it succeeded or failed, a piece of code is executed.
 
 Figure 11.7 The `Finally` operator registers an action to take on the observable or subscription termination.
 
@@ -461,27 +465,27 @@ The code in the finally block usually handles cleanup of things that aren't nece
 
 Suppose you have a window that shows the progress of an operation (for example, loading a file or running a lengthy or complicated computation), and you want to close the window programmatically, no matter whether the operation succeeds or fails. This is how you can write code for that:
 
-```C#
+```CSharp
 var progress = ... as IObservable<int>
 progress
     .Finally(() =>{/*close the window*/})
     .Subscribe(x =>{/*Update the UI */});
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let progress = Observable.Range(1, 3)
-    progress
-        .Finally(fun () -> ())
-        .Subscribe(fun x -> ())
+let progress = Observable.Range(1, 3)
+progress
+    .Finally(fun () -> ())
+    .Subscribe(fun x -> ())
 ```
 
 The piece of code that closes the window is called for in any case in which the observable terminates.
 
 The next code example demonstrates the different cases when the action in the `Finally` clause is executed:
 
-```C#
+```CSharp
 Console.WriteLine("Successful complete");
 Observable.Interval(TimeSpan.FromSeconds(1))
     .Take(3)
@@ -502,42 +506,42 @@ var subscription =
 subscription.Dispose();
 ```
 
-F#
+FSharp
 
 ```fsharp
-    Console.WriteLine("Successful complete")
-    Observable.Empty<int>()
+Console.WriteLine("Successful complete")
+Observable.Empty<int>()
+    .Finally(fun () -> Console.WriteLine("Finally Code"))
+    .Subscribe(ConsoleObserver "")
+    |> ignore
+
+Console.WriteLine("Error termination");
+Observable.Throw<Exception>(new Exception("error"))
+    .Finally(fun () -> Console.WriteLine("Finally Code"))
+    .Subscribe(ConsoleObserver "")
+    |> ignore
+
+Console.WriteLine("Unsubscribing")
+let subject=new Subject<int>()
+let subscription =
+    subject.AsObservable()
         .Finally(fun () -> Console.WriteLine("Finally Code"))
         .Subscribe(ConsoleObserver "")
-        |> ignore
-
-    Console.WriteLine("Error termination");
-    Observable.Throw<Exception>(new Exception("error"))
-        .Finally(fun () -> Console.WriteLine("Finally Code"))
-        .Subscribe(ConsoleObserver "")
-        |> ignore
-
-    Console.WriteLine("Unsubscribing")
-    let subject=new Subject<int>()
-    let subscription =
-        subject.AsObservable()
-            .Finally(fun () -> Console.WriteLine("Finally Code"))
-            .Subscribe(ConsoleObserver "")
-    subscription.Dispose()
+subscription.Dispose()
 ```
 
 Running this example produces the following output:
 
-```C#
+```CSharp
 Successful complete
  - OnCompleted()
 Finally Code
-    
+
 Error termination
  - OnError:
          System.Exception: error
 Finally Code
-             
+
 Unsubscribing
 Finally Code
 ```
@@ -564,18 +568,18 @@ Figure 11.8 When an observer is subscribed to an observable, it remains alive, r
 
 As a reminder, when an observer is subscribed to an observable, you get in return a disposable object that holds the subscription. For example:
 
-```C#
+```CSharp
 var observable = ... as IObservable<int>
 var subscription = // IDisposable
     observable.Subscribe(x =>{/*the observer code*/});
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let observable = Observable.Return 0
-    let subscription =
-        observable.Subscribe(fun x -> ())
+let observable = Observable.Return 0
+let subscription =
+    observable.Subscribe(fun x -> ())
 ```
 
 Unfortunately, many developers throw away the subscription object and don't maintain it. Developers also forget to dispose of the subscription properly even if they do save it, which also results in a dangling observer.
@@ -586,7 +590,9 @@ Just to make it clear, if your application does need the observer to be kept ali
 
 ------
 
-NOTE One of the misunderstandings about the subscription object is the false assumption that when the GC collects the subscription, its `Dispose` method is called. Rx disposables don't implement a finalizer and, if the GC collects it, the memory is reclaimed but the subscription isn't. You can't rely on the GC to unsubscribe observers for you.
+NOTE: One of the misunderstandings about the subscription object is the false assumption that when the GC collects the subscription, its `Dispose` method is called. Rx disposables don't implement a finalizer and, if the GC collects it, the memory is reclaimed but the subscription isn't. You can't rely on the GC to unsubscribe observers for you.
+
+开发者绝不能依赖GC来为您取消观察者订阅。
 
 ------
 
@@ -602,7 +608,7 @@ To remove this risk, a common pattern is to change the references held by the ev
 
 The next example demonstrates that as long as a strong reference to an object exists, the `WeakReference` shows that the object is alive. When there are no more strong references, the `WeakReference` shows that it's no longer alive.
 
-```C#
+```CSharp
 var obj = new object();
 var weak = new WeakReference(obj);
 GC.Collect();
@@ -613,22 +619,22 @@ GC.Collect();
 Console.WriteLine("IsAlive: {0}", weak.IsAlive);
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let obj = new obj()
-    let weak = new WeakReference(obj)
-    GC.Collect()
-    Console.WriteLine("IsAlive: {0} obj!=null is {1}", weak.IsAlive, obj<>null)
+let obj = new obj()
+let weak = new WeakReference(obj)
+GC.Collect()
+Console.WriteLine("IsAlive: {0} obj!=null is {1}", weak.IsAlive, obj<>null)
 
-    let weak = new WeakReference(null)
-    GC.Collect()
-    Console.WriteLine("IsAlive: {0}", weak.IsAlive)
+let weak = new WeakReference(null)
+GC.Collect()
+Console.WriteLine("IsAlive: {0}", weak.IsAlive)
 ```
 
 This is the output you'll see when running the example:
 
-```C#
+```CSharp
 IsAlive: True obj!=null is True
 IsAlive: False
 ```
@@ -643,7 +649,7 @@ For each notification the `WeakObserverProxy` receives from the observable, it c
 
 Here's an example of how this looks for the `OnNext` method:
 
-```C#
+```CSharp
 IObserver<T> observer;
 if (_weakObserver.TryGetTarget(out observer))
 {
@@ -657,7 +663,7 @@ else
 
 The `OnError` and `OnCompleted` methods will do the same thing, so I refactored my code into this:
 
-```C#
+```CSharp
 void NotifyObserver(Action<IObserver<T>> action)
 {
     IObserver<T> observer;
@@ -683,7 +689,7 @@ This is the complete code for the `WeakObserverProxy`.
 
 Listing 11.2 The `WeakObserverProxy`
 
-```C#
+```CSharp
 class WeakObserverProxy<T>:IObserver<T>
 {
     private IDisposable _subscriptionToSource;
@@ -732,7 +738,7 @@ To make your life easier, I created the extension method `AsWeakObservable` that
 
 Now, when the observer subscribes, a `WeakObserverProxy` is created, and the observer and the subscription to the source observable are passed to it. Finally, you return the inner subscription to the caller:
 
-```C#
+```CSharp
 public static IObservable<T> AsWeakObservable<T>(this IObservable<T> source)
 {
     return Observable.Create<T>(o =>
@@ -747,7 +753,7 @@ public static IObservable<T> AsWeakObservable<T>(this IObservable<T> source)
 
 Here's an example to test that the weak observer works. In the following code, you create an observable that emits a notification each second (like a sensor that reports the measurement it takes), and weakly subscribes an observer to it. The program holds the subscription for 2 seconds in order to keep the observer alive. Then you remove the reference to the subscription object (setting it to null) and force a GC. Afterward, no more notifications are emitted even though you haven't called the Dispose method explicitly:
 
-```C#
+```CSharp
 var subscription =
     Observable.Interval(TimeSpan.FromSeconds(1))
         .AsWeakObservable()
@@ -766,7 +772,7 @@ Console.WriteLine("Done sleeping");
 
 This is my output after running the program:
 
-```C#
+```CSharp
 Collecting
 Interval - OnNext(0)
 Interval - OnNext(1)
@@ -809,31 +815,30 @@ As stated previously, we call this kind of overload backpressure, and it's somet
 
 ------
 
-NOTE Backpressure is also defined as the ability to tell a source to slow down in order to prevent flooding.
+NOTE: Backpressure is also defined as the ability to tell a source to slow down in order to prevent flooding.
 
 ------
 
 In the following example, you use the `Zip` operator to combine an observable that emits a notification each second with another observable that emits a notification every 2 seconds. These observables might emit notifications from two sensors or from two remote servers, but in any case, the result will be that the slow observable notifications will be buffered by the `Zip` operator:
 
-```C#
+```CSharp
 var fast = Observable.Interval(TimeSpan.FromSeconds(1));
 var slow = Observable.Interval(TimeSpan.FromSeconds(2));
 var zipped = slow.Zip(fast, (x, y) => x + y);
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let fast = Observable.Interval(TimeSpan.FromSeconds(1))
-    let slow = Observable.Interval(TimeSpan.FromSeconds(2))
-    let zipped = slow.Zip(fast, fun x y -> x + y)
-    let subscription =
-        zipped
-            .Select(fun x -> sprintf "%d elements are in memory" x)
-            .Subscribe(ConsoleObserver "Backpressure")
+let fast = Observable.Interval(TimeSpan.FromSeconds(1))
+let slow = Observable.Interval(TimeSpan.FromSeconds(2))
+let zipped = slow.Zip(fast, fun x y -> x + y)
+let subscription =
+    zipped
+        .Select(fun x -> sprintf "%d elements are in memory" x)
+        .Subscribe(ConsoleObserver "Backpressure")
 
-    Console.ReadLine() |> ignore
-    subscription.Dispose()
+subscription.Dispose()
 ```
 
 The `Zip` operator combines the elements based on their ordinal position, so it must store the elements from the fast observable until the corresponding items are emitted by the slow observable. After 10 seconds, the fast observable emits 10 elements, and the slow observable emits only 5, so the `Zip` operator currently contains only 5 elements in memory. If you run this example for a full day (total time of 86,400 seconds), you'll have 43,200 elements in memory. An illustration of the problem is shown in figure 11.12.
@@ -856,46 +861,44 @@ Some Rx operators take the lossy approach and some take the lossless, but none o
 
 ------
 
-TIP [Reactive Streams](www.reactive-streams.org) tries to provide a controlled lossless approach to observables. As stated on the Reactive Streams website, this initiative provides a standard for asynchronous stream processing with nonblocking backpressure (controlled lossless). This standard extends the Rx model to allow the observer to notify the observable about the load it can take. Reactive Streams is not supported by Rx.NET at the time of this writing.
+TIP: [Reactive Streams](www.reactive-streams.org) tries to provide a controlled lossless approach to observables. As stated on the Reactive Streams website, this initiative provides a standard for asynchronous stream processing with nonblocking backpressure (controlled lossless). This standard extends the Rx model to allow the observer to notify the observable about the load it can take. Reactive Streams is not supported by Rx.NET at the time of this writing.
 
 ------
-
-
 
 #### LOSSY APPROACH
 
 Say you have two sensors that emit notifications. One emits twice as fast as the second, and you need to combine the notifications. You need to consider whether the notification emitted by the slower sensor is still relevant. If the sensor emits heart rate, ask yourself whether the heart that was measured an hour ago is still relevant. Is it better to drop it and use only the latest one? In cases like these, where dropping a message is reasonable, here's a list of the options you can take:
 
-  - If you're combining observables, but it's sufficient to combine only the latest emitted notification from each of them, use the `CombineLatest` operator (chapter 9).
+- If you're combining observables, but it's sufficient to combine only the latest emitted notification from each of them, use the `CombineLatest` operator (chapter 9).
 
-  - If the rate of the observable is high at times, and a notification is irrelevant if another one comes in a short while, use the `Throttle` operator (chapter 10).
+- If the rate of the observable is high at times, and a notification is irrelevant if another one comes in a short while, use the `Throttle` operator (chapter 10).
 
-  - If you need to consume the notifications at a steady pace, no matter how many notifications are emitted in each fragment of time, use the `Scan` operator (chapter 10).
+- If you need to consume the notifications at a steady pace, no matter how many notifications are emitted in each fragment of time, use the `Scan` operator (chapter 10).
 
 If you need to combine notifications coming from a heart-rate monitor with notifications coming from a speedometer, and there's a chance that the heart-rate monitor produces values faster than the speedometer, this is how you'll overcome backpressure with the `CombineLatest` operator:
 
-```C#
+```CSharp
 heartRates
     .CombineLatest(speeds, 
                    (h, s) => String.Format("Heart:{0} Speed:{1}", h, s))
 ```
 
-F#
+FSharp
 
 ```fsharp
-    let heartRatesValues = [ 70; 75; 80; 90; 80 ]
-    let speedValues = [ 50;51;53;52;55 ]
+let heartRatesValues = [ 70; 75; 80; 90; 80 ]
+let speedValues = [ 50;51;53;52;55 ]
 
-    let heartRates = 
-        Observable.Interval(TimeSpan.FromSeconds(1))
-            .Map(fun x -> heartRatesValues.[int x % heartRatesValues.Length])
-    let speeds = 
-        Observable.Interval(TimeSpan.FromSeconds(3))
-            .Select(fun x -> speedValues.[int x % speedValues.Length])
+let heartRates = 
+    Observable.Interval(TimeSpan.FromSeconds(1))
+        .Select(fun x -> heartRatesValues.[int x % heartRatesValues.Length])
+let speeds = 
+    Observable.Interval(TimeSpan.FromSeconds(3))
+        .Select(fun x -> speedValues.[int x % speedValues.Length])
 
-    heartRates.CombineLatest(speeds, fun h s -> sprintf "Heart:%d Speed:%d" h s)
-        .Take(5)
-        .Subscribe(ConsoleObserver "CombineLatest")
+heartRates.CombineLatest(speeds, fun h s -> sprintf "Heart:%d Speed:%d" h s)
+    .Take(5)
+    .Subscribe(ConsoleObserver "CombineLatest")
 ```
 
 In all of the lossy approach options, you'll lose some notifications in favor of lower resource consumption, and this is ideal if being responsive and available is your highest priority. When your priority is in consuming each of the notifications emitted, you need to take the lossless approach.
@@ -910,25 +913,24 @@ The `Buffer` operator you learned about in chapter 9 lets you specify the buffer
 
 In this final chapter, you looked at methods for optimizing your Rx code. You saw how to react to errors in a graceful manner and how to control the resources your code uses.
 
-  - The `Catch` operator lets you react to a specific type of exception that's thrown in the observable pipeline. It sets a fallback observable that the observer will be subscribed to in case an exception is thrown.
+- The `Catch` operator lets you react to a specific type of exception that's thrown in the observable pipeline. It sets a fallback observable that the observer will be subscribed to in case an exception is thrown.
 
-  - The `OnErrorResumeNext` operator concatenates the observable to another for both successful completion and error termination.
+- The `OnErrorResumeNext` operator concatenates the observable to another for both successful completion and error termination.
 
-  - The `Retry` operator resubscribes the observer to the observable in the case of error.
+- The `Retry` operator resubscribes the observer to the observable in the case of error.
 
-  - The `Using` operator deterministically disposes of an object in case the observable terminates. This way, resources used inside the observable pipeline can be properly cleaned.
+- The `Using` operator deterministically disposes of an object in case the observable terminates. This way, resources used inside the observable pipeline can be properly cleaned.
 
-  - The `Finally` operator runs specific code (like cleanup or logging) in case the observable terminates. This way, you can run cleanup code at the end of the observable processing.
+- The `Finally` operator runs specific code (like cleanup or logging) in case the observable terminates. This way, you can run cleanup code at the end of the observable processing.
 
-  - The observable holds a strong reference to the observers, which can cause the observers to stay alive longer than they should (dangling observers).
+- The observable holds a strong reference to the observers, which can cause the observers to stay alive longer than they should (dangling observers).
 
-  - `WeakObserver`s change the reference that's used to hold the observer into a `WeakReference`, eliminating cases in which an observer isn't collected because an observable holds it.
+- `WeakObserver`s change the reference that's used to hold the observer into a `WeakReference`, eliminating cases in which an observer isn't collected because an observable holds it.
 
-  - `Backpressure` occurs when a consumer is slower than the producer.
+- `Backpressure` occurs when a consumer is slower than the producer.
 
-  - `Backpressure` can cause system performance to degrade, both in memory and throughput.
+- `Backpressure` can cause system performance to degrade, both in memory and throughput.
 
-  - The `CombineLatest`, `Throttle`, and `Scan` operators handle backpressure with a lossy approach; some notifications are dropped in favor of lower resource consumption.
+- The `CombineLatest`, `Throttle`, and `Scan` operators handle backpressure with a lossy approach; some notifications are dropped in favor of lower resource consumption.
 
-  - The `Buffer` operator handles backpressure by saving the notifications into a bulk operation that can then be processed as a whole.
-
+- The `Buffer` operator handles backpressure by saving the notifications into a bulk operation that can then be processed as a whole.

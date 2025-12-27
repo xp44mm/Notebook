@@ -270,10 +270,10 @@ This type of sequence feels like a waste of time (or, better said, a waste of re
 
 Imagine what your life would be like if you had to wait for every single operation to complete before you could do something else. Think of the resources that would be waiting and used at that time. The same issues are also relevant in computer science:
 
-```C#
-writeResult = LongDiskWrite();
-response = LongWebRequest();
-entities = LongDatabaseQuery();
+```F#
+let writeResult = LongDiskWrite();
+let response = LongWebRequest();
+let entities = LongDatabaseQuery();
 ```
 
 In this synchronous code fragment, `LongDatabaseQuery` won't start execution until `LongWebRequest` and `LongDiskWrite` complete. During the time that each method is executed, the calling thread is blocked and the resources it holds are practically wasted and can't be used to serve other requests or handle other events. If this were happening on the UI thread, the application would look frozen until the execution finishes. If this were happening on a server application, at some point you might run out of free threads and requests would start being rejected. In both cases, the application stops being responsive.
@@ -281,7 +281,7 @@ In this synchronous code fragment, `LongDatabaseQuery` won't start execution unt
 The total time it takes to run the preceding code fragment is as follows:
 
 ```fsharp
-total_time = LongDiskWrite_time + LongWebRequest_time + LongDatabaseQuery_time
+let total_time = LongDiskWrite_time + LongWebRequest_time + LongDatabaseQuery_time
 ```
 
 The total completion time is the sum of the completion time of its components. If you could start an operation without waiting for a previous operation to complete, you could use your resources much better. This is what asynchronous execution is for.
@@ -333,7 +333,7 @@ This way, you get the same result; you wait for each task to complete (while the
 The total time it takes to run the asynchronous version of the code fragment is as follows:
 
 ```fsharp
-total_time = MAX(LongDiskWritetime, LongWebRequesttime, LongDatabaseQuerytime)
+let total_time = MAX(LongDiskWritetime, LongWebRequesttime, LongDatabaseQuerytime)
 ```
 
 Because all of the methods are running concurrently (and maybe even in parallel), the time it takes to run the code will be the time of the longest operation.

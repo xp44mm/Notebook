@@ -4,7 +4,7 @@ After a source observable emits a notification, there's often a pipeline the not
 
 Figure 8.1 Example of an observable pipeline. Each block may or may not be present, and the order of blocks may change as well. Sometimes one type of block may be present more than once.
 
-NOTE For those who speak LINQ as a second language, this chapter might seem trivial at times. But more than once I've found that previous knowledge may lead to false conclusions, so it's better to be on the safe side and make sure that a standard query operator works the way you'd expect it to.
+NOTE: For those who speak LINQ as a second language, this chapter might seem trivial at times. But more than once I've found that previous knowledge may lead to false conclusions, so it's better to be on the safe side and make sure that a standard query operator works the way you'd expect it to.
 
 ## 8.1 Selecting what's important (mapping)
 
@@ -20,7 +20,7 @@ TIP: Instead of `Select`, you can use the `Map` operator if you feel it's more n
 
 ------
 
-The next bit of code shows how to use Select to transform a received `ChatMessage` that contains the sending user identifier. You load a `User` object from the database and create a `ViewModel` that will be easier to work with in the UI layer. Figure 8.3 illustrates this process.
+The next bit of code shows how to use `Select` to transform a received `ChatMessage` that contains the sending user identifier. You load a `User` object from the database and create a `ViewModel` that will be easier to work with in the UI layer. Figure 8.3 illustrates this process.
 
 Figure 8.3 Using the `Select` operator to convert an incoming message DTO to a corresponding `ViewModel` with a loaded user object from the database
 
@@ -39,10 +39,10 @@ var messagesViewModels =
 F#
 
 ```fsharp
-    let messages:IObservable<ChatMessage> = ..
-    let messagesViewModels =
+let messages:IObservable<ChatMessage> = ..
+let messagesViewModels =
         messages
-            .Map(fun m -> {|
+            .Select(fun m -> {|
                 MessageContent = m.Content
                 User = LoadUserFromDb(m.Sender)
             |})
@@ -86,11 +86,11 @@ news.SelectMany(n => n.Images)
 F#,
 
 ```fsharp
-    let news:IObservable<NewsItem> = ..
-    news
-        .FlatMap(fun n -> n.Images)
-        .Filter(fun img -> img.IsChildFriendly)
-        .Subscribe(AddToHeadlines)
+let news:IObservable<NewsItem> = ..
+news
+    .SelectMany(fun n -> n.Images)
+    .Where(fun img -> img.IsChildFriendly)
+    .Subscribe(AddToHeadlines)
 ```
 
 The `SelectMany` operator used here has the following signature:
@@ -131,7 +131,7 @@ F#
 ```fsharp
 type Image = {ImageName:string; IsChildFriendly:bool}
 type New = {Title:string;Url:string;Images: Image list}
-    let theNews = [
+let theNews = [
         {
             Title = "NewsItem1"
             Url = "https://news.com/NewsItem1"
@@ -147,14 +147,14 @@ type New = {Title:string;Url:string;Images: Image list}
                 {ImageName = "Item2Image1"; IsChildFriendly = true}
             ]
         }
-    ]
+]
 ```
 
 Figure 8.5 The test news items. The first news item contains two images, but only one that is child friendly, and the second news item contains a single image.
 
 The program output is: 
 
-```fsharp
+```output
 News headline image: Item1Image1 
 News headline image: Item2Image1 
 ```
@@ -196,12 +196,12 @@ type NewImageViewModel = {ItemUrl:string;NewsImage:Image}
 let test3 () =
     let news:IObservable<NewsItem> = Observable.empty<NewsItem>
 
-    news.FlatMap(fun newsItem -> 
+    news.SelectMany(fun newsItem -> 
         let imgs = newsItem.Images.ToObservable()
         imgs
-            .Map(fun img -> newsItem.Url,img)
+            .Select(fun img -> newsItem.Url,img)
             )
-        .Filter(fun (_,img) -> img.IsChildFriendly)
+        .Where(fun (_,img) -> img.IsChildFriendly)
         .Subscribe(fun img -> AddToHeadlines(img))
 ```
 
@@ -354,14 +354,14 @@ F#
         .SelectMany(fun room ->
             let msgs = room.Messages
             msgs
-                .Map(fun msg -> room.Id, msg)
+                .Select(fun msg -> room.Id, msg)
             )
         .Subscribe(AddToDashboard)
 ```
 
- Unlike enumerables, observables can emit asynchronous notifications, so the order in which the `resultSelector` is invoked is nondeterministic. This means that `SelectMany` will have to cache all the items from the source observable in order to pass them with each notification emitted by the observable they created. This is, of course, only until the observables have completed. Consequently, using `SelectMany` may affect the memory footprint of your application.
+Unlike enumerables, observables can emit asynchronous notifications, so the order in which the `resultSelector` is invoked is nondeterministic. This means that `SelectMany` will have to cache all the items from the source observable in order to pass them with each notification emitted by the observable they created. This is, of course, only until the observables have completed. Consequently, using `SelectMany` may affect the memory footprint of your application.
 
-NOTE The `SelectMany` operator is powerful when adding asynchronous method invocations as part of the observable pipeline. Chapter 5 discusses this technique, along with other techniques for working with asynchronous operations.
+NOTE: The `SelectMany` operator is powerful when adding asynchronous method invocations as part of the observable pipeline. Chapter 5 discusses this technique, along with other techniques for working with asynchronous operations.
 
 ## 8.3 Filtering an observable
 
@@ -388,7 +388,7 @@ F#
     let strings = ["aa"; "Abc"; "Ba"; "Ac"].ToObservable()
 
     strings
-        .Filter(fun s -> s.[0] = 'A')
+        .Where(fun s -> s.[0] = 'A')
         .Subscribe(ConsoleObserver "")
 ```
 
@@ -503,15 +503,13 @@ Xaml
 F#
 
 ```fsharp
-type SearchTermWindow() as this =
-    inherit SearchTermWindowXaml()
-    let disp =
-        (this.SearchTerm.TextChanged :> IObservable<_>)
-            .Map(fun x -> this.SearchTerm.Text)
-            .Throttle(TimeSpan.FromMilliseconds(400))
-            .DistinctUntilChanged()
-            .ObserveOn(System.Threading.SynchronizationContext.Current)
-            .Subscribe(fun s -> this.Terms.Items.Add(s)|>ignore)
+open System.Threading
+(this.SearchTerm.TextChanged :> IObservable<_>)
+    .Select(fun x -> this.SearchTerm.Text)
+    .Throttle(TimeSpan.FromMilliseconds(400))
+    .DistinctUntilChanged()
+    .ObserveOn(SynchronizationContext.Current)
+    .Subscribe(fun s -> this.Terms.Items.Add(s)|>ignore)
 ```
 
 You can find a sample WPF application that uses [this code](http://mng.bz/84bh). In the sample application, I added all the search terms to a list instead of querying a real web service. Figure 8.13 shows the output when I wrote Rx, Reactive and then wrote `ReactiveX` but deleted the `X` in less than 400 ms. Note that the list isn't cleared between search terms and, with each term, grows over time.
@@ -652,7 +650,7 @@ Average - OnNext(3)
 Average - OnCompleted()
 ```
 
-Using a selector function and overloads for the `Average` operator, you can specify which operand to use for averaging. This allows you to select a sub-property of the emitted object. Here's the signature of the overload that accepts integers (int); the same signature exists for the other primitive types as well:
+Using a selector function and overloads for the `Average` operator, you can specify which operand to use for averaging. This allows you to select a sub-property of the emitted object. Here's the signature of the overload that accepts integers (`int`); the same signature exists for the other primitive types as well:
 
 ```C#
 IObservable<double> Average<TSource>(this IObservable<TSource> source,
@@ -779,11 +777,11 @@ grades.OnCompleted();
 
 F#
 
-```fortran
+```fsharp
     let grades = new Subject<StudentGrade>()
     grades
         .MaxBy(fun s -> s.Grade)
-        .FlatMap(fun max -> max.ToObservable())
+        .SelectMany(fun x -> x.ToObservable())
         .Subscribe(ConsoleObserver "Maximal object by grade")
         |> ignore
 

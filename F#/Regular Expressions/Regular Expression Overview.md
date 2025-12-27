@@ -80,7 +80,7 @@ Table 14-1 lists all the constructs that are legal as regular expression pattern
 
 - **Atomic zero-width assertions**
 
-  Specify where the matching string should be but don't consume characters. For example, the `abc$` regular expression matches any abc word immediately before the end of a line without also matching the end of the line.
+  Specify where the matching string should be but don't consume characters. For example, the `abc$` regular expression matches any "abc" word immediately before the end of a line without also matching the end of the line.
 
 - **Quantifiers**
 

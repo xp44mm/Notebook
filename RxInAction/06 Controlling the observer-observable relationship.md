@@ -8,6 +8,11 @@ This chapter covers the methods you can use to create observers, and the importa
 
 The observer is the consumer of the observable notifications. There can be many observers to a single observable, and there can be many observables that an observer observes, as shown in figure 6.1.
 
+```
+The Observable Singer vs a lot of Observers
+The Observables vs an observer
+```
+
 Figure 6.1 An observable can have multiple observers, and an observer can observe multiple observables.
 
 Our goal with Rx is to simplify your event-processing code, so in this part I'll show you how to create observers so you can pick the one that's most suitable for your needs. This is a good place to review the role the observer plays in the communication protocol between the observable and observer.
@@ -15,6 +20,13 @@ Our goal with Rx is to simplify your event-processing code, so in this part I'll
 ### 6.1.1 The observable-observer communication
 
 The protocol between the observable and the observer is shown in figure 6.2.
+
+```
+1. Subscribe(Observer)
+2. Subscription
+3. OnNext(X) | OnCompleted() | OnError(Exception)
+4. subscription.Dispose()
+```
 
 Figure 6.2 The communication protocol between the observable and the observer
 
@@ -41,6 +53,10 @@ The next section covers ways to control the observer lifetime and the length of 
 ### 6.1.2 Creating observers without leaving the pipeline
 
 By far, the most desirable way to create an observer is doing it without leaving your pipeline so that everything is centralized and, thus, easier to read and maintain. Luckily, it's also the easiest and most straightforward way of creating an observer, as shown in figure 6.3. All it takes is using one of the overloads of the `Subscribe` extension method that resides under the static `ObservableExtensions` class, which is under the `System` namespace.
+
+```
+Observable -> Operator1 -> .. -> OperatorN -> Subscribe(Observer) 
+```
 
 Figure 6.3 Creating the observer and subscribing it as part of the pipeline with the Subscribe operator
 
@@ -126,7 +142,7 @@ In the previous chapter, you saw ways to create observables that perform asynchr
 
 ```C#
 Observable.Range(1, 5)
-    .Select(x => Task.Run(() => x / (x - 3)))
+    .Select(x => Task.Run(() => x / (x - 3))) //*
     .Concat()
     .Subscribe(x => Console.WriteLine("{0}", x));
 Console.WriteLine("Press any key to continue...");
@@ -138,7 +154,7 @@ F#
 ```fsharp
     Observable
         .Range(1, 5)
-        .Map(fun x -> Task.Run(fun () -> x / (x - 3)))
+        .Map(fun x -> Task.Run(fun () -> x / (x - 3))) //*
         .Concat()
         .Subscribe(fun x -> Console.WriteLine($"{x}"))
     |> ignore
@@ -156,7 +172,7 @@ You know there's an exception somewhere, but you don't see it, and you're not ev
 
 When you create tasks that fail (unintentionally, of course) and don't handle the exceptions within the task continuation or inside a catch block that wraps the await, your application continues to work although the task was kicked out of your system.
 
-TIP To capture and handle all the unhandled exceptions thrown from tasks, you can use the `TaskScheduler.UnobservedTaskException` event that will be triggered when a task is disposed of because its exception wasn't observed. You can also change the default behavior so that the process will terminate by setting a configuration in your app.config or web.config file.
+TIP: To capture and handle all the unhandled exceptions thrown from tasks, you can use the `TaskScheduler.UnobservedTaskException` event that will be triggered when a task is disposed of because its exception wasn't observed. You can also change the default behavior so that the process will terminate by setting a configuration in your app.config or web.config file.
 
 I recommend that you always include some implementation of the `OnError` method; at the very least, log it so you can investigate it later. Chapter 11 provides more details about error handling and recovery.
 
@@ -252,7 +268,6 @@ F#
         .Select(fun x -> $"YY{x}")
         .Subscribe(observer)
     |> ignore
-
 ```
 
 Running this example for 5 seconds shows this output:
@@ -303,7 +318,7 @@ Calling the `Subscribe` method will immediately make the observable aware of the
 
 The `DelaySubscription` operator receives a `TimeSpan` or `DateTimeOffset` that marks the point to make the subscription. This is how to delay the subscription 5 seconds:
 
-```C#
+```F#
 Console.WriteLine("Creating subscription at {0}", DateTime.Now);
 Observable.Range(1, 5)
     .Timestamp()
@@ -405,7 +420,7 @@ F#, `TakeUntil`
 ```fsharp
     Observable
         .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
-        .Map(fun t -> DateTimeOffset.Now)
+        .Select(fun t -> DateTimeOffset.Now)
         .TakeUntil(DateTimeOffset.Now.AddSeconds(5))
         .Subscribe(ConsoleObserver "TakeUntil(time)")
     |> ignore
@@ -451,7 +466,7 @@ F#,
 ```fsharp
     Observable
         .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
-        .Map(fun t -> DateTimeOffset.Now)
+        .Select(fun t -> DateTimeOffset.Now)
         .TakeUntil(
                Observable.Timer(TimeSpan.FromSeconds(5)))
         .Subscribe(ConsoleObserver "TakeUntil(observable)")
@@ -500,12 +515,12 @@ F#,
     let messages = 
         Observable
             .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
-            .Map(fun t -> t.ToString())
+            .Select(fun t -> t.ToString())
 
     let controlChannel =
         Observable
             .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
-            .Map(fun t -> t.ToString())
+            .Select(fun t -> t.ToString())
 
     messages
         .TakeUntil(controlChannel.Filter((=) "3"))
@@ -533,9 +548,9 @@ IObservable<string> controlChannel = ...
 messages
     .SkipUntil(controlChannel.Where(m => m == "START"))
     .Subscribe(
-        msg => {/* add to message screen */ },
-        ex => { /* error handling */},
-        () => { /* completion handling */});
+        msg => {/* add to message screen */},
+        ex => {/* error handling */},
+        () => {/* completion handling */});
 ```
 
 F#,
@@ -544,12 +559,12 @@ F#,
     let messages = 
         Observable
             .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
-            .Map(fun t -> t.ToString())
+            .Select(fun t -> t.ToString())
 
     let controlChannel =
         Observable
             .Timer(DateTimeOffset.Now,TimeSpan.FromSeconds(1))
-            .Map(fun t -> t.ToString())
+            .Select(fun t -> t.ToString())
 
     messages
         .SkipUntil(controlChannel.Filter((=) "2"))
@@ -735,9 +750,9 @@ F#,
     Observable
         .Range(1, 5)
         .Do(fun x -> Console.WriteLine("{0} was emitted",x))
-        .Filter(flip(%)2>>(=)0)
+        .Where(flip(%)2>>(=)0)
         .Do(fun x -> Console.WriteLine("{0} survived the Filter()", x))
-        .Map(( * )3)
+        .Select(( * )3)
         .Subscribe(ConsoleObserver "final")
     |> ignore
 ```
@@ -819,9 +834,9 @@ F#,
     Observable
         .Range(1, 5)
         .Do(ConsoleObserver "range")
-        .Filter(flip(%)2>>(=)0)
+        .Where(flip(%)2>>(=)0)
         .Do(ConsoleObserver "filter")
-        .Map(( * )3)
+        .Select(( * )3)
         .Subscribe(ConsoleObserver "final")
     |> ignore
 ```
@@ -970,7 +985,7 @@ type ReactiveDraw() as this =
                     this.canvas.Children.Add(line) |> ignore
                 ))
             .TakeUntil(mouseUp)
-            .Map(fun m -> m.GetPosition(this))
+            .Select(fun m -> m.GetPosition(this))
             .Repeat()
             .Subscribe(fun pos -> lastLine().Points.Add(pos))
 ```

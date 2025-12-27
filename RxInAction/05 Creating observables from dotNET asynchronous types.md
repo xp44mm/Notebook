@@ -238,10 +238,13 @@ The previous code is almost similar to what you did before, only this time you d
 
 Let's recap what you've learned so far:
 
-    1. The `Create` operator receives an asynchronous function named `subscribeAsync`.
-    2. The `subscribeAsync` function is executed each time an observer is subscribed to the observable. The function must return a `Task` to represent its asynchronous operation.
-    3. When invoked, the `subscribeAsync` function receives `CancellationToken`, which acts as a communication channel of the observer's subscription disposal.
-    4. Inside `subscribeAsync` is where you'll write the code that emits the notifications to the subscribed observer.
+1. The `Create` operator receives an asynchronous function named `subscribeAsync`.
+
+2. The `subscribeAsync` function is executed each time an observer is subscribed to the observable. The function must return a `Task` to represent its asynchronous operation.
+
+3. When invoked, the `subscribeAsync` function receives `CancellationToken`, which acts as a communication channel of the observer's subscription disposal.
+
+4. Inside `subscribeAsync` is where you'll write the code that emits the notifications to the subscribed observer.
 
 ---
 
@@ -353,7 +356,7 @@ let testToObservable () =
 
     resultsA
         .Concat(resultsB)
-        .FlatMap(Observable.ofSeq)
+        .SelectMany(Observable.ofSeq)
         .Subscribe(ConsoleObserver "TaskToObservable")
     |> ignore
 ```
@@ -464,19 +467,18 @@ F#，太长不看
 
     let IsPrimeAsync number = 
         File
-            .ReadAllLinesAsync(path "FlatMap")
+            .ReadAllLinesAsync(path "SelectMany")
             .ToObservable()
-            .Map(fun ln -> ln.Length > number)
+            .Select(fun ln -> ln.Length > number)
 
     Observable
         .Range(36, 9)
-        .FlatMap(fun number -> 
+        .SelectMany(fun number -> 
             let isPrime = IsPrimeAsync(number)
-            isPrime
-                .Map(fun x -> number, x)
+            isPrime.Select(fun x -> number, x)
             )
-        .Filter(snd)
-        .Map(fst)
+        .Where(snd)
+        .Select(fst)
         .Subscribe(ConsoleObserver "primes")
     |> ignore
 ```
@@ -588,15 +590,15 @@ F#，太长不看
 ```fsharp
     Observable
         .Range(36, 9)
-        .Map(fun number -> 
+        .Select(fun number -> 
             task {
                 let! lns = File.ReadAllLinesAsync(path "FlatMap")
                 let isPrime = lns.Length > number
                 return number,isPrime
             })
         .Concat()
-        .Filter(snd)
-        .Map(fst)
+        .Where(snd)
+        .Select(fst)
         .Subscribe(ConsoleObserver "primes")
     |> ignore
 
@@ -617,7 +619,7 @@ The lambda expression you provided as the selector function is using the async-a
 
 The `Concat` operator is now working on an observable that pushes tasks of this new anonymous type—named 'a in Visual Studio IntelliSense, as you can see in figure 5.9.
 
-Figure 5.9 Visual Studio IntelliSense names the anonymous type in the selector function 'a. 
+Figure 5.9 Visual Studio IntelliSense names the anonymous type in the selector function `'a`. 
 
 You can see that the `Concat` operator is working on `IObservable<Task<'a>>` but produces an observable of type `IObservable<'a>`. It seems you've solved the problem, but what if a task never completes? What will happen to your system?
 
@@ -626,6 +628,8 @@ Internally, the `Concat` operator must keep in memory the results of all the tas
 If one of the tasks never completes (if it's stuck in a loop or a deadlock), `Concat` might cause memory pressure. As a general approach, it's better to not rely on order when it comes to asynchronous execution.
 
 You now have the power to add asynchronous code execution as part of your observable pipeline. When order isn't mandatory, use `SelectMany`. When the order is a must, use `Concat`. `SelectMany` and `Concat` are explored further in chapter 8.
+
+SelectMany() = Select() + Merge()
 
 ## 5.2 Creating observables of periodic behavior
 
@@ -698,7 +702,7 @@ Figure 5.11 The `Timer` operator marble diagram creates an observable sequence t
 
 Calling this overload creates an observable that periodically produces a value after the specified initial relative due time has elapsed from the moment an observer subscribes.
 
-Figure 5.11 shows an example of creating an observable that produces a value every second, but starting 2 seconds after subscription. You can say that the `Interval` operator that you saw earlier is a special case of the `Timer` operator, in which the `dueTime` and period are the same.
+Figure 5.11 shows an example of creating an observable that produces a value every second, but starting 2 seconds after subscription. You can say that the `Interval` operator that you saw earlier is a special case of the `Timer` operator, in which the `dueTime` and `period` are the same.
 
 The timer also includes overloads to schedule the beginning of the periodicity in both relative and absolute times. You'll explore those definitions when you look at another special case, scheduling the emission of a single value.
 

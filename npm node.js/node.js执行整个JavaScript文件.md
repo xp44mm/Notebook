@@ -1,6 +1,6 @@
-正常使用node执行整个JavaScript文件的方法：
+正常使用node.js执行整个JavaScript文件的方法：
 
-如果要用node直接执行一整个JavaScript文件的话，那么就不能进入node的编辑模式，而应该直接在命令框里面输入：
+如果要用node.js直接执行一整个JavaScript文件的话，那么就不能进入node.js的编辑模式，而应该直接在命令框里面输入：
 
 ```bash
 node <JavaScript文件名>

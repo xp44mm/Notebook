@@ -14,7 +14,7 @@ install-Package xunit.runner.visualstudio
 install-package entityFramework
 ```
 
-添加引用： 程序集$\rightarrow$框架$\rightarrow$ `System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'`。
+添加引用： 程序集->框架-> `System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'`。
 
 在项目根目录添加`App.config`文件，并配置连接字符串：
 

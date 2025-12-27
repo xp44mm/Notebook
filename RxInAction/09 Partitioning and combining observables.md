@@ -14,7 +14,7 @@ When you need to combine values that are in the same index in two (or more) obse
 
 The arguments for the selector function are the set of values, emitted at the same index (each in its source observable), from the items emitted by the observables you want to zip. The selector function then returns the calculated result from those values.
 
-Suppose you have two temperature sensors in a room that emit values roughly at the same time and you want to show the average temperature from both readings. Here's how to do that with the Zip operator:
+Suppose you have two temperature sensors in a room that emit values roughly at the same time and you want to show the average temperature from both readings. Here's how to do that with the `Zip` operator:
 
 ```C#
 var temp1 = ... as IObservable<double>
@@ -107,18 +107,16 @@ speed.StartWith(0)
 F#
 
 ```fsharp
-    speed
-        .StartWith(0)
-        .CombineLatest(heartRate.StartWith(0),
-                       fun s h -> $"Heart:{h} Speed:{s}")
-        .Subscribe(ConsoleObserver "Metrics")
+speed
+    .StartWith(0)
+    .CombineLatest(heartRate.StartWith(0),
+                   fun s h -> $"Heart:{h} Speed:{s}")
+    .Subscribe(ConsoleObserver "Metrics")
 ```
-
-
 
 ------
 
-NOTE Currently, the Rx codebase also includes the operator `WithLatestFrom`, which is like a one-way `CombineLatest`. `WithLatestFrom` combines each value from the first observable with the latest value from the second observable, but not the other way around. ~~This operator isn't included in Rx versions prior to 3.0, which this book is using.~~
+NOTE: Currently, the Rx codebase also includes the operator `WithLatestFrom`, which is like a one-way `CombineLatest`. `WithLatestFrom` combines each value from the first observable with the latest value from the second observable, but not the other way around. ~~This operator isn't included in Rx versions prior to 3.0, which this book is using.~~
 
 ------
 
@@ -154,17 +152,17 @@ Observable.Concat(facebookMessages.ToObservable(),
 F#
 
 ```fsharp
-    let facebookMessages: Task<string[]> = 
+let facebookMessages: Task<string[]> = 
         Task.Delay(10)
             .ContinueWith(fun _ -> Array.ofList ["Facebook1"; "Facebook2"])
             
-    let twitterStatuses: Task<string[]> =
+let twitterStatuses: Task<string[]> =
         Task.FromResult(Array.ofList ["Twitter1"; "Twitter2"])
 
-    Observable.Concat(facebookMessages.ToObservable(),
-                      twitterStatuses.ToObservable())
-        .FlatMap(fun messages->messages.ToObservable())
-        .Subscribe(ConsoleObserver "Concat Messages")
+Observable.Concat(facebookMessages.ToObservable(),
+                  twitterStatuses.ToObservable())
+    .FlatMap(fun messages->messages.ToObservable())
+    .Subscribe(ConsoleObserver "Concat Messages")
 ```
 
 Running this example shows this output:
@@ -219,7 +217,7 @@ F#
         .Merge(
             facebookMessages.ToObservable(),
             twitterStatuses.ToObservable())
-        .FlatMap(fun messages->messages.ToObservable())
+        .SelectMany(fun messages->messages.ToObservable())
         .Subscribe(ConsoleObserver "Merged Messages")
 ```
 
@@ -281,11 +279,9 @@ Merging from observable - OnNext(World-Result)
 Merging from observable - OnCompleted()
 ```
 
-
-
 ------
 
-NOTE Conceptually, the operator `SelectMany` (described broadly in chapter 8) operates the same as calling `Select` and `Merge`.
+NOTE: Conceptually, the operator `SelectMany` (described broadly in chapter 8) operates the same as calling `Select` and `Merge`.
 
 ------
 
@@ -319,16 +315,17 @@ F#
 ```fsharp
     let a: IObservable<string> = 
         Observable.Interval(TimeSpan.FromSeconds(1))
-            .Map(sprintf "A%d")
+            .Select(sprintf "A%d")
             .Take(2)
 
     let b: IObservable<string> =
         Observable.Interval(TimeSpan.FromSeconds(1))
-            .Map(sprintf "B%d")
+            .Select(sprintf "B%d")
             .Take(2)
+            
     let c: IObservable<string> = 
         Observable.Interval(TimeSpan.FromSeconds(1))
-            .Map(sprintf "C%d")
+            .Select(sprintf "C%d")
             .Take(2)
 
     [a;b;c]
@@ -363,6 +360,8 @@ To accomplish the task of switching to a new observable when it's available, you
 
 Figure 9.5 The `Switch` operator takes an observable that emits observables and creates a single observable that emits the notifications from the most recent observable.
 
+设想每个横线是一个阻挡，只有最下面的横线通知可以落到地面。
+
 Here's a simple program that simulates the text changes shown in the marble diagram. You use the `Delay` operator to add a little delay to R1 emissions so the system will switch to the R2 observable before the R results are available.
 
 Listing 9.1 Switching to the most recent search results with the `Switch` operator
@@ -389,7 +388,7 @@ F#
     let texts:IObservable<string> = textsSubject.AsObservable()
 
     texts
-        .Map(fun txt -> 
+        .Select(fun txt -> 
             Observable.Return(txt + "-Result")
                 .Delay(TimeSpan.FromMilliseconds(if txt = "R1" then 10 else 0)))
         .Switch()
@@ -429,10 +428,10 @@ F#
 ```fsharp
     let server1 =
          Observable.Interval(TimeSpan.FromSeconds(2))
-                 .Map(sprintf "Server1-%d")
+                 .Select(sprintf "Server1-%d")
     let server2 =
          Observable.Interval(TimeSpan.FromSeconds(1))
-                 .Map(sprintf "Server2-%d")
+                 .Select(sprintf "Server2-%d")
 
     Observable.Amb(server1, server2)
         .Take(3)
@@ -443,7 +442,7 @@ In this case, the server2 observable emits first, so you'll see only the values 
 
 ------
 
-TIP You can also write the example like this:
+TIP: You can also write the example like this:
 
 ```C#
 server1.Amb(server2).Take(3).SubscribeConsole("Amb");
@@ -497,25 +496,25 @@ var genderAge =
 F#
 
 ```fsharp
-    let people = new Subject<{|Gender:bool;Age:int|}>()
-    let genderAge =
-        people
-            .GroupBy(fun p -> p.Gender)
-            .FlatMap(fun gender ->
-                gender
-                    .Average(fun p -> p.Age)
-                    .Map(fun avg ->
+let people = new Subject<{|Gender:bool;Age:int|}>()
+let genderAge =
+    people
+        .GroupBy(fun p -> p.Gender)
+        .SelectMany(fun gender ->
+             gender
+                 .Average(fun p -> p.Age)
+                 .Select(fun avg ->
                         {|Gender=gender.Key;AvgAge=avg|}
                     )
             )
 
-    genderAge.Subscribe(ConsoleObserver "Gender Age")
-    |> ignore
+genderAge.Subscribe(ConsoleObserver "Gender Age")
+|> ignore
 
-    people.OnNext({|Gender=true;Age=18|})
-    people.OnNext({|Gender=true;Age=16|})
-    people.OnNext({|Gender=false;Age=20|})
-    people.OnCompleted()
+people.OnNext({|Gender=true;Age=18|})
+people.OnNext({|Gender=true;Age=16|})
+people.OnNext({|Gender=false;Age=20|})
+people.OnCompleted()
 ```
 
 Next, you'll look at another concept that's clear in the world of collections but is a little tricky in the world of observables: joins.
@@ -715,6 +714,8 @@ femaleExiting.Where(exit => female.Name == exit.Name)
 select new {Male = male.Name, Female = female.Name};
 ```
 
+---
+
 The join clause creates a single observable on which all the correlations are emitted. Sometimes, however, a divide-and-conquer approach is easier to work with.
 
 In the spirit of this approach, you'd like to receive per each male, all the occurrences of that male with the females in the room with him. So each male becomes a group key for the group of all the associated females, and this group is an observable of those females. So instead of one observable with all the pairs, you'll have multiple observables—one for each group. For this behavior, you need to use the `GroupJoin` operator.
@@ -777,12 +778,12 @@ F#
 let doorOpenedSubject = new Subject<DoorOpened>()
 let doorOpened = doorOpenedSubject.AsObservable()
 
-let enterences = doorOpened.Filter(fun o -> o.Direction = OpenDirection.Entering)
-let maleEntering = enterences.Filter(fun x -> x.Gender = Gender.Male)
-let femaleEntering = enterences.Filter(fun x -> x.Gender = Gender.Female)
-let exits = doorOpened.Filter(fun o -> o.Direction = OpenDirection.Leaving)
-let maleExiting = exits.Filter(fun x -> x.Gender = Gender.Male)
-let femaleExiting = exits.Filter(fun x -> x.Gender = Gender.Female)
+let enterences = doorOpened.Where(fun o -> o.Direction = OpenDirection.Entering)
+let maleEntering = enterences.Where(fun x -> x.Gender = Gender.Male)
+let femaleEntering = enterences.Where(fun x -> x.Gender = Gender.Female)
+let exits = doorOpened.Where(fun o -> o.Direction = OpenDirection.Leaving)
+let maleExiting = exits.Where(fun x -> x.Gender = Gender.Male)
+let femaleExiting = exits.Where(fun x -> x.Gender = Gender.Female)
 let malesAcquaintances =
     maleEntering
         .GroupJoin(femaleEntering,
@@ -792,13 +793,11 @@ let malesAcquaintances =
 
 let amountPerUser =
     malesAcquaintances
-        .FlatMap(fun (m,females) ->
+        .SelectMany(fun (m,females) ->
                 females
                     .Scan(0,fun acc curr -> acc + 1)
-                    .Map(fun cnt -> m,females,cnt)
+                    .Select(fun cnt -> m,females,cnt)
         )
-
-
 amountPerUser.Subscribe(ConsoleObserver "Amount of meetings per User")
 |> ignore
 //This is the sequence you see in Figure 9.8
@@ -903,7 +902,7 @@ Listing 9.2 Using `Buffer` to find the deltas between two speedometer readings
 
 ```C#
 var speedReadings = ... as IObservable<double>;
-var timeDelta = 1./3600.; //1 second in hours unit
+var timeDelta = 1./3600.; // 1 second in hours unit
 var accelerations =
     from buffer in speedReadings.Buffer(count: 2, skip: 1)
     where buffer.Count == 2
@@ -921,9 +920,9 @@ F#
     let timeDelta = 1.0/3600.0
     let accelrations =
         speedReadings
-            .Buffer(count= 2, skip= 1)
-            .Filter(fun buffer -> buffer.Count = 2)
-            .Map(fun buffer ->
+            .Buffer(count = 2, skip = 1)
+            .Where(fun buffer -> buffer.Count = 2)
+            .Select(fun buffer ->
                 let speedDelta = buffer.[1] - buffer.[0]
                 speedDelta / timeDelta
             )
@@ -932,13 +931,17 @@ F#
 
 In this example, you use the query syntax approach because it allows you to use the `let` keyword to introduce new sub-calculations that make your code smaller. After applying the `Buffer` operator on the `speedReadings` observable, you get an observable of buffers with two consecutive items.
 
-TIP Instead of creating a buffer of two consecutive elements to find the speed delta, you could use the `Zip` operator like this: 
+---
+
+TIP: Instead of creating a buffer of two consecutive elements to find the speed delta, you could use the `Zip` operator like this: 
 
 ```C#
 speedReadings.Zip(speedReadings.Skip(1), (x,y)=> y-x);
 ```
 
 This zips the observable with a shifted version of itself.
+
+---
 
 You can see in the example that you provide two arguments to the `Buffer` operator by using this overload:
 
@@ -1027,7 +1030,7 @@ F#
     let coldMessages = 
         Observable.Interval(TimeSpan.FromMilliseconds(50))
             .Take(4)
-            .Map(sprintf "Message %d")
+            .Select(sprintf "Message %d")
 
     let messages =
         coldMessages.Concat(
@@ -1036,7 +1039,7 @@ F#
             .RefCount()
 
     messages.Buffer(messages.Throttle(TimeSpan.FromMilliseconds(100)))
-        .FlatMap(fun b i -> b.ToObservable().Map(fun m -> $"Buffer {i} - {m}"))
+        .SelectMany(fun b i -> b.ToObservable().Map(fun m -> $"Buffer {i} - {m}"))
         .Subscribe(ConsoleObserver "Hi-Rate Messages")
 ```
 
@@ -1071,14 +1074,11 @@ In this case, working with `Buffer` isn't sufficient because you'll get the sum 
 
 ```C#
 var donations = ... as IObservable<decimal>;
-
 var windows = donations.Window(TimeSpan.FromHours(1));
-
 var donationsSums =
     from window in windows.Do(_ => Console.WriteLine("New Window"))
     from sum in window.Scan((prevSum, donation) => prevSum+donation)
     select sum;
-
 donationsSums.SubscribeConsole("donations in shift");
 ```
 
@@ -1087,7 +1087,6 @@ F#
 ```fsharp
     let donationsWindow1 = [50M; 55M; 60M].ToObservable()
     let donationsWindow2 = [49M; 48M; 45M].ToObservable()
-
     let donations =
         donationsWindow1.Concat(donationsWindow2.DelaySubscription(TimeSpan.FromSeconds(1.5)))
 
@@ -1095,10 +1094,10 @@ F#
 
     let donationsSums =
         windows.Do(fun _ -> Console.WriteLine("New Window"))
-            .FlatMap(fun window ->
+            .SelectMany(fun window ->
                 window.Scan(fun prevSum donation -> prevSum + donation)
             )
-            //.Map(fun sum -> sum)
+            //.Select id
 
     donationsSums.Subscribe(ConsoleObserver "donations in shift")
 ```
@@ -1147,14 +1146,14 @@ Figure 9.13 Fixed windows versus sliding windows
 Windows can open and close dynamically, based on your own logic that might depend on other observables. You can define the window closure strategy differently for each window by providing a function that creates an observable per window. This observable determines when the window closes by emitting a notification on completion:
 
 ```C#
-IObservable<IObservable<TSource>> Window<TSource, TWindowClosing>(IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource, TWindowClosing>(this IObservable<TSource> source,
      Func<IObservable<TWindowClosing>> windowClosingSelector);
 ```
 
 Opening a window can be controlled in a similar fashion. You can provide an observable to the `Window` operator that triggers the opening of a window by emitting a notification:
 
 ```C#
-IObservable<IObservable<TSource>> Window<TSource, TWindowOpening, TWindowClosing>(IObservable<TSource> source,
+IObservable<IObservable<TSource>> Window<TSource, TWindowOpening, TWindowClosing>(this IObservable<TSource> source,
     IObservable<TWindowOpening> windowOpenings,
     Func<TWindowOpening, IObservable<TWindowClosing>> windowClosingSelector);
 ```
@@ -1167,6 +1166,8 @@ IObservable<IObservable<TSource>> Window<TSource, TWindowBoundary>(IObservable<T
 ```
 
 `windowBounderies` is an observable that you provide to close the previous window and open the next by emitting a notification.
+
+---
 
 Windows and buffers are two ways you can split a big problem into many small ones and solve each one independently. By splitting your observable into parts, you can gain insight into the different parts that later can be reflected overall. This is ideal for aggregations or other operations over subsets of elements that fall within a certain period of time.
 

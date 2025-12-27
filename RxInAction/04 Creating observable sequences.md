@@ -247,6 +247,8 @@ type ChatConnection() =
     member _.NotifyError() = error.Trigger[|OutOfMemoryException()|]    
 ```
 
+除非是历史遗留代码中已经用事件了，新写的代码尽量不要使用事件，而应该使用`BehaviorSubject<_>`代替事件。这样有助于减少认知负荷（事件方面的知识）。
+
 The connection to the chat service is done using the `Connect` method of the `ChatClient` class:
 
 ```C#
@@ -355,7 +357,7 @@ var subscription=
     observableConnection.SubscribeConsole("receiver");
 ```
 
-`ChatClient`类型是用于生成`ChatConnection`实例的辅助代码，为了集中焦点，我们忽略辅助代码，直接用构造函数创造`ChatConnection`实例。F#代码：
+`ChatClient`类型是用于生成`ChatConnection`实例的辅助代码，为了集中焦点，我们忽略辅助代码，直接用构造函数创造`ChatConnection`实例。
 
 ```fsharp
 let chatConnection = new ChatConnection() 
@@ -418,9 +420,11 @@ As with the `ObservableBase` you used previously, the `Create` method does all t
 
 ---
 
-NOTE Appendix B covers the Rx `Disposables` library in more detail. Of course, you'd want your observable created with a user-defined amount and a static number of items (five in the previous example). Create the observable inside a method, as shown here:
+NOTE Appendix B covers the Rx `Disposables` library in more detail. 
 
 ---
+
+Of course, you'd want your observable created with a user-defined amount and a static number of items (five in the previous example). Create the observable inside a method, as shown here:
 
 ```C#
 public static IObservable<int> ObserveNumbers(int amount)
@@ -437,7 +441,7 @@ public static IObservable<int> ObserveNumbers(int amount)
 }
 ```
 
-`Observable.Create` is heavily used because it's flexible and easy to use, but you may wish to postpone the creation of the observable until it's needed, such as when the observer is subscribed.
+F#
 
 ```fsharp
 open System.Reactive.Linq
@@ -455,6 +459,8 @@ let test() =
         numbers.Subscribe(ConsoleObserver<int>("ObserveNumbers") :> IObserver<_>)
     subscription.Dispose()
 ```
+
+`Observable.Create` is heavily used because it's flexible and easy to use, but you may wish to postpone the creation of the observable until it's needed, such as when the observer is subscribed.
 
 ### 4.1.5 Deferring the observable creation
 
@@ -524,8 +530,6 @@ let test() =
     ()
 ```
 
-
-
 ## 4.2 Creating observables from events
 
 Creating an observable from a traditional .NET event is something you've seen in previous chapters, but we haven't discussed what happens inside. If all you need is to convert a traditional .NET event to an observable, using methods such as `Observable.Create` will be excessive. Instead, Rx provides two methods to convert from event to observable, namely `FromEventPattern` and `FromEvent`. These two methods (or operators) often lead to confusion for people working with Rx, because using the wrong one will cause compilation errors or exceptions.
@@ -589,7 +593,16 @@ IObservable<EventPattern<TEventArgs>> FromEventPattern<TEventArgs>(
      Action<EventHandler<TEventArgs>> removeHandler);
 ```
 
-F#与C#代码很大不同，是利用事实`IEvent<'t>`继承自`IObservable<'t>`接口，向上强制转换接口类型。
+Rx also gives the simplest version for converting events into observables, in which you need to specify only the name (as a string) of the event and the object that holds it, so the click event example could've been written as follows:
+
+```C#
+var clicks:IObservable<EventPattern<object>> =
+     Observable.FromEventPattern(theButton, "Click");
+```
+
+I'm not fond of this method. Magic strings tend to cause all sorts of bugs and code confusion. It's easy to make a typo, and you need to remember to change the strings around your application in case you decide to rename your event. But the simplicity is attractive, so use it with care.
+
+F#与C#代码很大不同，F#利用`IEvent<'T>`对`IObservable<'T>`的接口继承关系，使用显式向上转型（upcasting`:>`操作符）来获得可观察序列。
 
 ```fsharp
 let theButton = new Button(Content = "Hello from WPF!")
@@ -604,15 +617,6 @@ let _ = clicks.Subscribe(fun eventPattern ->
 ```
 
 此处类型参数是`System.Windows.RoutedEventArgs`。
-
-Rx also gives the simplest version for converting events into observables, in which you need to specify only the name (as a string) of the event and the object that holds it, so the click event example could've been written as follows:
-
-```C#
-var clicks:IObservable<EventPattern<object>> =
-     Observable.FromEventPattern(theButton, "Click");
-```
-
-I'm not fond of this method. Magic strings tend to cause all sorts of bugs and code confusion. It's easy to make a typo, and you need to remember to change the strings around your application in case you decide to rename your event. But the simplicity is attractive, so use it with care.
 
 ---
 
@@ -1164,21 +1168,21 @@ lookupObservable
 F#
 
 ```fsharp
-    let cities = seq { "London"; "Tel-Aviv"; "Tokyo"; "Rome" }
-    let lookupObservable =
-        cities
+let cities = seq { "London"; "Tel-Aviv"; "Tokyo"; "Rome"; "Madrid" }
+let lookupObservable =
+    cities
             .ToObservable()
             .ToLookup(fun c -> c.Length)
-    lookupObservable
-        .Map(fun lookup ->
-            let outp = new StringBuilder()
-            for grp in lookup do
-                outp.AppendFormat("[Key:{0} => {1}]",grp.Key, Seq.length grp)
-                |> ignore
-            outp.ToString()
-        )
-        .Subscribe(ConsoleObserver "lookup")
-    |> ignore
+lookupObservable
+    .Map(fun lookup ->
+         let outp = new StringBuilder()
+         for grp in lookup do
+             outp.AppendFormat("[Key:{0} => {1}]",grp.Key, Seq.length grp)
+             |> ignore
+         outp.ToString()
+     )
+     .Subscribe(ConsoleObserver "lookup")
+|> ignore
 ```
 
 This is the output after running the example:
@@ -1230,7 +1234,7 @@ F#
             0,       // Initial state
             flip (<) 10,  // Condition (false means terminate)
             (+) 1,   // Next iteration step
-            ( * ) 2) // The value in each iteration
+            (*) 2) // The value in each iteration
     observable
         .Subscribe(ConsoleObserver "Generate")
     |> ignore

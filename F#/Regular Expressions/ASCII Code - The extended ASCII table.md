@@ -11,7 +11,7 @@ The first 32 characters in the ASCII-table are unprintable control codes and are
 ```
 | DEC| OCT | HEX| Symbol| Description                  |
 | ---| ----| ---| ------| ---------------------------- |
-| 0  | 000 | 00 | NUL   | Null char                    |
+| 0  | 000 | 00 | NUL   | Null char                    |+
 | 1  | 001 | 01 | SOH   | Start of Heading             |
 | 2  | 002 | 02 | STX   | Start of Text                |
 | 3  | 003 | 03 | ETX   | End of Text                  |
@@ -19,12 +19,12 @@ The first 32 characters in the ASCII-table are unprintable control codes and are
 | 5  | 005 | 05 | ENQ   | Enquiry                      |
 | 6  | 006 | 06 | ACK   | Acknowledgment               |
 | 7  | 007 | 07 | BEL   | Bell / Alert                 |
-| 8  | 010 | 08 | BS    | Back Space / Backspace       |
-| 9  | 011 | 09 | HT    | Horizontal Tab               |
-| 10 | 012 | 0A | LF    | Line Feed / newline          |
-| 11 | 013 | 0B | VT    | Vertical Tab                 |
+| 8  | 010 | 08 | BS    | Back Space / Backspace       |+
+| 9  | 011 | 09 | HT    | Horizontal Tab               |\t
+| 10 | 012 | 0A | LF    | Line Feed / newline          |\n
+| 11 | 013 | 0B | VT    | Vertical Tab                 |\v
 | 12 | 014 | 0C | FF    | Form Feed                    |
-| 13 | 015 | 0D | CR    | Carriage Return              |
+| 13 | 015 | 0D | CR    | Carriage Return              |\r
 | 14 | 016 | 0E | SO    | Shift Out / X-On             |
 | 15 | 017 | 0F | SI    | Shift In / X-Off             |
 | 16 | 020 | 10 | DLE   | Data Line Escape             |
@@ -38,7 +38,7 @@ The first 32 characters in the ASCII-table are unprintable control codes and are
 | 24 | 030 | 18 | CAN   | Cancel                       |
 | 25 | 031 | 19 | EM    | End of Medium                |
 | 26 | 032 | 1A | SUB   | Substitute                   |
-| 27 | 033 | 1B | ESC   | Escape                       |
+| 27 | 033 | 1B | ESC   | Escape                       |+
 | 28 | 034 | 1C | FS    | File Separator               |
 | 29 | 035 | 1D | GS    | Group Separator              |
 | 30 | 036 | 1E | RS    | Record Separator             |
@@ -150,7 +150,98 @@ Codes 32-127 are common for all the different variations of the ASCII table, the
 | 127 | 177 | 7F |        |           | Delete                                 |
 ```
 
-32~126共96个可见打印字符。127非可打印字符。
+## ASCII 可打印字符与控制字符
+
+基本的 ASCII 字符集共有 128 个字符，其中有 95 个可打印字符，包括常用的字母、数字、标点符号等，另外还有 33 个控制字符。
+
+## 控制字符
+
+在ASCII码中，第0～31号及第127号(共33个)是控制字符或通讯专用字符。如控制符：LF（换行）、CR（回车）、FF（换页）、DEL（删除）、BS（退格)、BEL（振铃）等；通讯专用字符：SOH（文头）、EOT（文尾）、ACK（确认）等。
+
+## 可打印字符
+
+在ASCII码中，第32~126号（共95个）是可打印字符，也就是在显示器上输出能够看得见的。
+
+## 标点符号的英语名称
+
+```
+． period / full stop 句号
+， comma 逗号
+： colon 冒号
+； semicolon 分号
+！ exclamation mark 惊叹号
+？ question mark 问号
+- hyphen 连字符
+* asterisk 星号
+' apostrophe 所有格符号，单词内部的省略
+— dash 破折号
+_ underscore
+‘ ’ single quotation marks 单引号
+“ ” double quotation marks 双引号
+( ) parenthesis / round brackets 圆括号
+[ ] square brackets 方括号
+<> Angle brackets 尖括号
+{} curly brackets / braces 大括号
+《 》French quotes 法文引号；书名号
+... ellipsis 省略号
+¨ tandem colon 双点号
+" ditto 同上
+‖ parallel 双线号
+/ slash / virgule / diagonal mark 斜线号
+& ampersand / and
+~ tilde / swung dash 代字号
+§ section / division 分节号
+→ arrow 箭号；参见号
+| vertical bar 竖线
+\ backslash 反斜线
+```
+
+---
+
+附：部分数学符号的英文名称
+
+```fsharp
+＋ plus 加号；正号
+－ minus 减号；负号
+± plus or minus 正负号
+× is multiplied by 乘号
+÷ is divided by 除号
+＝ is equal to 等于号
+≠ is not equal to 不等于号
+≡ is equivalent to 全等于号
+≌ is equal to or approximately equal to 等于或约等于号
+≈ is approximately equal to 约等于号
+＜ less than sign 小于号
+＞ more than / greater than sign大于号
+≮ is not less than 不小于号
+≯ is not more than 不大于号
+≤ is less than or equal to 小于或等于号
+≥ is more than or equal to 大于或等于号
+％ per cent 百分之…
+‰ per mill 千分之…
+∞ infinity 无限大号
+∝ varies as 与…成比例
+√ (square) root 平方根
+∵ since; because 因为
+∴ hence 所以
+∷ equals, as (proportion) 等于，成比例
+∠ angle 角
+⌒ semicircle 半圆
+⊙ circle 圆
+○ circumference 圆周
+△ triangle 三角形
+⊥ perpendicular to 垂直于
+∪ union of 并，合集
+∩ intersection of 交，通集
+∫ the integral of …的积分
+∑ (sigma) summation of 总和
+° degree 度
+′ minute 分
+″ second 秒
+＃ number …号
+℃ Celsius system 摄氏度
+＠ at 在
+```
 
 ## The extended ASCII codes (character code 128-255)
 
@@ -287,97 +378,4 @@ There are several different variations of the 8-bit ASCII table. The table below
 | 253 | 375 | FD | ý      | &yacute;  | Latin small letter y with acute            |
 | 254 | 376 | FE | þ      | &thorn;   | Latin small letter thorn                   |
 | 255 | 377 | FF | ÿ      | &yuml;    | Latin small letter y with diaeresis        |
-```
-
-## ASCII 可打印字符与控制字符
-
-基本的 ASCII 字符集共有 128 个字符，其中有 95 个可打印字符，包括常用的字母、数字、标点符号等，另外还有 33 个控制字符。标准 ASCII 码使用 7 个二进位对字符进行编码，对应的 ISO 标准为 ISO646 标准。
-
-## 控制字符
-
-在ASCII码中，第0～31号及第127号(共33个)是控制字符或通讯专用字符。如控制符：LF（换行）、CR（回车）、FF（换页）、DEL（删除）、BS（退格)、BEL（振铃）等；通讯专用字符：SOH（文头）、EOT（文尾）、ACK（确认）等。
-
-## 可打印字符
-
-在ASCII码中，第32~126号（共95个）是可打印字符，也就是在显示器上输出能够看得见的。
-
-## 标点符号的英语名称
-
-```
-． period / full stop 句号
-， comma 逗号
-： colon 冒号
-； semicolon 分号
-！ exclamation mark 惊叹号
-？ question mark 问号
-- hyphen 连字符
-* asterisk 星号
-' apostrophe 所有格符号，单词内部的省略
-— dash 破折号
-_ underscore
-‘ ’ single quotation marks 单引号
-“ ” double quotation marks 双引号
-( ) parenthesis / round brackets 圆括号
-[ ] square brackets 方括号
-<> Angle brackets 尖括号
-{} curly brackets / braces 大括号
-《 》French quotes 法文引号；书名号
-... ellipsis 省略号
-¨ tandem colon 双点号
-" ditto 同上
-‖ parallel 双线号
-/ slash / virgule / diagonal mark 斜线号
-& ampersand / and
-~ tilde / swung dash 代字号
-§ section / division 分节号
-→ arrow 箭号；参见号
-| vertical bar 竖线
-\ backslash 反斜线
-```
-
----
-
-附：部分数学符号的英文名称
-
-```fsharp
-＋ plus 加号；正号
-－ minus 减号；负号
-± plus or minus 正负号
-× is multiplied by 乘号
-÷ is divided by 除号
-＝ is equal to 等于号
-≠ is not equal to 不等于号
-≡ is equivalent to 全等于号
-≌ is equal to or approximately equal to 等于或约等于号
-≈ is approximately equal to 约等于号
-＜ less than sign 小于号
-＞ more than / greater than sign大于号
-≮ is not less than 不小于号
-≯ is not more than 不大于号
-≤ is less than or equal to 小于或等于号
-≥ is more than or equal to 大于或等于号
-％ per cent 百分之…
-‰ per mill 千分之…
-∞ infinity 无限大号
-∝ varies as 与…成比例
-√ (square) root 平方根
-∵ since; because 因为
-∴ hence 所以
-∷ equals, as (proportion) 等于，成比例
-∠ angle 角
-⌒ semicircle 半圆
-⊙ circle 圆
-○ circumference 圆周
-△ triangle 三角形
-⊥ perpendicular to 垂直于
-∪ union of 并，合集
-∩ intersection of 交，通集
-∫ the integral of …的积分
-∑ (sigma) summation of 总和
-° degree 度
-′ minute 分
-″ second 秒
-＃ number …号
-℃ Celsius system 摄氏度
-＠ at 在
 ```

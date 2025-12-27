@@ -10,7 +10,7 @@ To control and change the observable temperature—for example, when you want to
 
 ## 7.1 Multicasting with subjects
 
-A type that implements the `IObservable<'T>` interface and `IObserver<'M>` interface is called a subject. This type acts as both an observer and an observable, as shown in figure 7.1. It allows you to create an object that becomes a hub, which is able to intercept notifications it receives as an observer and push them to its observers. This, for example, can be used inside a shopping-cart class to notify various observers (such as the relevant UI component) about items added or removed from the cart. The cart exposes `Subject` as an observable, and the cart Add and Remove methods call the subject's `OnNext` method to notify about the change.
+A type that implements the `IObservable<'T>` interface and `IObserver<'M>` interface is called a **subject**. This type acts as both an observer and an observable, as shown in figure 7.1. It allows you to create an object that becomes a hub, which is able to intercept notifications it receives as an observer and push them to its observers. This, for example, can be used inside a shopping-cart class to notify various observers (such as the relevant UI component) about items added or removed from the cart. The cart exposes `Subject` as an observable, and the cart Add and Remove methods call the subject's `OnNext` method to notify about the change.
 
 Figure 7.1 A subject is a type that's both an observable and an observer. It allows multicasting the notifications emitted by the sources to the observers.
 
@@ -19,9 +19,10 @@ The following listing provides the definition of the `ISubject` interface that r
 Listing 7.1 The `ISubject` interface
 
 ```C#
-interface ISubject<in TSource, out TResult> : IObserver<TSource>, IObservable<TResult>
-{
-}
+interface ISubject<in TSource, out TResult> : 
+    IObserver<TSource>, 
+    IObservable<TResult>
+{}
 ```
 
 The `Subject` type represents a `PubSub` (publisher-subscriber) pattern: the subject consumes notifications on one side (or is triggered by a notification) and emits notifications on the other side. This lets you create types that add special logic (transformations, caching, buffering, and so on) within the notifications received before they're published, or allows multicasting from one source to multiple destinations.
@@ -32,8 +33,7 @@ Listing 7.2 `ISubject` interface with Source and Result types that are the same
 
 ```C#
 interface ISubject<'T> : ISubject<T, T>
-{
-}
+{}
 ```
 
 Rx provides these subject implementations:
@@ -131,13 +131,13 @@ F#,
     let sbj = new Subject<string>()
 
     Observable.Interval(TimeSpan.FromSeconds(1))
-        .Map(fun x -> $"First: {x}")
+        .Select(fun x -> $"First: {x}")
         .Take(5)
         .Subscribe(sbj)
     |> ignore
 
     Observable.Interval(TimeSpan.FromSeconds(2))
-        .Map(fun x -> $"Second: {x}")
+        .Select(fun x -> $"Second: {x}")
         .Take(5)
         .Subscribe(sbj)
     |> ignore
@@ -191,7 +191,8 @@ F#,
 
     let messagesFromDb = seq {"a";"b"}
     let realTimeMessages = 
-        Observable.Range(1,5).Map(fun x -> x.ToString())
+        Observable.Range(1,5)
+        .Select(fun x -> x.ToString())
 
     messagesFromDb.ToObservable().Subscribe(sbj)
     |> ignore
@@ -254,11 +255,11 @@ sbj.SubscribeConsole();
 F#,
 
 ```fsharp
-    let tcs = new TaskCompletionSource<bool>()
-    let task = tcs.Task
+let tcs = new TaskCompletionSource<bool>()
+let task = tcs.Task
 
-    let sbj = new AsyncSubject<bool>()
-    task.ContinueWith((fun (t:Task<bool>) ->
+let sbj = new AsyncSubject<bool>()
+task.ContinueWith((fun (t:Task<bool>) ->
         match (t.Status) with
         | TaskStatus.RanToCompletion ->
             sbj.OnNext(t.Result)
@@ -268,11 +269,11 @@ F#,
         | TaskStatus.Canceled ->
             sbj.OnError(new TaskCanceledException(t))
         | _ -> ()
-    ) ,TaskContinuationOptions.ExecuteSynchronously)
+    ), TaskContinuationOptions.ExecuteSynchronously)
     |> ignore
 
-    tcs.SetResult(true)
-    sbj.Subscribe(ConsoleObserver "sbj")
+tcs.SetResult(true)
+sbj.Subscribe(ConsoleObserver "sbj")
     |> ignore
 ```
 
@@ -307,22 +308,23 @@ Console.WriteLine("Connection is {0}", connection.Value);
 F#,
 
 ```fsharp
-    let src = Observable.Interval(TimeSpan.FromSeconds(1)).Map((int))
+let src = 
+    Observable.Interval(TimeSpan.FromSeconds(1))
+    .Select((int))
 
-    let connection =
-        new BehaviorSubject<_>(0)
+let connection = new BehaviorSubject<_>(0)
 
-    src.Subscribe(connection)
+src.Subscribe(connection)
     |> ignore
 
-    connection.Subscribe(ConsoleObserver "first")
+connection.Subscribe(ConsoleObserver "first")
     |> ignore
 
-    Thread.Sleep(2000)
+Thread.Sleep(2000)
 
-    connection.Subscribe(ConsoleObserver "second")
+connection.Subscribe(ConsoleObserver "second")
     |> ignore
-    Console.WriteLine($"Connection is {connection.Value}")
+Console.WriteLine($"Connection is {connection.Value}")
 ```
 
 
@@ -363,16 +365,18 @@ sbj.SubscribeConsole("HeartRate Graph");
 F#,
 
 ```fsharp
-    let heartRate:IObservable<int> = Observable.Interval(TimeSpan.FromSeconds(1)).Map(int)
+let heartRate:IObservable<int> =
+    Observable.Interval(TimeSpan.FromSeconds(1))
+    .Select(int)
 
-    let sbj = new ReplaySubject<int>(bufferSize= 5, window= TimeSpan.FromMinutes(1))
+let sbj = new ReplaySubject<int>(bufferSize= 5, window= TimeSpan.FromMinutes(1))
 
-    heartRate.Subscribe(sbj)
+heartRate.Subscribe(sbj)
     |> ignore
 
-    // After the user selected to show the heart rate on the screen
+// After the user selected to show the heart rate on the screen
 
-    sbj.Subscribe(ConsoleObserver "HeartRate Graph")
+sbj.Subscribe(ConsoleObserver "HeartRate Graph")
     |> ignore
 ```
 
@@ -464,17 +468,17 @@ Console.WriteLine("proxy as observer is {0}",observer == null
 F#,
 
 ```fsharp
-    let sbj = new Subject<int>()
-    let proxy = sbj.AsObservable()
-    try
+let sbj = new Subject<int>()
+let proxy = sbj.AsObservable()
+try
         let _ = proxy :?> Subject<int>
         ()
-    with e ->
+with e ->
         Console.WriteLine(e.Message)
-    try
+try
         let _ = proxy :?> IObserver<int>
         ()
-    with e ->
+with e ->
         Console.WriteLine(e.Message)
 ```
 
@@ -485,7 +489,7 @@ proxy as subject is null
 proxy as observer is null
 ```
 
-`Subject` plays a big role in Rx operators and is a powerful tool if used correctly. Unfortunately, `Subject` can be used incorrectly. The next section provides a few guidelines that can help you decide whether Subject is the right object for you to use.
+`Subject` plays a big role in Rx operators and is a powerful tool if used correctly. Unfortunately, `Subject` can be used incorrectly. The next section provides a few guidelines that can help you decide whether `Subject` is the right object for you to use.
 
 ### 7.1.6 Following best practices and guidelines
 
@@ -636,16 +640,19 @@ connectableObservable.SubscribeConsole("Third");
 F#,
 
 ```fsharp
-    let coldObservable = Observable.Interval(TimeSpan.FromSeconds(1)).Take(5)
-    let connectableObservable = coldObservable.Publish()
-    connectableObservable.Subscribe(ConsoleObserver "First")
+let coldObservable = 
+    Observable.Interval(TimeSpan.FromSeconds(1)).Take(5)
+let connectableObservable = 
+    coldObservable.Publish()
+connectableObservable.Subscribe(ConsoleObserver "First")
         |> ignore
-    connectableObservable.Subscribe(ConsoleObserver "Second")
+connectableObservable.Subscribe(ConsoleObserver "Second")
         |> ignore
-    connectableObservable.Connect()
+        
+connectableObservable.Connect()
         |> ignore
-    Thread.Sleep(2000)
-    connectableObservable.Subscribe(ConsoleObserver "Third")
+Thread.Sleep(2000) // 2s later
+connectableObservable.Subscribe(ConsoleObserver "Third")
         |> ignore
 ```
 
@@ -803,11 +810,11 @@ F#
             .Publish(fun published ->
                 published
                     .Zip(published)
-                    .Map(fun struct(a, b) -> a + b))
+                    .Select(fun struct(a, b) -> a + b))
     publishedZip.Subscribe(ConsoleObserver "publishedZipped")
 ```
 
-Now, the numbers observable is published, so the notifications are shared among all its observers. The same notification will be received both as a and b. The output is
+Now, the numbers observable is published, so the notifications are shared among all its observers. The same notification will be received both as `a` and `b`. The output is
 
 ```C#
 publishedZipped - OnNext(0)
@@ -842,43 +849,24 @@ connectableObservable.SubscribeConsole("First");
 connectableObservable.SubscribeConsole("Second");
 connectableObservable.Connect();
 
-Thread.Sleep(6000);
+Thread.Sleep(6000); // 6s later
 connectableObservable.SubscribeConsole("Third");
 ```
 
 F#
 
 ```fsharp
-    let coldObservable = Observable.Range(1,5).Map(fun _ -> "Rx")
+    let coldObservable = Observable.Range(1,5).Select(fun _ -> "Rx")
     let connectableObservable = coldObservable.PublishLast()
-    connectableObservable.Subscribe(ConsoleObserver "A")
+    connectableObservable.Subscribe(ConsoleObserver "First")
         |> ignore
-    connectableObservable.Subscribe(ConsoleObserver "B")
+    connectableObservable.Subscribe(ConsoleObserver "Second")
         |> ignore
     connectableObservable.Connect()
         |> ignore
 
     Thread.Sleep(6000)
-    connectableObservable.Subscribe(ConsoleObserver "C")
-```
-
-F#
-
-```fsharp
-    let coldObservable = getColdObservable()
-    let connectableObservable =
-        Observable.Defer(fun () -> coldObservable)
-            .Publish()
-    connectableObservable.Subscribe(ConsoleObserver "Messages Screen")
-        |> ignore
-    connectableObservable.Subscribe(ConsoleObserver "Messages Statistics")
-        |> ignore
-    let subscription = connectableObservable.Connect()
-    //After the application was notified on server outage
-    Console.WriteLine("--Disposing the current connection and reconnecting--")
-    subscription.Dispose()
-    let subscription1 = connectableObservable.Connect()
-    ()
+    connectableObservable.Subscribe(ConsoleObserver "Third")
 ```
 
 Running this example shows that the last notification emitted by the source observable was shared among all observers:
@@ -1008,17 +996,17 @@ subscription2.Dispose();
 F#
 
 ```fsharp
-    let publishedObservable = 
+let publishedObservable = 
         Observable.Interval(TimeSpan.FromSeconds(1))
             .Do(fun x -> Console.WriteLine($"Generating {x}"))
             .Publish()
             .RefCount()
-    let subscription1 = publishedObservable.Subscribe(ConsoleObserver "First")
-    let subscription2 = publishedObservable.Subscribe(ConsoleObserver "Second")
-    Thread.Sleep(3000)
-    subscription1.Dispose()
-    Thread.Sleep(3000)
-    subscription2.Dispose()
+let subscription1 = publishedObservable.Subscribe(ConsoleObserver "First")
+let subscription2 = publishedObservable.Subscribe(ConsoleObserver "Second")
+Thread.Sleep(3000)
+subscription1.Dispose()
+Thread.Sleep(3000)
+subscription2.Dispose()
 ```
 
 As you can see from the following program output, after the second observer unsubscribes, no more notifications are emitted:
@@ -1051,7 +1039,7 @@ To make an observable cold, you need to use the same tools that made a cold obse
 
 Figure 7.12 Turning a hot observable to a cold observable is necessary when you want to capture emissions and replay them.
 
-The Replay operator has many overloads that let you constrain both the time and the number of items to remember and replay. Here's an example that lets you replay the last two items for any observer that subscribes:
+The `Replay` operator has many overloads that let you constrain both the time and the number of items to remember and replay. Here's an example that lets you replay the last two items for any observer that subscribes:
 
 ```C#
 var publishedObservable = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -1066,16 +1054,16 @@ var subscription2 = publishedObservable.SubscribeConsole("Second");
 F#
 
 ```fsharp
-    let publishedObservable = 
+let publishedObservable = 
         Observable.Interval(TimeSpan.FromSeconds(1))
             .Take(5)
             .Replay(2) //Creates a connectable observable that replays the last two items
-    publishedObservable.Connect()
+publishedObservable.Connect()
         |> ignore
-    let subscription1 = publishedObservable.Subscribe(ConsoleObserver "First")
-    Thread.Sleep(3000)
-    let subscription2 = publishedObservable.Subscribe(ConsoleObserver "Second")
-    ()
+let subscription1 = publishedObservable.Subscribe(ConsoleObserver "First")
+Thread.Sleep(3000)
+let subscription2 = publishedObservable.Subscribe(ConsoleObserver "Second")
+()
 ```
 
 Running this application shows this output:
