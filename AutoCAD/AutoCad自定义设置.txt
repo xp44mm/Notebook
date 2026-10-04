@@ -3,20 +3,28 @@
 [工具]\[选项...]
 * [文件]\支持文件搜索路径\，不可以是父文件夹
 添加：字体文件夹。
-添加：插件.dll所在具体的路径。
+添加：插件.dll所在具体的路径（C:\Application Data\GitHub\xp44mm\CuislCad\CuislCad\bin\x64\Release\net481）。
 * [文件]\受信任的位置\
-添加：插件.dll所在具体的路径，不可以是父文件夹。
+添加：插件.dll所在具体的路径（同上路径），不可以是父文件夹。
 
 
 
 * [文件]选项卡的列表中，双击“文字编辑器、词典和字体文件名称”。
 a. 替换字体文件，设置为：幼圆
 b. 双击“字体映射文件”。
-D:\application data\autocad\fonts\acad.fmp
+C:\Application Data\AutoCAD\Fonts\acad.fmp
 文件格式是旧文件分号新文件，旧文件可以省略扩展名
+本机实际 acad.fmp 内容：
 ```fmp
-HZFS; design.shx
+FangSong_GB2312;simfang.ttf
+hzasc.shx;tssdeng.shx
+sysz.shx;tssdeng.shx
+syfs.shx;chin2.shx
+HZFS;chin2.shx
+FS64F;chin2.shx
+fs.shx;chin2.shx
 ```
+注意：映射目标需位于字体搜索路径；
 注意：即使在系统上可以找到在文字对象中指定的字体，也会发生字体映射文件中指定的字体替换。这是预期行为。
 
 * [文件]\样板设置\快速新建的默认样板文件名\指定样板文件
@@ -39,8 +47,9 @@ acadiso.dwt
 
 菜单
 [工具]\[加载应用程序]\启动组[内容...]：
-*.lsp
-*.vlx
+C:\Application Data\AutoCAD\csl.lsp
+C:\Application Data\AutoCAD\SMT.VLX
+C:\Application Data\AutoCAD\ExpText.lsp
 
 [工具]\[自定义]\[编辑程序参数(acad.pgp)]
 csl.pgp粘贴到acad.pgp最下面。
@@ -49,9 +58,24 @@ csl.pgp粘贴到acad.pgp最下面。
 :)[自定义]\主自定义文件(acad.cuix)\局部自定义文件\
 右键加载局部自定义文件\添加csl.cuix\保存主自定义文件(acad.cuix)\确定。
 :)[传输],对话框的左侧选择为[acad.cuix]，右侧选择为[csl.cuix]
-[csl.cuix]\[功能区]\[面板]\[二维常用选项-捕捉]\
-复制到[acad.cuix]\[功能区]\[选项卡]\[常用-二维]\中。
+[csl.cuix]\[功能区]\[面板]\[二维常用选项卡 - 捕捉]\
+复制到[acad.cuix]\[功能区]\[选项卡]\[常用 - 二维]\中。
 按保存后确定。
+菜单栏挂载（崔胜利菜单）
+加载 csl.cuix 后，"崔胜利"下拉菜单（Alias=POP12）不会自动出现在菜单栏，需显式挂载：
+
+方法一（CUI 界面，推荐）：
+[工具]\[自定义]\[界面...] → 左侧"所有文件中的自定义设置"展开 CSL\菜单 → 选中"崔胜利" → 拖入右侧"菜单栏"列表 → 保存主自定义文件(acad.cuix) → 确定。
+
+方法二（注册表，适合批量/脚本）：
+路径 HKCU\SOFTWARE\Autodesk\AutoCAD\R23.1\ACAD-3001:804\Profiles\<<未命名配置>>\Menus
+添加字符串值：pop14 = CSL pop12
+（pop14 为菜单栏第14个位置；CSL 为菜单组名；pop12 为崔胜利菜单的 Alias，大小写不敏感）
+重启 AutoCAD 生效。
+
+注意：
+- AutoCAD 2020 GetMenu API 探不到是因为菜单栏是自绘控件，不影响使用。
+- csl.cuix 中自定义菜单/命令的 Name UID 应使用唯一前缀（如 XLS_CSL_xxx），避免与 acad.CUIX 冲突导致名字显示错乱。当前 csl.cuix 已修复崔胜利菜单顶层 UID（XLS_6739→XLS_CSL_9001）；若子菜单项名字显示异常，可同样处理。
 
 取消不常用的选项卡
 右击选项卡：显示选项卡，子菜单下。
@@ -69,3 +93,39 @@ STARTMODE
 
 先关闭AutoCAD主程序。开始菜单，所有应用，AutoCAD，输出AutoCAD设置。
 
+CuislCad 插件（F# / AutoCAD .NET API）部署与加载
+================================================
+
+1. 源码仓库：C:\Application Data\GitHub\xp44mm\CuislCad
+   解决方案 CuislCad.sln 含 5 个项目，正常项目只有：
+   - CuislCad（F# 类库，net481，管道支吊架零件与绘图命令）
+   - AutoCADWpf（C# WPF 类库，net4.8.1，插件 UI 窗口）
+   其余（ClassLibrary1 / ClassLibrary2 / WpfLibrary1）为备份项目，不要参与构建。
+
+2. 项目引用（CuislCad.fsproj）：
+   - AutoCAD 2020 托管 DLL：C:\Program Files\Autodesk\AutoCAD 2020\acmgd.dll / acdbmgd.dll / accoremgd.dll
+   - 外部库 Databases.dll：..\..\LakeFunctions\Databases\bin\Release\netstandard2.0\Databases.dll
+   - NuGet：FSharp.Idioms 1.4.28、UnquotedJson 1.0.22、MahApps.Metro 2.4.10
+
+3. 构建（部署用 Release | x64）：
+   Visual Studio 打开 CuislCad.sln，配置 Release | x64 生成；或用 MSBuild：
+   MSBuild.exe CuislCad.sln -p:Configuration=Release -p:Platform=x64
+   输出目录：CuislCad\bin\x64\Release\net481\
+
+4. 部署：构建输出目录即加载路径，无需复制。
+   Release | x64 构建后，输出目录为：
+   C:\Application Data\GitHub\xp44mm\CuislCad\CuislCad\bin\x64\Release\net481
+   （该路径已加入本文件上文“支持文件搜索路径”和“受信任的位置”，也是下方注册表 LOADER 指向的路径）
+
+5. 注册自动加载（AutoCAD 2020 启动时自动加载插件）：
+   注册表：HKCU\SOFTWARE\Autodesk\AutoCAD\R23.1\ACAD-3001:804\Applications\CuislCad
+   LOADER      = C:\Application Data\GitHub\xp44mm\CuislCad\CuislCad\bin\x64\Release\net481\CuislCad.dll
+   LOADCTRLS   = 3（启动时与打开图形时加载）
+   MANAGED     = 1（.NET 托管程序集）
+   DESCRIPTION = CuislCad 管道支吊架设计插件
+
+6. 验证：启动 AutoCAD 2020，命令行输入插件命令（如"大小头""弯头""H型钢""垂直平分线"），
+   能执行即加载成功；也可用 APPLOAD 对话框查看已加载应用程序。
+
+7. AutoCAD 2024 → 2020 迁移说明：CuislCad.fsproj 的 AutoCAD 托管 DLL 引用已由 AutoCAD 2024
+   改为 AutoCAD 2020（本机安装版本，注册表 R23.1，ACAD-3001:804）。
