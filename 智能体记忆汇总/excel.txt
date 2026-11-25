@@ -1,0 +1,17 @@
+﻿# excel推荐背景色
+
+灰（中性底）：#F2F2F2  或 #E7E6E6
+蓝（数据/冷静）：#DDEBF7  或 #BDD7EE
+绿（通过/增长）：#E2EFDA  或 #C6E0B4
+黄（提示/注意）：#FFF2CC
+橙（警告/次要）：#FCE4D6
+红/粉（错误/重点）：#F8CBAD  或 #FFC7CE
+紫（分类/特殊）：#E4DFEC 
+
+# 版本
+
+我们只面向 Excel 2024 等新版：
+- api优先使用 Range.Formula2，代替 Range.Formula；
+- 优先使用数组公式溢出功能，不要用旧式的CSE 数组公式格式；
+- 优先使用元素级（element-wise）标量运算公式
+
